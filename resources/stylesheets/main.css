@@ -1,0 +1,11 @@
+:root {
+    color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {}
+}
+
+body {
+   padding: 2vw;
+}
