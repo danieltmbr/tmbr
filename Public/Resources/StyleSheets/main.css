@@ -106,7 +106,7 @@ nav > ul > li > a::before {
         position: initial;
         bottom: initial;
         width: auto;
-        padding: 40px;
+        padding: 4rem;
         box-shadow: 0 0 0 transparent;
     }
     
@@ -132,7 +132,7 @@ nav > ul > li > a::before {
     
     nav > ul > li { 
         display: initial;
-        padding: 6px 0px;
+        padding: 0.6rem 0;
     }
 }
 
@@ -148,15 +148,21 @@ main {
     max-width: 600px;
 
     display: flex;
+    row-gap: 3.2rem;
+
     flex-direction: column;
     overflow: scroll;
+}
+
+main > section { 
+    display: grid;
+    row-gap: 3.2rem;
 }
 
 main > section > article { 
     display: grid;
     grid-template-columns: 1fr;
-    row-gap: 4px;
-    padding-bottom: 32px;
+    row-gap: 0.4rem;
 }
 
 main > section > article > h2 { 
@@ -203,8 +209,8 @@ footer > svg {
 }
 
 #next-page { 
-    margin-left: 40px;
-    margin-right: 12px;
+    margin-left: 4rem;
+    margin-right: 1.2rem;
 }
 
 @media screen and (min-width: 480px) {
@@ -259,15 +265,24 @@ ul.horizontal {
     line-height: 1.8em;
     letter-spacing: 0.03em;
     font-weight: 700;
+    text-decoration-thickness: 2px;
     cursor: pointer;
 }
 
 .button:hover { 
     text-decoration: underline;
-    text-decoration-thickness: 2px;
+}
+
+.button.disabled { 
+    opacity: 0.5;
+}
+
+.button.disabled:hover { 
+    cursor: default;
+    text-decoration: none;
 }
 
 .emphasised { 
-    font-weight: 400;
+    font-weight: 500;
     font-style: italic;
 }
