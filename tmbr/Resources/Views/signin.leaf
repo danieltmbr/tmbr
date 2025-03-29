@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            .signin-button {
+                width: 240px;
+                height: 40px;
+            }
+            .signin-button > div > div > svg {
+                width: 100%;
+                height: 100%;
+                color: red;
+            }
+            .signin-button:hover {
+                cursor: pointer;
+            }
+            .signin-button > div {
+                outline: none;
+            }
+      </style>
+    </head>
+    <body>
+        <script type="text/javascript" src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
+        <div id="appleid-signin" data-color="black" data-border="false" data-type="sign in" class="signin-button"></div>
+        <script type="text/javascript">
+            AppleID.auth.init({
+                clientId : '#(clientId)',
+                scope : '#(scope)',
+                redirectURI: '#(redirectUrl)',
+                state : '#(state)',
+                usePopup : #(popup),
+            });
+        </script>
+    </body>
+</html>
+

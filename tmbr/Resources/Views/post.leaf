@@ -1,0 +1,13 @@
+<html>
+  <head>
+    <title>#(post.title)</title>
+  </head>
+  <body>
+    <h1>#(post.title)</h1>
+    <p>#(post.content)</p>
+    <p>
+      <small>Posted on: #(post.createdAt ?? "Unknown Date")</small>
+    </p>
+    <a href="/">Back to Home</a>
+  </body>
+</html>
