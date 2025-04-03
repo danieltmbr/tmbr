@@ -16,16 +16,13 @@ struct PostViewModel: Content {
     let title: String
     
     init(post: Post, parser: MarkdownParser = .post) {
-        self.author = PersonNameComponents(
+        self.author = NameFormatter.author.format(
             givenName: post.$author.value?.firstName,
             familyName: post.$author.value?.lastName
-        ).formatted(.name(style: .long))
+        )
         self.content = parser.html(from: post.content)
         self.id = post.id
-        self.publishDate = post.createdAt.formatted(
-            date: .complete,
-            time: .omitted
-        )
+        self.publishDate = post.createdAt.formatted(.publishDate)
         self.title = post.title
     }
 }
