@@ -6,6 +6,7 @@ struct CreateUser: Migration {
             .id()
             .field("apple_id", .string, .required)
             .field("name", .string, .required)
+            .field("role", .string, .required, .custom("DEFAULT 'standard'"))
             .unique(on: "apple_id")
             .create()
     }

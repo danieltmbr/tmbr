@@ -3,6 +3,12 @@ import Vapor
 import Foundation
 
 final class User: Model, Content, Authenticatable, @unchecked Sendable {
+    
+    enum Role: String, Codable {
+        case admin
+        case standard
+    }
+    
     static let schema = "users"
 
     @ID(key: .id)
@@ -19,6 +25,12 @@ final class User: Model, Content, Authenticatable, @unchecked Sendable {
     
     @Field(key: "last_name")
     var lastName: String?
+    
+    @Children(for: \.$author)
+    var posts: [Post]
+    
+    @Field(key: "role")
+    var role: Role
 
     init() { }
 

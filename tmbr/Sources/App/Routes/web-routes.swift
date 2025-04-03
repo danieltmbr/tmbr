@@ -3,18 +3,24 @@ import Vapor
 
 func webRoutes(_ app: Application) throws {
     app.get { req async throws -> View in
-        let posts = try await Post.query(on: req.db).all()
-        return try await req.view.render("index", ["posts": posts])
+        let posts = try await Post.query(on: req.db)
+            .filter(\.$state == .published)
+            .all()
+        return try await req.view.render("posts", PostsViewModel(posts: posts))
     }
     
     app.get("post", ":postID") { req async throws -> View in
-        guard let postID = req.parameters.get("postID", as: UUID.self) else {
+        guard let postID = req.parameters.get("postID", as: Int.self) else {
             throw Abort(.badRequest)
         }
         guard let post = try await Post.find(postID, on: req.db) else {
             throw Abort(.notFound)
         }
-        return try await req.view.render("post", ["post": post])
+        guard post.state == .published || post.$author.id == req.auth.get(User.self)?.id else {
+            req.logger.trace("Unauthorized. Draft posts are only available for the author.")
+            throw Abort(.notFound, reason: "Post not found")
+        }
+        return try await req.view.render("post", PostViewModel(post: post))
     }
     
     app.get("signin") { req async throws -> View in

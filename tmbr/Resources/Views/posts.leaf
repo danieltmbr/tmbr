@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Sign In | tmbr</title>
+        <title>tmbr</title>
         <link rel="stylesheet" href="/Styles/main.css">
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
         <main>
@@ -14,18 +13,17 @@
                 <path fill="currentColor" stroke="currentColor" shape-rendering="crispEdges" d="M3.33693 25.0619C2.42741 24.8334 -0.0737534 25.5189 1.5179 26.8897C3.961 28.767 23.107 25.0959 32.67 23.01L35.17 21.18C13.7634 25.7264 4.14433 25.2647 3.33693 25.0619Z"/>
             </svg>
 
-            <script type="text/javascript" src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
-            <div id="appleid-signin" data-border="false" class="signin-button"></div>
-            <script type="text/javascript">
-                AppleID.auth.init({
-                    clientId : '#(clientId)',
-                    scope : '#(scope)',
-                    redirectURI: '#(redirectUrl)',
-                    state : '#(state)',
-                    usePopup : #(popup),
-                });
-            </script>
+            #if(count(posts) > 0):
+                <section alt="Articles">
+                  <ul>
+                    #for(post in posts):
+                      <a href="/post/#(post.id)"><li>
+                        <span>#(post.id). <span class="post-title">#(post.title)</span></span> <span class="published-date">#(post.publishDate)</span>
+                      </li></a>
+                    #endfor
+                  </ul>
+                </section>
+            #endif
         </main>
     </body>
 </html>
-

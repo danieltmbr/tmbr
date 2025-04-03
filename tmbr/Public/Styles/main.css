@@ -1,0 +1,177 @@
+:root {
+    color-scheme: light dark;
+
+    --background-color: #FFFFFF;    
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #1d1d1d;
+    }
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-family: ui-serif, "Times New Roman", serif;
+    font-size: 62.5%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+}
+
+body {
+    overflow: auto;
+}
+
+/* 
+ ------------------------------------------------
+ Main content
+ ------------------------------------------------
+ */
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    padding: 60px 2em 90px 2em;
+    
+    font-size: 1.7rem;
+    letter-spacing: 0.01em;
+    line-height: 150%;
+}
+
+main > section {
+    width: 100%;
+    max-width: 600px;
+}
+
+main > section > ul {
+    padding: 0;
+}
+
+main > section > ul > a {
+    text-decoration: none;
+    color: inherit;
+}
+
+main > section > ul > a > li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 0.5em 0;
+}
+
+main > section > ul > a:hover > li {
+    color: LinkText !important;
+}
+
+span.post-title {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    padding-left: 0.3em;
+}
+
+main > section > article {
+    display: flex;
+    flex-direction: column;    margin: 0;
+}
+
+main > section > article > h1 {
+    font-size: 3.2rem;
+    line-height: default;
+}
+
+main > section > article > p {
+    margin: 0.5em 0;
+}
+
+main > section > article  li {
+    padding: 0.3em 0;
+}
+
+main > section > article > blockquote {
+    font-style: italic;
+    font-size: 1.25em;
+    line-height: 160%;
+    opacity: 0.8;
+}
+
+main > section > article > a {
+    color: inherit;
+}
+
+main > section > article > a > svg.signature {
+    transform: translateX(-16px);
+}
+
+body > main > svg {
+    margin-bottom: 20px;
+}
+
+/*
+ ------------------------------------------------
+ Classes
+ ------------------------------------------------
+ */
+
+.published-date {
+    font-size: 1.3rem;
+    font-style: italic;
+    opacity: 0.65;
+}
+
+p.published-date {
+    margin: 1.6em 0;
+    display: block;
+}
+
+.signin-button {
+    width: 240px;
+    height: 40px;
+    margin: 40px;
+}
+
+.signin-button > div > div > svg {
+    width: 100%;
+    height: 100%;
+    color: red;
+}
+
+.signin-button:hover {
+    cursor: pointer;
+}
+
+.signin-button > div {
+    outline: none;
+}
+
+/*
+ ------------------------------------------------
+ Mobile adjustments
+ ------------------------------------------------
+ */
+
+@media screen and (max-width: 600px) {
+    main {
+        padding: 40px 1.2em 60px 1.2em;
+    }
+    
+    main > section > article > blockquote {
+        margin-inline-start: 20px;
+        margin-inline-end: 20px;
+    }
+    
+    main > section > article > a > svg.signature {
+        transform: translateX(-12px);
+    }
+}

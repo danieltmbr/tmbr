@@ -11,18 +11,14 @@ public func configureAuth(_ app: Application) throws {
     // Handle POST callback from Apple Sign In
     app.post("apple", "auth") { req async throws -> Response in
         let callbackData = try req.content.decode(AppleCallbackData.self)
-        req.logger.debug("Request body decription: \(req.body.description)")
-        req.logger.debug("Request body string: \(req.body.string)")
-        
-        // Verify the id_token using our dynamically configured JWT signers.
         let appleIdentity = try await req.jwt.apple.verify(callbackData.id_token)
-        
+
         let appleID = appleIdentity.subject.value
         let email = appleIdentity.email
         let name = callbackData.user?.name
         
         let user = try await User.findOrCreate(
-            on: req.db,
+            in: req.db,
             appleID: appleID,
             email: email,
             firstName: name?.firstName,

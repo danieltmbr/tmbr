@@ -1,27 +1,49 @@
 import Fluent
+import Ink
 import Vapor
 
 final class Post: Model, Content, @unchecked Sendable {
-    static let schema = "posts" // Database table name
-
-    @ID(key: .id)
-    var id: UUID?
-
-    @Field(key: "title")
-    var title: String
+    
+    enum State: String, Codable, Sendable {
+        case published
+        case draft
+    }
+    
+    static let schema = "posts"
+    
+    @Parent(key: "author_id")
+    var author: User
 
     @Field(key: "content")
     var content: String
 
     @Field(key: "created_at")
-    var createdAt: Date?
+    var createdAt: Date
+    
+    @ID(custom: "id", generatedBy: .database)
+    var id: Int?
+    
+    @Field(key: "state")
+    var state: State
+    
+    @Field(key: "title")
+    var title: String
 
     init() {}
-
-    init(id: UUID? = nil, title: String, content: String, createdAt: Date? = Date()) {
-        self.id = id
-        self.title = title
+    
+    init(
+        author: User,
+        content: String,
+        createdAt: Date = Date(),
+        id: Int? = nil,
+        state: State = .draft,
+        title: String
+    ) {
+        self.author = author
         self.content = content
         self.createdAt = createdAt
+        self.id = id
+        self.state = state
+        self.title = title
     }
 }
