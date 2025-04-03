@@ -19,10 +19,7 @@ struct PostsViewModel: Content {
             return PostItem(
                 id: id,
                 title: post.title,
-                publishDate: post.createdAt.formatted(
-                    date: .complete,
-                    time: .omitted
-                )
+                publishDate: post.createdAt.formatted(.publishDate)
             )
         }
     }
