@@ -114,6 +114,11 @@
             value = "-----BEGIN PRIVATE KEY-----&#10;MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgSCmfSkXoqXTof9gN&#10;MOLnAZMRMs2w1C5RLlo31n39VrOgCgYIKoZIzj0DAQehRANCAASgymYzWJ7o8hi4&#10;sSUBrtOKXp5CD1F89BisUCWnng9nakpj58f+ljgOXa6bN52illlKGnzAZ2zYkVAH&#10;gMZ7U2rC&#10;-----END PRIVATE KEY-----"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DATABASE_URL"
+            value = ""
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
