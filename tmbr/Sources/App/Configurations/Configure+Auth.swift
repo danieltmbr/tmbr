@@ -4,11 +4,9 @@ import Fluent
 import JWT
 
 public func configureAuth(_ app: Application) throws {
-    
     app.middleware.use(SessionsMiddleware(session: app.sessions.driver))
     app.jwt.apple.applicationIdentifier = Environment.signIn.appID
     
-    // Handle POST callback from Apple Sign In
     app.post("apple", "auth") { req async throws -> Response in
         let callbackData = try req.content.decode(AppleCallbackData.self)
         let appleIdentity = try await req.jwt.apple.verify(callbackData.id_token)

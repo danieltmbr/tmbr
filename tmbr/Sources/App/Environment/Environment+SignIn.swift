@@ -1,7 +1,7 @@
 import Vapor
 
 extension Environment {
-    struct SignIn {
+    struct SignIn: Sendable {
         /// Service bundle identifier
         let appID = Environment.get("SIWA_APP_ID")!
         

@@ -34,12 +34,12 @@ func webRoutes(_ app: Application) throws {
 
         let state = [UInt8].random(count: 16).base64
         req.session.data["state"] = state
+        
         let context = ViewContext(
             clientId: Environment.signIn.appID,
             redirectUrl: Environment.signIn.redirectUrl,
             state: state
         )
-        
         return try await req.view.render("signin", context)
     }
 }

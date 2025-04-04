@@ -1,40 +1,62 @@
 import Vapor
 import FluentPostgresDriver
 
-extension Environment {
-    struct Database {
-        let hostname = Environment.get("DATABASE_HOST")!
-        
-        let port = Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? SQLPostgresConfiguration.ianaPortNumber
-        
-        let username = Environment.get("DATABASE_USERNAME")!
-        
-        let password = Environment.get("DATABASE_PASSWORD")!
-        
-        let database = Environment.get("DATABASE_NAME")!
-        
-        var config: DatabaseConfigurationFactory {
-            get throws {
-                let databaseURL: URL
-                let tlsConfiguration: PostgresConnection.Configuration.TLS
-                
-                if let url = Environment.get("DATABASE_URL").flatMap(URL.init(string:)) {
-                    databaseURL = url
-                    var config: TLSConfiguration = .makeClientConfiguration()
-                    config.certificateVerification = .none
-                    tlsConfiguration = try .require(NIOSSLContext(configuration: config))
-                } else {
-                    databaseURL = URL(string: "postgresql://\(username):\(password)@\(hostname):\(port)/\(database)")!
-                    tlsConfiguration = try .prefer(NIOSSLContext(configuration: .clientDefault))
-                }
-                
-                var postgresConfig = try SQLPostgresConfiguration(url: databaseURL)
-                postgresConfig.coreConfiguration.tls = tlsConfiguration
-                return .postgres(configuration: postgresConfig)
+extension DatabaseConfigurationFactory {
+    enum ConfigurationError: Error {
+        case missingEnvironmentVariable(String)
+    }
+    
+    private static var development: DatabaseConfigurationFactory {
+        get throws {
+            guard let hostname = Environment.get("DATABASE_HOST") else {
+                throw ConfigurationError.missingEnvironmentVariable("DATABASE_HOST")
             }
+            guard let username = Environment.get("DATABASE_USERNAME") else {
+                throw ConfigurationError.missingEnvironmentVariable("DATABASE_USERNAME")
+            }
+            guard let password = Environment.get("DATABASE_PASSWORD") else {
+                throw ConfigurationError.missingEnvironmentVariable("DATABASE_PASSWORD")
+            }
+            guard let database = Environment.get("DATABASE_NAME") else  {
+                throw ConfigurationError.missingEnvironmentVariable("DATABASE_NAME")
+            }
+                
+            let port = Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? SQLPostgresConfiguration.ianaPortNumber
+            
+            let configuration = try SQLPostgresConfiguration(
+                hostname: hostname,
+                port: port,
+                username: username,
+                password: password,
+                database: database,
+                tls: .prefer(NIOSSLContext(configuration: .clientDefault))
+            )
+            return .postgres(configuration: configuration)
         }
     }
-
-    /// Evironment values for setting up the Database
-    static let database = Database()
+    
+    private static var production: DatabaseConfigurationFactory {
+        get throws {
+            guard let databaseURL = Environment.get("DATABASE_URL").flatMap(URL.init(string:)) else {
+                throw ConfigurationError.missingEnvironmentVariable("DATABASE_URL")
+            }
+            
+            var tlsConfig: TLSConfiguration = .makeClientConfiguration()
+            tlsConfig.certificateVerification = .none
+            
+            var postgresConfig = try SQLPostgresConfiguration(url: databaseURL)
+            postgresConfig.coreConfiguration.tls = try .require(NIOSSLContext(configuration: tlsConfig))
+            
+            return .postgres(configuration: postgresConfig)
+        }
+    }
+    
+    init(environment: Environment) throws {
+        switch environment {
+        case .production:
+            self = try .production
+        default:
+            self = try .development
+        }
+    }
 }
