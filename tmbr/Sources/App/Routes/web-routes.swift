@@ -5,6 +5,7 @@ func webRoutes(_ app: Application) throws {
     app.get { req async throws -> View in
         let posts = try await Post.query(on: req.db)
             .filter(\.$state == .published)
+            .sort(\.$createdAt, .descending)
             .all()
         return try await req.view.render("posts", PostsViewModel(posts: posts))
     }
