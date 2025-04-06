@@ -8,7 +8,7 @@ struct CreatePost: Migration {
             .field("content", .string, .required)
             .field("created_at", .datetime)
             .field("state", .string, .required)
-            .field("author_id", .uuid, .required, .references("users", "id", onDelete: .cascade))
+            .field("author_id", .int, .required, .references("users", "id", onDelete: .cascade))
             .create()
     }
     

@@ -11,9 +11,6 @@ final class User: Model, Content, Authenticatable, @unchecked Sendable {
     
     static let schema = "users"
 
-    @ID(key: .id)
-    var id: UUID?
-
     @Field(key: "apple_id")
     var appleID: String
         
@@ -22,6 +19,9 @@ final class User: Model, Content, Authenticatable, @unchecked Sendable {
     
     @Field(key: "first_name")
     var firstName: String?
+    
+    @ID(custom: "id", generatedBy: .database)
+    var id: Int?
     
     @Field(key: "last_name")
     var lastName: String?
@@ -35,17 +35,19 @@ final class User: Model, Content, Authenticatable, @unchecked Sendable {
     init() { }
 
     init(
-        id: UUID? = nil,
         appleID: String,
         email: String?,
         firstName: String?,
-        lastName: String?
+        id: Int? = nil,
+        lastName: String?,
+        role: Role = .standard
     ) {
         self.id = id
         self.appleID = appleID
         self.email = email
         self.firstName = firstName
         self.lastName = lastName
+        self.role = role
     }
     
     static func findOrCreate(
