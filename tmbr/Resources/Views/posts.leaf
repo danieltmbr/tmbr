@@ -18,7 +18,9 @@
                   <ul>
                     #for(post in posts):
                       <a href="/post/#(post.id)"><li>
-                        <span>#(post.id). <span class="post-title">#(post.title)</span></span> <span class="published-date">#(post.publishDate)</span>
+                        <span class="post-id">#(post.id).</span>
+                        <span class="post-title">#(post.title)</span>
+                        <span class="post-date published-date">#(post.publishDate)</span>
                       </li></a>
                     #endfor
                   </ul>

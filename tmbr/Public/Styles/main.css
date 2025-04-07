@@ -65,8 +65,10 @@ main > section > ul > a {
 }
 
 main > section > ul > a > li {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 2em 1fr auto;
+    gap: 1rem;
+    row-gap: 0;
     align-items: baseline;
     margin: 0.5em 0;
 }
@@ -75,20 +77,28 @@ main > section > ul > a:hover > li {
     color: LinkText !important;
 }
 
-span.post-title {
+main > section > ul > a > li > span.post-id {
+    text-align: right;
+}
+
+main > section > ul > a > li > span.post-title {
     text-decoration: underline;
     text-decoration-thickness: 1px;
-    padding-left: 0.3em;
+}
+
+main > section > ul > a > li > span.post-date {
+    text-align: right;
 }
 
 main > section > article {
     display: flex;
-    flex-direction: column;    margin: 0;
+    flex-direction: column;
+    margin: 0;
 }
 
 main > section > article > h1 {
     font-size: 3.2rem;
-    line-height: default;
+    line-height: normal;
 }
 
 main > section > article > p {
@@ -164,6 +174,27 @@ p.published-date {
 @media screen and (max-width: 600px) {
     main {
         padding: 40px 1.2em 60px 1.2em;
+    }
+    
+    main > section > ul > a > li {
+        grid-template-columns: 2em 1fr;
+        grid-template-rows: auto auto;
+    }
+    
+    main > section > ul > a > li > span.post-id {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    main > section > ul > a > li > span.post-title {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    main > section > ul > a > li > span.post-date {
+        grid-column: 2;
+        grid-row: 2;
+        text-align: left;
     }
     
     main > section > article > blockquote {
