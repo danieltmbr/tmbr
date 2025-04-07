@@ -66,7 +66,7 @@ main > section > ul > a {
 
 main > section > ul > a > li {
     display: grid;
-    grid-template-columns: 2em 1fr auto;
+    grid-template-columns: 1.4em 1fr auto;
     gap: 1rem;
     row-gap: 0;
     align-items: baseline;
@@ -177,7 +177,7 @@ p.published-date {
     }
     
     main > section > ul > a > li {
-        grid-template-columns: 2em 1fr;
+        grid-template-columns: 1.4em 1fr;
         grid-template-rows: auto auto;
     }
     
