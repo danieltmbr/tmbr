@@ -22,7 +22,9 @@ html {
 }
 
 html, body {
-    height: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     margin: 0;
     padding: 0;
     background-color: var(--background-color);
@@ -39,11 +41,13 @@ body {
  */
 
 main {
+    flex-grow: 1;
+    
     display: flex;
     flex-direction: column;
     align-items: center;
     
-    padding: 60px 2em 90px 2em;
+    padding: 60px 2em 30px 2em;
     
     font-size: 1.7rem;
     letter-spacing: 0.01em;
@@ -94,6 +98,7 @@ main > section > article {
     display: flex;
     flex-direction: column;
     margin: 0;
+    padding-bottom: 60px;
 }
 
 main > section > article > h1 {
@@ -126,6 +131,45 @@ main > section > article > a > svg.signature {
 
 body > main > svg {
     margin-bottom: 20px;
+}
+
+/*
+ ------------------------------------------------
+ Footer
+ ------------------------------------------------
+ */
+
+footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+footer > nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1.2rem;
+
+    width: 100%;
+    max-width: 600px;
+    
+    margin-bottom: 1.5em;
+}
+
+footer > nav a {
+    color: inherit;
+    opacity: 0.65;
+}
+
+footer > nav a:hover {
+    opacity: 1;
+}
+
+footer > nav a > svg {
+    width: 20px;
+    max-height: 17px;
 }
 
 /*
@@ -173,7 +217,7 @@ p.published-date {
 
 @media screen and (max-width: 600px) {
     main {
-        padding: 40px 1.2em 60px 1.2em;
+        padding: 40px 1.2em 20px 1.2em;
     }
     
     main > section > ul > a > li {
@@ -205,4 +249,11 @@ p.published-date {
     main > section > article > a > svg.signature {
         transform: translateX(-12px);
     }
+}
+
+@supports (-webkit-touch-callout: none) {
+  html, body {
+    min-height: -webkit-fill-available;
+    height: -webkit-fill-available;
+  }
 }

@@ -91,12 +91,12 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "SIWA_APP_ID"
-            value = "me.tmbr.auth"
+            value = "me.tmbr.dev.auth"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "SIWA_REDIRECT_URL"
-            value = "https://35e0-90-203-224-197.ngrok-free.app/apple/auth"
+            value = "https://33b7-2001-4c4d-24d3-9600-915b-c00c-d655-71e.ngrok-free.app/apple/auth"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -106,12 +106,12 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "SIWA_KEY_ID"
-            value = "P8JC5592S7"
+            value = "Y4QJHT6TF3"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "SIWA_KEY"
-            value = "-----BEGIN PRIVATE KEY-----&#10;MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgSCmfSkXoqXTof9gN&#10;MOLnAZMRMs2w1C5RLlo31n39VrOgCgYIKoZIzj0DAQehRANCAASgymYzWJ7o8hi4&#10;sSUBrtOKXp5CD1F89BisUCWnng9nakpj58f+ljgOXa6bN52illlKGnzAZ2zYkVAH&#10;gMZ7U2rC&#10;-----END PRIVATE KEY-----"
+            value = "-----BEGIN PRIVATE KEY-----&#10;MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgIPb+mhuUKIHby12M&#10;Q0SQzMJ1uS0t7hqzc+o6Sd9f0kWgCgYIKoZIzj0DAQehRANCAARnKNrpXYaRQ0lO&#10;/u+N/4Ks5//fAmiOhv/XkFDvn2KEGii4xHc9YIscmZ3GWollMN7zSkeGag18t35v&#10;e5vYQcYe&#10;-----END PRIVATE KEY-----"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
