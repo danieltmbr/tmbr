@@ -21,6 +21,8 @@ let package = Package(
         .package(url: "https://github.com/vapor/jwt.git", from: "5.0.0"),
         // 🖋️ Markdown parser
         .package(url: "https://github.com/danieltmbr/swift-markdown.git", branch: "main"),
+        // 🔔 Push notifications
+        .package(url: "https://github.com/mochidev/swift-webpush.git", from: "0.4.1"),
     ],
     targets: [
         .executableTarget(
@@ -34,6 +36,7 @@ let package = Package(
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "JWT", package: "jwt"),
                 .product(name: "Markdown", package: "swift-markdown"),
+                .product(name: "WebPush", package: "swift-webpush"),
             ],
             swiftSettings: swiftSettings
         ),

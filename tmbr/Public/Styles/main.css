@@ -158,6 +158,7 @@ footer {
     display: flex;
     flex-direction: column;
     align-items: center;
+    font-size: 1.2em;
 }
 
 footer > nav {
@@ -174,8 +175,11 @@ footer > nav {
 }
 
 footer > nav a {
+    display: inline-flex;
+    align-items: center;
     color: inherit;
     opacity: 0.65;
+    text-decoration: none
 }
 
 footer > nav a:hover {
