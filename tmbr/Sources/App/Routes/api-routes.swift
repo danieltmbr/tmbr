@@ -39,6 +39,15 @@ func apiRoutes(_ app: Application) throws {
         let post = try req.content.decode(Post.self)
         post.$author.id = try user.requireID()
         try await post.save(on: req.db)
+        
+        Task.detached {
+            let notificationService = app.notificationService
+            try await notificationService?.notify(
+                subscriptions: Subscription.query(on: req.db).all(),
+                content: PushNotification(post: post)
+            )
+        }
+        
         return post
     }
     

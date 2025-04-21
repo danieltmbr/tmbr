@@ -20,7 +20,9 @@ let package = Package(
         // 🔑 JWT library for token verification.
         .package(url: "https://github.com/vapor/jwt.git", from: "5.0.0"),
         // 🖋️ Markdown to HTML parser
-        .package(url: "https://github.com/JohnSundell/Ink.git", from: "0.5.0")
+        .package(url: "https://github.com/JohnSundell/Ink.git", from: "0.5.0"),
+        // 🔔 Push notifications
+        .package(url: "https://github.com/mochidev/swift-webpush.git", from: "0.4.1"),
     ],
     targets: [
         .executableTarget(
@@ -33,7 +35,8 @@ let package = Package(
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "JWT", package: "jwt"),
-                .product(name: "Ink", package: "Ink")
+                .product(name: "Ink", package: "Ink"),
+                .product(name: "WebPush", package: "swift-webpush"),
             ],
             swiftSettings: swiftSettings
         ),
