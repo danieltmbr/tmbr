@@ -45,8 +45,8 @@ func configureNotificationService(_ app: Application) throws {
                 subscriptions: Subscription.query(on: req.db).all(),
                 content: PushNotification(
                     title: "New post",
-                    body: "Double standard",
-                    url: URL(string: "https://tmbr.me/posts/6")!
+                    body: "Running clockwise",
+                    url: URL(string: "https://tmbr.me/post/6")!
                 )
             )
         }

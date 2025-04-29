@@ -12,7 +12,7 @@ async function loadVAPIDKey() {
 async function registerServiceWorker() {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
         try {
-            const registration = await navigator.serviceWorker.register("/Scripts/service-worker.mjs", { type: "module" });
+            const registration = await navigator.serviceWorker.register("/service-worker.mjs", { type: "module" });
             console.log('Service Worker registered:', registration);
             return registration;
         } catch (error) {

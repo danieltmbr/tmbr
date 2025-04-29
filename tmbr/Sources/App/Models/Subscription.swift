@@ -4,18 +4,15 @@ import Vapor
 final class Subscription: Model, Content, @unchecked Sendable {
     static let schema = "subscriptions"
     
-    // The auth secret (from subscription.getKey('auth'))
     @Field(key: "auth")
     var auth: String
     
-    // The subscription endpoint (URL)
     @Field(key: "endpoint")
     var endpoint: String
     
     @ID(key: .id)
     var id: UUID?
     
-    // The P256DH key (from subscription.getKey('p256dh'))
     @Field(key: "p256dh")
     var p256dh: String
     
