@@ -1,5 +1,4 @@
 import Fluent
-import Ink
 import Vapor
 
 final class Post: Model, Content, @unchecked Sendable {
