@@ -36,7 +36,7 @@ body {
 
 /* 
  ------------------------------------------------
- Main content
+ Home page content
  ------------------------------------------------
  */
 
@@ -94,6 +94,12 @@ main > section > ul > a > li > span.post-date {
     text-align: right;
 }
 
+/*
+ ------------------------------------------------
+ Blog post content
+ ------------------------------------------------
+ */
+
 main > section > article {
     display: flex;
     flex-direction: column;
@@ -108,6 +114,15 @@ main > section > article > h1 {
 
 main > section > article > p {
     margin: 0.5em 0;
+}
+
+main > section > article sup {
+    line-height: 0;
+    font-size: 1.3rem;
+}
+
+main > section > article > p span.reference {
+    font-size: 1.3rem;
 }
 
 main > section > article  li {
