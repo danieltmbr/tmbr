@@ -19,8 +19,8 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
         // 🔑 JWT library for token verification.
         .package(url: "https://github.com/vapor/jwt.git", from: "5.0.0"),
-        // 🖋️ Markdown to HTML parser
-        .package(url: "https://github.com/JohnSundell/Ink.git", from: "0.5.0")
+        // 🖋️ Markdown parser
+        .package(url: "https://github.com/danieltmbr/swift-markdown.git", branch: "main"),
     ],
     targets: [
         .executableTarget(
@@ -33,7 +33,7 @@ let package = Package(
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "JWT", package: "jwt"),
-                .product(name: "Ink", package: "Ink")
+                .product(name: "Markdown", package: "swift-markdown"),
             ],
             swiftSettings: swiftSettings
         ),
