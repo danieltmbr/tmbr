@@ -6,4 +6,5 @@ func configure(_ app: Application) async throws {
     try configureRenderer(app)
     try webRoutes(app)
     try apiRoutes(app)
+    try rssRoutes(app)
 }

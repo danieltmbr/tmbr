@@ -33,4 +33,11 @@ struct DateFormat: Sendable {
         )
 #endif
     }
+    
+    static let rfc822 = Self { date in
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss Z"
+        return dateFormatter.string(from: date)
+    }
 }
