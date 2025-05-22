@@ -24,6 +24,12 @@ async function registerServiceWorker() {
     return null;
 }
 
+async function checkPushSubscription() {
+    const service = await registerServiceWorker();
+    const subscription = await service?.pushManager?.getSubscription();
+    return { service, subscription };
+}
+
 // Subscribe user to push notifications.
 async function subscribeUser(service) {
     // Request notification permission from the user.
@@ -64,37 +70,74 @@ async function unsubscribeUser(service, subscription) {
 // Toggle push notification subscription when bell icon is clicked.
 async function togglePushSubscription() {
     console.log('Toggle push notifications.');
+    const push = await checkPushSubscription();
 
-    const service = await registerServiceWorker();
-    if (!service) return;
-    
-    const subscription = await service.pushManager.getSubscription();
-    if (subscription) {
-        const result = await unsubscribeUser(service, subscription);
+    if (!push.service) {
+        displayModal(true);
+    } else if (push.subscription) {
+        const result = await unsubscribeUser(push.service, push.subscription);
         if (result) {
             console.log('Unsubscribed from push notifications.');
-            // Update the bell icon (e.g., change color or state) if desired.
+            updateNotificationToggle(false);
         }
     } else {
-        const newSub = await subscribeUser(service);
+        const newSub = await subscribeUser(push.service);
         if (newSub) {
             console.log('Subscribed to push notifications.');
-            // Update the bell icon (e.g., change color or state) if desired.
+            updateNotificationToggle(true);
         }
     }
 }
 
+function updateNotificationToggle(isSubscribed) {
+  const btn = document.getElementById('notification-toggle');
+  if (!btn) return;
+
+  if (isSubscribed) {
+    btn.title = 'Disable notifications';
+    btn.innerHTML = `Unsubscribe`;
+  } else {
+    btn.title = 'Enable notifications';
+    btn.innerHTML = `Subscribe`;
+  }
+}
+
+let scrollLockPositionY = 0;
+
+function lockBodyScroll() {
+    scrollLockPositionY = window.scrollY || document.documentElement.scrollTop;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollLockPositionY}px`;
+}
+
+function unlockBodyScroll() {
+  document.body.style.position = '';
+  document.body.style.top = '';
+  window.scrollTo(0, scrollLockPositionY);
+}
+
+function displayModal(show) {
+    show ? lockBodyScroll() : unlockBodyScroll();
+    document.getElementById('modal').classList.toggle('open', show);
+}
+
 // Attach click listener to the bell icon.
-document.addEventListener('DOMContentLoaded', () => {
-    const notificationToggle = document.getElementById('toggle-notifications');
-    if (!notificationToggle) return;
+document.addEventListener('DOMContentLoaded', async () => {
+    // Setup modal close handler
+    const modalClose = document.getElementById('modal-close');
+    modalClose?.addEventListener('click', () => displayModal(false));
     
+    // Setup notification toggle handler
+    const notificationToggle = document.getElementById('notification-toggle');
     const handler = async event => {
       event.preventDefault();
       event.stopPropagation();
       await togglePushSubscription();
     };
-
-    notificationToggle.addEventListener('click', handler);
-    notificationToggle.addEventListener('touchend', handler, { passive: false });
+    notificationToggle?.addEventListener('click', handler);
+    notificationToggle?.addEventListener('touchend', handler, { passive: false });
+    
+    // Setup initial state for notification toggle
+    const push = await checkPushSubscription();
+    updateNotificationToggle(!!push.subscription);
 });
