@@ -43,4 +43,8 @@ func webRoutes(_ app: Application) throws {
         )
         return try await req.view.render("signin", context)
     }
+    
+    app.get("notifications") { req async throws -> View in
+        try await req.view.render("notifications")
+    }
 }

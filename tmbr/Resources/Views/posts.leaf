@@ -5,7 +5,7 @@
         
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0 viewport-fit=cover">
         
         <link rel="alternate" type="application/rss+xml" title="tmbr RSS Feed" href="/rss.xml">
         <link rel="stylesheet" href="/Styles/main.css">
@@ -35,12 +35,10 @@
                 </section>
             #endif
         </main>
-        <footer>
+        <footer id="footer" class="invisible">
           <nav>
             <a href="#" role="button" id="notification-toggle" title="Enable push notifications">
-                <svg id="notification-icon" viewBox="0 0 13.8589 14.5694" xmlns="http://www.w3.org/2000/svg">
-                  <path fill="currentColor" d="M0 10.9067C0 11.5451 0.482166 11.9737 1.27828 11.9737L3.93293 11.9737C3.99287 13.3089 5.11277 14.5607 6.74489 14.5607C8.36981 14.5607 9.48971 13.3161 9.55686 11.9737L12.2115 11.9737C13.0076 11.9737 13.4898 11.5451 13.4898 10.9067C13.4898 10.1737 12.8023 9.53455 12.1706 8.93918C11.7292 8.52943 11.5852 7.71047 11.5233 6.88958C11.4608 4.11223 10.6991 2.30221 8.86253 1.60682C8.58075 0.705763 7.80275 0 6.74489 0C5.68704 0 4.90904 0.705763 4.62726 1.60682C2.7907 2.30221 2.02904 4.11223 1.95925 6.88958C1.90459 7.71047 1.75342 8.52943 1.31924 8.93918C0.680275 9.53455 0 10.1737 0 10.9067ZM1.83233 10.5768L1.83233 10.492C2.03395 10.3307 2.40555 10.0076 2.72934 9.63193C3.1361 9.151 3.41682 8.31921 3.45497 7.0629C3.49698 4.0637 4.40278 3.15579 5.49896 2.85275C5.65558 2.81759 5.73784 2.73444 5.74575 2.55884C5.76878 1.8515 6.15251 1.39815 6.74489 1.39815C7.33007 1.39815 7.72101 1.8515 7.73683 2.55884C7.74474 2.73444 7.83421 2.81759 7.98363 2.85275C9.08701 3.15579 9.99281 4.0637 10.0348 7.0629C10.073 8.31921 10.3569 9.151 10.7604 9.63193C11.0827 10.0076 11.44 10.3307 11.6416 10.492L11.6416 10.5768ZM5.36975 11.9737L8.12003 11.9737C8.06888 12.8037 7.51165 13.3418 6.74489 13.3418C5.97093 13.3418 5.42091 12.8037 5.36975 11.9737Z"/>
-                </svg>
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 13.7608 14.8321"><g><rect height="14.8321" opacity="0" width="13.7608" x="0" y="0"/><path d="M1.26404 11.8851L12.1277 11.8851C12.9143 11.8851 13.3917 11.4613 13.3917 10.8323C13.3917 10.1072 12.709 9.47127 12.0835 8.88223C11.6469 8.47723 11.5045 7.61713 11.4442 6.85003C11.3753 4.16215 10.6311 2.2943 8.80874 1.60365C8.5013 0.712091 7.74421 0.00158197 6.69585 0.00158197C5.64749 0.00158197 4.89041 0.712091 4.58297 1.60365C2.76064 2.2943 2.01638 4.16215 1.94027 6.85003C1.88719 7.61713 1.7376 8.47723 1.30816 8.88223C0.675529 9.47127 0 10.1072 0 10.8323C0 11.4613 0.47742 11.8851 1.26404 11.8851ZM6.69585 14.8321C7.94425 14.8321 8.85638 13.9389 8.93548 12.911L4.45623 12.911C4.52812 13.9389 5.44746 14.8321 6.69585 14.8321Z" fill="currentColor"/></g></svg>
             </a>
             <!--
             <a href="https://www.threads.net/@danieltmbr" target="_blank" title="danieltmbr on Threads">
@@ -71,60 +69,16 @@
             </a>
             -->
             <a href="mailto:daniel@tmbr.me" title="Email me">
-                <svg viewBox="0 0 17.3656 12.2171" xmlns="http://www.w3.org/2000/svg">
-                  <path fill="currentColor" d="M2.33138 12.2171L14.8669 12.2171C16.2003 12.2171 16.9965 11.4354 16.9965 9.91459L16.9965 2.31134C16.9965 0.790486 16.1931 0.00878906 14.6651 0.00878906L2.12958 0.00878906C0.788904 0.00878906 0 0.790486 0 2.31134L0 9.91459C0 11.4354 0.796111 12.2171 2.33138 12.2171ZM2.32294 10.8193C1.74005 10.8193 1.40501 10.4987 1.40501 9.87978L1.40501 2.33894C1.40501 1.72722 1.74005 1.40659 2.32294 1.40659L14.6663 1.40659C15.2564 1.40659 15.5914 1.72722 15.5914 2.34615L15.5914 9.88699C15.5914 10.4987 15.2564 10.8193 14.6663 10.8193ZM8.49462 8.05552C8.98892 8.05552 9.43716 7.88378 9.86115 7.49091L16.2856 1.7049L15.3789 0.796638L9.09668 6.45398C8.91281 6.62748 8.7089 6.71221 8.49462 6.71221C8.28755 6.71221 8.08365 6.62748 7.89978 6.45398L1.61753 0.796638L0.710855 1.7049L7.1281 7.49091C7.55929 7.88378 8.00754 8.05552 8.49462 8.05552ZM1.72845 11.1579L6.5489 6.34464L5.6271 5.43551L0.820191 10.2496ZM15.268 11.1651L16.1835 10.2568L11.3621 5.43551L10.4476 6.34464Z"/>
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 17.3656 12.2171">
+                    <g>
+                    <rect height="12.2171" opacity="0" width="17.3656" x="0" y="0"/>
+                    <path d="M8.49462 6.72187C8.70486 6.72187 8.90877 6.63873 9.11408 6.45258L16.0525 0.33504C15.6633 0.10793 15.2374 0.00878906 14.6651 0.00878906L2.33138 0.00878906C1.75904 0.00878906 1.33312 0.10793 0.936733 0.33504L7.88238 6.45258C8.08769 6.63873 8.2916 6.72187 8.49462 6.72187ZM0.149414 10.9116L5.23723 5.82539L0.141328 1.33857C0.0759376 1.49396 0 1.83744 0 2.31134L0 9.91459C0 10.3373 0.0599415 10.6529 0.149414 10.9116ZM2.12958 12.2171L14.8669 12.2171C15.3606 12.2171 15.7641 12.1076 16.0467 11.935L10.7807 6.67616L9.86835 7.49091C9.42995 7.87658 8.97451 8.06273 8.49462 8.06273C8.02195 8.06273 7.5665 7.87658 7.1281 7.49091L6.20859 6.67616L0.942535 11.935C1.22519 12.1076 1.63581 12.2171 2.12958 12.2171ZM16.847 10.9116C16.9293 10.6529 16.9965 10.3373 16.9965 9.91459L16.9965 2.31134C16.9965 1.83744 16.9205 1.49396 16.8551 1.33857L11.7592 5.82539Z" fill="currentColor"/>
+                    </g>
                 </svg>
             </a>
           </nav>
         </footer>
-
-        <div id="modal" class="modal">
-          <div id="modal-content">
-            <button id="modal-close">Close</button>
-            <h2>Enable notifications</h2>
-            <p>To receive notifications on mobile, the site needs to be added to your home screen. Or you can enable notifications in a desktop browsers.</p>
-            <ol>
-              <li>
-                Tap “Share”
-                <picture>
-                  <source
-                    srcset="Assets/Images/Push/push-step-1-light.jpg 3x"
-                    media="(prefers-color-scheme: light)"
-                  />
-                  <source
-                    srcset="Assets/Images/Push/push-step-1-dark.jpg 3x"
-                    media="(prefers-color-scheme: dark)"
-                  />
-                  <img
-                    src="Assets/Images/Push/push-step-1-light.jpg"
-                    alt="Screenshot of the share button in iOS Safari"
-                    width="393"
-                    height="122"
-                  />
-                </picture>
-              </li>
-              <li>
-                Select “Add to Home Screen”
-                <picture>
-                  <source
-                    srcset="Assets/Images/Push/push-step-2-light.jpg 3x"
-                    media="(prefers-color-scheme: light)"
-                  />
-                  <source
-                    srcset="Assets/Images/Push/push-step-2-dark.jpg 3x"
-                    media="(prefers-color-scheme: dark)"
-                  />
-                  <img
-                    src="Assets/Images/Push/push-step-2-light.jpg"
-                    alt="Screenshot of the "Add to Home Screen" option from the Safari Share Sheet"
-                    width="393"
-                    height="120"
-                  />
-              </li>
-            </ol>
-          </div>
-        </div>
-
+        
         <script src="/Scripts/notifications.js"></script>
     </body>
 </html>
