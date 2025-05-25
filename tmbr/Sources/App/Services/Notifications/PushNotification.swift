@@ -17,12 +17,12 @@ struct PushNotification: Encodable, Sendable {
     
     init(post: Post) throws {
         guard let id = post.id,
-              let url = URL(string: "https://tmbr.com/post/\(id)") else {
+              let url = URL(string: "\(Environment.webApp.startURL)/post/\(id)") else {
             throw Abort(.internalServerError, reason: "Unidentified post")
         }
         self.init(
-            title: "New: \(post.title)",
-            body: "Another layer to my soul is ready for interpretation.",
+            title: "New post",
+            body: "\(post.title)",
             url: url
         )
     }

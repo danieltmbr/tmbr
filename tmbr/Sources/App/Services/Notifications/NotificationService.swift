@@ -2,18 +2,32 @@ import Vapor
 import WebPush
 
 actor NotificationService {
+    
+    typealias RemoveSubscription = @Sendable (WebPushSubscription) async throws -> Void
+    
     enum Priority {
         case low
         case normal
         case hight
     }
     
+    private let logger: Logger
+    
     private let manager: WebPushManager
+    
+    private let removeSubscription: RemoveSubscription
     
     let vapidKeyID: VAPID.Key.ID
     
-    init(manager: WebPushManager, vapidKeyID: VAPID.Key.ID) {
+    init(
+        logger: Logger,
+        manager: WebPushManager,
+        removeSubscription: @escaping RemoveSubscription,
+        vapidKeyID: VAPID.Key.ID
+    ) {
+        self.logger = logger
         self.manager = manager
+        self.removeSubscription = removeSubscription
         self.vapidKeyID = vapidKeyID
     }
     
@@ -23,16 +37,20 @@ actor NotificationService {
             throw Abort(.internalServerError, reason: "VAPID primary key is missing")
         }
         self.init(
+            logger: app.logger,
             manager: WebPushManager(
                 vapidConfiguration: vapidConfiguration,
                 backgroundActivityLogger: app.logger
             ),
+            removeSubscription: { subscription in
+                try await subscription.delete(on: app.db)
+            },
             vapidKeyID: primaryKey.id
         )
     }
     
     func notify(
-        subscriptions: [Subscription],
+        subscriptions: [WebPushSubscription],
         content: PushNotification,
         priority: Priority = .low
     ) async {
@@ -50,7 +68,7 @@ actor NotificationService {
     }
     
     func notify(
-        subscription: Subscription,
+        subscription: WebPushSubscription,
         content: PushNotification,
         priority: Priority = .low
     ) async {
@@ -61,24 +79,23 @@ actor NotificationService {
                 urgency: map(priority: priority)
             )
         } catch is BadSubscriberError {
-            // The subscription is no longer valid and should be removed.
-            // TODO: Remove subscription
+            try? await removeSubscription(subscription)
+            logger.error("The subscription is no longer valid and it's been removed.")
         } catch is MessageTooLargeError {
-            // The message was too long and should be shortened.
-            print("Push Message is too long")
+            logger.error("Push Message is too long. Message: \(content.body)")
         } catch let error as PushServiceError {
-            // The push service ran into trouble. error.response may help here.
-            print("Push Service error: \(error.localizedDescription)")
+            logger.error("Push Service error: \(error.localizedDescription)")
         } catch {
-            // An unknown error occurred.
-            print("Unknownw push error: \(error.localizedDescription)")
+            logger.error("Unknownw push error: \(error.localizedDescription)")
         }
     }
     
-    private func map(subscription: Subscription) throws -> Subscriber {
-        try Subscriber(
-            // TODO: Throw instead of force unwrap
-            endpoint: URL(string: subscription.endpoint)!,
+    private func map(subscription: WebPushSubscription) throws -> Subscriber {
+        guard let endpointURL = URL(string: subscription.endpoint) else {
+            throw URLError(.badURL)
+        }
+        return try Subscriber(
+            endpoint: endpointURL,
             userAgentKeyMaterial: UserAgentKeyMaterial(
                 publicKey: subscription.p256dh,
                 authenticationSecret: subscription.auth

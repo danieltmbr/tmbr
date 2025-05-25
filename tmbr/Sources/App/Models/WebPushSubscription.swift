@@ -1,8 +1,8 @@
 import Fluent
 import Vapor
 
-final class Subscription: Model, Content, @unchecked Sendable {
-    static let schema = "subscriptions"
+final class WebPushSubscription: Model, Content, @unchecked Sendable {
+    static let schema = "web_push_subscriptions"
     
     @Field(key: "auth")
     var auth: String

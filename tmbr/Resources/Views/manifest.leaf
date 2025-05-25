@@ -1,7 +1,7 @@
 {
-  "name": "tmbr",
+  "name": "#(name)",
   "display": "standalone",
-  "start_url": "https://tmbr.me",
+  "start_url": "#(startURL)",
   "scope": "/",
   "icons": [
     {

@@ -9,27 +9,27 @@ func configureNotificationService(_ app: Application) throws {
     )
     
     let notificationsRoute = app.grouped("api", "notifications")
+    let webPushRoute = notificationsRoute.grouped("web-push")
 
-    // GET /api/notifications/vapid
-    notificationsRoute.get("vapid") { req async throws -> WebPushOptions in
+    // GET /api/notifications/web-push/vapid
+    webPushRoute.get("vapid") { req async throws -> WebPushOptions in
         guard let service = req.application.notificationService else {
             throw Abort(.internalServerError, reason: "Notification service not configured")
         }
         return WebPushOptions(vapid: service.vapidKeyID)
     }
     
-    // POST /api/notifications/subscription
-    notificationsRoute.post("subscription") { req async throws -> HTTPStatus in
-        print(req.content)
-        let subscription = try req.content.decode(Subscription.self)
+    // POST /api/notifications/web-push/subscription
+    webPushRoute.post("subscription") { req async throws -> HTTPStatus in
+        let subscription = try req.content.decode(WebPushSubscription.self)
         try await subscription.save(on: req.db)
         return .created
     }
     
-    // DELETE /api/notifications/subscription
-    notificationsRoute.delete("subscription") { req async throws -> HTTPStatus in
-        let subscription = try req.content.decode(Subscription.self)
-        if let subscription = try await Subscription.query(on: req.db)
+    // DELETE /api/notifications/web-push/subscription
+    webPushRoute.delete("subscription") { req async throws -> HTTPStatus in
+        let subscription = try req.content.decode(WebPushSubscription.self)
+        if let subscription = try await WebPushSubscription.query(on: req.db)
             .filter(\.$endpoint == subscription.endpoint)
             .first() {
             try await subscription.delete(on: req.db)
@@ -37,17 +37,19 @@ func configureNotificationService(_ app: Application) throws {
         return .ok
     }
     
-    // POST /api/notifications/notify
-    notificationsRoute.get("notify") { req async throws -> HTTPStatus in
+    // POST /api/notifications/notify/:postID
+    notificationsRoute.get("notify", ":postID") { req async throws -> HTTPStatus in
+        guard let postID = req.parameters.get("postID", as: Int.self) else {
+            throw Abort(.badRequest, reason: "Invalid post ID")
+        }
+        guard let post = try await Post.find(postID, on: req.db) else {
+            throw Abort(.notFound, reason: "Post not found")
+        }
         Task.detached {
             let notificationService = app.notificationService
             try await notificationService?.notify(
-                subscriptions: Subscription.query(on: req.db).all(),
-                content: PushNotification(
-                    title: "New post",
-                    body: "Running clockwise",
-                    url: URL(string: "https://tmbr.me/post/6")!
-                )
+                subscriptions: WebPushSubscription.query(on: req.db).all(),
+                content: PushNotification(post: post)
             )
         }
         return .ok

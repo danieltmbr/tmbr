@@ -1,6 +1,20 @@
 import Vapor
 import WebPush
 
+extension Environment {
+    struct WebApp: Sendable {
+        /// Name of the installed Progressive Web App
+        let appName = Environment.get("PWA_APP_NAME")!
+        
+        /// Start URL of the installed Progressive Web App
+        let startURL = Environment.get("PWA_START_URL")!
+    }
+
+    /// Evironment values for PWA
+    static let webApp = WebApp()
+}
+
+
 extension VAPID.Configuration {
     enum ConfigurationError: Error {
         case missingEnvironmentVariable(String)

@@ -4,7 +4,7 @@ const bellCrossed = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns
 
 // Load VAPID config from backend
 async function loadVAPIDKey() {
-    const httpResponse = await fetch(`/api/notifications/vapid`);
+    const httpResponse = await fetch(`/api/notifications/web-push/vapid`);
     const webPushOptions = await httpResponse.json();
     if (httpResponse.status != 200) {
         throw new Error(webPushOptions.reason);
@@ -49,7 +49,7 @@ async function subscribeUser(service) {
             userVisibleOnly: true,
             applicationServerKey: applicationServerKey
         });
-        await fetch('/api/notifications/subscription', {
+        await fetch('/api/notifications/web-push/subscription', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(subscription)
@@ -63,7 +63,7 @@ async function subscribeUser(service) {
 
 // Unsubscribe user from push notifications.
 async function unsubscribeUser(service, subscription) {
-    await fetch('/api/notifications/subscription', {
+    await fetch('/api/notifications/web-push/subscription', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(subscription)

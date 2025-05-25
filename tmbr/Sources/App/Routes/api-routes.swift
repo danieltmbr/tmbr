@@ -43,7 +43,7 @@ func apiRoutes(_ app: Application) throws {
         Task.detached {
             let notificationService = app.notificationService
             try await notificationService?.notify(
-                subscriptions: Subscription.query(on: req.db).all(),
+                subscriptions: WebPushSubscription.query(on: req.db).all(),
                 content: PushNotification(post: post)
             )
         }
