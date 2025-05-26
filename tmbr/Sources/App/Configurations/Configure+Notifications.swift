@@ -39,6 +39,10 @@ func configureNotificationService(_ app: Application) throws {
     
     // POST /api/notifications/notify/:postID
     notificationsRoute.get("notify", ":postID") { req async throws -> HTTPStatus in
+        guard let key = Environment.get("NOTIFY_API_KEY"), !key.isEmpty,
+              req.headers.bearerAuthorization?.token == key else {
+            throw Abort(.unauthorized)
+        }
         guard let postID = req.parameters.get("postID", as: Int.self) else {
             throw Abort(.badRequest, reason: "Invalid post ID")
         }
