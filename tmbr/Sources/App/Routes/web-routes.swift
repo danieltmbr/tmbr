@@ -43,4 +43,30 @@ func webRoutes(_ app: Application) throws {
         )
         return try await req.view.render("signin", context)
     }
+    
+    app.get("notifications") { req async throws -> View in
+        try await req.view.render("notifications")
+    }
+    
+    app.get("manifest.json") { req async throws -> Response in
+        struct ViewModel: Encodable {
+            let name: String
+            let startURL: String
+        }
+        let model = ViewModel(
+            name: Environment.webApp.appName,
+            startURL: Environment.webApp.startURL
+        )
+        let view: View = try await req.view.render("manifest", model)
+        var headers = HTTPHeaders()
+        headers.replaceOrAdd(
+            name: .contentType,
+            value: "application/manifest+json; charset=utf-8"
+        )
+        return Response(
+            status: .ok,
+            headers: headers,
+            body: Response.Body(buffer: view.data)
+        )
+    }
 }

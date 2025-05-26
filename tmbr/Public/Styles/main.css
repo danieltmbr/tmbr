@@ -32,6 +32,9 @@ html, body {
 
 body {
     overflow: auto;
+    font-size: 1.7rem;
+    letter-spacing: 0.01em;
+    line-height: 150%;
 }
 
 /* 
@@ -48,10 +51,6 @@ main {
     align-items: center;
     
     padding: 60px 2em 30px 2em;
-    
-    font-size: 1.7rem;
-    letter-spacing: 0.01em;
-    line-height: 150%;
 }
 
 main > section {
@@ -100,6 +99,10 @@ main > section > ul > a > li > span.post-date {
  ------------------------------------------------
  */
 
+body > main > svg {
+    margin-bottom: 20px;
+}
+
 main > section > article {
     display: flex;
     flex-direction: column;
@@ -110,6 +113,10 @@ main > section > article {
 main > section > article > h1 {
     font-size: 3.2rem;
     line-height: normal;
+}
+
+main > section > article > h4 {
+    margin-block-end: 0.3em;
 }
 
 main > section > article > p {
@@ -144,8 +151,27 @@ main > section > article > a > svg.signature {
     transform: translateX(-16px);
 }
 
-body > main > svg {
-    margin-bottom: 20px;
+ol.instructions {
+  list-style-position: inside;
+  padding-left: 0;
+  margin-left: 0;
+  font-weight: 500;
+}
+
+ol.instructions > li > picture {
+    text-align: center;
+}
+
+ol.instructions > li > picture {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem auto;
+}
+
+ol.instructions > li > picture img {
+    max-width: 100%;
 }
 
 /*
@@ -158,6 +184,10 @@ footer {
     display: flex;
     flex-direction: column;
     align-items: center;
+    font-size: 1.2rem;
+    opacity: 1;
+    transition: opacity 0.5s ease-in;
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 footer > nav {
@@ -174,8 +204,11 @@ footer > nav {
 }
 
 footer > nav a {
+    display: inline-flex;
+    align-items: center;
     color: inherit;
     opacity: 0.65;
+    text-decoration: none
 }
 
 footer > nav a:hover {
@@ -224,6 +257,11 @@ p.published-date {
     outline: none;
 }
 
+.invisible {
+    opacity: 0;
+    pointer-events: none;
+}
+
 /*
  ------------------------------------------------
  Mobile adjustments
@@ -232,7 +270,7 @@ p.published-date {
 
 @media screen and (max-width: 600px) {
     main {
-        padding: 40px 1.2em 20px 1.2em;
+        padding: calc(env(safe-area-inset-top) + 20px) 1.2em 20px 1.2em;
     }
     
     main > section > ul > a > li {

@@ -1,0 +1,13 @@
+{
+  "name": "#(name)",
+  "display": "standalone",
+  "start_url": "#(startURL)",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/Assets/Icons/icon-512~dark.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
