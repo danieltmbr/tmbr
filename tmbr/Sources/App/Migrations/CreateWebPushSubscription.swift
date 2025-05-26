@@ -1,8 +1,8 @@
 import Fluent
 
-struct CreateSubscription: Migration {
+struct CreateWebPushSubscription: Migration {
     func prepare(on database: Database) -> EventLoopFuture<Void> {
-        database.schema("subscriptions")
+        database.schema("web_push_subscriptions")
             .id()
             .field("endpoint", .string, .required)
             .field("p256dh", .string, .required)
@@ -11,6 +11,6 @@ struct CreateSubscription: Migration {
     }
 
     func revert(on database: Database) -> EventLoopFuture<Void> {
-        database.schema("subscriptions").delete()
+        database.schema("web_push_subscriptions").delete()
     }
 }

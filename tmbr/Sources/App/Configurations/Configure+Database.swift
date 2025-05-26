@@ -10,5 +10,5 @@ func configureDatabase(_ app: Application) throws {
     
     app.migrations.add(CreatePost())
     app.migrations.add(CreateUser())
-    app.migrations.add(CreateSubscription())
+    app.migrations.add(CreateWebPushSubscription())
 }
