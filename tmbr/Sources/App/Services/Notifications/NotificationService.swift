@@ -54,7 +54,7 @@ actor NotificationService {
         content: PushNotification,
         priority: Priority = .low
     ) async {
-        await withTaskGroup { group in
+        await withTaskGroup(of: Void.self) { group in
             for subscription in subscriptions {
                 group.addTask {
                     await self.notify(
