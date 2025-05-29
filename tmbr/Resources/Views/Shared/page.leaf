@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+    #extend("Shared/head")
+    <body>
+        <main>#import("main")</main>
+        #extend("Shared/footer")
+        #extend("Shared/scripts")
+    </body>
+</html>
