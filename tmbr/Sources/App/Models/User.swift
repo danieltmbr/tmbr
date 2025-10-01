@@ -81,3 +81,5 @@ final class User: Model, Content, Authenticatable, @unchecked Sendable {
             .first()
     }
 }
+
+extension User: ModelSessionAuthenticatable {}
