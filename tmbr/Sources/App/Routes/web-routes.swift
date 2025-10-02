@@ -2,6 +2,8 @@ import Fluent
 import Vapor
 
 func webRoutes(_ app: Application) throws {
+    let protected = app.grouped(User.redirectMiddleware(path: "/signin"))
+    
     app.get { req async throws -> View in
         let posts = try await Post.query(on: req.db)
             .filter(\.$state == .published)
@@ -10,6 +12,17 @@ func webRoutes(_ app: Application) throws {
         return try await req.view.render("posts", PostsViewModel(posts: posts))
     }
     
+    protected.get("drafts") { req async throws -> View in
+        let user = try req.auth.require(User.self)
+        let userID = try user.requireID()
+        let posts = try await Post.query(on: req.db)
+            .filter(\.$state == .draft)
+            .filter(\.$author.$id == userID)
+            .sort(\.$createdAt, .descending)
+            .all()
+        return try await req.view.render("posts", PostsViewModel(posts: posts))
+    }
+
     app.get("post", ":postID") { req async throws -> View in
         guard let postID = req.parameters.get("postID", as: Int.self) else {
             throw Abort(.badRequest)
