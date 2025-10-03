@@ -1,0 +1,96 @@
+import Fluent
+import Vapor
+import WebPush
+import Core
+
+struct Notifications: Module {
+    
+    fileprivate struct ServiceKey: StorageKey {
+        typealias Value = NotificationService
+    }
+    
+    /// A wrapper for the VAPID key that Vapor can encode.
+    private struct WebPushOptions: Content, Hashable, Sendable {
+        var vapid: VAPID.Key.ID
+    }
+    
+    func configure(_ app: Vapor.Application) throws {
+        app.storage.set(
+            ServiceKey.self,
+            to: try NotificationService(app: app)
+        )
+        
+        app.migrations.add(CreateWebPushSubscription())
+    }
+    
+    func boot(_ app: Vapor.Application) throws {
+        try bootAPI(app)
+        
+        app.get("notifications", page: Page(template: .notifications))
+    }
+    
+    private func bootAPI(_ app: Application) throws {
+        let notificationsRoute = app.grouped("api", "notifications")
+        let webPushRoute = notificationsRoute.grouped("web-push")
+        
+        // GET /api/notifications/web-push/vapid
+        webPushRoute.get("vapid") { req async throws -> WebPushOptions in
+            guard let service = req.application.notificationService else {
+                throw Abort(.internalServerError, reason: "Notification service not configured")
+            }
+            return WebPushOptions(vapid: service.vapidKeyID)
+        }
+        
+        // POST /api/notifications/web-push/subscription
+        webPushRoute.post("subscription") { req async throws -> HTTPStatus in
+            let subscription = try req.content.decode(WebPushSubscription.self)
+            try await subscription.save(on: req.db)
+            return .created
+        }
+        
+        // DELETE /api/notifications/web-push/subscription
+        webPushRoute.delete("subscription") { req async throws -> HTTPStatus in
+            let subscription = try req.content.decode(WebPushSubscription.self)
+            if let subscription = try await WebPushSubscription.query(on: req.db)
+                .filter(\.$endpoint == subscription.endpoint)
+                .first() {
+                try await subscription.delete(on: req.db)
+            }
+            return .ok
+        }
+        
+        // POST /api/notifications/notify/:postID
+        notificationsRoute.get("notify", ":postID") { req async throws -> HTTPStatus in
+            guard let key = Environment.webPush.notifyApiKey, !key.isEmpty,
+                  req.headers.bearerAuthorization?.token == key else {
+                throw Abort(.unauthorized)
+            }
+            guard let postID = req.parameters.get("postID", as: Int.self) else {
+                throw Abort(.badRequest, reason: "Invalid post ID")
+            }
+            guard let post = try await Post.find(postID, on: req.db) else {
+                throw Abort(.notFound, reason: "Post not found")
+            }
+            Task.detached {
+                let notificationService = app.notificationService
+                try await notificationService?.notify(
+                    subscriptions: WebPushSubscription.query(on: req.db).all(),
+                    content: PushNotification(post: post)
+                )
+            }
+            return .ok
+        }
+    }
+}
+
+extension Application {
+    var notificationService: NotificationService? {
+        storage[Notifications.ServiceKey.self]
+    }
+}
+
+extension Module where Self == Notifications {
+    static var notifications: Self {
+        Notifications()
+    }
+}
