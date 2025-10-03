@@ -25,27 +25,47 @@ public func configureAuth(_ app: Application) throws {
     app.post("apple", "auth") { req async throws -> Response in
         let callbackData = try req.content.decode(AppleCallbackData.self)
         let appleIdentity = try await req.jwt.apple.verify(callbackData.id_token)
-        
-        if let storedState = req.session.data["state"] {
-            guard let returnedState = callbackData.state, storedState == returnedState else {
-                throw Abort(.unauthorized, reason: "Invalid state")
-            }
-            req.session.data["state"] = nil
-        } else {
-            guard let tokenNonce = appleIdentity.nonce else {
-                throw Abort(.unauthorized, reason: "Token missing nonce")
-            }
-            guard let providedNonce = callbackData.nonce else {
-                throw Abort(.unauthorized, reason: "Missing nonce")
-            }
-            // Compare against SHA-256 of the raw nonce (most iOS clients send SHA-256 in the request),
-            // and also allow direct equality in case the client already provided a hashed nonce.
-            let hashedProvided = sha256Hex(providedNonce)
-            guard tokenNonce == hashedProvided || tokenNonce == providedNonce else {
-                throw Abort(.unauthorized, reason: "Invalid nonce")
-            }
-        }
 
+        guard let storedState = req.session.data["state"],
+                let returnedState = callbackData.state,
+                storedState == returnedState else {
+            throw Abort(.unauthorized, reason: "Invalid state")
+        }
+        req.session.data["state"] = nil
+
+        let appleID = appleIdentity.subject.value
+        let email = appleIdentity.email
+        let name = callbackData.user?.name
+
+        let user = try await User.findOrCreate(
+            in: req.db,
+            appleID: appleID,
+            email: email,
+            firstName: name?.firstName,
+            lastName: name?.lastName
+        )
+        req.auth.login(user)
+        req.session.authenticate(user)
+
+        return req.redirect(to: "/")
+    }
+    
+    app.post("api", "apple", "auth") { req async throws -> Response in
+        let callbackData = try req.content.decode(AppleCallbackData.self)
+        let appleIdentity = try await req.jwt.apple.verify(callbackData.id_token)
+        
+        // API flow: require nonce, no session/state
+        guard let tokenNonce = appleIdentity.nonce else {
+            throw Abort(.unauthorized, reason: "Token missing nonce")
+        }
+        guard let providedNonce = callbackData.nonce else {
+            throw Abort(.unauthorized, reason: "Missing nonce")
+        }
+        let hashedProvided = sha256Hex(providedNonce)
+        guard tokenNonce == hashedProvided || tokenNonce == providedNonce else {
+            throw Abort(.unauthorized, reason: "Invalid nonce")
+        }
+        
         let appleID = appleIdentity.subject.value
         let email = appleIdentity.email
         let name = callbackData.user?.name
@@ -58,11 +78,11 @@ public func configureAuth(_ app: Application) throws {
             lastName: name?.lastName
         )
         req.auth.login(user)
-        req.session.authenticate(user)
-        
+        // For API clients, you may choose to issue a token instead of a redirect.
+        // Here we keep behavior consistent and redirect to home.
         return req.redirect(to: "/")
     }
-    
+
     app.post("signout") { req async throws -> Response in
         req.auth.logout(User.self)
         req.session.unauthenticate(User.self)

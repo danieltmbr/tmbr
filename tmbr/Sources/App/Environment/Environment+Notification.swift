@@ -25,7 +25,6 @@ extension Environment {
     static let webApp = WebApp()
 }
 
-
 extension VAPID.Configuration {
     enum ConfigurationError: Error {
         case missingEnvironmentVariable(String)
