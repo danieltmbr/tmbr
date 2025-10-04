@@ -11,15 +11,15 @@ public struct ModuleRegistry {
         self.modules = modules
     }
     
-    public func configure(_ app: Application) throws {
+    public func configure(_ app: Application) async throws {
         for config in (configurations + modules) {
-            try config.configure(app)
+            try await config.configure(app)
         }
     }
     
-    public func boot(_ app: Application) throws {
+    public func boot(_ app: Application) async throws {
         for module in modules {
-            try module.boot(app)
+            try await module.boot(app)
         }
     }
 }

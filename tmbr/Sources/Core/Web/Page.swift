@@ -1,7 +1,7 @@
 import Foundation
 import Vapor
 
-public struct Page<Model: Encodable & Sendable>: Sendable {
+public struct Page<Model: Encodable & Sendable>: Sendable, AsyncResponseEncodable {
     
     public typealias Renderer = @Sendable (Request) async throws -> View
     
@@ -53,9 +53,8 @@ public struct Page<Model: Encodable & Sendable>: Sendable {
         try await render(req)
     }
     
-    @Sendable
-    public func response(on req: Request) async throws -> AsyncResponseEncodable {
-        try await response(req, render)
+    public func encodeResponse(for request: Request) async throws -> Response {
+        try await response(request, render).encodeResponse(for: request)
     }
 }
 

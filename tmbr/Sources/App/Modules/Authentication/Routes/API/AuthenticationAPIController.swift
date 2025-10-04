@@ -1,11 +1,37 @@
 import Vapor
 import CryptoKit
+import JWT
 
 struct AuthenticationAPIController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
         routes.post("apple", "auth") { req async throws -> Response in
-            let user = try await authorizedUser(from: req)
+            let callbackData = try req.content.decode(AppleCallbackData.self)
+            let appleIdentity = try await req.jwt.apple.verify(callbackData.id_token)
+            
+            guard let returnedState = callbackData.state else {
+                throw Abort(.unauthorized, reason: "Missing state")
+            }
+            // Verify the JWT state using the application's configured signers.
+            let statePayload: StatePayload = try await req.jwt.verify(returnedState, as: StatePayload.self)
+
+            // If Apple provided a nonce in the id_token, verify it matches the state payload's nonce.
+            if let tokenNonce = appleIdentity.nonce {
+                let provided = statePayload.n
+                let hashedProvided = sha256Hex(provided)
+                guard tokenNonce == hashedProvided || tokenNonce == provided else {
+                    throw Abort(.unauthorized, reason: "Invalid nonce")
+                }
+            }
+            
+            let user = try await User.findOrCreate(
+                in: req.db,
+                appleID: appleIdentity.subject.value,
+                email: appleIdentity.email,
+                firstName: callbackData.user?.name?.firstName,
+                lastName: callbackData.user?.name?.lastName
+            )
+            
             req.auth.login(user)
             req.session.authenticate(user)
             return req.redirect(to: "/")
@@ -96,4 +122,3 @@ private struct AppleCallbackData: Content {
         }
     }
 }
-

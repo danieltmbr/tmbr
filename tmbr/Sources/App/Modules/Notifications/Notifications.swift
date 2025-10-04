@@ -9,8 +9,8 @@ struct Notifications: Module {
         typealias Value = NotificationService
     }
     
-    func configure(_ app: Vapor.Application) throws {
-        app.storage.set(
+    func configure(_ app: Vapor.Application) async throws {
+        await app.storage.setWithAsyncShutdown(
             ServiceKey.self,
             to: try NotificationService(app: app)
         )
@@ -18,7 +18,7 @@ struct Notifications: Module {
         app.migrations.add(CreateWebPushSubscription())
     }
     
-    func boot(_ app: Vapor.Application) throws {
+    func boot(_ app: Vapor.Application) async throws {
         try app.register(collection: AuthenticationAPIController())
         app.get("notifications", page: Page(template: .notifications))
     }

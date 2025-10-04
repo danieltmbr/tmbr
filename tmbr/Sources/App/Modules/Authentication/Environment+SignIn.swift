@@ -16,6 +16,9 @@ extension Environment {
         
         /// Contents of the downloaded key file
         let key = Environment.get("SIWA_KEY")!
+        
+        /// Contents of the downloaded key file
+        let secret = Environment.get("SIWA_STATE_SECRET")!
     }
 
     /// Evironment values for Apple Sign In

@@ -1,32 +1,6 @@
 import Vapor
 import Core
-
-struct SignInViewModel: Encodable {
-    
-    private let clientId: String
-    
-    private let scope: String = "name email"
-    
-    private let redirectUrl: String
-    
-    private let state: String?
-    
-    private let nonce: String?
-    
-    private let popup: Bool = false
-    
-    init(
-        clientId: String,
-        redirectUrl: String,
-        state: String? = nil,
-        nonce: String? = nil
-    ) {
-        self.clientId = clientId
-        self.redirectUrl = redirectUrl
-        self.state = state
-        self.nonce = nonce
-    }
-}
+import JWT
 
 extension Template where Model == SignInViewModel {
     static let signIn = Template(name: "signin")
@@ -39,21 +13,27 @@ extension Page where Model == SignInViewModel {
             template: .signIn,
             parse: { request in
                 let nonce = [UInt8].random(count: 16).base64
-                request.session.data["nonce"] = nonce
+                let now = Date()
+                let payload = StatePayload(
+                    n: nonce,
+                    iat: .init(value: now),
+                    exp: .init(value: now.addingTimeInterval(5 * 60))
+                )
+                let state = try await request.jwt.sign(payload)
                 return SignInViewModel(
                     clientId: Environment.signIn.appID,
                     redirectUrl: Environment.signIn.redirectUrl,
+                    state: state,
                     nonce: nonce
                 )
+            },
+            configure: { request, renderer in
+                if request.auth.has(User.self) {
+                    request.redirect(to: "/")
+                } else {
+                    try await renderer(request)
+                }
             }
-//            ,
-//            configure: { request, renderer in
-//                if request.auth.has(User.self) {
-//                    request.redirect(to: "/")
-//                } else {
-//                    try await renderer(request)
-//                }
-//            }
         )
     }
     

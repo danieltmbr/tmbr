@@ -6,7 +6,7 @@ import CryptoKit
 import Core
 
 struct Authentication: Module {
-    func configure(_ app: Application) throws {
+    func configure(_ app: Application) async throws {
         app.sessions.use(.memory)
         app.sessions.configuration.cookieFactory = { sessionID in
                 .init(
@@ -23,12 +23,16 @@ struct Authentication: Module {
         
         app.middleware.use(SessionsMiddleware(session: app.sessions.driver))
         app.jwt.apple.applicationIdentifier = Environment.signIn.appID
+        await app.jwt.keys.add(
+            hmac: HMACKey(from: Environment.signIn.secret),
+            digestAlgorithm: .sha256
+        )
         app.middleware.use(User.sessionAuthenticator())
         
         app.migrations.add(CreateUser())
     }
     
-    func boot(_ app: Vapor.Application) throws {
+    func boot(_ app: Vapor.Application) async throws {
         try app.register(collection: AuthenticationAPIController())
 
         app.get("signin", page: .redirectingSignIn)

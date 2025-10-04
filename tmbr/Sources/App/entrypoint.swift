@@ -27,9 +27,9 @@ enum Entrypoint {
         )
         
         do {
-            try registry.configure(app)
+            try await registry.configure(app)
             // try app.autoMigrate().wait()
-            try registry.boot(app)
+            try await registry.boot(app)
         } catch {
             app.logger.report(error: error)
             try? await app.asyncShutdown()

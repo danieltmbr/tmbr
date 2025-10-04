@@ -3,9 +3,9 @@ import Core
 
 struct Manifest: Module {
     
-    func configure(_ app: Vapor.Application) throws {}
+    func configure(_ app: Vapor.Application) async throws {}
     
-    func boot(_ app: Vapor.Application) throws {
+    func boot(_ app: Vapor.Application) async throws {
         app.get("manifest.json") { request in
             let model = ManifestModel(
                 name: Environment.webApp.appName,

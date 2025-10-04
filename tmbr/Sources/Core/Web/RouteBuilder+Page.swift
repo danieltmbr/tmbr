@@ -9,7 +9,7 @@ public extension RoutesBuilder {
     ) -> Route
     where Model: Encodable & Sendable
     {
-        return self.on(.GET, path, use: page.response)
+        return self.on(.GET, path, use: page.encodeResponse)
     }
     
     @discardableResult
@@ -20,7 +20,7 @@ public extension RoutesBuilder {
     ) -> Route
     where Model: Encodable & Sendable
     {
-        return self.on(.GET, path, use: page.response)
+        return self.on(.GET, path, use: page.encodeResponse)
     }
     
     @discardableResult
@@ -31,7 +31,7 @@ public extension RoutesBuilder {
     ) -> Route
     where Model: Encodable & Sendable
     {
-        return self.on(.POST, path, use: page.response)
+        return self.on(.POST, path, use: page.encodeResponse)
     }
     
     @discardableResult
@@ -42,7 +42,7 @@ public extension RoutesBuilder {
     ) -> Route
     where Model: Encodable & Sendable
     {
-        return self.on(.POST, path, use: page.response)
+        return self.on(.POST, path, use: page.encodeResponse)
     }
     
     @discardableResult
@@ -53,7 +53,7 @@ public extension RoutesBuilder {
     ) -> Route
     where Model: Encodable & Sendable
     {
-        return self.on(.PATCH, path, use: page.response)
+        return self.on(.PATCH, path, use: page.encodeResponse)
     }
     
     @discardableResult
@@ -64,7 +64,7 @@ public extension RoutesBuilder {
     ) -> Route
     where Model: Encodable & Sendable
     {
-        return self.on(.PATCH, path, use: page.response)
+        return self.on(.PATCH, path, use: page.encodeResponse)
     }
     
     @discardableResult
@@ -75,7 +75,7 @@ public extension RoutesBuilder {
     ) -> Route
     where Model: Encodable & Sendable
     {
-        return self.on(.PUT, path, use: page.response)
+        return self.on(.PUT, path, use: page.encodeResponse)
     }
     
     @discardableResult
@@ -86,7 +86,7 @@ public extension RoutesBuilder {
     ) -> Route
     where Model: Encodable & Sendable
     {
-        return self.on(.PUT, path, use: page.response)
+        return self.on(.PUT, path, use: page.encodeResponse)
     }
     
     @discardableResult
@@ -97,7 +97,7 @@ public extension RoutesBuilder {
     ) -> Route
     where Model: Encodable & Sendable
     {
-        return self.on(.DELETE, path, use: page.response)
+        return self.on(.DELETE, path, use: page.encodeResponse)
     }
     
     @discardableResult
@@ -108,7 +108,7 @@ public extension RoutesBuilder {
     ) -> Route
     where Model: Encodable & Sendable
     {
-        return self.on(.DELETE, path, use: page.response)
+        return self.on(.DELETE, path, use: page.encodeResponse)
     }
     
     @discardableResult
