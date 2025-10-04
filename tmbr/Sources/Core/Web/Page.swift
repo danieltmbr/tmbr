@@ -3,10 +3,27 @@ import Vapor
 
 public struct Page<Model: Encodable & Sendable>: Sendable {
     
-    private let render: @Sendable (Request) async throws -> View
-
-    public init(render: @Sendable @escaping (Request) async throws -> View) {
+    public typealias Renderer = @Sendable (Request) async throws -> View
+    
+    private let render: Renderer
+    
+    private let response: @Sendable (Request, Renderer) async throws -> AsyncResponseEncodable
+    
+    public init(
+        render: @Sendable @escaping (Request) async throws -> View,
+        response: @Sendable @escaping (Request, Renderer) async throws -> AsyncResponseEncodable
+    ) {
         self.render = render
+        self.response = response
+    }
+    
+    public init(render: @Sendable @escaping (Request) async throws -> View) {
+        self.init(
+            render: render,
+            response: { request, renderer in
+                try await render(request)
+            }
+        )
     }
     
     public init(
@@ -18,9 +35,27 @@ public struct Page<Model: Encodable & Sendable>: Sendable {
         }
     }
     
+    public init(
+        template: Template<Model>,
+        parse: @Sendable @escaping (Request) async throws -> Model,
+        configure: @Sendable @escaping (Request, Renderer) async throws -> AsyncResponseEncodable
+    ) {
+        self.init(
+            render: { request in
+                try await template.render(parse(request), with: request.view)
+            },
+            response: configure
+        )
+    }
+    
     @Sendable
     public func render(on req: Request) async throws -> View {
         try await render(req)
+    }
+    
+    @Sendable
+    public func response(on req: Request) async throws -> AsyncResponseEncodable {
+        try await response(req, render)
     }
 }
 

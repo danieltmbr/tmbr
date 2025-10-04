@@ -2,6 +2,7 @@ import Vapor
 import Fluent
 
 struct PostsAPIController: RouteCollection {
+    
     func boot(routes: RoutesBuilder) throws {
         // Group all API routes under /api/posts
         let postsRoute = routes.grouped("api", "posts")

@@ -20,23 +20,16 @@ struct Manifest: Module {
                     )
                 ]
             )
-            let data = try JSONEncoder().encode(model)
-            var headers = HTTPHeaders()
-            headers.replaceOrAdd(
-                name: .contentType,
-                value: "application/manifest+json; charset=utf-8"
-            )
-            return Response(
-                status: .ok,
-                headers: headers,
-                body: .init(data: data)
-            )
+            let response = Response(status: .ok)
+            try response.content.encode(model)
+            return response
         }
     }
 }
 
-private struct ManifestModel: Encodable {
-    struct Icon: Encodable {
+private struct ManifestModel: Content {
+    
+    struct Icon: Codable {
         private let src: String
         
         private let sizes: String
@@ -72,6 +65,14 @@ private struct ManifestModel: Encodable {
         self.start_url = start_url
         self.scope = scope
         self.icons = icons
+    }
+    
+    static var defaultContentType: HTTPMediaType {
+        HTTPMediaType(
+            type: "application",
+            subType: "manifest+json",
+            parameters: ["charset" : "utf-8"]
+        )
     }
 }
 

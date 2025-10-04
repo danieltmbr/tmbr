@@ -1,8 +1,8 @@
 import Fluent
 
-struct CreateWebPushSubscription: Migration {
-    func prepare(on database: Database) -> EventLoopFuture<Void> {
-        database.schema("web_push_subscriptions")
+struct CreateWebPushSubscription: AsyncMigration {
+    func prepare(on database: Database) async throws {
+        try await database.schema("web_push_subscriptions")
             .id()
             .field("endpoint", .string, .required)
             .field("p256dh", .string, .required)
@@ -10,7 +10,7 @@ struct CreateWebPushSubscription: Migration {
             .create()
     }
 
-    func revert(on database: Database) -> EventLoopFuture<Void> {
-        database.schema("web_push_subscriptions").delete()
+    func revert(on database: Database) async throws {
+        try await database.schema("web_push_subscriptions").delete()
     }
 }
