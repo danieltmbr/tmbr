@@ -3,42 +3,57 @@ import Vapor
 
 public struct Page<Model: Encodable & Sendable>: Sendable, AsyncResponseEncodable {
     
-    public typealias Renderer = @Sendable (Request) async throws -> View
+    public typealias Assembler = @Sendable (Request, Parser, Renderer) async throws -> AsyncResponseEncodable
     
-    private let render: Renderer
+    public typealias Parser = @Sendable (Request) async throws -> Model
     
-    private let response: @Sendable (Request, Renderer) async throws -> AsyncResponseEncodable
+    public typealias Renderer = @Sendable (Request, Parser) async throws -> View
+    
+    private let assembler: Assembler
+
+    fileprivate let parser: Parser
+    
+    fileprivate let renderer: Renderer
     
     public init(
-        render: @Sendable @escaping (Request) async throws -> View,
-        response: @Sendable @escaping (Request, Renderer) async throws -> AsyncResponseEncodable
+        parser: @escaping Parser,
+        renderer: @escaping Renderer,
+        assembler: @escaping Assembler
     ) {
-        self.render = render
-        self.response = response
+        self.parser = parser
+        self.renderer = renderer
+        self.assembler = assembler
     }
     
-    public init(render: @Sendable @escaping (Request) async throws -> View) {
+    public init(
+        parser: @escaping Parser,
+        renderer: @escaping Renderer
+    ) {
         self.init(
-            render: render,
-            response: { request, renderer in
-                try await render(request)
+            parser: parser,
+            renderer: renderer,
+            assembler: { request, parser, render  in
+                try await render(request, parser)
             }
         )
     }
     
     public init(
         template: Template<Model>,
-        parse: @Sendable @escaping (Request) async throws -> Model
+        parser: @escaping Parser
     ) {
-        self.init { request in
-            try await template.render(parse(request), with: request.view)
+        self.init(parser: parser) { request, parser in
+            try await template.render(
+                parser(request),
+                with: request.view
+            )
         }
     }
     
     public init(
         template: Template<Model>,
-        parse: @Sendable @escaping (Request) async throws -> Model,
-        configure: @Sendable @escaping (Request, Renderer) async throws -> AsyncResponseEncodable
+        parse: @escaping Parser,
+        configure: @escaping EncodeResponse
     ) {
         self.init(
             render: { request in
@@ -48,14 +63,48 @@ public struct Page<Model: Encodable & Sendable>: Sendable, AsyncResponseEncodabl
         )
     }
     
-    @Sendable
-    public func render(on req: Request) async throws -> View {
-        try await render(req)
-    }
-    
     public func encodeResponse(for request: Request) async throws -> Response {
         try await response(request, render).encodeResponse(for: request)
     }
+}
+
+extension Page {
+
+    public func map(_ transform: @escaping @Sendable (EncodeResponse) -> EncodeResponse) -> Page {
+        Page(render: render, response: transform(response))
+    }
+
+
+    public func mapRenderer(_ transform: @escaping @Sendable (Request, Renderer) async throws -> View) -> Page {
+        Page(
+            render: { try await transform($0, self.render) },
+            response: response
+        )
+    }
+
+//    public func choosing<Other>(_ other: Page<Other>, when predicate: @Sendable @escaping (Request) async throws -> Bool) -> Page<Never> {
+//        let lhsRender = self.render
+//        let rhsRender = other.render
+//        let lhsResponse = self.response
+//        let rhsResponse = other.response
+//
+//        return Page<Never>(
+//            render: { request in
+//                if try await predicate(request) {
+//                    return try await rhsRender(request)
+//                } else {
+//                    return try await lhsRender(request)
+//                }
+//            },
+//            response: { request, _ in
+//                if try await predicate(request) {
+//                    return try await rhsResponse(request, rhsRender)
+//                } else {
+//                    return try await lhsResponse(request, lhsRender)
+//                }
+//            }
+//        )
+//    }
 }
 
 extension Page where Model == Never {
@@ -64,5 +113,20 @@ extension Page where Model == Never {
         self.init { request in
             try await template.render(with: request.view)
         }
+    }
+}
+
+extension Page where Model == Never {
+    @inlinable
+    public static func redirect(
+        to location: String = "/",
+        type: Redirect = .normal
+    ) -> Page {
+        Page(
+            render: { _ in },
+            response: { request, _ in
+                request.redirect(to: location, type: type)
+            }
+        )
     }
 }
