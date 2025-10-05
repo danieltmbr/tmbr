@@ -1,0 +1,23 @@
+#extend("Shared/page"):
+
+    #export("title"):
+        Sign In
+    #endexport
+
+    #export("main"):
+        #extend("Shared/signature")
+        <script type="text/javascript" src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
+        <div id="appleid-signin" data-border="false" class="signin-button"></div>
+        <script type="text/javascript">
+            AppleID.auth.init({
+                clientId : '#(clientId)',
+                scope : '#(scope)',
+                redirectURI: '#(redirectUrl)',
+                state : '#(state)',
+                nonce : '#(nonce)',
+                usePopup : #(popup),
+            });
+        </script>
+    #endexport
+    
+#endextend

@@ -6,6 +6,9 @@ let package = Package(
     platforms: [
        .macOS(.v15)
     ],
+    products: [
+        .library(name: "Core", targets: ["Core"])
+    ],
     dependencies: [
         // 💧 A server-side Swift web framework.
         .package(url: "https://github.com/vapor/vapor.git", from: "4.110.1"),
@@ -25,6 +28,10 @@ let package = Package(
         .package(url: "https://github.com/mochidev/swift-webpush.git", from: "0.4.1"),
     ],
     targets: [
+        .target(name: "Core", dependencies: [
+            .product(name: "Vapor", package: "vapor"),
+            .product(name: "Markdown", package: "swift-markdown")
+        ]),
         .executableTarget(
             name: "App",
             dependencies: [
@@ -37,6 +44,7 @@ let package = Package(
                 .product(name: "JWT", package: "jwt"),
                 .product(name: "Markdown", package: "swift-markdown"),
                 .product(name: "WebPush", package: "swift-webpush"),
+                "Core",
             ],
             swiftSettings: swiftSettings
         ),
