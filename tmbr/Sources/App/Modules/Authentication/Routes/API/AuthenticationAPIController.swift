@@ -1,6 +1,7 @@
 import Vapor
 import CryptoKit
 import JWT
+import Foundation
 
 struct AuthenticationAPIController: RouteCollection {
     
@@ -43,6 +44,19 @@ struct AuthenticationAPIController: RouteCollection {
             let response = Response(status: .ok)
             try response.content.encode(["redirect": "/"]) // or any post-auth URL
             return response
+        }
+        
+        routes.post("signout") { req async throws -> Response in
+            struct CSRFForm: Content { let _csrf: String }
+            let submitted = try? req.content.decode(CSRFForm.self)
+            let sessionToken = req.session.data["csrf.signout"]
+            defer { req.session.data["csrf.signout"] = nil }
+            guard let submittedToken = submitted?._csrf, let sessionToken, submittedToken == sessionToken else {
+                throw Abort(.forbidden, reason: "Invalid CSRF token")
+            }
+            req.auth.logout(User.self)
+            req.session.unauthenticate(User.self)
+            return req.redirect(to: "/signin")
         }
     }
     

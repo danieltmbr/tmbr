@@ -3,112 +3,92 @@ import Vapor
 public extension RoutesBuilder {
     @discardableResult
     @preconcurrency
-    func get<Model>(
+    func get(
         _ path: PathComponent...,
-        page: Page<Model>
-    ) -> Route
-    where Model: Encodable & Sendable
-    {
-        return self.on(.GET, path, use: page.encodeResponse)
+        page: Page
+    ) -> Route {
+        return self.on(.GET, path, use: page.response)
     }
     
     @discardableResult
     @preconcurrency
-    func get<Model>(
+    func get(
         _ path: [PathComponent],
-        page: Page<Model>
-    ) -> Route
-    where Model: Encodable & Sendable
-    {
-        return self.on(.GET, path, use: page.encodeResponse)
+        page: Page
+    ) -> Route {
+        return self.on(.GET, path, use: page.response)
     }
     
     @discardableResult
     @preconcurrency
-    func post<Model>(
+    func post(
         _ path: PathComponent...,
-        page: Page<Model>
-    ) -> Route
-    where Model: Encodable & Sendable
-    {
-        return self.on(.POST, path, use: page.encodeResponse)
+        page: Page
+    ) -> Route {
+        return self.on(.POST, path, use: page.response)
     }
     
     @discardableResult
     @preconcurrency
-    func post<Model>(
+    func post(
         _ path: [PathComponent],
-        page: Page<Model>
-    ) -> Route
-    where Model: Encodable & Sendable
-    {
-        return self.on(.POST, path, use: page.encodeResponse)
+        page: Page
+    ) -> Route {
+        return self.on(.POST, path, use: page.response)
     }
     
     @discardableResult
     @preconcurrency
-    func patch<Model>(
+    func patch(
         _ path: PathComponent...,
-        page: Page<Model>
-    ) -> Route
-    where Model: Encodable & Sendable
-    {
-        return self.on(.PATCH, path, use: page.encodeResponse)
+        page: Page
+    ) -> Route {
+        return self.on(.PATCH, path, use: page.response)
     }
     
     @discardableResult
     @preconcurrency
-    func patch<Model>(
+    func patch(
         _ path: [PathComponent],
-        page: Page<Model>
-    ) -> Route
-    where Model: Encodable & Sendable
-    {
-        return self.on(.PATCH, path, use: page.encodeResponse)
+        page: Page
+    ) -> Route {
+        return self.on(.PATCH, path, use: page.response)
     }
     
     @discardableResult
     @preconcurrency
-    func put<Model>(
+    func put(
         _ path: PathComponent...,
-        page: Page<Model>
-    ) -> Route
-    where Model: Encodable & Sendable
-    {
-        return self.on(.PUT, path, use: page.encodeResponse)
+        page: Page
+    ) -> Route {
+        return self.on(.PUT, path, use: page.response)
     }
     
     @discardableResult
     @preconcurrency
-    func put<Model>(
+    func put(
         _ path: [PathComponent],
-        page: Page<Model>
-    ) -> Route
-    where Model: Encodable & Sendable
-    {
-        return self.on(.PUT, path, use: page.encodeResponse)
+        page: Page
+    ) -> Route {
+        return self.on(.PUT, path, use: page.response)
     }
     
     @discardableResult
     @preconcurrency
-    func delete<Model>(
+    func delete(
         _ path: PathComponent...,
-        page: Page<Model>
-    ) -> Route
-    where Model: Encodable & Sendable
-    {
-        return self.on(.DELETE, path, use: page.encodeResponse)
+        page: Page
+    ) -> Route {
+        return self.on(.DELETE, path, use: page.response)
     }
     
     @discardableResult
     @preconcurrency
-    func delete<Model>(
+    func delete(
         _ path: [PathComponent],
-        page: Page<Model>
-    ) -> Route
-    where Model: Encodable & Sendable
-    {
-        return self.on(.DELETE, path, use: page.encodeResponse)
+        page: Page
+    ) -> Route {
+        return self.on(.DELETE, path, use: page.response)
     }
     
     @discardableResult

@@ -17,9 +17,10 @@ struct PostViewModel: Content {
     
     init(
         post: Post,
-        markdownFormatter formatter: MarkdownFormatter = .html
+        markdownFormatter formatter: MarkdownFormatter = .html,
+        nameFormatter: NameFormatter = .author
     ) {
-        self.author = NameFormatter.author.format(
+        self.author = nameFormatter.format(
             givenName: post.$author.value?.firstName,
             familyName: post.$author.value?.lastName
         )
@@ -34,7 +35,7 @@ extension Template where Model == PostViewModel {
     static let post = Template(name: "post")
 }
 
-extension Page where Model == PostViewModel {
+extension Page {
     static var post: Self {
         Page(template: .post) { req in
             guard let postID = req.parameters.get("postID", as: Int.self) else {

@@ -1,0 +1,16 @@
+#extend("Shared/page"):
+
+    #export("title"):
+        #(name)
+    #endexport
+
+    #export("main"):
+        #extend("Shared/signature")
+        <form id="signout" action="/signout" method="post">
+            Welcome #(name)
+            <input type="hidden" name="_csrf" value="#(csrf)">
+            <button type="submit">Sign out</button>
+        </form>
+    #endexport
+#endextend
+

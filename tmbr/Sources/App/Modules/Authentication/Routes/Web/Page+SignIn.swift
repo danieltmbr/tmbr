@@ -3,40 +3,42 @@ import Core
 import JWT
 
 extension Template where Model == SignInViewModel {
-    static let signIn = Template(name: "signin")
+    static let signIn = Template(name: "Authentication/signin")
 }
 
-extension Page where Model == SignInViewModel {
+extension Page {
     
-    static var redirectingSignIn: Self {
-        Page(
-            template: .signIn,
-            parse: { request in
-                let nonce = [UInt8].random(count: 16).base64
-                let now = Date()
-                let payload = StatePayload(
-                    n: nonce,
-                    iat: .init(value: now),
-                    exp: .init(value: now.addingTimeInterval(5 * 60))
-                )
-                let state = try await request.jwt.sign(payload)
-                return SignInViewModel(
-                    clientId: Environment.signIn.appID,
-                    redirectUrl: Environment.signIn.redirectUrl,
-                    state: state,
-                    nonce: nonce
-                )
-            },
-            configure: { request, renderer in
-                if request.auth.has(User.self) {
-                    request.redirect(to: "/")
-                } else {
-                    try await renderer(request)
-                }
+    static var signIn: Self {
+        Page { request in
+            guard !request.auth.has(User.self) else {
+                return request.redirect(to: "/")
             }
-        )
+            let model = try await SignInViewModel.withNonce(signedBy: request.jwt.signState)
+            return try await Template.signIn.render(model, with: request.view)
+        }
     }
-    
-    // TODO: Implement a sign in page that shows log out button if user is logged in
+
+    static var signInOrSignOut: Self {
+        Page { request in
+            if let user = request.auth.get(User.self) {
+                let name = NameFormatter.author.format(
+                    givenName: user.firstName,
+                    familyName: user.lastName
+                )
+                let csrf = UUID().uuidString
+                request.session.data["csrf.signout"] = csrf
+                let model = SignOutViewModel(name: name, csrf: csrf)
+                return try await Template.signOut.render(model, with: request.view)
+            } else {
+                let model = try await SignInViewModel.withNonce(signedBy: request.jwt.signState)
+                return try await Template.signIn.render(model, with: request.view)
+            }
+        }
+    }
 }
 
+private extension Request.JWT {
+    func signState(payload: StatePayload) async throws -> String {
+        try await sign(payload)
+    }
+}

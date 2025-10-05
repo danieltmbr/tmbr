@@ -36,7 +36,7 @@ extension Template where Model == PostsViewModel {
     static let posts = Template(name: "posts")
 }
 
-extension Core.Page where Model == PostsViewModel {
+extension Core.Page {
     static var posts: Self {
         Page(template: .posts) { req in
             let posts = try await Post.query(on: req.db)
