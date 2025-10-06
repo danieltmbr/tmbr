@@ -1,6 +1,7 @@
 import Vapor
 import Fluent
 import Core
+import SotoCore
 
 struct Gallery: Module {
     fileprivate struct ServiceKey: StorageKey {
@@ -8,11 +9,17 @@ struct Gallery: Module {
     }
 
     func configure(_ app: Vapor.Application) async throws {
-        app.databases.middleware.use(
-            ImageCleanupMiddleware(publicDirectory: app.directory.publicDirectory),
-            on: .psql
-        )
-        app.storage[ServiceKey.self] = ImageService(publicDirectory: app.directory.publicDirectory)
+        let storage: FileStorage
+        if app.environment == .production {
+            storage = S3FileStorage(
+                bucket: Environment.gallery.bucket ,
+                region: Region(rawValue: Environment.gallery.region)
+            )
+        } else {
+            storage = InMemoryFileStorage()
+        }
+        
+        app.storage[ServiceKey.self] = DefaultImageService(storage: storage)
         app.migrations.add(CreateImage())
     }
     

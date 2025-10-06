@@ -26,6 +26,8 @@ let package = Package(
         .package(url: "https://github.com/danieltmbr/swift-markdown.git", branch: "main"),
         // 🔔 Push notifications
         .package(url: "https://github.com/mochidev/swift-webpush.git", from: "0.4.1"),
+        // 🖼️ File storage for gallery
+        .package(url: "https://github.com/soto-project/soto.git", from: "7.9.0")
     ],
     targets: [
         .target(name: "Core", dependencies: [
@@ -44,6 +46,7 @@ let package = Package(
                 .product(name: "JWT", package: "jwt"),
                 .product(name: "Markdown", package: "swift-markdown"),
                 .product(name: "WebPush", package: "swift-webpush"),
+                .product(name: "SotoS3", package: "soto"),
                 "Core",
             ],
             swiftSettings: swiftSettings

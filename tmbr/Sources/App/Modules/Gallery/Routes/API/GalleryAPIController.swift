@@ -6,6 +6,30 @@ struct GalleryAPIController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
         // Group all API routes under /api/gallery
+        
+        routes.get("gallery", "data", ":key") { req async throws -> Response in
+            guard let key = req.parameters.get("key", as: String.self) else {
+                throw Abort(.badRequest, reason: "Invalid image key")
+            }
+            guard let service = req.application.imageService else {
+                throw Abort(.internalServerError, reason: "Image service not configured")
+            }
+            
+            let image = try await service.image(for: key)
+            let res = Response(status: .ok, body: .init(data: image))
+            res.headers.contentType = try await service.contentType(for: key).httpType
+            res.headers.replaceOrAdd(name: .contentLength, value: "\(image.count)")
+
+            let etag = SHA256.hash(data: image).compactMap { String(format: "%02x", $0) }.joined()
+            if req.headers.first(name: .ifNoneMatch) == etag {
+                return Response(status: .notModified)
+            }
+            res.headers.replaceOrAdd(name: .eTag, value: etag)
+            res.headers.replaceOrAdd(name: .cacheControl, value: "public, max-age=31536000, immutable")
+            
+            return res
+        }
+        
         let galleryRoute = routes.grouped("api", "gallery")
         let protectedRoutes = galleryRoute.grouped(AppleSignInAuthenticator())
         
@@ -33,16 +57,21 @@ struct GalleryAPIController: RouteCollection {
             guard let service = req.application.imageService else {
                 throw Abort(.internalServerError, reason: "Image service not configured")
             }
-
             let payload = try req.content.decode(ImageUploadPayload.self)
-            let meta = try await service.storeImage(file: payload.image)
+            let meta = try await service.store(image: payload.image)
             let image = Image(
                 alt: payload.alt,
-                path: meta.path,
-                thumbnailPath: meta.thumbnailPath,
+                name: meta.key,
+                thumbnail: meta.thumbnailKey,
                 size: meta.size
             )
-            try await image.save(on: req.db)
+            do {
+                try await image.save(on: req.db)
+            } catch {
+                try await service.delete(meta.key)
+                try await service.delete(meta.thumbnailKey)
+                throw error
+            }
             return makeResponse(from: image, req: req)
         }
         
@@ -50,36 +79,45 @@ struct GalleryAPIController: RouteCollection {
             guard let user = req.auth.get(User.self), user.role == .admin else {
                 throw Abort(.unauthorized)
             }
+            guard let service = req.application.imageService else {
+                throw Abort(.internalServerError, reason: "Image service not configured")
+            }
             guard let id = req.parameters.get("id", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid image id")
             }
             guard let image = try await Image.find(id, on: req.db) else {
                 throw Abort(.notFound)
             }
+            
             try await image.delete(on: req.db)
+            try await service.delete(image.name)
+            if image.thumbnail != image.name {
+                try await service.delete(image.thumbnail)
+            }
+
             return .noContent
         }
     }
     
-    private func absoluteURL(for path: String, on request: Request) -> String {
+    @Sendable
+    private func makeResponse(from image: Image, req: Request) -> ImageResponse {
+        ImageResponse(
+            id: image.id,
+            alt: image.alt,
+            url: absoluteURL(for: image.name, on: req),
+            thumbnailUrl: absoluteURL(for: image.thumbnail, on: req),
+            size: CGSize(width: image.size.width, height: image.size.height),
+            uploadedAt: image.uploadedAt ?? .now
+        )
+    }
+    
+    private func absoluteURL(for imageName: String, on request: Request) -> String {
         let scheme = request.headers.first(name: .xForwardedProto)
             ?? request.url.scheme
             ?? (request.application.http.server.configuration.tlsConfiguration != nil ? "https" : "http")
         let host = request.headers.first(name: .xForwardedHost) 
             ?? request.headers.first(name: .host)
             ?? "localhost"
-        return "\(scheme)://\(host)\(path)"
-    }
-    
-    @Sendable
-    private func makeResponse(from image: Image, req: Request) -> ImageResponse {
-        return ImageResponse(
-            id: image.id,
-            alt: image.alt,
-            url: absoluteURL(for: image.path, on: req),
-            thumbnailUrl: absoluteURL(for: image.thumbnailPath, on: req),
-            size: CGSize(width: image.size.width, height: image.size.height),
-            uploadedAt: image.uploadedAt ?? .now
-        )
+        return "\(scheme)://\(host)/gallery/data/\(imageName)"
     }
 }

@@ -33,11 +33,11 @@ final class Image: Model, Content, @unchecked Sendable {
     @OptionalField(key: "alt")
     var alt: String?
     
-    @Field(key: "path")
-    private(set) var path: String
+    @Field(key: "name")
+    private(set) var name: String
     
-    @Field(key: "thumbnail_path")
-    private(set) var thumbnailPath: String
+    @Field(key: "thumbnail")
+    private(set) var thumbnail: String
     
     @Group(key: "size")
     private(set) var size: Size
@@ -50,8 +50,8 @@ final class Image: Model, Content, @unchecked Sendable {
     convenience init(
         id: Int? = nil,
         alt: String?,
-        path: String,
-        thumbnailPath: String,
+        name: String,
+        thumbnail: String,
         width: Int,
         height: Int,
         uploadedAt: Date? = nil
@@ -59,8 +59,8 @@ final class Image: Model, Content, @unchecked Sendable {
         self.init(
             id: id,
             alt: alt,
-            path: path,
-            thumbnailPath: thumbnailPath,
+            name: name,
+            thumbnail: thumbnail,
             size: CGSize(width: width, height: height)
         )
     }
@@ -68,15 +68,15 @@ final class Image: Model, Content, @unchecked Sendable {
     init(
         id: Int? = nil,
         alt: String?,
-        path: String,
-        thumbnailPath: String,
+        name: String,
+        thumbnail: String,
         size: CGSize,
         uploadedAt: Date? = nil
     ) {
         self.id = id
         self.alt = alt
-        self.path = path
-        self.thumbnailPath = thumbnailPath
+        self.name = name
+        self.thumbnail = thumbnail
         self.size = Size(width: Int(size.width), height: Int(size.height))
         self.uploadedAt = uploadedAt
     }
