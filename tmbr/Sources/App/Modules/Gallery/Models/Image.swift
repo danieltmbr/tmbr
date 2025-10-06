@@ -25,7 +25,7 @@ final class Size: Fields, @unchecked Sendable, Codable {
 }
 
 final class Image: Model, Content, @unchecked Sendable {
-    static let schema = "images"
+    static let schema = "gallery"
     
     @ID(custom: "id", generatedBy: .database)
     var id: Int?

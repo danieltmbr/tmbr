@@ -22,6 +22,10 @@ struct Manifest: Module {
             )
             let response = Response(status: .ok)
             try response.content.encode(model)
+            response.headers.add(
+                name: "Content-Type",
+                value: "application/manifest+json; charset=utf-8"
+            )
             return response
         }
     }
@@ -65,14 +69,6 @@ private struct ManifestModel: Content {
         self.start_url = start_url
         self.scope = scope
         self.icons = icons
-    }
-    
-    static var defaultContentType: HTTPMediaType {
-        HTTPMediaType(
-            type: "application",
-            subType: "manifest+json",
-            parameters: ["charset" : "utf-8"]
-        )
     }
 }
 

@@ -39,7 +39,9 @@ actor S3FileStorage: FileStorage {
     func file(named name: String) async throws -> Data {
         let request = S3.GetObjectRequest(bucket: bucket, key: name)
         let object = try await s3.getObject(request)
-        let buffer = try await object.body.collect(upTo: object.body.length ?? 0)
+        let buffer = try await object.body.collect(
+            upTo: object.body.length ?? 10 * 1024 * 1024
+        )
         return Data(buffer: buffer)
     }
     
