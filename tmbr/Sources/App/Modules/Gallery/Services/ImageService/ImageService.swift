@@ -1,11 +1,5 @@
 import Vapor
 import Foundation
-import CoreGraphics
-import ImageIO
-import NIOFoundationCompat
-#if canImport(UniformTypeIdentifiers)
-import UniformTypeIdentifiers
-#endif
 
 struct ImageMetadata: Sendable {
     let key: String

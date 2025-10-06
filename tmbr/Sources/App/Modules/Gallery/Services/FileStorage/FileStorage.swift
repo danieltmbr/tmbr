@@ -1,5 +1,4 @@
 import Foundation
-import Vapor
 
 protocol FileStorage: Sendable {
     
