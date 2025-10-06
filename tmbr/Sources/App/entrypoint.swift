@@ -23,6 +23,7 @@ enum Entrypoint {
                 .authentication,
                 .notifications,
                 .posts,
+                .gallery,
             ]
         )
         

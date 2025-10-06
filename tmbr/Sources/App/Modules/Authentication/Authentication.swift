@@ -34,9 +34,7 @@ struct Authentication: Module {
     
     func boot(_ app: Vapor.Application) async throws {
         try app.register(collection: AuthenticationAPIController())
-
         app.get("signin", page: .signIn)
-                
         let protected = app.grouped(
             User.redirectMiddleware(path: "/signin")
         )
