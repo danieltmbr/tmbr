@@ -4,9 +4,7 @@ import Core
 
 struct Posts: Module {
     
-    func configure(_ app: Vapor.Application) async throws {
-        app.migrations.add(CreatePost())
-    }
+    func configure(_ app: Vapor.Application) async throws {}
     
     func boot(_ app: Vapor.Application) async throws {
         try app.register(collection: PostsAPIController())

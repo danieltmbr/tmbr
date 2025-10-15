@@ -23,13 +23,14 @@ enum Entrypoint {
                 .authentication,
                 .notifications,
                 .posts,
+                .catalouge,
                 .gallery,
             ]
         )
         
         do {
             try await registry.configure(app)
-            // try app.autoMigrate().wait()
+            try await app.autoMigrate()
             try await registry.boot(app)
         } catch {
             app.logger.report(error: error)
