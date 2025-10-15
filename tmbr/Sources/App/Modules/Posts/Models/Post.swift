@@ -18,7 +18,10 @@ final class Post: Model, Content, @unchecked Sendable {
 
     @Field(key: "created_at")
     var createdAt: Date
-    
+
+    @OptionalParent(key: "media_id")
+    var media: Media?
+
     @ID(custom: "id", generatedBy: .database)
     var id: Int?
     
