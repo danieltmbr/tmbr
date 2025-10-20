@@ -2,7 +2,7 @@ import Vapor
 import Leaf
 import Fluent
 import JWT
-import CryptoKit
+import Crypto
 import Core
 
 struct Authentication: Module {
@@ -47,3 +47,4 @@ extension Module where Self == Authentication {
         Authentication()
     }
 }
+
