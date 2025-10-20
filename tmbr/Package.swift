@@ -27,12 +27,14 @@ let package = Package(
         // 🔔 Push notifications
         .package(url: "https://github.com/mochidev/swift-webpush.git", from: "0.4.1"),
         // 🖼️ File storage for gallery
-        .package(url: "https://github.com/soto-project/soto.git", from: "7.9.0")
+        .package(url: "https://github.com/soto-project/soto.git", from: "7.9.0"),
+        // 🔏 CryptoKit substitution for Linux
+        .package(url: "https://github.com/apple/swift-crypto.git", from: "3.7.0"),
     ],
     targets: [
         .target(name: "Core", dependencies: [
             .product(name: "Vapor", package: "vapor"),
-            .product(name: "Markdown", package: "swift-markdown")
+            .product(name: "Markdown", package: "swift-markdown"),
         ]),
         .executableTarget(
             name: "App",
@@ -47,6 +49,7 @@ let package = Package(
                 .product(name: "Markdown", package: "swift-markdown"),
                 .product(name: "WebPush", package: "swift-webpush"),
                 .product(name: "SotoS3", package: "soto"),
+                .product(name: "Crypto", package: "swift-crypto"),
                 "Core",
             ],
             swiftSettings: swiftSettings
@@ -68,3 +71,4 @@ var swiftSettings: [SwiftSetting] { [
     .enableExperimentalFeature("StrictConcurrency"),
     .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
 ] }
+
