@@ -28,8 +28,6 @@ struct Authentication: Module {
             digestAlgorithm: .sha256
         )
         app.middleware.use(User.sessionAuthenticator())
-        
-        app.migrations.add(CreateUser())
     }
     
     func boot(_ app: Vapor.Application) async throws {

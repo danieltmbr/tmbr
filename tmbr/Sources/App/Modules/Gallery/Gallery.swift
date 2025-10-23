@@ -19,7 +19,6 @@ struct Gallery: Module {
             storage = InMemoryFileStorage()
         }
         app.storage[ServiceKey.self] = DefaultImageService(storage: storage)
-        app.migrations.add(CreateImage())
     }
     
     func boot(_ app: Vapor.Application) async throws {

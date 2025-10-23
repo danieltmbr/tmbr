@@ -14,8 +14,6 @@ struct Notifications: Module {
             ServiceKey.self,
             to: try NotificationService(app: app)
         )
-        
-        app.migrations.add(CreateWebPushSubscription())
     }
     
     func boot(_ app: Vapor.Application) async throws {
