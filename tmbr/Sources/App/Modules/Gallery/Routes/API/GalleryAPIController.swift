@@ -1,6 +1,7 @@
 import Vapor
 import Fluent
 import Foundation
+import AuthKit
 
 struct GalleryAPIController: RouteCollection {
     

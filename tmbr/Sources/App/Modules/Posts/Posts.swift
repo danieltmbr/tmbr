@@ -1,3 +1,4 @@
+import AuthKit
 import Fluent
 import Vapor
 import Core
@@ -23,11 +24,6 @@ struct Posts: Module {
 
 extension Module where Self == Posts {
     static var posts: Self {
-        Posts(permissions: PermissionScopes.Posts(
-            access: .accessPost,
-            create: .createPost,
-            delete: .deletePost,
-            edit: .editPost
-        ))
+        Posts(permissions: PermissionScopes.Posts())
     }
 }

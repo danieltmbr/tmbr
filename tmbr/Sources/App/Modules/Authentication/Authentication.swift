@@ -1,4 +1,5 @@
 import Vapor
+import AuthKit
 import Leaf
 import Fluent
 import JWT
@@ -27,6 +28,12 @@ struct Authentication: Module {
             hmac: HMACKey(from: Environment.signIn.secret),
             digestAlgorithm: .sha256
         )
+        
+        await app.storage.setWithAsyncShutdown(
+            PermissionService.Key.self,
+            to: PermissionService()
+        )
+        
         app.middleware.use(User.sessionAuthenticator())
         
         app.migrations.add(CreateUser())

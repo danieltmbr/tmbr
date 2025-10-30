@@ -1,7 +1,7 @@
 import Core
 import Foundation
 import Vapor
-import Markdown
+import AuthKit
 
 struct PostViewModel: Content {
 

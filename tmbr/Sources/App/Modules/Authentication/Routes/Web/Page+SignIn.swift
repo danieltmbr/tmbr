@@ -1,6 +1,7 @@
 import Vapor
 import Core
 import JWT
+import AuthKit
 
 extension Template where Model == SignInViewModel {
     static let signIn = Template(name: "Authentication/signin")

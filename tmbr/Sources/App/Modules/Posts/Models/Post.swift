@@ -1,5 +1,6 @@
 import Fluent
 import Vapor
+import AuthKit
 
 final class Post: Model, Content, @unchecked Sendable {
     

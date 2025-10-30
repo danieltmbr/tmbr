@@ -1,4 +1,5 @@
 import Vapor
+import AuthKit
 import Crypto
 import JWT
 import Foundation

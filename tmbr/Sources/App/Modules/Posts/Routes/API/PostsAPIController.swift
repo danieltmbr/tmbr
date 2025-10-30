@@ -1,4 +1,5 @@
 import Vapor
+import AuthKit
 import Fluent
 
 struct PostsAPIController: RouteCollection {

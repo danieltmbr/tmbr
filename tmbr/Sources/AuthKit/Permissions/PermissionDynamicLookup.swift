@@ -28,43 +28,8 @@ public struct PermissionDynamicLookup<T> {
     }
 }
 
-public struct PermissionResolver<Input> {
-    
-    private let permission: Permission<Input>
-    
-    private let request: Request
-    
-    init(request: Request, permission: Permission<Input>) {
-        self.request = request
-        self.permission = permission
-    }
-    
-    public func callAsFunction(_ input: Input) throws {
-        try permission.verify(input, on: request)
-    }
-    
-    public func callAsFunction() throws
-    where Input == Void {
-        try callAsFunction(())
-    }
-}
-
 extension Request {
     public var permissions: PermissionDynamicLookup<PermissionScopes> {
         PermissionDynamicLookup(request: self, path: \.self)
     }
 }
-
-//
-//enum PermissionDynamicLookup {}
-//
-//
-//extension PermissionDynamicLookup {
-//    subscript<Input>(
-//        dynamicMember keyPath: KeyPath<PermissionScopes.PostPermissions, any Permission<Input>>
-//    ) -> any Permission<Input> {
-//
-//    }
-//}
-//
-//
