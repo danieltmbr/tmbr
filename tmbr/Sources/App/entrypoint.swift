@@ -16,6 +16,7 @@ enum Entrypoint {
             configurations: [
                 .database,
                 .renderer,
+                .permissions,
             ],
             modules: [
                 .rss,

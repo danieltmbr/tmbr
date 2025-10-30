@@ -6,8 +6,8 @@ struct RSS: Module {
     
     func configure(_ app: Vapor.Application) async throws {}
     
-    func boot(_ app: Vapor.Application) async throws {
-        app.get("rss.xml", page: .rss)
+    func boot(_ routes: RoutesBuilder) async throws {
+        routes.get("rss.xml", page: .rss)
     }
 }
 

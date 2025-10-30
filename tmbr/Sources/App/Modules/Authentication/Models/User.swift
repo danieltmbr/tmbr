@@ -6,6 +6,7 @@ final class User: Model, Content, Authenticatable, @unchecked Sendable {
     
     enum Role: String, Codable {
         case admin
+        case author
         case standard
     }
     

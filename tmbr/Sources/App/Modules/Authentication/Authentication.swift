@@ -32,10 +32,10 @@ struct Authentication: Module {
         app.migrations.add(CreateUser())
     }
     
-    func boot(_ app: Vapor.Application) async throws {
-        try app.register(collection: AuthenticationAPIController())
-        app.get("signin", page: .signIn)
-        let protected = app.grouped(
+    func boot(_ routes: RoutesBuilder) async throws {
+        try routes.register(collection: AuthenticationAPIController())
+        routes.get("signin", page: .signIn)
+        let protected = routes.grouped(
             User.redirectMiddleware(path: "/signin")
         )
         protected.get("signout", page: .signOut)

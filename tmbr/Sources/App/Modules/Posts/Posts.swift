@@ -4,18 +4,30 @@ import Core
 
 struct Posts: Module {
     
-    func configure(_ app: Vapor.Application) async throws {
-        app.migrations.add(CreatePost())
+    private let permissions: PermissionScopes.Posts
+    
+    init(permissions: PermissionScopes.Posts) {
+        self.permissions = permissions
     }
     
-    func boot(_ app: Vapor.Application) async throws {
-        try app.register(collection: PostsAPIController())
-        try app.register(collection: PostsWebController())
+    func configure(_ app: Vapor.Application) async throws {
+        app.migrations.add(CreatePost())
+        try await app.permissions.add(scope: permissions)
+    }
+    
+    func boot(_ routes: RoutesBuilder) async throws {
+        try routes.register(collection: PostsAPIController())
+        try routes.register(collection: PostsWebController())
     }
 }
 
 extension Module where Self == Posts {
     static var posts: Self {
-        Posts()
+        Posts(permissions: PermissionScopes.Posts(
+            access: .accessPost,
+            create: .createPost,
+            delete: .deletePost,
+            edit: .editPost
+        ))
     }
 }

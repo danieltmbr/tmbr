@@ -25,21 +25,15 @@ struct PostsAPIController: RouteCollection {
             guard let post = try await Post.find(postID, on: req.db) else {
                 throw Abort(.notFound, reason: "Post not found")
             }
-            guard post.state == .published || post.$author.id == req.auth.get(User.self)?.id else {
-                req.logger.trace("Unauthorized. Draft posts are only available for the author.")
-                throw Abort(.notFound, reason: "Post not found")
-            }
+            try await req.permissions.posts.access(post)
             return post
         }
         
-        
         // POST /api/posts
         protectedRoutes.post { req async throws -> Post in
-            guard let user = req.auth.get(User.self), user.role == .admin else {
-                throw Abort(.unauthorized)
-            }
+            try await req.permissions.posts.create()
             let post = try req.content.decode(Post.self)
-            post.$author.id = try user.requireID()
+            post.$author.id = try req.auth.require(User.self).requireID()
             try await post.save(on: req.db)
             
             Task.detached {
@@ -55,18 +49,14 @@ struct PostsAPIController: RouteCollection {
         
         // PUT /api/posts/:postID
         protectedRoutes.put(":postID") { req async throws -> Post in
-            guard let user = req.auth.get(User.self), user.role == .admin else {
-                throw Abort(.unauthorized)
-            }
             guard let postID = req.parameters.get("postID", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid post ID")
             }
             guard let post = try await Post.find(postID, on: req.db) else {
                 throw Abort(.notFound, reason: "Post not found")
             }
-            guard user.id == post.$author.id else {
-                throw Abort(.forbidden, reason: "You are not allowed to update this post")
-            }
+            try await req.permissions.posts.edit(post)
+            
             let updatedData = try req.content.decode(Post.self)
             post.title = updatedData.title
             post.content = updatedData.content
@@ -77,18 +67,13 @@ struct PostsAPIController: RouteCollection {
         
         // DELETE /api/posts/:postID
         protectedRoutes.delete(":postID") { req async throws -> HTTPStatus in
-            guard let user = req.auth.get(User.self), user.role == .admin else {
-                throw Abort(.unauthorized)
-            }
             guard let postID = req.parameters.get("postID", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid post ID")
             }
             guard let post = try await Post.find(postID, on: req.db) else {
                 throw Abort(.notFound, reason: "Post not found")
             }
-            guard user.id == post.$author.id else {
-                throw Abort(.forbidden, reason: "You are not allowed to delete this post")
-            }
+            try await req.permissions.posts.delete(post)
             try await post.delete(on: req.db)
             return .noContent
         }

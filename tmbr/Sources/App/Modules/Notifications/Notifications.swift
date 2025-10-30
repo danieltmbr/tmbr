@@ -18,9 +18,9 @@ struct Notifications: Module {
         app.migrations.add(CreateWebPushSubscription())
     }
     
-    func boot(_ app: Vapor.Application) async throws {
-        try app.register(collection: AuthenticationAPIController())
-        app.get("notifications", page: Page(template: .notifications))
+    func boot(_ routes: RoutesBuilder) async throws {
+        try routes.register(collection: AuthenticationAPIController())
+        routes.get("notifications", page: Page(template: .notifications))
     }
 }
 
