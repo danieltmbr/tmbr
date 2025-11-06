@@ -15,9 +15,9 @@ public actor PermissionService {
         scopes[String(reflecting: type(of: scope))] = scope
     }
     
-    func scope<S: PermissionScope>(_ type: S.Type) throws(PermissionError) -> S {
+    func scope<S: PermissionScope>(_ type: S.Type) throws -> S {
         guard let scope = scopes[String(describing: type)] as? S else {
-            throw .missingPermission
+            throw Abort(.internalServerError, reason: "Permission Scope (\(type)) is unavailable.")
         }
         return scope
     }
@@ -25,9 +25,9 @@ public actor PermissionService {
 
 extension Application {
     public var permissions: PermissionService {
-        get throws(PermissionError) {
+        get throws {
             guard let service = storage[PermissionService.Key.self] else {
-                throw .missingPermission
+                throw Abort(.internalServerError, reason: "Permission Service is unavailable.")
             }
             return service
         }

@@ -38,11 +38,4 @@ public struct Page: Sendable {
     func response(for request: Request) async throws -> AsyncResponseEncodable {
         try await assembler(request)
     }
-    
-    public static func redirect(
-        to location: String = "/",
-        type: Redirect = .normal
-    ) -> Page {
-        Page { $0.redirect(to: location, redirectType: type) }
-    }
 }

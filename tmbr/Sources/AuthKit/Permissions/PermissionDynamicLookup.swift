@@ -19,7 +19,7 @@ public struct PermissionDynamicLookup<T> {
     
     public subscript <Scope, Input>(dynamicMember keyPath: KeyPath<Scope, Permission<Input>>) -> PermissionResolver<Input>
     where Scope: PermissionScope, Scope.Type == T {
-        get async throws(PermissionError) {
+        get async throws {
             let permissions = try request.application.permissions
             let scope = try await permissions.scope(Scope.self)
             let permission = scope[keyPath: keyPath]

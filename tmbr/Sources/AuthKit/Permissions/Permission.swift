@@ -1,20 +1,6 @@
 import Foundation
 import Vapor
 
-public enum PermissionError: Swift.Error, Sendable, Hashable {
-    case unauthorized
-    case forbidden
-    case missingPermission
-    
-    public var httpStatus: HTTPResponseStatus {
-        switch self {
-        case .unauthorized: return .unauthorized
-        case .forbidden: return .forbidden
-        case .missingPermission: return .internalServerError
-        }
-    }
-}
-
 public struct Permission<Input>: Sendable {
     
     @dynamicMemberLookup
@@ -23,29 +9,27 @@ public struct Permission<Input>: Sendable {
         
         public let userID: User.IDValue
         
-    
         init(user: User, userID: User.IDValue) {
             self.user = user
             self.userID = userID
         }
         
-        init(from request: Request) throws(PermissionError) {
+        init(from request: Request) throws {
             guard let user = request.auth.get(User.self),
                   let userID = user.id else {
-                throw PermissionError.unauthorized
+                throw Abort(.unauthorized)
             }
             self.init(user: user, userID: userID)
         }
         
-        public subscript<V>(dynamicMember keyPath: WritableKeyPath<User, V>) -> V {
-            get { user[keyPath: keyPath] }
-            // nonmutating set { user[keyPath: keyPath] = newValue }
+        public subscript<V>(dynamicMember keyPath: KeyPath<User, V>) -> V {
+            user[keyPath: keyPath]
         }
     }
     
     public typealias Grant = AuthenticatedUser
     
-    public typealias Verify = @Sendable (Request, Input) throws(PermissionError) -> Grant
+    public typealias Verify = @Sendable (Request, Input) throws -> Grant
     
     private let verify: Verify
     
@@ -53,8 +37,8 @@ public struct Permission<Input>: Sendable {
         self.verify = verify
     }
     
-    public init(verify: @Sendable @escaping (AuthenticatedUser, Input) throws(PermissionError) -> Void) {
-        self.init { (request, input) throws(PermissionError) -> Grant in
+    public init(verify: @Sendable @escaping (AuthenticatedUser, Input) throws -> Void) {
+        self.init { (request, input) in
             let authenticatedUser = try AuthenticatedUser(from: request)
             try verify(authenticatedUser, input)
             return authenticatedUser
@@ -62,18 +46,18 @@ public struct Permission<Input>: Sendable {
     }
     
     public init(granted: @Sendable @escaping (AuthenticatedUser, Input) -> Bool) {
-        self.init { (user, input) throws(PermissionError) -> Void in
-            if !granted(user, input) { throw .forbidden }
+        self.init { (user, input) in
+            if !granted(user, input) { throw Abort(.forbidden) }
         }
     }
     
     @discardableResult
-    public func verify(_ input: Input, on request: Request) throws(PermissionError) -> Grant {
+    public func verify(_ input: Input, on request: Request) throws -> Grant {
         try self.verify(request, input)
     }
     
     @discardableResult
-    public func verify(on request: Request) throws(PermissionError) -> Grant
+    public func verify(on request: Request) throws -> Grant
     where Input == Void {
         try self.verify((), on: request)
     }
