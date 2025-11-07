@@ -44,11 +44,9 @@ extension Page {
             guard let post = try await Post.find(postID, on: req.db) else {
                 throw Abort(.notFound)
             }
-            guard post.state == .published || post.$author.id == req.auth.get(User.self)?.id else {
-                req.logger.trace("Unauthorized. Draft posts are only available for the author.")
-                throw Abort(.notFound, reason: "Post not found")
-            }
+            try await req.permissions.posts.access(post)
             return PostViewModel(post: post)
         }
+        .recover(.aborts)
     }
 }

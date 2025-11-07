@@ -46,18 +46,19 @@ extension Core.Page {
                 .all()
             return PostsViewModel(posts: posts)
         }
+        .recover(.aborts)
     }
     
     static var drafts: Self {
         Page(template: .posts) { req in
-            let user = try req.auth.require(User.self)
-            let userID = try user.requireID()
+            let user = try await req.permissions.posts.drafts()
             let posts = try await Post.query(on: req.db)
                 .filter(\.$state == .draft)
-                .filter(\.$author.$id == userID)
+                .filter(\.$author.$id == user.userID)
                 .sort(\.$createdAt, .descending)
                 .all()
             return PostsViewModel(posts: posts)
         }
+        .recover(.aborts)
     }
 }

@@ -14,51 +14,59 @@ public struct Permission<Input>: Sendable {
             self.userID = userID
         }
         
-        init(from request: Request) throws {
-            guard let user = request.auth.get(User.self),
-                  let userID = user.id else {
-                throw Abort(.unauthorized)
-            }
-            self.init(user: user, userID: userID)
-        }
-        
         public subscript<V>(dynamicMember keyPath: KeyPath<User, V>) -> V {
             user[keyPath: keyPath]
         }
     }
+        
+    public typealias Grant = @Sendable (Request, Input) throws -> AuthenticatedUser
     
-    public typealias Grant = AuthenticatedUser
+    private let grant: Grant
     
-    public typealias Verify = @Sendable (Request, Input) throws -> Grant
-    
-    private let verify: Verify
-    
-    public init(verify: @escaping Verify) {
-        self.verify = verify
+    public init(grant: @escaping Grant) {
+        self.grant = grant
     }
     
-    public init(verify: @Sendable @escaping (AuthenticatedUser, Input) throws -> Void) {
+    public init(
+        verify: @Sendable @escaping (AuthenticatedUser, Input) throws -> Void
+    ) {
         self.init { (request, input) in
-            let authenticatedUser = try AuthenticatedUser(from: request)
+            guard let user = request.auth.get(User.self),
+                  let userID = user.id else {
+                throw Abort(.unauthorized)
+            }
+            let authenticatedUser = AuthenticatedUser(user: user, userID: userID)
             try verify(authenticatedUser, input)
             return authenticatedUser
         }
     }
     
-    public init(granted: @Sendable @escaping (AuthenticatedUser, Input) -> Bool) {
+    /// Can be used for permission check where the
+    /// only requirement is to have an authenticated user.
+    /// 
+    public init() where Input == Void {
+        self.init { _, _ in }
+    }
+    
+    public init(
+        _ deniedReason: String,
+        granted: @Sendable @escaping (AuthenticatedUser, Input) -> Bool
+    ) {
         self.init { (user, input) in
-            if !granted(user, input) { throw Abort(.forbidden) }
+            if !granted(user, input) {
+                throw Abort(.forbidden, reason: deniedReason)
+            }
         }
     }
     
     @discardableResult
-    public func verify(_ input: Input, on request: Request) throws -> Grant {
-        try self.verify(request, input)
+    public func grant(_ input: Input, on request: Request) throws -> AuthenticatedUser {
+        try self.grant(request, input)
     }
     
     @discardableResult
-    public func verify(on request: Request) throws -> Grant
+    public func grant(on request: Request) throws -> AuthenticatedUser
     where Input == Void {
-        try self.verify((), on: request)
+        try self.grant((), on: request)
     }
 }

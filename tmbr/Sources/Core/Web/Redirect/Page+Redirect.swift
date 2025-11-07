@@ -2,6 +2,7 @@ import Foundation
 import Vapor
 
 extension Page {
+    
     public struct Redirect: AsyncResponseEncodable {
         
         public struct ReturnDestination: ExpressibleByStringLiteral {
@@ -22,7 +23,7 @@ extension Page {
             }
         }
         
-        fileprivate static let sessionKey: String = "redirect.return"
+        static let sessionKey: String = "redirect.return"
         
         fileprivate let destination: String
         
@@ -41,47 +42,56 @@ extension Page {
         }
         
         public func encodeResponse(for request: Request) async throws -> Response {
-            request.redirectReturnDestination = self.return?(request)
-            return request.redirect(to: destination, redirectType: kind)
+            let dest = URLComponents(
+                destination: destination,
+                return: self.return?(request)
+            )
+            return request.redirect(
+                to: dest?.string ?? destination,
+                redirectType: kind
+            )
         }
     }
     
-    public func map(error map: @escaping @Sendable (Error) async throws -> Redirect) -> Page {
-        self.catch { error, _ in try await map(error) }
+    public func redirect(error map: @escaping @Sendable (Error) async throws -> Redirect) -> Page {
+        self.recover { error, _ in
+            try await map(error)
+        }
     }
     
     public func redirect<E: Error & Equatable>(error: E, to redirect: Redirect) -> Page {
-        self.map { e in
-            if (e as? E) == error {
-                return redirect
-            } else {
-                throw e
-            }
+        self.redirect {
+            guard ($0 as? E) == error else { throw $0 }
+            return redirect
         }
     }
     
     public func redirect(
-        _ status: HTTPResponseStatus,
+        error status: HTTPResponseStatus,
         destination: String,
         kind: Vapor.Redirect = .normal,
         return returnDestiantion: Redirect.ReturnDestination? = nil
     ) -> Page {
-        self.catch { error, _ in
-            guard let e = error as? Abort, e.status == status else {
-                throw error
-            }
-            return Redirect(
-                destination: destination,
-                kind: kind,
-                return: returnDestiantion
-            )
-        }
+        let redirect = Redirect(
+            destination: destination,
+            kind: kind,
+            return: returnDestiantion
+        )
+        return self.recover(error: status, response: redirect)
     }
 }
 
-extension Request {
-    public var redirectReturnDestination: String? {
-        get { session.data[Page.Redirect.sessionKey] }
-        set { session.data[Page.Redirect.sessionKey] = newValue }
+private extension URLComponents {
+    init?(destination: String, return rd: String?) {
+        self.init(string: destination)
+        if let rd {
+            let item = URLQueryItem.redirectReturn(path: rd)
+            if var queryItems {
+                queryItems.append(item)
+                self.queryItems = queryItems
+            } else {
+                queryItems = [item]
+            }
+        }
     }
 }

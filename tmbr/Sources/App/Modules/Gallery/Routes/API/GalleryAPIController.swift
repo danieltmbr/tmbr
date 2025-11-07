@@ -33,7 +33,7 @@ struct GalleryAPIController: RouteCollection {
                 throw Abort(.unauthorized)
             }
             guard let service = req.application.imageService else {
-                throw Abort(.internalServerError, reason: "Image service not configured")
+                throw Abort(.serviceUnavailable, reason: "Image service not configured")
             }
             let payload = try req.content.decode(ImageUploadPayload.self)
             let meta = try await service.store(image: payload.image)
@@ -58,7 +58,7 @@ struct GalleryAPIController: RouteCollection {
                 throw Abort(.unauthorized)
             }
             guard let service = req.application.imageService else {
-                throw Abort(.internalServerError, reason: "Image service not configured")
+                throw Abort(.serviceUnavailable, reason: "Image service not configured")
             }
             guard let id = req.parameters.get("id", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid image id")

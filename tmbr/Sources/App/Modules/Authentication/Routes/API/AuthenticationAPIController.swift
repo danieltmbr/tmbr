@@ -37,6 +37,10 @@ struct AuthenticationAPIController: RouteCollection {
             req.auth.login(user)
             req.session.authenticate(user)
             
+            defer {
+                req.redirectReturnDestination = nil
+            }
+            
             return req.redirect(to: req.redirectReturnDestination ?? "/")
         }
         

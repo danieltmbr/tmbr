@@ -10,7 +10,7 @@ struct GalleryWebController: RouteCollection {
                 throw Abort(.badRequest, reason: "Invalid image key")
             }
             guard let service = req.application.imageService else {
-                throw Abort(.internalServerError, reason: "Image service not configured")
+                throw Abort(.serviceUnavailable, reason: "Image service not configured")
             }
             
             let image = try await service.image(for: key)

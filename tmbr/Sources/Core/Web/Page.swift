@@ -4,7 +4,7 @@ import Vapor
 public struct Page: Sendable {
     
     public typealias Assembler = @Sendable (Request) async throws -> AsyncResponseEncodable
-    
+
     private let assembler: Assembler
     
     public init(assembler: @escaping Assembler) {
@@ -32,6 +32,16 @@ public struct Page: Sendable {
     public init(template: Template<Never>) {
         self.init { request in
             try await template.render(with: request.view)
+        }
+    }
+    
+    public func recover(_ recover: Recover) -> Page {
+        Page { request in
+            do {
+                return try await assembler(request)
+            } catch {
+                return try await recover(error, request)
+            }
         }
     }
     

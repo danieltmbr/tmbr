@@ -17,7 +17,7 @@ struct NotificationsAPIController: RouteCollection {
         // GET /api/notifications/web-push/vapid
         webPushRoute.get("vapid") { req async throws -> WebPushOptions in
             guard let service = req.application.notificationService else {
-                throw Abort(.internalServerError, reason: "Notification service not configured")
+                throw Abort(.serviceUnavailable, reason: "Notification service not configured")
             }
             return WebPushOptions(vapid: service.vapidKeyID)
         }

@@ -15,6 +15,12 @@ extension Page {
                 return request.redirect(to: "/")
             }
             let model = try await SignInViewModel.withNonce(signedBy: request.jwt.signState)
+            
+            request.redirectReturnDestination = request.url
+                .queryItems?
+                .item(named: URLQueryItem.redirectReturnKey)?
+                .value
+            
             return try await Template.signIn.render(model, with: request.view)
         }
     }
