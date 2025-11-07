@@ -1,9 +1,12 @@
 import Vapor
 import Fluent
-import JWTKit
+import JWT
 
-final class AppleSignInAuthenticator: AsyncMiddleware {
-    func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
+public struct AppleSignInAuthenticator: AsyncMiddleware {
+    
+    public init() {}
+    
+    public func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
         do {
             let appleIdentity = try await request.jwt.apple.verify()
             let user = try await User.find(

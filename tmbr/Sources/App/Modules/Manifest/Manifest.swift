@@ -5,8 +5,8 @@ struct Manifest: Module {
     
     func configure(_ app: Vapor.Application) async throws {}
     
-    func boot(_ app: Vapor.Application) async throws {
-        app.get("manifest.json") { request in
+    func boot(_ routes: RoutesBuilder) async throws {
+        routes.get("manifest.json") { request in
             let model = ManifestModel(
                 name: Environment.webApp.appName,
                 display: "standalone",

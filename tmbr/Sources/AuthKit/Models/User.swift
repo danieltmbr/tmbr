@@ -2,39 +2,37 @@ import Fluent
 import Vapor
 import Foundation
 
-final class User: Model, Content, Authenticatable, @unchecked Sendable {
+public final class User: Model, Content, Authenticatable, @unchecked Sendable {
     
-    enum Role: String, Codable {
+    public enum Role: String, Codable {
         case admin
+        case author
         case standard
     }
     
-    static let schema = "users"
+    public static let schema = "users"
 
     @Field(key: "apple_id")
-    var appleID: String
+    public var appleID: String
         
     @Field(key: "email")
-    var email: String?
+    public var email: String?
     
     @Field(key: "first_name")
-    var firstName: String?
+    public var firstName: String?
     
     @ID(custom: "id", generatedBy: .database)
-    var id: Int?
+    public var id: Int?
     
     @Field(key: "last_name")
-    var lastName: String?
-    
-    @Children(for: \.$author)
-    var posts: [Post]
+    public var lastName: String?
     
     @Field(key: "role")
-    var role: Role
+    public var role: Role
 
-    init() { }
+    public init() { }
 
-    init(
+    public init(
         appleID: String,
         email: String?,
         firstName: String?,
@@ -50,7 +48,7 @@ final class User: Model, Content, Authenticatable, @unchecked Sendable {
         self.role = role
     }
     
-    static func findOrCreate(
+    public static func findOrCreate(
         in database: any Database,
         appleID: String,
         email: String?,
@@ -72,7 +70,7 @@ final class User: Model, Content, Authenticatable, @unchecked Sendable {
         return user
     }
     
-    static func find(
+    public static func find(
         appleID: String,
         in database: any Database
     ) async throws -> User? {

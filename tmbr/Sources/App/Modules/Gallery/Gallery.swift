@@ -22,9 +22,9 @@ struct Gallery: Module {
         app.migrations.add(CreateImage())
     }
     
-    func boot(_ app: Vapor.Application) async throws {
-        try app.register(collection: GalleryAPIController())
-        try app.register(collection: GalleryWebController())
+    func boot(_ routes: RoutesBuilder) async throws {
+        try routes.register(collection: GalleryAPIController())
+        try routes.register(collection: GalleryWebController())
     }
 }
 

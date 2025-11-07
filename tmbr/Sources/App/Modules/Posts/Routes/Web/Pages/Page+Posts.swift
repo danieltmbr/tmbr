@@ -2,6 +2,7 @@ import Core
 import Foundation
 import Vapor
 import Fluent
+import AuthKit
 
 struct PostsViewModel: Content {
     struct PostItem: Content {

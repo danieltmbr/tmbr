@@ -7,7 +7,8 @@ let package = Package(
        .macOS(.v15)
     ],
     products: [
-        .library(name: "Core", targets: ["Core"])
+        .library(name: "Core", targets: ["Core"]),
+        .library(name: "AuthKit", targets: ["AuthKit"]),
     ],
     dependencies: [
         // 💧 A server-side Swift web framework.
@@ -32,10 +33,22 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-crypto.git", from: "3.7.0"),
     ],
     targets: [
-        .target(name: "Core", dependencies: [
-            .product(name: "Vapor", package: "vapor"),
-            .product(name: "Markdown", package: "swift-markdown"),
-        ]),
+        .target(
+            name: "Core",
+            dependencies: [
+                .product(name: "Vapor", package: "vapor"),
+                .product(name: "Markdown", package: "swift-markdown"),
+            ]
+        ),
+        .target(
+            name: "AuthKit",
+            dependencies: [
+                .product(name: "Vapor", package: "vapor"),
+                .product(name: "Fluent", package: "fluent"),
+                .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
+                .product(name: "JWT", package: "jwt"),
+            ]
+        ),
         .executableTarget(
             name: "App",
             dependencies: [
@@ -46,11 +59,11 @@ let package = Package(
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "JWT", package: "jwt"),
-                .product(name: "Markdown", package: "swift-markdown"),
                 .product(name: "WebPush", package: "swift-webpush"),
                 .product(name: "SotoS3", package: "soto"),
                 .product(name: "Crypto", package: "swift-crypto"),
                 "Core",
+                "AuthKit",
             ],
             swiftSettings: swiftSettings
         ),

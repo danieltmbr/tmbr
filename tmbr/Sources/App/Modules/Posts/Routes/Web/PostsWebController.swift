@@ -1,5 +1,6 @@
 import Vapor
 import Fluent
+import AuthKit
 
 struct PostsWebController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {

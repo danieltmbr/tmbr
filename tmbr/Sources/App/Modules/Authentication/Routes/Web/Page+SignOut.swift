@@ -2,6 +2,7 @@ import Vapor
 import Core
 import JWT
 import Foundation
+import AuthKit
 
 struct SignOutViewModel: Encodable {
     let name: String
