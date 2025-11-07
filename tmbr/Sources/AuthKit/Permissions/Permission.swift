@@ -1,20 +1,6 @@
 import Foundation
 import Vapor
 
-public enum PermissionError: Swift.Error, Sendable, Hashable {
-    case unauthorized
-    case forbidden
-    case missingPermission
-    
-    public var httpStatus: HTTPResponseStatus {
-        switch self {
-        case .unauthorized: return .unauthorized
-        case .forbidden: return .forbidden
-        case .missingPermission: return .internalServerError
-        }
-    }
-}
-
 public struct Permission<Input>: Sendable {
     
     @dynamicMemberLookup
@@ -23,58 +9,64 @@ public struct Permission<Input>: Sendable {
         
         public let userID: User.IDValue
         
-    
         init(user: User, userID: User.IDValue) {
             self.user = user
             self.userID = userID
         }
         
-        init(from request: Request) throws(PermissionError) {
+        public subscript<V>(dynamicMember keyPath: KeyPath<User, V>) -> V {
+            user[keyPath: keyPath]
+        }
+    }
+        
+    public typealias Grant = @Sendable (Request, Input) throws -> AuthenticatedUser
+    
+    private let grant: Grant
+    
+    public init(grant: @escaping Grant) {
+        self.grant = grant
+    }
+    
+    public init(
+        verify: @Sendable @escaping (AuthenticatedUser, Input) throws -> Void
+    ) {
+        self.init { (request, input) in
             guard let user = request.auth.get(User.self),
                   let userID = user.id else {
-                throw PermissionError.unauthorized
+                throw Abort(.unauthorized)
             }
-            self.init(user: user, userID: userID)
-        }
-        
-        public subscript<V>(dynamicMember keyPath: WritableKeyPath<User, V>) -> V {
-            get { user[keyPath: keyPath] }
-            // nonmutating set { user[keyPath: keyPath] = newValue }
-        }
-    }
-    
-    public typealias Grant = AuthenticatedUser
-    
-    public typealias Verify = @Sendable (Request, Input) throws(PermissionError) -> Grant
-    
-    private let verify: Verify
-    
-    public init(verify: @escaping Verify) {
-        self.verify = verify
-    }
-    
-    public init(verify: @Sendable @escaping (AuthenticatedUser, Input) throws(PermissionError) -> Void) {
-        self.init { (request, input) throws(PermissionError) -> Grant in
-            let authenticatedUser = try AuthenticatedUser(from: request)
+            let authenticatedUser = AuthenticatedUser(user: user, userID: userID)
             try verify(authenticatedUser, input)
             return authenticatedUser
         }
     }
     
-    public init(granted: @Sendable @escaping (AuthenticatedUser, Input) -> Bool) {
-        self.init { (user, input) throws(PermissionError) -> Void in
-            if !granted(user, input) { throw .forbidden }
+    /// Can be used for permission check where the
+    /// only requirement is to have an authenticated user.
+    /// 
+    public init() where Input == Void {
+        self.init { _, _ in }
+    }
+    
+    public init(
+        _ deniedReason: String,
+        granted: @Sendable @escaping (AuthenticatedUser, Input) -> Bool
+    ) {
+        self.init { (user, input) in
+            if !granted(user, input) {
+                throw Abort(.forbidden, reason: deniedReason)
+            }
         }
     }
     
     @discardableResult
-    public func verify(_ input: Input, on request: Request) throws(PermissionError) -> Grant {
-        try self.verify(request, input)
+    public func grant(_ input: Input, on request: Request) throws -> AuthenticatedUser {
+        try self.grant(request, input)
     }
     
     @discardableResult
-    public func verify(on request: Request) throws(PermissionError) -> Grant
+    public func grant(on request: Request) throws -> AuthenticatedUser
     where Input == Void {
-        try self.verify((), on: request)
+        try self.grant((), on: request)
     }
 }

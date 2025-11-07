@@ -4,7 +4,7 @@ import Vapor
 public struct Page: Sendable {
     
     public typealias Assembler = @Sendable (Request) async throws -> AsyncResponseEncodable
-    
+
     private let assembler: Assembler
     
     public init(assembler: @escaping Assembler) {
@@ -35,14 +35,17 @@ public struct Page: Sendable {
         }
     }
     
-    func response(for request: Request) async throws -> AsyncResponseEncodable {
-        try await assembler(request)
+    public func recover(_ recover: Recover) -> Page {
+        Page { request in
+            do {
+                return try await assembler(request)
+            } catch {
+                return try await recover(error, request)
+            }
+        }
     }
     
-    public static func redirect(
-        to location: String = "/",
-        type: Redirect = .normal
-    ) -> Page {
-        Page { $0.redirect(to: location, redirectType: type) }
+    func response(for request: Request) async throws -> AsyncResponseEncodable {
+        try await assembler(request)
     }
 }

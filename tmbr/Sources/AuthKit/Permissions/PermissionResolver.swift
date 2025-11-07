@@ -12,12 +12,12 @@ public struct PermissionResolver<Input> {
     }
     
     @discardableResult
-    public func callAsFunction(_ input: Input) throws(PermissionError) -> Permission<Input>.Grant {
-        try permission.verify(input, on: request)
+    public func callAsFunction(_ input: Input) throws -> Permission<Input>.AuthenticatedUser {
+        try permission.grant(input, on: request)
     }
     
     @discardableResult
-    public func callAsFunction() throws(PermissionError) -> Permission<Input>.Grant
+    public func callAsFunction() throws -> Permission<Input>.AuthenticatedUser
     where Input == Void {
         try callAsFunction(())
     }

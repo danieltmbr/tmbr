@@ -36,7 +36,12 @@ struct AuthenticationAPIController: RouteCollection {
             
             req.auth.login(user)
             req.session.authenticate(user)
-            return req.redirect(to: "/")
+            
+            defer {
+                req.redirectReturnDestination = nil
+            }
+            
+            return req.redirect(to: req.redirectReturnDestination ?? "/")
         }
         
         routes.post("api", "apple", "auth") { req async throws -> Response in

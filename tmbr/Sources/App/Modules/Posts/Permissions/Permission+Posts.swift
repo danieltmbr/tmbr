@@ -5,19 +5,25 @@ import AuthKit
 extension Permission<Post> {
     
     static var accessPost: Permission<Post> {
-        Permission<Post> { user, post in
+        Permission<Post>(
+            "This post is not published yet. Only its author can see a draft post."
+        ) { user, post in
             post.state == .published || post.author.id == user.userID || user.role == .admin
         }
     }
     
     static var deletePost: Self {
-        Permission<Post> { user, post in
+        Permission<Post>(
+            "Only its author can delete a post."
+        ) { user, post in
             post.author.id == user.userID || user.role == .admin
         }
     }
     
     static var editPost: Self {
-        Permission<Post> { user, post in
+        Permission<Post>(
+            "Only its author can edit a post."
+        ) { user, post in
             post.author.id == user.userID || user.role == .admin
         }
     }
@@ -26,8 +32,14 @@ extension Permission<Post> {
 extension Permission<Void> {
     
     static var createPost: Self {
-        Permission<Void> { user, _ in
+        Permission<Void>(
+            "Only authors can create posts."
+        ) { user, _ in
             user.role == .author || user.role == .admin
         }
+    }
+    
+    static var listDrafts: Self {
+        Permission<Void>()
     }
 }
