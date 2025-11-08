@@ -1,7 +1,7 @@
-import Core
 import Foundation
 import Vapor
 import AuthKit
+import Core
 
 struct PostViewModel: Content {
 
@@ -41,10 +41,7 @@ extension Page {
             guard let postID = req.parameters.get("postID", as: Int.self) else {
                 throw Abort(.badRequest)
             }
-            guard let post = try await Post.find(postID, on: req.db) else {
-                throw Abort(.notFound)
-            }
-            try await req.permissions.posts.access(post)
+            let post = try await req.commands.posts.post(postID)
             return PostViewModel(post: post)
         }
         .recover(.aborts)

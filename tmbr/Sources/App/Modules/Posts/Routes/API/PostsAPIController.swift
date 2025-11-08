@@ -1,6 +1,7 @@
 import Vapor
 import AuthKit
 import Fluent
+import Core
 
 struct PostsAPIController: RouteCollection {
     
@@ -12,10 +13,7 @@ struct PostsAPIController: RouteCollection {
         
         // GET /api/posts
         postsRoute.get { req async throws -> [Post] in
-            try await Post.query(on: req.db)
-                .filter(\.$state == .published)
-                .with(\.$author)
-                .all()
+            try await req.commands.posts.list()
         }
         
         // GET /api/posts/:postID
@@ -23,29 +21,13 @@ struct PostsAPIController: RouteCollection {
             guard let postID = req.parameters.get("postID", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid post ID")
             }
-            guard let post = try await Post.find(postID, on: req.db) else {
-                throw Abort(.notFound, reason: "Post not found")
-            }
-            try await req.permissions.posts.access(post)
-            return post
+             return try await req.commands.posts.post(postID)
         }
         
         // POST /api/posts
         protectedRoutes.post { req async throws -> Post in
-            try await req.permissions.posts.create()
             let post = try req.content.decode(Post.self)
-            post.$author.id = try req.auth.require(User.self).requireID()
-            try await post.save(on: req.db)
-            
-            Task.detached {
-                let notificationService = req.application.notificationService
-                try await notificationService?.notify(
-                    subscriptions: WebPushSubscription.query(on: req.db).all(),
-                    content: PushNotification(post: post)
-                )
-            }
-            
-            return post
+             return try await req.commands.posts.create(post)
         }
         
         // PUT /api/posts/:postID
@@ -71,11 +53,7 @@ struct PostsAPIController: RouteCollection {
             guard let postID = req.parameters.get("postID", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid post ID")
             }
-            guard let post = try await Post.find(postID, on: req.db) else {
-                throw Abort(.notFound, reason: "Post not found")
-            }
-            try await req.permissions.posts.delete(post)
-            try await post.delete(on: req.db)
+            try await req.commands.posts.delete(postID)
             return .noContent
         }
     }

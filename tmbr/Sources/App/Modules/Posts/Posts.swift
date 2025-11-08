@@ -7,13 +7,20 @@ struct Posts: Module {
     
     private let permissions: PermissionScopes.Posts
     
-    init(permissions: PermissionScopes.Posts) {
+    private let commands: Core.Commands.Posts
+    
+    init(
+        permissions: PermissionScopes.Posts,
+        commands: Core.Commands.Posts
+    ) {
         self.permissions = permissions
+        self.commands = commands
     }
     
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(CreatePost())
         try await app.permissions.add(scope: permissions)
+        try await app.commands.add(collection: commands)
     }
     
     func boot(_ routes: RoutesBuilder) async throws {
@@ -24,6 +31,9 @@ struct Posts: Module {
 
 extension Module where Self == Posts {
     static var posts: Self {
-        Posts(permissions: PermissionScopes.Posts())
+        Posts(
+            permissions: PermissionScopes.Posts(),
+            commands: Core.Commands.Posts()
+        )
     }
 }
