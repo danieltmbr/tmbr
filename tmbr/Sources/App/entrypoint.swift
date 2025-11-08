@@ -13,6 +13,7 @@ enum Entrypoint {
 
         let registry = ModuleRegistry(
             configurations: [
+                .logging,
                 .database,
                 .renderer,
             ],
