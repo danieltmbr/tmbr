@@ -1,22 +1,29 @@
 import Foundation
 
-public struct Command<Input, Output>: Sendable
-where Input: Sendable, Output: Sendable {
+public protocol Command<Input, Output>: Sendable {
     
-    public typealias Execute = @Sendable (Input) async throws -> Output
+    associatedtype Input: Sendable
     
-    private let execute: Execute
+    associatedtype Output: Sendable
     
-    public init(execute: @escaping Execute) {
-        self.execute = execute
-    }
-    
-    public func callAsFunction(_ input: Input) async throws -> Output {
+    @Sendable
+    func execute(_ input: Input) async throws -> Output
+}
+
+public extension Command {
+
+    func callAsFunction(_ input: Input) async throws -> Output {
         try await execute(input)
     }
+}
+
+public extension Command where Input == Void {
     
-    public func callAsFunction() async throws -> Output
-    where Input == Void {
+    func execute() async throws -> Output {
         try await execute(())
+    }
+    
+    func callAsFunction() async throws -> Output {
+        try await execute()
     }
 }

@@ -4,7 +4,7 @@ import Vapor
 public struct CommandFactory<Input, Output>: Sendable
 where Input: Sendable, Output: Sendable {
     
-    public typealias Factory = @Sendable (Request) throws -> Command<Input, Output>
+    public typealias Factory = @Sendable (Request) throws -> any Command<Input, Output>
     
     private let make: Factory
     
@@ -12,11 +12,12 @@ where Input: Sendable, Output: Sendable {
         self.make = make
     }
     
-    public init(command: Command<Input, Output>) {
+    public init(command: any Command<Input, Output>) {
         self.init { _ in command }
     }
     
-    public func callAsFunction(_ request: Request) throws -> Command<Input, Output> {
+    @Sendable
+    public func callAsFunction(_ request: Request) throws -> any Command<Input, Output> {
         try make(request)
     }
 }
