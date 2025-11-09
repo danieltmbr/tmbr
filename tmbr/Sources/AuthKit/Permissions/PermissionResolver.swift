@@ -1,5 +1,9 @@
 import Vapor
 
+public typealias AuthPermissionResolver<Input> = PermissionResolver<Input, AuthPermission<Input>.User>
+
+public typealias BasePermissionResolver<Input> = PermissionResolver<Input, Permission<Input>.User?>
+
 public struct PermissionResolver<Input, Output>: Sendable {
     
     public typealias Resolve = @Sendable (Input) async throws -> Output
@@ -14,7 +18,7 @@ public struct PermissionResolver<Input, Output>: Sendable {
         request: Request,
         scope: S.Type,
         keyPath: KeyPath<S, Permission<Input>>
-    ) where Output == Permission<Input>.AuthenticatedUser? {
+    ) where Output == Permission<Input>.User? {
         self.init { input in
             let storage = try request.application.permissions
             let scope = try await storage.scope(S.self)
@@ -26,8 +30,8 @@ public struct PermissionResolver<Input, Output>: Sendable {
     init<S: PermissionScope>(
         request: Request,
         scope: S.Type,
-        keyPath: KeyPath<S, AuthenticatingPermission<Input>>
-    ) where Output == AuthenticatingPermission<Input>.AuthenticatedUser {
+        keyPath: KeyPath<S, AuthPermission<Input>>
+    ) where Output == AuthPermission<Input>.User {
         self.init { input in
             let storage = try request.application.permissions
             let scope = try await storage.scope(S.self)

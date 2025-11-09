@@ -2,6 +2,8 @@ import Fluent
 import Vapor
 import Foundation
 
+public typealias UserID = User.IDValue
+
 public final class User: Model, Content, Authenticatable, @unchecked Sendable {
     
     public enum Role: String, Codable {

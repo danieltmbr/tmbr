@@ -9,7 +9,7 @@ extension Core.Command where Self == PlainCommand<Post.IDValue, Void> {
     static func deletePost(
         database: Database,
         logger: Logger,
-        permission: PermissionResolver<Post>
+        permission: AuthPermissionResolver<Post>
     ) -> Self {
         PlainCommand { postID in
             guard let post = try await Post.find(postID, on: database) else {

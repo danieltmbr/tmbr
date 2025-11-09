@@ -9,20 +9,20 @@ extension PermissionScopes {
         
         let access: Permission<Post>
         
-        let create: AuthenticatingPermission<Void>
+        let create: AuthPermission<Void>
         
-        let delete: AuthenticatingPermission<Post>
+        let delete: AuthPermission<Post>
         
-        let drafts: AuthenticatingPermission<Void>
+        let drafts: AuthPermission<Void>
         
-        let edit: AuthenticatingPermission<Post>
+        let edit: AuthPermission<Post>
         
         init(
             access: Permission<Post> = .accessPost,
-            create: AuthenticatingPermission<Void> = .createPost,
-            delete: AuthenticatingPermission<Post> = .deletePost,
-            drafts: AuthenticatingPermission<Void> = .listDrafts,
-            edit: AuthenticatingPermission<Post> = .editPost
+            create: AuthPermission<Void> = .createPost,
+            delete: AuthPermission<Post> = .deletePost,
+            drafts: AuthPermission<Void> = .listDrafts,
+            edit: AuthPermission<Post> = .editPost
         ) {
             self.access = access
             self.create = create

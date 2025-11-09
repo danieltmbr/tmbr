@@ -15,6 +15,7 @@ enum Entrypoint {
             configurations: [
                 .logging,
                 .database,
+                .commands,
                 .renderer,
             ],
             modules: [

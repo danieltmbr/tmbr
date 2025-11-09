@@ -15,10 +15,10 @@ extension Permission<Post> {
     }
 }
 
-extension AuthenticatingPermission<Post> {
+extension AuthPermission<Post> {
     
     static var deletePost: Self {
-        AuthenticatingPermission<Post>(
+        AuthPermission<Post>(
             "Only its author can delete a post."
         ) { user, post in
             post.$author.id == user.userID || user.role == .admin
@@ -26,7 +26,7 @@ extension AuthenticatingPermission<Post> {
     }
     
     static var editPost: Self {
-        AuthenticatingPermission<Post>(
+        AuthPermission<Post>(
             "Only its author can edit a post."
         ) { user, post in
             post.$author.id == user.userID || user.role == .admin
@@ -34,10 +34,10 @@ extension AuthenticatingPermission<Post> {
     }
 }
 
-extension AuthenticatingPermission<Void> {
+extension AuthPermission<Void> {
     
     static var createPost: Self {
-        AuthenticatingPermission<Void>(
+        AuthPermission<Void>(
             "Only authors can create posts."
         ) { user, _ in
             user.role == .author || user.role == .admin
@@ -45,6 +45,6 @@ extension AuthenticatingPermission<Void> {
     }
     
     static var listDrafts: Self {
-        AuthenticatingPermission<Void>()
+        AuthPermission<Void>()
     }
 }

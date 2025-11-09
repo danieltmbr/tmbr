@@ -9,7 +9,7 @@ extension Core.Command where Self == PlainCommand<Post.IDValue, Post> {
     
     static func fetchPost(
         database: Database,
-        permission: PermissionResolver<Post>
+        permission: BasePermissionResolver<Post>
     ) -> Self {
         PlainCommand { postID in
             guard let post = try await Post.find(postID, on: database) else {

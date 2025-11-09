@@ -18,7 +18,7 @@ public struct PermissionDynamicLookup<T>: Sendable {
     
     public subscript <Input>(
         dynamicMember keyPath: KeyPath<T, Permission<Input>>
-    ) -> PermissionResolver<Input, Permission<Input>.AuthenticatedUser?>
+    ) -> PermissionResolver<Input, Permission<Input>.User?>
     where T: PermissionScope {
         PermissionResolver(
             request: request,
@@ -28,8 +28,8 @@ public struct PermissionDynamicLookup<T>: Sendable {
     }
     
     public subscript <Input>(
-        dynamicMember keyPath: KeyPath<T, AuthenticatingPermission<Input>>
-    ) -> PermissionResolver<Input, AuthenticatingPermission<Input>.AuthenticatedUser>
+        dynamicMember keyPath: KeyPath<T, AuthPermission<Input>>
+    ) -> PermissionResolver<Input, AuthPermission<Input>.User>
     where T: PermissionScope {
         PermissionResolver(
             request: request,

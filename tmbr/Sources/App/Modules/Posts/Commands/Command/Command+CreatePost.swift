@@ -11,7 +11,7 @@ extension Core.Command where Self == PlainCommand<Post, Post> {
         database: Database,
         logger: Logger,
         notificationService: NotificationService?,
-        permission: PermissionResolver<Void>
+        permission: AuthPermissionResolver<Void>
     ) -> Self {
         PlainCommand { post in
             let user = try await permission.grant()
@@ -41,7 +41,7 @@ extension CommandFactory<Post, Post> {
                 notificationService: request.application.notificationService,
                 permission: request.permissions.posts.create
             )
-            .logged(name: "Create Post", logger: request.logger)
+            .logged(name: "Create Post Command", logger: request.logger)
         }
     }
 }
