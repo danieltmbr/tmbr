@@ -147,6 +147,11 @@ main > section > article > a {
     color: inherit;
 }
 
+main > a,
+main > a > svg {
+    color: inherit;
+}
+
 main > section > article > a > svg.signature {
     transform: translateX(-16px);
 }

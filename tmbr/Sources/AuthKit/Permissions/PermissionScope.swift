@@ -1,5 +1,10 @@
 import Foundation
-
-public protocol PermissionScope {}
+import Vapor
 
 public enum PermissionScopes {}
+
+extension Request {
+    public var permissions: PermissionDynamicLookup<PermissionScopes> {
+        PermissionDynamicLookup(request: self)
+    }
+}

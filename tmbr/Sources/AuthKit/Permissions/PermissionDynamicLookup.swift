@@ -1,35 +1,40 @@
 import Foundation
 import Vapor
 
+public protocol PermissionScope {}
+
 @dynamicMemberLookup
-public struct PermissionDynamicLookup<T> {
-    
-    private let path: KeyPath<PermissionScopes, T>
-    
+public struct PermissionDynamicLookup<T>: Sendable {
+        
     private let request: Request
 
-    init(request: Request, path: KeyPath<PermissionScopes, T>) {
+    init(request: Request) {
         self.request = request
-        self.path = path
     }
     
-    public subscript <U>(dynamicMember keyPath: KeyPath<T, U>) -> PermissionDynamicLookup<U> {
-        PermissionDynamicLookup<U>(request: request, path: path.appending(path: keyPath))
+    public subscript <S>(dynamicMember keyPath: KeyPath<T, S.Type>) -> PermissionDynamicLookup<S> {
+        PermissionDynamicLookup<S>(request: request)
     }
     
-    public subscript <Scope, Input>(dynamicMember keyPath: KeyPath<Scope, Permission<Input>>) -> PermissionResolver<Input>
-    where Scope: PermissionScope, Scope.Type == T {
-        get async throws {
-            let permissions = try request.application.permissions
-            let scope = try await permissions.scope(Scope.self)
-            let permission = scope[keyPath: keyPath]
-            return PermissionResolver(request: request, permission: permission)
-        }
+    public subscript <Input>(
+        dynamicMember keyPath: KeyPath<T, Permission<Input>>
+    ) -> PermissionResolver<Input, Permission<Input>.AuthenticatedUser?>
+    where T: PermissionScope {
+        PermissionResolver(
+            request: request,
+            scope: T.self,
+            keyPath: keyPath
+        )
     }
-}
-
-extension Request {
-    public var permissions: PermissionDynamicLookup<PermissionScopes> {
-        PermissionDynamicLookup(request: self, path: \.self)
+    
+    public subscript <Input>(
+        dynamicMember keyPath: KeyPath<T, AuthenticatingPermission<Input>>
+    ) -> PermissionResolver<Input, AuthenticatingPermission<Input>.AuthenticatedUser>
+    where T: PermissionScope {
+        PermissionResolver(
+            request: request,
+            scope: T.self,
+            keyPath: keyPath
+        )
     }
 }
