@@ -80,9 +80,9 @@ actor NotificationService {
             )
         } catch is BadSubscriberError {
             try? await removeSubscription(subscription)
-            logger.error("The subscription is no longer valid and it's been removed.")
+            logger.info("The subscription is no longer valid and it's been removed.")
         } catch is MessageTooLargeError {
-            logger.error("Push Message is too long. Message: \(content.body)")
+            logger.warning("Push Message is too long. Message: \(content.body)")
         } catch let error as PushServiceError {
             logger.error("Push Service error: \(error.localizedDescription)")
         } catch {

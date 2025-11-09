@@ -3,6 +3,7 @@ import AuthKit
 import Crypto
 import JWT
 import Foundation
+import Core
 
 struct AuthenticationAPIController: RouteCollection {
     
