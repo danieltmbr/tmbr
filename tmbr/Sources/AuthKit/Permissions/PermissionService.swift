@@ -16,7 +16,7 @@ public actor PermissionService {
     }
     
     func scope<S: PermissionScope>(_ type: S.Type) throws -> S {
-        guard let scope = scopes[String(describing: type)] as? S else {
+        guard let scope = scopes[String(reflecting: type)] as? S else {
             throw Abort(.serviceUnavailable, reason: "Permission Scope (\(type)) is unavailable.")
         }
         return scope

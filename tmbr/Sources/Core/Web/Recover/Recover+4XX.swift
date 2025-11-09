@@ -6,7 +6,7 @@ extension Page.Recover {
     public static var unathorized: Self {
         Page.Recover(
             status: .unauthorized,
-            response: Page.Redirect(destination: "/singin", return: .origin)
+            response: Page.Redirect(destination: "/signin", return: .origin)
         )
     }
     

@@ -1,5 +1,6 @@
 import Foundation
 import Vapor
+import Core
 
 public struct ErrorViewModel: Encodable, Sendable {
     
@@ -12,10 +13,11 @@ public struct ErrorViewModel: Encodable, Sendable {
     public init(
         title: String,
         message: String,
-        suggestedFixes: [String] = []
+        suggestedFixes: [String] = [],
+        markdownFormatter formatter: MarkdownFormatter = .html
     ) {
         self.title = title
-        self.message = message
+        self.message = formatter.format(message)
         self.suggestedFixes = suggestedFixes
     }
     
@@ -31,5 +33,5 @@ public struct ErrorViewModel: Encodable, Sendable {
 
 extension Template where Model == ErrorViewModel {
     
-    static let error = Template(name: "error")
+    static let error = Template(name: "Error/error")
 }
