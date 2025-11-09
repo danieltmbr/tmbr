@@ -2,6 +2,8 @@ import Fluent
 import Vapor
 import AuthKit
 
+typealias PostID = Post.IDValue
+
 final class Post: Model, Content, @unchecked Sendable {
     
     enum State: String, Codable, Sendable {
@@ -32,14 +34,14 @@ final class Post: Model, Content, @unchecked Sendable {
     init() {}
     
     init(
-        author: User,
+        authorID: User.IDValue,
         content: String,
-        createdAt: Date = Date(),
+        createdAt: Date = .now,
         id: Int? = nil,
         state: State = .draft,
         title: String
     ) {
-        self.author = author
+        self.$author.id = authorID
         self.content = content
         self.createdAt = createdAt
         self.id = id

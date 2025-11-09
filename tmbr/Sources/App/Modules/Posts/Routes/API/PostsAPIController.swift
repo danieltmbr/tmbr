@@ -8,7 +8,6 @@ struct PostsAPIController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         // Group all API routes under /api/posts
         let postsRoute = routes.grouped("api", "posts")
-        
         let protectedRoutes = postsRoute.grouped(AppleSignInAuthenticator())
         
         // GET /api/posts
@@ -21,13 +20,13 @@ struct PostsAPIController: RouteCollection {
             guard let postID = req.parameters.get("postID", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid post ID")
             }
-             return try await req.commands.posts.post(postID)
+            return try await req.commands.posts.fetch(postID, for: .read)
         }
         
         // POST /api/posts
         protectedRoutes.post { req async throws -> Post in
-            let post = try req.content.decode(Post.self)
-             return try await req.commands.posts.create(post)
+            let post = try req.content.decode(PostPayload.self)
+            return try await req.commands.posts.create(post)
         }
         
         // PUT /api/posts/:postID
@@ -35,17 +34,9 @@ struct PostsAPIController: RouteCollection {
             guard let postID = req.parameters.get("postID", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid post ID")
             }
-            guard let post = try await Post.find(postID, on: req.db) else {
-                throw Abort(.notFound, reason: "Post not found")
-            }
-            try await req.permissions.posts.edit(post)
-            
-            let updatedData = try req.content.decode(Post.self)
-            post.title = updatedData.title
-            post.content = updatedData.content
-            post.state = updatedData.state
-            try await post.save(on: req.db)
-            return post
+            let payload = try req.content.decode(PostPayload.self)
+            let editPayload = payload.edit(id: postID)
+            return try await req.commands.posts.edit(editPayload)
         }
         
         // DELETE /api/posts/:postID

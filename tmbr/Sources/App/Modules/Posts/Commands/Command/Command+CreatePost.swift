@@ -5,9 +5,9 @@ import Logging
 import Fluent
 import AuthKit
 
-struct CreatePostCommand: Core.Command {
+struct CreatePostCommand: Command {
     
-    typealias Input = Post
+    typealias Input = PostPayload
     
     typealias Output = Post
 
@@ -15,48 +15,63 @@ struct CreatePostCommand: Core.Command {
     
     private let logger: Logger
     
-    private let notificationService: NotificationService?
+    private let notify: CommandResolver<PushNotification, Void>
     
     private let permission: AuthPermissionResolver<Void>
 
     init(
         database: Database,
         logger: Logger,
-        notificationService: NotificationService?,
+        notify: CommandResolver<PushNotification, Void>,
         permission: AuthPermissionResolver<Void>
     ) {
         self.database = database
         self.logger = logger
-        self.notificationService = notificationService
+        self.notify = notify
         self.permission = permission
     }
 
-    func execute(_ post: Post) async throws -> Post {
+    func execute(_ payload: PostPayload) async throws -> Post {
         let user = try await permission.grant()
-        post.$author.id = user.userID
+        
+        // TODO: Validation
+        guard !payload.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw Abort(.badRequest, reason: "Title is required.")
+        }
+        if payload.state == .published {
+            let body = payload.body?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if body.isEmpty {
+                throw Abort(.badRequest, reason: "Sorry, can't publich an empty post.")
+            }
+        }
+        
+        let post = Post(
+            authorID: user.userID,
+            content: payload.body ?? "",
+            state: payload.state,
+            title: payload.title
+        )
         try await post.save(on: database)
-        sendNotification(for: post)
+        notify(about: post)
         return post
     }
     
-    private func sendNotification(for post: Post) {
+    private func notify(about post: Post) {
+        guard post.state == .published else { return }
         Task.detached {
-            try await notificationService?.notify(
-                subscriptions: WebPushSubscription.query(on: database).all(),
-                content: PushNotification(post: post)
-            )
+            try await notify(PushNotification(post: post))
         }
     }
 }
 
-extension CommandFactory<Post, Post> {
+extension CommandFactory<PostPayload, Post> {
 
     static var createPost: Self {
         CommandFactory { request in
             CreatePostCommand(
                 database: request.application.db,
                 logger: request.application.logger,
-                notificationService: request.application.notificationService,
+                notify: request.commands.notifications.send,
                 permission: request.permissions.posts.create
             )
             .logged(logger: request.logger)

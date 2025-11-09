@@ -4,9 +4,11 @@ public typealias AuthPermissionResolver<Input> = PermissionResolver<Input, AuthP
 
 public typealias BasePermissionResolver<Input> = PermissionResolver<Input, Permission<Input>.User?>
 
+public typealias VoidPermissionResolver<Input> = PermissionResolver<Input, Void>
+
 public struct PermissionResolver<Input, Output>: Sendable {
     
-    public typealias Resolve = @Sendable (Input) async throws -> Output
+    typealias Resolve = @Sendable (Input) async throws -> Output
     
     private let resolve: Resolve
     
@@ -38,6 +40,10 @@ public struct PermissionResolver<Input, Output>: Sendable {
             let permission = scope[keyPath: keyPath]
             return try permission.grant(input, on: request)
         }
+    }
+    
+    public func ereaseOutput() -> PermissionResolver<Input, Void> {
+        PermissionResolver<Input, Void> { try await self.grant($0) }
     }
     
     @discardableResult

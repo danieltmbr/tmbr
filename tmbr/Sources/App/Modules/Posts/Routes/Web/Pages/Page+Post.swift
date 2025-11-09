@@ -16,23 +16,40 @@ struct PostViewModel: Content {
     private let title: String
     
     init(
+        author: String,
+        content: String,
+        id: Int?,
+        publishDate: String,
+        title: String
+    ) {
+        self.author = author
+        self.content = content
+        self.id = id
+        self.publishDate = publishDate
+        self.title = title
+    }
+    
+    init(
         post: Post,
         markdownFormatter formatter: MarkdownFormatter = .html,
         nameFormatter: NameFormatter = .author
     ) {
-        self.author = nameFormatter.format(
-            givenName: post.$author.value?.firstName,
-            familyName: post.$author.value?.lastName
+        
+        self.init(
+            author: nameFormatter.format(
+                givenName: post.$author.value?.firstName,
+                familyName: post.$author.value?.lastName
+            ),
+            content: formatter.format(post.content),
+            id: post.id,
+            publishDate: post.state == .published ? post.createdAt.formatted(.publishDate) : "Draft",
+            title: post.title
         )
-        self.content = formatter.format(post.content)
-        self.id = post.id
-        self.publishDate = post.createdAt.formatted(.publishDate)
-        self.title = post.title
     }
 }
 
 extension Template where Model == PostViewModel {
-    static let post = Template(name: "post")
+    static let post = Template(name: "Posts/post")
 }
 
 extension Page {
@@ -41,7 +58,7 @@ extension Page {
             guard let postID = req.parameters.get("postID", as: Int.self) else {
                 throw Abort(.badRequest)
             }
-            let post = try await req.commands.posts.post(postID)
+            let post = try await req.commands.posts.fetch(postID, for: .read)
             return PostViewModel(post: post)
         }
         .recover(.aborts)

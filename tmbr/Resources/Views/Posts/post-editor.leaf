@@ -1,0 +1,72 @@
+#extend("Shared/page"):
+    #export("main"):
+    <section alt="Post edit form">
+        <form id="post-form" method="#(submit.method)" action="#(submit.action)">
+            <input id="editor-post-id" type="hidden" name="id" value="#(id)" />
+            #if(_csrf):
+                <input type="hidden" name="_csrf" value="#(_csrf)" />
+            #endif
+
+            <input
+                id="editor-post-title"
+                name="title"
+                type="text"
+                value="#(title)"
+                placeholder="Title"
+                autocomplete="off"
+                spellcheck="true"
+            />
+
+            <textarea
+                id="editor-post-body"
+                name="body"
+                placeholder="Write your story"
+                autocapitalize="sentences"
+                spellcheck="true"
+            >#(body)</textarea>
+            
+            #if(error):
+                <p class="editor-error">#unsafeHTML(error)</p>
+            #endif
+
+            <div class="editor-actions">
+                <button id="editor-post-preview" class="link" type="button">Preview</button>
+              
+                <div>
+                    <input
+                        id="editor-post-draft"
+                        name="state"
+                        type="hidden"
+                        value="draft"
+                    />
+                    <label class="published">
+                        <input
+                            id="editor-post-published"
+                            name="state"
+                            type="checkbox"
+                            value="published"
+                            #if(state=="published"){ checked }
+                        />
+                        Publish
+                    </label>
+                    
+                    <button id="editor-post-save" class="primary" type="submit">#(submit.label)</button>
+              </div>
+            </div>
+            
+        </form>
+
+        <form id="preview-form" method="post" action="/post/preview" target="_blank" hidden>
+            #if(_csrf):
+                <input type="hidden" name="_csrf" value="#(_csrf)" />
+            #endif
+            <input type="hidden" name="title" id="preview-title" />
+            <input type="hidden" name="body" id="preview-body" />
+        </form>
+
+    </section>
+    
+    <script src="/Scripts/post-editor.js"></script>
+
+    #endexport
+#endextend
