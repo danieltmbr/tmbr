@@ -6,10 +6,7 @@ import Fluent
 
 extension Core.Command where Self == PlainCommand<Void, [Post]> {
     
-    static func listPosts(
-        database: Database,
-        logger: Logger
-    ) -> Self {
+    static func listPosts(database: Database) -> Self {
         PlainCommand {
             try await Post.query(on: database)
                 .filter(\.$state == .published)
@@ -23,10 +20,7 @@ extension CommandFactory<Void, [Post]> {
     
     static var listPosts: Self {
         CommandFactory { request in
-            .listPosts(
-                database: request.db,
-                logger: request.logger
-            )
+            .listPosts(database: request.db)
             .logged(
                 name: "List posts",
                 logger: request.logger
