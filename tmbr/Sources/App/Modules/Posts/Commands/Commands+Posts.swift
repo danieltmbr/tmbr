@@ -8,28 +8,28 @@ extension Commands {
 extension Commands {
     struct Posts: CommandCollection, Sendable {
                 
-        let create: CommandFactory<Post, Post>
+        let create: CommandFactory<PostPayload, Post>
         
         let delete: CommandFactory<Post.IDValue, Void>
                 
-        let edit: CommandFactory<Post, Post>
+        let edit: CommandFactory<EditPostPayload, Post>
+        
+        let fetch: CommandFactory<FetchPostParameters, Post>
         
         let list: CommandFactory<Void, [Post]>
         
-        let post: CommandFactory<Post.IDValue, Post>
-        
         init(
-            create: CommandFactory<Post, Post> = .createPost,
+            create: CommandFactory<PostPayload, Post> = .createPost,
             delete: CommandFactory<Post.IDValue, Void> = .deletePost,
-            edit: CommandFactory<Post, Post> = .editPost,
-            list: CommandFactory<Void, [Post]> = .listPosts,
-            post: CommandFactory<Post.IDValue, Post> = .fetchPost
+            edit: CommandFactory<EditPostPayload, Post> = .editPost,
+            fetch: CommandFactory<FetchPostParameters, Post> = .fetchPost,
+            list: CommandFactory<Void, [Post]> = .listPosts
         ) {
             self.create = create
             self.delete = delete
             self.edit = edit
+            self.fetch = fetch
             self.list = list
-            self.post = post
         }
     }
 }

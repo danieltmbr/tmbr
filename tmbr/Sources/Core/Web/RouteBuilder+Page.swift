@@ -117,7 +117,6 @@ public extension RoutesBuilder {
                 _ = try await request.eventLoop.flatSubmit {
                     request.body.collect(max: max?.value ?? request.application.routes.defaultMaxBodySize.value)
                 }.get()
-                
             }
             return try await closure(request).encodeResponse(for: request)
         }
@@ -131,6 +130,4 @@ public extension RoutesBuilder {
         self.add(route)
         return route
     }
-
 }
-

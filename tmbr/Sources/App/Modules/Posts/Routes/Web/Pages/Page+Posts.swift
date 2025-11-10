@@ -34,7 +34,7 @@ struct PostsViewModel: Content {
 }
 
 extension Template where Model == PostsViewModel {
-    static let posts = Template(name: "posts")
+    static let posts = Template(name: "Posts/posts")
 }
 
 extension Core.Page {

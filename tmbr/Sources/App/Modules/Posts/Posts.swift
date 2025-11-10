@@ -7,11 +7,11 @@ struct Posts: Module {
     
     private let permissions: PermissionScopes.Posts
     
-    private let commands: Core.Commands.Posts
+    private let commands: Commands.Posts
     
     init(
         permissions: PermissionScopes.Posts,
-        commands: Core.Commands.Posts
+        commands: Commands.Posts
     ) {
         self.permissions = permissions
         self.commands = commands
@@ -33,7 +33,7 @@ extension Module where Self == Posts {
     static var posts: Self {
         Posts(
             permissions: PermissionScopes.Posts(),
-            commands: Core.Commands.Posts()
+            commands: Commands.Posts()
         )
     }
 }
