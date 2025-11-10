@@ -23,6 +23,8 @@ public struct FetchPostParameters: Sendable {
 
 struct FetchPostCommand: Command {
     
+    typealias PermissionInput = (post: Post, reason: FetchReason)
+    
     typealias Input = FetchPostParameters
     
     typealias Output = Post
@@ -31,30 +33,41 @@ struct FetchPostCommand: Command {
     
     private let logger: Logger
         
-    private let readPermission: VoidPermissionResolver<Post>
-    
-    private let writePermission: VoidPermissionResolver<Post>
+    private let permission: ErasedPermissionResolver<PermissionInput>
+
+    init(
+        database: Database,
+        logger: Logger,
+        permission: ErasedPermissionResolver<PermissionInput>
+    ) {
+        self.database = database
+        self.logger = logger
+        self.permission = permission
+    }
     
     init(
         database: Database,
         logger: Logger,
-        readPermission: VoidPermissionResolver<Post>,
-        writePermission: VoidPermissionResolver<Post>
+        readPermission: BasePermissionResolver<Post>,
+        writePermission: AuthPermissionResolver<Post>
     ) {
-        self.database = database
-        self.logger = logger
-        self.readPermission = readPermission
-        self.writePermission = writePermission
+        self.init(
+            database: database,
+            logger: logger,
+            permission: ErasedPermissionResolver(input: \.post, condition: \.reason) { reason in
+                switch reason {
+                case .read: readPermission.ereaseOutput()
+                case .write: writePermission.ereaseOutput()
+                }
+            }
+        )
     }
     
     func execute(_ params: FetchPostParameters) async throws -> Post {
         guard let post = try await Post.find(params.postID, on: database) else {
             throw Abort(.notFound, reason: "Post not found")
         }
-        switch params.reason {
-        case .read: try await readPermission.grant(post)
-        case .write: try await writePermission.grant(post)
-        }
+        try await permission.grant((post, params.reason))
         return post
     }
 }
@@ -66,8 +79,8 @@ extension CommandFactory<FetchPostParameters, Post> {
             FetchPostCommand(
                 database: request.application.db,
                 logger: request.application.logger,
-                readPermission: request.permissions.posts.access.ereaseOutput(),
-                writePermission: request.permissions.posts.edit.ereaseOutput()
+                readPermission: request.permissions.posts.access,
+                writePermission: request.permissions.posts.edit
             )
             .logged(logger: request.logger)
         }
