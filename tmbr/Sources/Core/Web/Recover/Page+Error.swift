@@ -1,6 +1,5 @@
 import Foundation
 import Vapor
-import Core
 
 public struct ErrorViewModel: Encodable, Sendable {
     

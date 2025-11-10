@@ -133,7 +133,12 @@ main > section > article > p span.reference {
 }
 
 main > section > article  li {
-    padding: 0.3em 0;
+    padding: 0 0;
+}
+
+main > section > article  li > p {
+    margin-block-start: 0.5em;
+    margin-block-end: 0.5em;
 }
 
 main > section > article > blockquote {

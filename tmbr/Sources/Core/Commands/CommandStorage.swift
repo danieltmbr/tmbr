@@ -7,14 +7,18 @@ public actor CommandStorage {
         public typealias Value = CommandStorage
     }
 
-    private var storage: [String: CommandCollection] = [:]
+    private var storage: [String: CommandCollection]
+    
+    public init(storage: [String : CommandCollection] = [:]) {
+        self.storage = storage
+    }
     
     public func add<C: CommandCollection>(collection: C) {
-        storage[String(describing: C.Type.self)] = collection
+        storage[String(reflecting: type(of: collection))] = collection
     }
 
     func collection<C: CommandCollection>(_ type: C.Type) throws -> C {
-        guard let collection = storage[String(describing: type)] as? C else {
+        guard let collection = storage[String(reflecting: type)] as? C else {
             throw Abort(.serviceUnavailable, reason: "CommandCollection (\(type)) is unavailable.")
         }
         return collection

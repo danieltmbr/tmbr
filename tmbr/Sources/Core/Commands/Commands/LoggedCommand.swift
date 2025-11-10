@@ -31,13 +31,13 @@ where Input: Sendable, Output: Sendable {
     }
     
     public func execute(_ input: Input) async throws -> Output {
-        logger.trace("Command \(name) started with input: \(String(describing: input))")
+        logger.trace("\(name) started with input: \(String(describing: input))")
         do {
             let output = try await execute(input)
-            logger.trace("Command \(name) produced output: \(String(describing: output))")
+            logger.trace("\(name) produced output: \(String(describing: output))")
             return output
         } catch {
-            logger.error("Command \(name) produced error: \(error)")
+            logger.error("\(name) produced error: \(error)")
             throw error
         }
     }

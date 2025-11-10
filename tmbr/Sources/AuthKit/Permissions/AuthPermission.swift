@@ -1,11 +1,11 @@
 import Foundation
 import Vapor
 
-public struct AuthenticatingPermission<Input>: Sendable {
+public struct AuthPermission<Input>: Sendable {
     
-    public typealias AuthenticatedUser = Permission<Input>.AuthenticatedUser
+    public typealias User = Permission<Input>.User
     
-    public typealias Grant = @Sendable (Request, Input) throws -> AuthenticatedUser
+    public typealias Grant = @Sendable (Request, Input) throws -> User
     
     private let grant: Grant
     
@@ -14,14 +14,14 @@ public struct AuthenticatingPermission<Input>: Sendable {
     }
     
     public init(
-        grant: @Sendable @escaping (AuthenticatedUser, Input) throws -> Void
+        grant: @Sendable @escaping (User, Input) throws -> Void
     ) {
         self.init { (request, input) in
-            guard let user = request.auth.get(User.self),
+            guard let user = request.auth.get(AuthKit.User.self),
                   let userID = user.id else {
                 throw Abort(.unauthorized)
             }
-            let authenticatedUser = AuthenticatedUser(user: user, userID: userID)
+            let authenticatedUser = User(user: user, userID: userID)
             try grant(authenticatedUser, input)
             return authenticatedUser
         }
@@ -36,7 +36,7 @@ public struct AuthenticatingPermission<Input>: Sendable {
     
     public init(
         _ deniedReason: String,
-        granted: @Sendable @escaping (AuthenticatedUser, Input) -> Bool
+        granted: @Sendable @escaping (User, Input) -> Bool
     ) {
         self.init { (user, input) in
             if !granted(user, input) {
@@ -46,12 +46,12 @@ public struct AuthenticatingPermission<Input>: Sendable {
     }
     
     @discardableResult
-    public func grant(_ input: Input, on request: Request) throws -> AuthenticatedUser {
+    public func grant(_ input: Input, on request: Request) throws -> User {
         try self.grant(request, input)
     }
     
     @discardableResult
-    public func grant(on request: Request) throws -> AuthenticatedUser
+    public func grant(on request: Request) throws -> User
     where Input == Void {
         try self.grant((), on: request)
     }

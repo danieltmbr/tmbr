@@ -19,7 +19,7 @@ let package = Package(
         .package(url: "https://github.com/vapor/fluent-postgres-driver.git", from: "2.8.0"),
         // 🍃 An expressive, performant, and extensible templating language built for Swift.
         .package(url: "https://github.com/vapor/leaf.git", from: "4.3.0"),
-        // 🔵 Non-blocking, event-driven networking for Swift. Used for custom executors
+        // 🚦 Non-blocking, event-driven networking for Swift. Used for custom executors
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
         // 🔑 JWT library for token verification.
         .package(url: "https://github.com/vapor/jwt.git", from: "5.0.0"),

@@ -4,27 +4,27 @@ import Vapor
 public struct Permission<Input>: Sendable {
     
     @dynamicMemberLookup
-    public struct AuthenticatedUser: Sendable {
-        public let user: User
+    public struct User: Sendable {
+        public let user: AuthKit.User
         
-        public let userID: User.IDValue
+        public let userID: UserID
         
-        public init(user: User, userID: User.IDValue) {
+        public init(user: AuthKit.User, userID: UserID) {
             self.user = user
             self.userID = userID
         }
         
-        public init?(user: User?, userID: User.IDValue?) {
+        public init?(user: AuthKit.User?, userID: UserID?) {
             guard let user, let userID else { return nil }
             self.init(user: user, userID: userID)
         }
         
-        public subscript<V>(dynamicMember keyPath: KeyPath<User, V>) -> V {
+        public subscript<V>(dynamicMember keyPath: KeyPath<AuthKit.User, V>) -> V {
             user[keyPath: keyPath]
         }
     }
         
-    public typealias Grant = @Sendable (Request, Input) throws -> AuthenticatedUser?
+    public typealias Grant = @Sendable (Request, Input) throws -> User?
     
     private let grant: Grant
     
@@ -33,11 +33,11 @@ public struct Permission<Input>: Sendable {
     }
     
     public init(
-        grant: @Sendable @escaping (AuthenticatedUser?, Input) throws -> Void
+        grant: @Sendable @escaping (User?, Input) throws -> Void
     ) {
         self.init { (request, input) in
-            let user = request.auth.get(User.self)
-            let authenticatedUser = AuthenticatedUser(user: user, userID: user?.id)
+            let user = request.auth.get(AuthKit.User.self)
+            let authenticatedUser = User(user: user, userID: user?.id)
             try grant(authenticatedUser, input)
             return authenticatedUser
         }
@@ -45,7 +45,7 @@ public struct Permission<Input>: Sendable {
     
     public init(
         _ deniedReason: String,
-        granted: @Sendable @escaping (AuthenticatedUser?, Input) throws -> Bool
+        granted: @Sendable @escaping (User?, Input) throws -> Bool
     ) {
         self.init { (user, input) in
             if try !granted(user, input) {
@@ -55,12 +55,12 @@ public struct Permission<Input>: Sendable {
     }
     
     @discardableResult
-    public func grant(_ input: Input, on request: Request) throws -> AuthenticatedUser? {
+    public func grant(_ input: Input, on request: Request) throws -> User? {
         try self.grant(request, input)
     }
     
     @discardableResult
-    public func grant(on request: Request) throws -> AuthenticatedUser?
+    public func grant(on request: Request) throws -> User?
     where Input == Void {
         try self.grant((), on: request)
     }

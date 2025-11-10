@@ -40,10 +40,7 @@ extension Template where Model == PostsViewModel {
 extension Core.Page {
     static var posts: Self {
         Page(template: .posts) { req in
-            let posts = try await Post.query(on: req.db)
-                .filter(\.$state == .published)
-                .sort(\.$createdAt, .descending)
-                .all()
+            let posts = try await req.commands.posts.list()
             return PostsViewModel(posts: posts)
         }
         .recover(.aborts)
