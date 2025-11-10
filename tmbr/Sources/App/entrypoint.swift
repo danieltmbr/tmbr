@@ -4,6 +4,9 @@ import NIOCore
 import NIOPosix
 import Core
 
+typealias Command = Core.Command
+typealias Commands = Core.Commands
+
 @main
 enum Entrypoint {
     static func main() async throws {
