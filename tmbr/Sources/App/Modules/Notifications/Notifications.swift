@@ -9,6 +9,12 @@ struct Notifications: Module {
         typealias Value = NotificationService
     }
     
+    private let commands: Commands.Notifications
+    
+    init(commands: Commands.Notifications) {
+        self.commands = commands
+    }
+    
     func configure(_ app: Vapor.Application) async throws {
         await app.storage.setWithAsyncShutdown(
             ServiceKey.self,
@@ -16,6 +22,7 @@ struct Notifications: Module {
         )
         
         app.migrations.add(CreateWebPushSubscription())
+        try await app.commands.add(collection: commands)
     }
     
     func boot(_ routes: RoutesBuilder) async throws {
@@ -32,6 +39,6 @@ extension Application {
 
 extension Module where Self == Notifications {
     static var notifications: Self {
-        Notifications()
+        Notifications(commands: Commands.Notifications())
     }
 }
