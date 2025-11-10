@@ -32,23 +32,11 @@ struct EditPostCommand: Core.Command {
             throw Abort(.notFound)
         }
         try await permission.grant(post)
-
-        // TODO: Validation
-        guard !payload.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw Abort(.badRequest, reason: "Title is required.")
-        }
-        if payload.state == .published {
-            let body = payload.body?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            if body.isEmpty {
-                throw Abort(.badRequest, reason: "Sorry, can't publich an empty post.")
-            }
-        }
-        
+        try payload.validate()
         post.title = payload.title
         post.content = payload.body ?? ""
         post.state = payload.state
         try await post.save(on: database)
-        
         notify(about: post)
         return post
     }

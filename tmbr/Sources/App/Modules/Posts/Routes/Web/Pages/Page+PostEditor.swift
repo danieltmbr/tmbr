@@ -48,7 +48,7 @@ struct PostEditorViewModel: Encodable {
             submit: Form.Submit(
                 action: "/post/\(id)",
                 label: "Save",
-                method: .PUT
+                method: .POST
             ),
             csrf: csrf
         )

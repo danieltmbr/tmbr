@@ -16,6 +16,10 @@ struct EditPostPayload: Sendable {
     subscript <V>(dynamicMember keyPath: KeyPath<PostPayload, V>) -> V {
         payload[keyPath: keyPath]
     }
+    
+    func validate() throws {
+        try payload.validate()
+    }
 }
 
 extension PostPayload {

@@ -21,8 +21,7 @@ struct Authentication: Module {
                     sameSite: HTTPCookies.SameSitePolicy.none
                 )
         }
-        
-        app.middleware.use(SessionsMiddleware(session: app.sessions.driver))
+        app.middleware.use(app.sessions.middleware)
         app.jwt.apple.applicationIdentifier = Environment.signIn.appID
         await app.jwt.keys.add(
             hmac: HMACKey(from: Environment.signIn.secret),

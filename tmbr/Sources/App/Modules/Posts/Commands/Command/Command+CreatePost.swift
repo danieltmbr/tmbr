@@ -33,18 +33,7 @@ struct CreatePostCommand: Command {
 
     func execute(_ payload: PostPayload) async throws -> Post {
         let user = try await permission.grant()
-        
-        // TODO: Validation
-        guard !payload.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw Abort(.badRequest, reason: "Title is required.")
-        }
-        if payload.state == .published {
-            let body = payload.body?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            if body.isEmpty {
-                throw Abort(.badRequest, reason: "Sorry, can't publich an empty post.")
-            }
-        }
-        
+        try payload.validate()
         let post = Post(
             authorID: user.userID,
             content: payload.body ?? "",

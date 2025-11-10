@@ -27,5 +27,6 @@ extension Page {
                 title: payload.title
             )
         }
+        .recover(.aborts)
     }
 }

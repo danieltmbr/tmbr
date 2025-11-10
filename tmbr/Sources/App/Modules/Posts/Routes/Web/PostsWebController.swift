@@ -14,17 +14,15 @@ struct PostsWebController: RouteCollection {
         routes.get(page: .posts)
         routes.get("post", ":postID", page: .post)
 
-        let protected = routes.grouped(User.redirectMiddleware(path: "/signin"))
-        
-        protected.get("drafts", page: .drafts)
+        routes.get("drafts", page: .drafts)
 
-        protected.get("post", "new", page: .createPost)
-        protected.post("post", use: createPost)
+        routes.get("post", "new", page: .createPost)
+        routes.post("post", use: createPost)
 
-        protected.get("post", ":postID", "edit", page: .editPost)
-        protected.put("post", ":postID", use: updatePost)
+        routes.get("post", ":postID", "edit", page: .editPost)
+        routes.post("post", ":postID", use: updatePost)
 
-        protected.post("post", "preview", page: .postPreview)
+        routes.post("post", "preview", page: .postPreview)
     }
 
     @Sendable
@@ -55,6 +53,7 @@ struct PostsWebController: RouteCollection {
             req.session.data["csrf.editor"] = nil
             return req.redirect(to: "/post/\(post.id!)")
         } catch {
+            // TODO: Clean this up a bit
             let submitted = (try? req.content.decode(PostPayload.self)) ?? PostPayload()
             let submit: Form.Submit
             let postID: Post.IDValue?
@@ -65,7 +64,7 @@ struct PostsWebController: RouteCollection {
                 submit = Form.Submit(action: "/post", label: "Save", method: .POST)
             case .update(let id):
                 postID = id
-                submit = Form.Submit(action: "/post/\(id)", label: "Save", method: .PUT)
+                submit = Form.Submit(action: "/post/\(id)", label: "Save", method: .POST)
             }
             
             let model = PostEditorViewModel(
@@ -89,7 +88,7 @@ struct PostsWebController: RouteCollection {
         if let abort = error as? AbortError {
             switch abort.status {
             case .unauthorized:
-                return "Please sign in to continue. <a href=\"/signin?return=\(req.url.path)\">Sign in</a>."
+                return "Please <a href=\"/signin?return=\(req.url.path)\">sign in</a> and try again."
             case .forbidden:
                 return "You don’t have permission to edit this post."
             case .notFound:

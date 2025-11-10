@@ -23,3 +23,27 @@ struct PostPayload: Decodable, Sendable {
         self._csrf = _csrf
     }
 }
+
+extension PostPayload {
+    // TODO: This could also follow functional patterns like Permissions and Commands
+    func validate() throws {
+        guard !title.trimmed.isEmpty else {
+            throw Abort(.badRequest, reason: "Title is required")
+        }
+        guard state == .published || !body.trimmed.isEmpty else {
+            throw Abort(.badRequest, reason: "Sorry, can't publish an empty post.")
+        }
+    }
+}
+
+private extension String {
+    var trimmed: String {
+        trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+private extension Optional<String> {
+    var trimmed: String {
+        self?.trimmed ?? ""
+    }
+}
