@@ -42,6 +42,7 @@ struct NotificationsAPIController: RouteCollection {
         
         // POST /api/notifications/notify/:postID
         notificationsRoute.get("notify", ":postID") { req async throws -> HTTPStatus in
+            // TODO: Use the command here and remove the notifyApiKey
             guard let key = Environment.webPush.notifyApiKey, !key.isEmpty,
                   req.headers.bearerAuthorization?.token == key else {
                 throw Abort(.unauthorized)

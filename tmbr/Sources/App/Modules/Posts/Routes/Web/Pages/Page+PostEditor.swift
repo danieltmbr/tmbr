@@ -59,7 +59,7 @@ extension Template where Model == PostEditorViewModel {
     static let postEditor = Template(name: "Posts/post-editor")
 }
 
-extension Core.Page {
+extension Page {
     static var createPost: Self {
         Page(template: .postEditor) { req in
             try await req.permissions.posts.create()

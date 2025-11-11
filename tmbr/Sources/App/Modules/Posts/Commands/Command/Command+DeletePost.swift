@@ -5,7 +5,7 @@ import Logging
 import Fluent
 import AuthKit
 
-extension Core.Command where Self == PlainCommand<Post.IDValue, Void> {
+extension Command where Self == PlainCommand<PostID, Void> {
     static func deletePost(
         database: Database,
         logger: Logger,
@@ -21,7 +21,7 @@ extension Core.Command where Self == PlainCommand<Post.IDValue, Void> {
     }
 }
 
-extension CommandFactory<Post.IDValue, Void> {
+extension CommandFactory<PostID, Void> {
     
     static var deletePost: Self {
         CommandFactory { request in

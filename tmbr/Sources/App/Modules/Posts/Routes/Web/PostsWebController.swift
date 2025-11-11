@@ -56,7 +56,7 @@ struct PostsWebController: RouteCollection {
             // TODO: Clean this up a bit
             let submitted = (try? req.content.decode(PostPayload.self)) ?? PostPayload()
             let submit: Form.Submit
-            let postID: Post.IDValue?
+            let postID: PostID?
             
             switch mode {
             case .create:

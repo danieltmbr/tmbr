@@ -15,14 +15,14 @@ struct CreatePostCommand: Command {
     
     private let logger: Logger
     
-    private let notify: CommandResolver<PushNotification, Void>
+    private let notify: CommandResolver<Post, Void>
     
     private let permission: AuthPermissionResolver<Void>
 
     init(
         database: Database,
         logger: Logger,
-        notify: CommandResolver<PushNotification, Void>,
+        notify: CommandResolver<Post, Void>,
         permission: AuthPermissionResolver<Void>
     ) {
         self.database = database
@@ -48,7 +48,7 @@ struct CreatePostCommand: Command {
     private func notify(about post: Post) {
         guard post.state == .published else { return }
         Task.detached {
-            try await notify(PushNotification(post: post))
+            try await notify(post)
         }
     }
 }
@@ -60,7 +60,7 @@ extension CommandFactory<PostPayload, Post> {
             CreatePostCommand(
                 database: request.application.db,
                 logger: request.application.logger,
-                notify: request.commands.notifications.send,
+                notify: request.commands.notifications.post,
                 permission: request.permissions.posts.create
             )
             .logged(logger: request.logger)

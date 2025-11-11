@@ -7,6 +7,8 @@ import Core
 typealias Command = Core.Command
 typealias Commands = Core.Commands
 
+typealias Page = Core.Page
+
 @main
 enum Entrypoint {
     static func main() async throws {
