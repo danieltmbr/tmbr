@@ -37,7 +37,7 @@ extension Template where Model == PostsViewModel {
     static let posts = Template(name: "Posts/posts")
 }
 
-extension Core.Page {
+extension Page {
     static var posts: Self {
         Page(template: .posts) { req in
             let posts = try await req.commands.posts.list()

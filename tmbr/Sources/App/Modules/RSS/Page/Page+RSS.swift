@@ -6,9 +6,9 @@ extension Template where Model == RSSViewModel {
     static let rss = Template(name: "rss")
 }
 
-extension Core.Page {
+extension Page {
     static var rss: Self {
-        Core.Page { request in
+        Page { request in
             let posts = try await Post.query(on: request.db)
                 .filter(\.$state == .published)
                 .sort(\.$createdAt, .descending)

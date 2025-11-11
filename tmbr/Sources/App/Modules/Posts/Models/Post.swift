@@ -34,7 +34,7 @@ final class Post: Model, Content, @unchecked Sendable {
     init() {}
     
     init(
-        authorID: User.IDValue,
+        authorID: UserID,
         content: String,
         createdAt: Date = .now,
         id: Int? = nil,

@@ -4,7 +4,7 @@ import Core
 import Logging
 import Fluent
 
-extension Core.Command where Self == PlainCommand<Void, [Post]> {
+extension Command where Self == PlainCommand<Void, [Post]> {
     
     static func listPosts(database: Database) -> Self {
         PlainCommand {

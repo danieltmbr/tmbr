@@ -26,7 +26,7 @@ struct Notifications: Module {
     }
     
     func boot(_ routes: RoutesBuilder) async throws {
-        try routes.register(collection: AuthenticationAPIController())
+        try routes.register(collection: NotificationsAPIController())
         routes.get("notifications", page: Page(template: .notifications))
     }
 }

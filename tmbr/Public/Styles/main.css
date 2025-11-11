@@ -68,6 +68,7 @@ main > section {
 
 main > section > ul {
     padding: 0;
+    width: 100%;
 }
 
 main > section > ul > a {

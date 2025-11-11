@@ -10,7 +10,7 @@ extension Commands {
                 
         let create: CommandFactory<PostPayload, Post>
         
-        let delete: CommandFactory<Post.IDValue, Void>
+        let delete: CommandFactory<PostID, Void>
                 
         let edit: CommandFactory<EditPostPayload, Post>
         
@@ -20,7 +20,7 @@ extension Commands {
         
         init(
             create: CommandFactory<PostPayload, Post> = .createPost,
-            delete: CommandFactory<Post.IDValue, Void> = .deletePost,
+            delete: CommandFactory<PostID, Void> = .deletePost,
             edit: CommandFactory<EditPostPayload, Post> = .editPost,
             fetch: CommandFactory<FetchPostParameters, Post> = .fetchPost,
             list: CommandFactory<Void, [Post]> = .listPosts

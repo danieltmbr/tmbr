@@ -22,7 +22,7 @@ extension Page {
     // FIXME: This is more like a "Profile" Page rahter than a "sign out"
     static var signOut: Self {
         Page(template: .signOut) { request in
-            let user = try request.auth.require(User.self)
+            let user = try await request.permissions.auth.signOut()
             let name = NameFormatter.author.format(
                 givenName: user.firstName,
                 familyName: user.lastName

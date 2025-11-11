@@ -1,6 +1,9 @@
 import Fluent
 import Vapor
 import Foundation
+import AuthKit
+
+typealias ImageID = Image.IDValue
 
 final class Size: Fields, @unchecked Sendable, Codable {
 
@@ -42,6 +45,9 @@ final class Image: Model, Content, @unchecked Sendable {
     @Group(key: "size")
     private(set) var size: Size
     
+    @Parent(key: "owner")
+    private(set) var owner: User
+    
     @Timestamp(key: "uploaded_at", on: .create)
     private(set) var uploadedAt: Date?
     
@@ -54,6 +60,7 @@ final class Image: Model, Content, @unchecked Sendable {
         thumbnail: String,
         width: Int,
         height: Int,
+        ownerID: UserID,
         uploadedAt: Date? = nil
     ) {
         self.init(
@@ -61,7 +68,8 @@ final class Image: Model, Content, @unchecked Sendable {
             alt: alt,
             name: name,
             thumbnail: thumbnail,
-            size: CGSize(width: width, height: height)
+            size: CGSize(width: width, height: height),
+            ownerID: ownerID
         )
     }
     
@@ -71,6 +79,7 @@ final class Image: Model, Content, @unchecked Sendable {
         name: String,
         thumbnail: String,
         size: CGSize,
+        ownerID: UserID,
         uploadedAt: Date? = nil
     ) {
         self.id = id
@@ -78,6 +87,7 @@ final class Image: Model, Content, @unchecked Sendable {
         self.name = name
         self.thumbnail = thumbnail
         self.size = Size(width: Int(size.width), height: Int(size.height))
+        self.$owner.id = ownerID
         self.uploadedAt = uploadedAt
     }
 }

@@ -7,6 +7,19 @@ import Crypto
 import Core
 
 struct Authentication: Module {
+    
+    private let permissions: PermissionScopes.Auth
+    
+    // private let commands: Commands.Posts
+    
+    init(
+        permissions: PermissionScopes.Auth
+//        commands: Commands.Posts
+    ) {
+        self.permissions = permissions
+        // self.commands = commands
+    }
+    
     func configure(_ app: Application) async throws {
         app.sessions.use(.memory)
         app.sessions.configuration.cookieFactory = { sessionID in
@@ -21,7 +34,10 @@ struct Authentication: Module {
                     sameSite: HTTPCookies.SameSitePolicy.none
                 )
         }
+        
         app.middleware.use(app.sessions.middleware)
+        app.middleware.use(User.sessionAuthenticator())
+
         app.jwt.apple.applicationIdentifier = Environment.signIn.appID
         await app.jwt.keys.add(
             hmac: HMACKey(from: Environment.signIn.secret),
@@ -33,24 +49,22 @@ struct Authentication: Module {
             to: PermissionService()
         )
         
-        app.middleware.use(User.sessionAuthenticator())
-        
         app.migrations.add(CreateUser())
+        
+        try await app.permissions.add(scope: permissions)
     }
     
     func boot(_ routes: RoutesBuilder) async throws {
-        try routes.register(collection: AuthenticationAPIController())
-        routes.get("signin", page: .signIn)
-        let protected = routes.grouped(
-            User.redirectMiddleware(path: "/signin")
-        )
-        protected.get("signout", page: .signOut)
+        try routes.register(collection: AuthAPIController())
+        try routes.register(collection: AuthWebController())
     }
 }
 
 extension Module where Self == Authentication {
     static var authentication: Self {
-        Authentication()
+        Authentication(
+            permissions: PermissionScopes.Auth()
+        )
     }
 }
 

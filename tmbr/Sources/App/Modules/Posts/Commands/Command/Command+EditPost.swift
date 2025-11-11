@@ -5,20 +5,20 @@ import Logging
 import Fluent
 import AuthKit
 
-struct EditPostCommand: Core.Command {
+struct EditPostCommand: Command {
     
     private let database: Database
     
     private let logger: Logger
     
-    private let notify: CommandResolver<PushNotification, Void>
+    private let notify: CommandResolver<Post, Void>
 
     private let permission: AuthPermissionResolver<Post>
     
     init(
         database: Database,
         logger: Logger,
-        notify: CommandResolver<PushNotification, Void>,
+        notify: CommandResolver<Post, Void>,
         permission: AuthPermissionResolver<Post>
     ) {
         self.database = database
@@ -44,7 +44,7 @@ struct EditPostCommand: Core.Command {
     private func notify(about post: Post) {
         guard post.state == .published else { return }
         Task.detached {
-            try await notify(PushNotification(post: post))
+            try await notify(post)
         }
     }
 }
@@ -56,7 +56,7 @@ extension CommandFactory<EditPostPayload, Post> {
             EditPostCommand(
                 database: request.application.db,
                 logger: request.application.logger,
-                notify: request.commands.notifications.send,
+                notify: request.commands.notifications.post,
                 permission: request.permissions.posts.edit
             )
             .logged(logger: request.logger)
