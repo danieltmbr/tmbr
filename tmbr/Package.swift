@@ -49,6 +49,16 @@ let package = Package(
                 .product(name: "JWT", package: "jwt"),
             ]
         ),
+        .target(
+            name: "ImageC",
+            path: "Sources/ImageC",
+            publicHeadersPath: "."
+        ),
+        .target(
+            name: "ImageCWrapper",
+            dependencies: ["ImageC"],
+            path: "Sources/ImageCWrapper"
+        ),
         .executableTarget(
             name: "App",
             dependencies: [
@@ -64,6 +74,7 @@ let package = Package(
                 .product(name: "Crypto", package: "swift-crypto"),
                 "Core",
                 "AuthKit",
+                "ImageCWrapper",
             ],
             swiftSettings: swiftSettings
         ),
@@ -84,4 +95,3 @@ var swiftSettings: [SwiftSetting] { [
     .enableExperimentalFeature("StrictConcurrency"),
     .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
 ] }
-

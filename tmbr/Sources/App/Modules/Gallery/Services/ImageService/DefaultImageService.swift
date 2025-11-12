@@ -1,24 +1,42 @@
 import Vapor
 import Foundation
-import CoreGraphics
-import ImageIO
 import NIOFoundationCompat
-#if canImport(UniformTypeIdentifiers)
-import UniformTypeIdentifiers
-#endif
 
 actor DefaultImageService: ImageService {
     
     private let allowedMediaTypes: [MediaContentType]
     
+    private let resizer: ImageResizer
+    
     private let storage: FileStorage
+    
+    init(
+        allowedMediaTypes: [MediaContentType],
+        resizer: ImageResizer,
+        storage: FileStorage
+    ) {
+        self.allowedMediaTypes = allowedMediaTypes
+        self.resizer = resizer
+        self.storage = storage
+    }
     
     init(
         allowedMediaTypes: [MediaContentType] = [.png, .jpeg, .webp, .gif, .svg],
         storage: FileStorage
     ) {
-        self.allowedMediaTypes = allowedMediaTypes
-        self.storage = storage
+        #if os(Linux)
+        self.init(
+            allowedMediaTypes: allowedMediaTypes,
+            resizer: CImageResizer(),
+            storage: storage
+        )
+        #else
+        self.init(
+            allowedMediaTypes: allowedMediaTypes,
+            resizer: CGImageResizer(),
+            storage: storage
+        )
+        #endif
     }
     
     func contentType(for name: String) async throws -> MediaContentType {
@@ -50,11 +68,11 @@ actor DefaultImageService: ImageService {
         )
         
         let thumbnailFileName: String
-        if mediaType != .svg, let thumbnailData = makeThumbnail(from: imageData) {
-            thumbnailFileName = "\(uuid)-thumbnail.\(mediaType.fileExtension)"
+        if (mediaType == .jpeg || mediaType == .png), let thumbnailData = resizer.resize(imageData) {
+            thumbnailFileName = "\(uuid)-thumbnail.png"
             try await storage.store(
                 data: thumbnailData,
-                contentType: mediaType.contentType,
+                contentType: HTTPMediaType.png.serialize(),
                 name: thumbnailFileName
             )
         } else {
@@ -64,43 +82,11 @@ actor DefaultImageService: ImageService {
         return ImageMetadata(
             key: fileName,
             thumbnailKey: thumbnailFileName,
-            size: dimensions(of: imageData)
+            size: resizer.dimensions(of: imageData)
         )
     }
     
     // MARK: - Helpers
-    
-    private func dimensions(of data: Data) -> CGSize {
-        var size: CGSize = .zero
-        if let src = CGImageSourceCreateWithData(data as CFData, nil),
-           let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any] {
-            if let w = props[kCGImagePropertyPixelWidth] as? NSNumber { size.width = w.doubleValue }
-            if let h = props[kCGImagePropertyPixelHeight] as? NSNumber { size.height = h.doubleValue }
-        }
-        return size
-    }
-    
-    private func makeThumbnail(from data: Data, maxPixel: Int = 200) -> Data? {
-        guard let src = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        let options: [CFString: Any] = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceThumbnailMaxPixelSize: maxPixel,
-            kCGImageSourceCreateThumbnailWithTransform: true
-        ]
-        guard let thumb = CGImageSourceCreateThumbnailAtIndex(src, 0, options as CFDictionary) else { return nil }
-        let mutableData = CFDataCreateMutable(nil, 0)!
-        let type: CFString
-#if canImport(UniformTypeIdentifiers)
-        type = UTType.jpeg.identifier as CFString
-#else
-        type = "public.jpeg" as CFString
-#endif
-        guard let dest = CGImageDestinationCreateWithData(mutableData, type, 1, nil) else { return nil }
-        let destOptions: [CFString: Any] = [kCGImageDestinationLossyCompressionQuality: 0.85]
-        CGImageDestinationAddImage(dest, thumb, destOptions as CFDictionary)
-        guard CGImageDestinationFinalize(dest) else { return nil }
-        return mutableData as Data
-    }
     
     private func validateAndResolveMediaType(for file: File) throws -> MediaContentType {
         guard let contentType = file.contentType else {

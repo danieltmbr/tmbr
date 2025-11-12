@@ -2,6 +2,7 @@ import Fluent
 import Vapor
 import WebPush
 import Core
+import AuthKit
 
 struct Notifications: Module {
     
@@ -11,8 +12,14 @@ struct Notifications: Module {
     
     private let commands: Commands.Notifications
     
-    init(commands: Commands.Notifications) {
+    private let permissions: PermissionScopes.Notifications
+    
+    init(
+        commands: Commands.Notifications,
+        permissions: PermissionScopes.Notifications
+    ) {
         self.commands = commands
+        self.permissions = permissions
     }
     
     func configure(_ app: Vapor.Application) async throws {
@@ -22,6 +29,8 @@ struct Notifications: Module {
         )
         
         app.migrations.add(CreateWebPushSubscription())
+        
+        try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)
     }
     
@@ -39,6 +48,9 @@ extension Application {
 
 extension Module where Self == Notifications {
     static var notifications: Self {
-        Notifications(commands: Commands.Notifications())
+        Notifications(
+            commands: Commands.Notifications(),
+            permissions: PermissionScopes.Notifications()
+        )
     }
 }
