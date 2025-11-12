@@ -31,6 +31,8 @@ let package = Package(
         .package(url: "https://github.com/soto-project/soto.git", from: "7.9.0"),
         // 🔏 CryptoKit substitution for Linux
         .package(url: "https://github.com/apple/swift-crypto.git", from: "3.7.0"),
+        // 📏 Resize images
+        .package(url: "https://github.com/danieltmbr/ImageResize.git", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -62,6 +64,7 @@ let package = Package(
                 .product(name: "WebPush", package: "swift-webpush"),
                 .product(name: "SotoS3", package: "soto"),
                 .product(name: "Crypto", package: "swift-crypto"),
+                .product(name: "ImageResize", package: "ImageResize"),
                 "Core",
                 "AuthKit",
             ],
@@ -84,4 +87,3 @@ var swiftSettings: [SwiftSetting] { [
     .enableExperimentalFeature("StrictConcurrency"),
     .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
 ] }
-

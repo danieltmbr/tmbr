@@ -45,7 +45,7 @@ final class Image: Model, Content, @unchecked Sendable {
     @Group(key: "size")
     private(set) var size: Size
     
-    @Parent(key: "owner")
+    @Parent(key: "owner_id")
     private(set) var owner: User
     
     @Timestamp(key: "uploaded_at", on: .create)
