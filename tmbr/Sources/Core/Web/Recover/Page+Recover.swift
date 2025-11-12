@@ -38,10 +38,10 @@ extension Page {
             }
         }
         
-        public init(
+        public init<Response>(
             status: HTTPResponseStatus,
-            response: AsyncResponseEncodable
-        ) {
+            response: Response
+        ) where Response: AsyncResponseEncodable & Sendable {
             self.init { error, request in
                 guard let abort = error as? Abort, abort.status == status else { throw error }
                 return response
