@@ -32,7 +32,7 @@ let package = Package(
         // 🔏 CryptoKit substitution for Linux
         .package(url: "https://github.com/apple/swift-crypto.git", from: "3.7.0"),
         // 📏 Resize images
-        .package(url: "https://github.com/danieltmbr/ImageResize.git", from: "1.0.0"),
+        .package(url: "https://github.com/danieltmbr/ImageResize.git", from: "1.0.1"),
     ],
     targets: [
         .target(
