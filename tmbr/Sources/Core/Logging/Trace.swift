@@ -55,8 +55,11 @@ public struct Trace: Hashable, Sendable {
     }
     
     public static func randomHexString(byteCount: Int) -> String {
+        var rng = SystemRandomNumberGenerator()
         var bytes = [UInt8](repeating: 0, count: byteCount)
-        _ = SecRandomCopyBytes(kSecRandomDefault, byteCount, &bytes)
+        for i in 0..<byteCount {
+            bytes[i] = UInt8.random(in: .min ... .max, using: &rng)
+        }
         let hex = bytes.map { String(format: "%02x", $0) }.joined()
         if hex.isAllZero {
             return randomHexString(byteCount: byteCount)
