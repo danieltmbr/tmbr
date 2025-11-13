@@ -1,4 +1,9 @@
 #extend("Shared/page"):
+
+    #export("styles"):
+    <link rel="stylesheet" href="/Styles/editor.css">
+    #endexport
+
     #export("main"):
     <section alt="Post edit form">
         <form id="post-form" method="#(submit.method)" action="#(submit.action)">
@@ -66,7 +71,10 @@
 
     </section>
     
-    <script src="/Scripts/post-editor.js"></script>
 
+    #endexport
+    
+    #export("scripts"):
+        <script src="/Scripts/post-editor.js"></script>
     #endexport
 #endextend

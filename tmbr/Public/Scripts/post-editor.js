@@ -6,6 +6,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const publishedCheckbox = document.getElementById('editor-post-published');
     const previewButton = document.getElementById('editor-post-preview');
     
+    function preview() {
+        const previewForm = document.getElementById('preview-form');
+        const previewTitleInput = document.getElementById('preview-title');
+        const previewBodyInput = document.getElementById('preview-body');
+        if (!previewForm || !previewTitleInput || !previewBodyInput) {
+            alert('Preview form is missing from the template.');
+            return;
+        }
+        // Populate hidden inputs from current editor fields
+        previewTitleInput.value = titleInput.value || '';
+        previewBodyInput.value = bodyTextArea.value || '';
+        previewForm.submit();
+    }
+    
+    function autosize() {
+        bodyTextArea.style.height = 'auto';
+        bodyTextArea.style.height = bodyTextArea.scrollHeight + 'px';
+    }
+    
     if (!form || !titleInput || !bodyTextArea || !publishedCheckbox || !previewButton) {
         // Missing elements; avoid runtime errors
         return;
@@ -87,23 +106,38 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Preview: submit hidden form to /post/preview (form data only)
     previewButton.addEventListener('click', () => {
-        const previewForm = document.getElementById('preview-form');
-        const previewTitleInput = document.getElementById('preview-title');
-        const previewBodyInput = document.getElementById('preview-body');
-        if (!previewForm || !previewTitleInput || !previewBodyInput) {
-            alert('Preview form is missing from the template.');
-            return;
-        }
-        // Populate hidden inputs from current editor fields
-        previewTitleInput.value = titleInput.value || '';
-        previewBodyInput.value = bodyTextArea.value || '';
-        previewForm.submit();
+        preview();
     });
     
-    function autosize() {
-        bodyTextArea.style.height = 'auto';
-        bodyTextArea.style.height = bodyTextArea.scrollHeight + 'px';
-    }
     bodyTextArea.addEventListener('input', autosize);
     window.addEventListener('load', autosize);
+
+    document.addEventListener('keydown', (event) => {
+        try {
+            const isInputLike = (el) => {
+                if (!el) return false;
+                const tag = el.tagName;
+                const editable = el.isContentEditable;
+                return editable || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+            };
+
+            const active = document.activeElement;
+            const inField = isInputLike(active);
+            if (inField) { return; }
+            
+            const isMac = navigator.platform.toUpperCase().includes('MAC');
+            const cmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
+            const alt = event.altKey;
+            const shift = event.shiftKey;
+            const keyP = event.key === 'p' || event.key === 'P';
+            const isPKey = event.code === 'KeyP';
+            
+            if (cmdOrCtrl && alt && !shift && isPKey) {
+                event.preventDefault();
+                preview();
+            }
+        } catch (_) {
+            // ignore
+        }
+    });
 });
