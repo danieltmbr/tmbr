@@ -2,12 +2,16 @@
     color-scheme: light dark;
 
     --background-color: #FFFFFF;
+    --table-background-color: #F7F7F7;
+    --table-header-background-color: #EFEFEF;
     --error-color: #8b0000;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
         --background-color: #1d1d1d;
+        --table-background-color: #242424;
+        --table-header-background-color: #2C2C2C;
         --error-color: #ff6b6b;
     }
 }
@@ -161,6 +165,37 @@ main > section > article > a {
     color: inherit;
 }
 
+main > section > article > table {
+    background: var(--table-background-color);
+    border-radius: 12px;
+    font-size: 0.8em;
+    padding: 6px;
+    margin: 20px 0px;
+}
+
+main > section > article > table > thead th {
+    background: var(--table-header-background-color);
+    padding: 8px;
+}
+
+main > section > article > table > thead th:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+main > section > article > table > thead th:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+main > section > article > table td {
+    padding: 4px 6px;
+}
+
+main > section > article > ul {
+    margin: 0.5em 0;
+}
+
 main > a,
 main > a > svg {
     color: inherit;
@@ -191,6 +226,12 @@ ol.instructions > li > picture {
 
 ol.instructions > li > picture img {
     max-width: 100%;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid;
+    margin: 1.5em 0;
 }
 
 /*
@@ -296,125 +337,6 @@ p.published-date {
 
 /*
  ------------------------------------------------
- Post editor
- ------------------------------------------------
- */
-
-main > section > form {
-    display: flex;
-    flex-direction: column;
-    
-    flex: 1 1 auto;
-    min-height: 0;
-}
-
-main > section > form > input {
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
-    font: inherit;
-    line-height: normal;
-    color: inherit;
-    padding: 0;
-    margin: 0;
-}
-
-main > section > form > input[name=title] {
-    font-size: 3.2rem;
-    font-weight: 700;
-    margin: 3.2rem 0;
-    flex: 0 0 auto;
-}
-
-main > section > form > textarea  {
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
-    font: inherit;
-    line-height: inherit;
-    color: inherit;
-    padding: 0;
-    resize: none;
-    
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: visible;
-}
-
-main > section > form > input::placeholder,
-main > section > form > textarea::placeholder {
-    color: currentColor;
-    opacity: 0.35;
-}
-
-main > section > form .editor-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 16px 0 32px 0;
-    flex: 0 0 auto;
-    font-size: 1.5rem;
-}
-
-main > section > form .editor-actions > div {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-}
-
-main > section > form button {
-    font-weight: 500;
-    font-size: 1.5rem;
-}
-
-button.primary {
-    background-color: #007aff;
-    background-image: linear-gradient(to bottom, #3696ff, #007aff);
-    padding: 3px 8px 4px 8px;
-    border: 0;
-    border-radius: 5px;
-    color: #FFFFFF;
-}
-
-button.primary:hover {
-    background-image: linear-gradient(to bottom, #5eabff, #007aff);
-}
-
-button.primary:active {
-    background-image: linear-gradient(to bottom, #0572eb, #007aff);
-}
-
-main > section > form button.link {
-    background: none;
-    border: none;
-    color: inherit;
-    text-decoration: underline;
-    padding: 0;
-    cursor: pointer;
-}
-
-main > section > form label.published {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-main > section > form .editor-error {
-    margin: 0.5em 0 0.75em 0;
-    font-size: 1.4rem;
-    color: var(--error-color);
-    flex: 0 0 auto;
-}
-
-main > section > form#preview-form {
-    display: none;
-}
-
-/*
- ------------------------------------------------
  Mobile adjustments
  ------------------------------------------------
  */
@@ -452,10 +374,6 @@ main > section > form#preview-form {
     
     main > section > article > a > svg.signature {
         transform: translateX(-12px);
-    }
-    
-    main > section > form .editor {
-        padding-bottom: 20px;
     }
 }
 

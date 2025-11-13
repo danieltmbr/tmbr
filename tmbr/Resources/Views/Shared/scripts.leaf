@@ -1,1 +1,2 @@
 <script src="/Scripts/notifications.js"></script>
+#import("scripts")

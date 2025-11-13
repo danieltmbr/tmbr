@@ -11,4 +11,7 @@
         </section>
     #endexport
     
+    #export("scripts"):
+        <script src="/Scripts/post.js"></script>
+    #endexport
 #endextend

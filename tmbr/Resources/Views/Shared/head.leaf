@@ -2,6 +2,7 @@
     <link rel="alternate" type="application/rss+xml" title="tmbr RSS Feed" href="/rss.xml">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/Styles/main.css">
+    #import("styles")
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
