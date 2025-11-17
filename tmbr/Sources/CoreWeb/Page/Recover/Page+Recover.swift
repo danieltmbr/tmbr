@@ -5,12 +5,6 @@ extension Page {
     public struct Recover {
         public typealias Handler = @Sendable (Error, Request) async throws -> AsyncResponseEncodable
         
-        public static var aborts: Self {
-            .unathorized
-                .combine(with: .fourhundreds)
-                .combine(with: .fivehundreds)
-        }
-        
         private let handler: Handler
         
         public init(handler: @escaping Handler) {
@@ -29,13 +23,6 @@ extension Page {
         
         public init(error map: @escaping @Sendable (Error) throws -> ErrorViewModel) {
             self.init(error: map, template: .error)
-        }
-        
-        public init(abort map: @escaping @Sendable (Abort) throws -> ErrorViewModel = ErrorViewModel.init(abort:)) {
-            self.init { error in
-                guard let abort = error as? Abort else { throw error }
-                return try map(abort)
-            }
         }
         
         public init<Response>(

@@ -12,21 +12,11 @@ public struct ErrorViewModel: Encodable, Sendable {
     public init(
         title: String,
         message: String,
-        suggestedFixes: [String] = [],
-        markdownFormatter formatter: MarkdownFormatter = .html
+        suggestedFixes: [String] = []
     ) {
         self.title = title
-        self.message = formatter.format(message)
+        self.message = message
         self.suggestedFixes = suggestedFixes
-    }
-    
-    @Sendable
-    public init(abort: Abort) {
-        self.init(
-            title: abort.status.reasonPhrase,
-            message: abort.reason,
-            suggestedFixes: abort.suggestedFixes
-        )
     }
 }
 

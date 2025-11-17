@@ -8,6 +8,7 @@ let package = Package(
     ],
     products: [
         .library(name: "Core", targets: ["Core"]),
+        .library(name: "CoreWeb", targets: ["CoreWeb"]),
         .library(name: "AuthKit", targets: ["AuthKit"]),
     ],
     dependencies: [
@@ -43,6 +44,12 @@ let package = Package(
             ]
         ),
         .target(
+            name: "CoreWeb",
+            dependencies: [
+                .product(name: "Vapor", package: "vapor"),
+            ]
+        ),
+        .target(
             name: "AuthKit",
             dependencies: [
                 .product(name: "Vapor", package: "vapor"),
@@ -66,6 +73,7 @@ let package = Package(
                 .product(name: "Crypto", package: "swift-crypto"),
                 .product(name: "ImageResize", package: "ImageResize"),
                 "Core",
+                "CoreWeb",
                 "AuthKit",
             ],
             swiftSettings: swiftSettings

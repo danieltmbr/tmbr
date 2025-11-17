@@ -3,11 +3,11 @@ import Logging
 import NIOCore
 import NIOPosix
 import Core
+import CoreWeb
 
 typealias Command = Core.Command
 typealias Commands = Core.Commands
-
-typealias Page = Core.Page
+typealias Page = CoreWeb.Page
 
 @main
 enum Entrypoint {
