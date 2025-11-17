@@ -6,6 +6,152 @@ document.addEventListener('DOMContentLoaded', () => {
     const publishedCheckbox = document.getElementById('editor-post-published');
     const previewButton = document.getElementById('editor-post-preview');
     
+    // Insert text at caret position in a textarea and preserve scroll
+    function insertAtCaret(textarea, text) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const before = textarea.value.substring(0, start);
+        const after = textarea.value.substring(end);
+        textarea.value = before + text + after;
+        const pos = start + text.length;
+        textarea.selectionStart = textarea.selectionEnd = pos;
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        autosize();
+    }
+    
+    function replacePlaceholder(textarea, placeholder, content) {
+        const idx = textarea.value.indexOf(placeholder);
+        if (idx !== -1) {
+            textarea.value = textarea.value.slice(0, idx) + content + textarea.value.slice(idx + placeholder.length);
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            autosize();
+        }
+    }
+
+    // Upload a single file to /gallery/upload and return markdown string
+    async function uploadImageFile(file) {
+        const form = new FormData();
+        form.append('image', file, file.name);
+        form.append('alt', file.name.replace(/\.[^.]+$/, ''));
+        const res = await fetch('/gallery/upload', { method: 'POST', body: form, });
+        if (!res.ok) {
+            const text = await res.text().catch(() => '');
+            throw new Error(text || `Upload failed with status ${res.status}`);
+        }
+        return await res.text();
+    }
+
+    function setupPageDragAndDrop(textarea) {
+        let hideTimer = null;
+        const DEBUG_DRAG = false; // set to true to log drag events
+
+        function log(...args) { if (DEBUG_DRAG) console.log('[drag]', ...args); }
+
+        // Very permissive detection for showing the cue (Safari-friendly)
+        function shouldShowCue(e) {
+            const dt = e.dataTransfer;
+            if (!dt) { log('no dataTransfer'); return false; }
+
+            if (dt.items && dt.items.length) {
+                for (const item of dt.items) {
+                    if (item.kind === 'file') {
+                        if (!item.type || item.type.startsWith('image/')) {
+                            log('cue: file item', item.type || '(no type)');
+                            return true;
+                        }
+                    }
+                }
+                log('items present but no file item');
+                return false;
+            }
+
+            if (dt.files && dt.files.length) {
+                const files = Array.from(dt.files);
+                if (files.every(f => f.type)) {
+                    const anyImage = files.some(f => f.type.startsWith('image/'));
+                    log('files with types, any image?', anyImage);
+                    return anyImage;
+                }
+                log('files present (no types), permissive cue');
+                return true;
+            }
+
+            log('dataTransfer exists but no items/files; showing cue (safari fallback)');
+            return true;
+        }
+
+        function showCue() {
+            document.body.classList.add('dragging-page');
+            if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+        }
+        function hideCueDebounced() {
+            if (hideTimer) clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => {
+                document.body.classList.remove('dragging-page');
+            }, 60);
+        }
+
+        window.addEventListener('dragenter', (e) => {
+            if (shouldShowCue(e)) {
+                showCue();
+            }
+        });
+
+        window.addEventListener('dragover', (e) => {
+            // Always prevent default to keep the drag session alive in Safari
+            e.preventDefault();
+            if (shouldShowCue(e)) {
+                showCue();
+            } else {
+                hideCueDebounced();
+            }
+        });
+
+        window.addEventListener('dragleave', () => {
+            hideCueDebounced();
+        });
+
+        window.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            document.body.classList.remove('dragging-page');
+
+            const dt = e.dataTransfer;
+            if (!dt) return;
+
+            const files = Array.from(dt.files || []);
+            if (!files.length) return;
+
+            // Focus textarea and set caret to end if not focused
+            if (document.activeElement !== textarea) {
+                textarea.focus();
+                const end = textarea.value.length;
+                textarea.selectionStart = textarea.selectionEnd = end;
+            }
+
+            for (const file of files) {
+                if (!file.type || !file.type.startsWith('image/')) {
+                    continue; // filter non-images at drop time
+                }
+
+                const filename = file.name;
+                const placeholder = `![Uploading...](${filename})`;
+                insertAtCaret(
+                    textarea,
+                    (textarea.value && !textarea.value.endsWith('\n') ? '\n' : '') + placeholder + '\n'
+                );
+
+                try {
+                    const markdown = await uploadImageFile(file);
+                    replacePlaceholder(textarea, placeholder, markdown);
+                } catch (err) {
+                    const failed = `![Failed...](${filename})`;
+                    replacePlaceholder(textarea, placeholder, failed);
+                    console.error(`Image upload failed: ${err.message || err}`);
+                }
+            }
+        }, { capture: true });
+    }
+        
     function preview() {
         const previewForm = document.getElementById('preview-form');
         const previewTitleInput = document.getElementById('preview-title');
@@ -140,4 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // ignore
         }
     });
+
+    setupPageDragAndDrop(bodyTextArea);
 });
+
