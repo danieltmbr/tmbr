@@ -5,14 +5,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const bodyTextArea = document.getElementById('editor-post-body');
     const publishedCheckbox = document.getElementById('editor-post-published');
     const previewButton = document.getElementById('editor-post-preview');
-    
+    const gallery = document.getElementById('gallery');
+    const galleryButton = document.getElementById('gallery-open');
+
     // Insert text at caret position in a textarea and preserve scroll
     function insertAtCaret(textarea, text) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const before = textarea.value.substring(0, start);
-        const after = textarea.value.substring(end);
-        textarea.value = before + text + after;
+        const start = textarea.selectionStart ?? textarea.value.length;
+        const end = textarea.selectionEnd ?? textarea.value.length;
+        const before = textarea.value.slice(0, start);
+        const after = textarea.value.slice(end);
+        const insert = (textarea.value && !textarea.value.endsWith('\n') ? '\n' : '') + text + '\n';
+        textarea.value = before + insert + after;
         const pos = start + text.length;
         textarea.selectionStart = textarea.selectionEnd = pos;
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
@@ -28,12 +31,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Upload a single file to /gallery/upload and return markdown string
     async function uploadImageFile(file) {
         const form = new FormData();
         form.append('image', file, file.name);
         form.append('alt', file.name.replace(/\.[^.]+$/, ''));
-        const res = await fetch('/gallery/upload', { method: 'POST', body: form, });
+        const res = await fetch('/gallery', { method: 'POST', body: form, });
         if (!res.ok) {
             const text = await res.text().catch(() => '');
             throw new Error(text || `Upload failed with status ${res.status}`);
@@ -43,40 +45,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupPageDragAndDrop(textarea) {
         let hideTimer = null;
-        const DEBUG_DRAG = false; // set to true to log drag events
-
-        function log(...args) { if (DEBUG_DRAG) console.log('[drag]', ...args); }
 
         // Very permissive detection for showing the cue (Safari-friendly)
         function shouldShowCue(e) {
             const dt = e.dataTransfer;
-            if (!dt) { log('no dataTransfer'); return false; }
+            if (!dt) { return false; }
 
             if (dt.items && dt.items.length) {
                 for (const item of dt.items) {
                     if (item.kind === 'file') {
                         if (!item.type || item.type.startsWith('image/')) {
-                            log('cue: file item', item.type || '(no type)');
                             return true;
                         }
                     }
                 }
-                log('items present but no file item');
                 return false;
             }
 
             if (dt.files && dt.files.length) {
                 const files = Array.from(dt.files);
                 if (files.every(f => f.type)) {
-                    const anyImage = files.some(f => f.type.startsWith('image/'));
-                    log('files with types, any image?', anyImage);
-                    return anyImage;
+                    return files.some(f => f.type.startsWith('image/'));
                 }
-                log('files present (no types), permissive cue');
                 return true;
             }
 
-            log('dataTransfer exists but no items/files; showing cue (safari fallback)');
             return true;
         }
 
@@ -84,11 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.classList.add('dragging-page');
             if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
         }
+        
         function hideCueDebounced() {
             if (hideTimer) clearTimeout(hideTimer);
             hideTimer = setTimeout(() => {
                 document.body.classList.remove('dragging-page');
             }, 60);
+        }
+        
+        function focus(textarea) {
+            if (document.activeElement !== textarea) {
+                textarea.focus();
+                if (typeof textarea.selectionStart !== 'number' || typeof textarea.selectionEnd !== 'number') {
+                    const end = textarea.value.length;
+                    textarea.selectionStart = textarea.selectionEnd = end;
+                }
+            }
         }
 
         window.addEventListener('dragenter', (e) => {
@@ -114,41 +118,53 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('drop', async (e) => {
             e.preventDefault();
             document.body.classList.remove('dragging-page');
-
+            
             const dt = e.dataTransfer;
             if (!dt) return;
-
+            
+            const customMarkdown = dt.getData('application/x-editor-markdown') || '';
+            if (customMarkdown) {
+                focus(textarea);
+                insertAtCaret(
+                    textarea,
+                    (textarea.value && !textarea.value.endsWith('\n') ? '\n' : '') + customMarkdown + '\n'
+                );
+                return;
+            }
+            
             const files = Array.from(dt.files || []);
             if (!files.length) return;
 
-            // Focus textarea and set caret to end if not focused
-            if (document.activeElement !== textarea) {
-                textarea.focus();
-                const end = textarea.value.length;
-                textarea.selectionStart = textarea.selectionEnd = end;
-            }
+            focus(textarea);
 
-            for (const file of files) {
-                if (!file.type || !file.type.startsWith('image/')) {
-                    continue; // filter non-images at drop time
-                }
+            // Filter to images only, but keep mapping info for placeholders
+            const imageFiles = files.filter(f => f && (!f.type || f.type.startsWith('image/')));
+            if (!imageFiles.length) return;
 
+            const entries = imageFiles.map((file) => {
                 const filename = file.name;
                 const placeholder = `![Uploading...](${filename})`;
                 insertAtCaret(
                     textarea,
                     (textarea.value && !textarea.value.endsWith('\n') ? '\n' : '') + placeholder + '\n'
                 );
+                return { file, filename, placeholder };
+            });
 
+            const uploads = entries.map(async ({ file, filename, placeholder }) => {
                 try {
                     const markdown = await uploadImageFile(file);
                     replacePlaceholder(textarea, placeholder, markdown);
+                    return { filename, ok: true };
                 } catch (err) {
                     const failed = `![Failed...](${filename})`;
                     replacePlaceholder(textarea, placeholder, failed);
                     console.error(`Image upload failed: ${err.message || err}`);
+                    return { filename, ok: false };
                 }
-            }
+            });
+
+            await Promise.allSettled(uploads);
         }, { capture: true });
     }
         
@@ -171,9 +187,36 @@ document.addEventListener('DOMContentLoaded', () => {
         bodyTextArea.style.height = bodyTextArea.scrollHeight + 'px';
     }
     
-    if (!form || !titleInput || !bodyTextArea || !publishedCheckbox || !previewButton) {
-        // Missing elements; avoid runtime errors
-        return;
+    function attachListenersToGallery() {
+        const gallerySection = document.getElementById('gallery-section');
+        const galleryCloseButton = document.getElementById('gallery-close');
+        
+        galleryCloseButton.addEventListener('click', () => {
+            window.dispatchEvent(new CustomEvent('gallery-close'));
+        });
+        
+        const items = gallerySection.querySelectorAll('.gallery-item');
+        items.forEach((btn) => {
+            const alt = btn.dataset.alt || '';
+            const url = btn.dataset.url;
+            
+            if (!url) return;
+            
+            const markdown = `![${alt}](${url})`;
+            
+            btn.addEventListener('click', () => {
+                let insert = new CustomEvent('editor-insert-markdown', { detail: { markdown } })
+                window.dispatchEvent(insert);
+            });
+            
+            btn.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/uri-list', url);
+                e.dataTransfer.setData('text/plain', url);
+                e.dataTransfer.setData('text/html', `<img src="${url}" alt="${alt}">`);
+                e.dataTransfer.setData('application/x-editor-markdown', markdown);
+                e.dataTransfer.effectAllowed = 'copy';
+            });
+        });
     }
     
     const postID = idInput ? idInput.value : '';
@@ -206,8 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         try {
             localStorage.setItem(storageKey, JSON.stringify(data));
-        } catch (_) {
-
+        } catch (err) {
+            console.error('Couldn\'t save draft. ${err.message || err}')
         }
     };
     
@@ -288,5 +331,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     setupPageDragAndDrop(bodyTextArea);
+    
+    async function openGallery() {
+        gallery.innerHTML = 'Loading...';
+        try {
+            const res = await fetch('/gallery?embedded=true', { headers: { 'Accept': 'text/html' }});
+            const html = await res.text();
+            gallery.innerHTML = html;
+            attachListenersToGallery();
+            gallery.style.display = 'block';
+        } catch (err) {
+            gallery.innerHTML = 'Failed to load gallery.';
+            console.error(`Image upload failed: ${err.message || err}`);
+        }
+    }
+    
+    function closeGallery() {
+        gallery.style.display = 'none';
+    }
+    
+    window.addEventListener('editor-insert-markdown', (e) => {
+        const md = e.detail && e.detail.markdown ? e.detail.markdown : '';
+        if (!md) return;
+        insertAtCaret(bodyTextArea, md);
+    });
+    galleryButton.addEventListener('click', openGallery);
+    window.addEventListener('gallery-close', closeGallery);
 });
 

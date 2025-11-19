@@ -1,0 +1,8 @@
+<button type="button" id="gallery-close" aria-label="Close">×</button>
+<section alt="Gallery" id="gallery-section">
+    #for(item in items):
+    <button type="button" class="gallery-item" data-url="#(item.url)" data-alt="#(item.alt)">
+        <img src="#(item.thumbnailURL)" alt="#(item.alt)" loading="lazy" />
+    </button>
+    #endfor
+</section>

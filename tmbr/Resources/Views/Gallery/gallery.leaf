@@ -1,0 +1,17 @@
+#extend("Shared/page"):
+    
+    #export("main"):
+        <section alt="Gallery">
+            #for(item in items):
+              <a src="/gallery/#(image.id)">
+                <img src="#(item.thumbnailURL)" alt="#(item.alt)" loading="lazy" />
+              </a>
+            #endfor
+        </section>
+    #endexport
+    
+    #export("scripts"):
+        <script src="/Scripts/gallery.js"></script>
+    #endexport
+    
+#endextend

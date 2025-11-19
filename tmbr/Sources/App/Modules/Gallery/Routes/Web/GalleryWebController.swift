@@ -1,21 +1,21 @@
 import Vapor
 import Fluent
 import Foundation
+import Core
 
 struct GalleryWebController: RouteCollection {
     
     func boot(routes: RoutesBuilder) throws {
         
         // TODO: Add Gallery pages
-        // - List images
-        // - Upload Form & Delete images
+        // Details & Edit & Delete images
         
         routes.get("gallery", "data", ":key", use: fetchResource)
         
-        routes.grouped("gallery", "upload")
-            .on(.POST, body: .collect(maxSize: "10mb"), use: upload)
+        routes.get("gallery", page: .gallery)
         
-        // routes.get("gallery", "list", use: list)
+        routes.grouped("gallery")
+            .on(.POST, body: .collect(maxSize: "10mb"), use: upload)
     }
     
     @Sendable
@@ -51,29 +51,8 @@ struct GalleryWebController: RouteCollection {
         let payload = try req.content.decode(ImageUploadPayload.self)
         let image = try await req.commands.gallery.add(payload)
         let alt = image.alt ?? image.name
-        return Response(markdown: "![\(alt)](/gallery/data/\(image.name))")
+        return Response(markdown: "![\(alt)](\(req.baseURL)/gallery/data/\(image.name))")
     }
-
-//    @Sendable
-//    private func list(_ req: Request) async throws -> Response {
-//        let items = try await req.commands.gallery.list()
-//        // Expect each item to have a markdown representation. Join by newline for easy paste.
-//        let markdown = items.map { item in
-//            if let mdProvider = item as? Commands.Gallery.MarkdownRepresentable {
-//                return mdProvider.markdown
-//            }
-//            // Fallback: attempt to construct markdown if keys are present
-//            if let dict = item as? [String: Any], let key = dict["key"] as? String {
-//                return "![alt text](/gallery/data/\(key))"
-//            }
-//            return ""
-//        }.filter { !$0.isEmpty }.joined(separator: "\n")
-//
-//        var res = Response(status: .ok)
-//        res.headers.contentType = .plainText
-//        res.body = .init(string: markdown)
-//        return res
-//    }
 }
 
 extension Response {
@@ -81,5 +60,15 @@ extension Response {
         self.init(status: .ok)
         headers.contentType = .plainText
         body = Body(string: markdown)
+    }
+}
+
+extension Request {
+    var baseURL: String {
+        let proto = headers["X-Forwarded-Proto"].first ?? "https"
+        guard let host = headers.first(name: .host) else {
+            return "\(proto)://localhost"
+        }
+        return "\(proto)://\(host)"
     }
 }

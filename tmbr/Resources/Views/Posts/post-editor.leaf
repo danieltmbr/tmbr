@@ -5,6 +5,8 @@
     #endexport
 
     #export("main"):
+    <button id="gallery-open" class="link" type="button">Gallery</button>
+
     <section alt="Post edit form">
         <form id="post-form" method="#(submit.method)" action="#(submit.action)">
             <input id="editor-post-id" type="hidden" name="id" value="#(id)" />
@@ -68,13 +70,13 @@
             <input type="hidden" name="title" id="preview-title" />
             <input type="hidden" name="body" id="preview-body" />
         </form>
-
     </section>
     
-
+    <aside id="gallery" hidden></aside>
     #endexport
     
     #export("scripts"):
         <script src="/Scripts/post-editor.js"></script>
     #endexport
 #endextend
+
