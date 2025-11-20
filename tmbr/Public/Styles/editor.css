@@ -211,38 +211,39 @@ button.icon > svg:hover {
 }
 
 #gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
-    min-height: 0;
-    justify-content: start;
-    align-content: start;
-    align-items: start;
-    grid-auto-rows: 1fr;
+    display: block;
+    columns: 140px 2;
+    column-gap: 3px;
+    line-height: 0;
 }
 
 #gallery-grid .gallery-item {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 3px 0;
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+
+    border-radius: 5px;
     padding: 0;
     border: 1px solid rgba(255, 255, 255, 0.2);
     overflow: hidden;
     background: var(--panel-item-background-color);
-    aspect-ratio: 4 / 3;
+
+    aspect-ratio: auto;
     cursor: pointer;
 }
 
 #gallery-grid .gallery-item img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    object-fit: contain;
     display: block;
 }
 
 #gallery-grid .gallery-item:hover img {
-    object-fit: contain;
+    filter: brightness(0.95);
 }
 
 /*
@@ -262,11 +263,10 @@ button.icon > svg:hover {
         max-width: initial;
         left: 1em;
         top: initial;
-        max-height: 70%;
+        max-height: 65%;
     }
 
     #gallery-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 12px;
+        columns: 120px 4;
     }
 }
