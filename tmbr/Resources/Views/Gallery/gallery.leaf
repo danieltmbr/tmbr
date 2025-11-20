@@ -10,8 +10,4 @@
         </section>
     #endexport
     
-    #export("scripts"):
-        <script src="/Scripts/gallery.js"></script>
-    #endexport
-    
 #endextend

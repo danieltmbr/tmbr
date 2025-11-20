@@ -358,7 +358,7 @@ class GalleryController {
     }
 
     async open() {
-        this.gallery.style.display = 'block';
+        this.gallery.classList.add("open");
         this.gallery.innerHTML = 'Loading...';
         try {
             const res = await fetch('/gallery?embedded=true', { headers: { 'Accept': 'text/html' }});
@@ -372,7 +372,7 @@ class GalleryController {
     }
 
     close() {
-        this.gallery.style.display = 'none';
+        this.gallery.classList.remove("open");
     }
 
     onEditorInsertEvent(e) {

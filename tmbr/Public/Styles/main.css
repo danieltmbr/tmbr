@@ -2,6 +2,9 @@
     color-scheme: light dark;
 
     --background-color: #FFFFFF;
+    --panel-background-color: rgba(247, 247, 247, 0.5);
+    --panel-item-background-color: rgba(239, 239, 239, 0.5);
+    --drop-area-background-color: rgba(0,0,0,0.06);
     --table-background-color: #F7F7F7;
     --table-header-background-color: #EFEFEF;
     --error-color: #8b0000;
@@ -10,6 +13,9 @@
 @media (prefers-color-scheme: dark) {
     :root {
         --background-color: #1d1d1d;
+        --panel-background-color: rgba(36, 36, 36, 0.5);
+        --panel-item-background-color: rgba(44, 44, 44, 0.5);
+        --drop-area-background-color: rgba(255,255,255,0.03);
         --table-background-color: #242424;
         --table-header-background-color: #2C2C2C;
         --error-color: #ff6b6b;
@@ -233,6 +239,14 @@ hr {
     border-top: 1px solid;
     margin: 1.5em 0;
 }
+
+/*
+ ------------------------------------------------
+ Gallery
+ ------------------------------------------------
+ */
+
+
 
 /*
  ------------------------------------------------
