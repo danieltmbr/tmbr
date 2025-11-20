@@ -1,0 +1,20 @@
+#extend("Shared/page"):
+
+    #export("styles"):
+    <link rel="stylesheet" href="/Styles/gallery.css">
+    #endexport
+    
+    #export("main"):
+        <section aria-label="Gallery">
+            <h1>#(title)</h1>
+            <div id="gallery-grid">
+            #for(item in items):
+              <a href="/gallery/data/#(item.key)">
+                <img src="#(item.thumbnailURL)" alt="#(item.alt)" loading="lazy" />
+              </a>
+            #endfor
+            </div>
+        </section>
+    #endexport
+
+#endextend

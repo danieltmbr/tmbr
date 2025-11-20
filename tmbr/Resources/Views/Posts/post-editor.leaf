@@ -5,6 +5,10 @@
     #endexport
 
     #export("main"):
+    <button id="gallery-open" class="icon" type="button">
+        #extend("Icons/gallery")
+    </button>
+
     <section alt="Post edit form">
         <form id="post-form" method="#(submit.method)" action="#(submit.action)">
             <input id="editor-post-id" type="hidden" name="id" value="#(id)" />
@@ -68,10 +72,17 @@
             <input type="hidden" name="title" id="preview-title" />
             <input type="hidden" name="body" id="preview-body" />
         </form>
-
     </section>
     
-
+    <aside id="gallery" hidden>
+        <div id="gallery-header" alt="Gallery Header">
+            <button class="icon small" type="button" id="gallery-close" aria-label="Close">
+                #extend("Icons/close")
+            </button>
+            <span id="gallery-status" class="system-info"></span>
+        </div>
+        <section alt="Gallery" id="gallery-section"></section>
+    </aside>
     #endexport
     
     #export("scripts"):

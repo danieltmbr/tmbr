@@ -22,19 +22,13 @@ struct Gallery: Module {
     }
 
     func configure(_ app: Vapor.Application) async throws {
-        app.migrations.add(CreateImage())
+        let storage = S3FileStorage(
+            bucket: Environment.gallery.bucket ,
+            region: Region(rawValue: Environment.gallery.region)
+        )
 
-        let storage: FileStorage
-        if app.environment == .production {
-            storage = S3FileStorage(
-                bucket: Environment.gallery.bucket ,
-                region: Region(rawValue: Environment.gallery.region)
-            )
-        } else {
-            storage = InMemoryFileStorage()
-        }
+        app.migrations.add(CreateImage())
         app.storage[ServiceKey.self] = DefaultImageService(storage: storage)
-        
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)
     }

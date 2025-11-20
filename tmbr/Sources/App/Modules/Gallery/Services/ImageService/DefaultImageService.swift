@@ -69,7 +69,7 @@ actor DefaultImageService: ImageService {
         
         let thumbnailFileName: String
         if (mediaType == .jpeg || mediaType == .png), let thumbnailData = resizer.resize(imageData) {
-            thumbnailFileName = "\(uuid)-thumbnail.png"
+            thumbnailFileName = "thumbnail-\(uuid).png"
             try await storage.store(
                 data: thumbnailData,
                 contentType: HTTPMediaType.png.serialize(),

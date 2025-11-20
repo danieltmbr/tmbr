@@ -24,7 +24,7 @@ extension Page {
                 content: markdownFormatter.format(payload.body),
                 id: nil,
                 publishDate: Date.now.formatted(.publishDate),
-                title: payload.title
+                title: "Preview: \(payload.title)"
             )
         }
         .recover(.aborts)
