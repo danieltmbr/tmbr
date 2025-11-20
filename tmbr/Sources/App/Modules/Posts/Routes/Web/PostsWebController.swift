@@ -57,18 +57,22 @@ struct PostsWebController: RouteCollection {
             let submitted = (try? req.content.decode(PostPayload.self)) ?? PostPayload()
             let submit: Form.Submit
             let postID: PostID?
+            let pageTitle: String
             
             switch mode {
             case .create:
                 postID = nil
                 submit = Form.Submit(action: "/post", label: "Save", method: .POST)
+                pageTitle = "New post"
             case .update(let id):
                 postID = id
                 submit = Form.Submit(action: "/post/\(id)", label: "Save", method: .POST)
+                pageTitle = "Edit '\(submitted.title)'"
             }
             
             let model = PostEditorViewModel(
                 id: postID,
+                pageTitle: pageTitle,
                 title: submitted.title,
                 body: submitted.body ?? "",
                 state: submitted.state,

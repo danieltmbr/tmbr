@@ -7,6 +7,8 @@ import AuthKit
 struct PostEditorViewModel: Encodable {
     
     private let id: Int?
+    
+    private let pageTitle: String?
 
     private let title: String
     
@@ -22,6 +24,7 @@ struct PostEditorViewModel: Encodable {
 
     init(
         id: Int? = nil,
+        pageTitle: String?,
         title: String = "",
         body: String = "",
         state: Post.State = .draft,
@@ -30,6 +33,7 @@ struct PostEditorViewModel: Encodable {
         csrf: String? = nil
     ) {
         self.id = id
+        self.pageTitle = pageTitle
         self.title = title
         self.body = body
         self.state = state
@@ -42,6 +46,7 @@ struct PostEditorViewModel: Encodable {
         let id = try post.requireID()
         self.init(
             id: id,
+            pageTitle: "Edit '\(post.title)'",
             title: post.title,
             body: post.content,
             state: post.state,
@@ -70,7 +75,7 @@ extension Page {
             )
             let csrf = UUID().uuidString
             req.session.data["csrf.editor"] = csrf
-            return PostEditorViewModel(title: "New post", submit: submit, csrf: csrf)
+            return PostEditorViewModel(pageTitle: "New post", submit: submit, csrf: csrf)
         }
         .recover(.aborts)
     }

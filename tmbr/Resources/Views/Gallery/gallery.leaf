@@ -6,7 +6,7 @@
     
     #export("main"):
         <section aria-label="Gallery">
-            <h1>Gallery</h1>
+            <h1>#(title)</h1>
             <div id="gallery-grid">
             #for(item in items):
               <a href="/gallery/data/#(item.key)">

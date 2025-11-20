@@ -33,7 +33,9 @@ struct GalleryViewModel: Encodable, Sendable {
         }
     }
     
-    let items: [Item]
+    private let title: String = "Gallery"
+    
+    private let items: [Item]
     
     init(images: [Image], baseURL: String) {
         self.items = images.compactMap { image in
