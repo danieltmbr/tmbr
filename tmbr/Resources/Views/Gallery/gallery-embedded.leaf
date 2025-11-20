@@ -1,17 +1,7 @@
-<button class="icon small" type="button" id="gallery-close" aria-label="Close">
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16.2734 15.928">
-     <g>
-      <rect height="15.928" opacity="0" width="16.2734" x="0" y="0"/>
-      <path d="M13.7728 0.373534L0.349341 13.8001C-0.113117 14.2595-0.122883 15.0898 0.358657 15.5678C0.843303 16.0427 1.67988 16.0334 2.13613 15.5771L15.5596 2.15366C16.0314 1.68188 16.0349 0.867046 15.5472 0.385955C15.0594-0.101795 14.2544-0.111561 13.7728 0.373534ZM15.5596 13.7939L2.13613 0.370428C1.67677-0.0924792 0.839748-0.111561 0.358657 0.38285C-0.119328 0.870601-0.110012 1.6912 0.349341 2.15055L13.7728 15.574C14.2446 16.0458 15.0661 16.0494 15.5472 15.5647C16.0283 15.077 16.0314 14.2688 15.5596 13.7939Z" fill="currentColor"/>
-     </g>
-</svg>
-</button>
-<section alt="Gallery" id="gallery-section">
-    <div id="gallery-grid">
-        #for(item in items):
-        <button type="button" class="gallery-item" data-url="#(item.url)" data-alt="#(item.alt)">
-            <img src="#(item.thumbnailURL)" alt="#(item.alt)" loading="lazy" />
-        </button>
-        #endfor
-    </div>
-</section>
+<div id="gallery-grid">
+    #for(item in items):
+    <button type="button" class="gallery-item" data-url="#(item.url)" data-alt="#(item.alt)">
+        <img src="#(item.thumbnailURL)" alt="#(item.alt)" loading="lazy">
+    </button>
+    #endfor
+</div>

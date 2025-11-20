@@ -70,7 +70,7 @@ extension Page {
             )
             let csrf = UUID().uuidString
             req.session.data["csrf.editor"] = csrf
-            return PostEditorViewModel(submit: submit, csrf: csrf)
+            return PostEditorViewModel(title: "New post", submit: submit, csrf: csrf)
         }
         .recover(.aborts)
     }

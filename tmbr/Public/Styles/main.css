@@ -202,6 +202,10 @@ main > section > article > ul {
     margin: 0.5em 0;
 }
 
+main > section > article img {
+    max-width: 100%;
+}
+
 main > a,
 main > a > svg {
     color: inherit;
@@ -347,6 +351,13 @@ p.published-date {
 .invisible {
     opacity: 0;
     pointer-events: none;
+}
+
+.system-info {
+    font-size: 1.5rem;
+    font-weight: 500;
+    opacity: 0.75;
+    font-family: system-ui, -apple-system, Helvetica, sans-serif;
 }
 
 /*

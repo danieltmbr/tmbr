@@ -336,37 +336,55 @@ class DragAndDropController {
 }
 
 class GalleryController {
-    constructor({ gallery, galleryButton, onInsertMarkdown }) {
+    constructor({ gallery, gallerySection, galleryStatus, galleryOpenButton, galleryCloseButton, onInsertMarkdown }) {
         this.gallery = gallery;
-        this.galleryButton = galleryButton;
+        this.gallerySection = gallerySection;
+        this.galleryStatus = galleryStatus;
+        this.galleryOpenButton = galleryOpenButton;
         this.onInsertMarkdown = onInsertMarkdown;
+        this.galleryCloseButton = galleryCloseButton;
         this._onOpenClick = this.open.bind(this);
-        this._onCloseEvent = this.close.bind(this);
+        this._onCloseClick = this.close.bind(this);
         this._onEditorInsertEvent = this.onEditorInsertEvent.bind(this);
     }
 
     init() {
-        this.galleryButton.addEventListener('click', this._onOpenClick);
-        window.addEventListener('gallery-close', this._onCloseEvent);
+        this.galleryOpenButton.addEventListener('click', this._onOpenClick);
+        this.galleryCloseButton.addEventListener('click', this._onCloseClick);
         window.addEventListener('editor-insert-markdown', this._onEditorInsertEvent);
     }
 
     destroy() {
-        this.galleryButton.removeEventListener('click', this._onOpenClick);
-        window.removeEventListener('gallery-close', this._onCloseEvent);
+        this.galleryOpenButton.removeEventListener('click', this._onOpenClick);
+        this.galleryCloseButton.removeEventListener('click', this._onCloseClick);
         window.removeEventListener('editor-insert-markdown', this._onEditorInsertEvent);
+    }
+    
+    async toggle() {
+        if (this.gallery.classList.contains("open")) {
+            this.close();
+        } else {
+            await this.open();
+        }
     }
 
     async open() {
         this.gallery.classList.add("open");
-        this.gallery.innerHTML = 'Loading...';
+        this.galleryStatus.innerHTML = 'Loading...';
         try {
+            const content = this.gallerySection.innerHTML;
             const res = await fetch('/gallery?embedded=true', { headers: { 'Accept': 'text/html' }});
             const html = await res.text();
-            this.gallery.innerHTML = html;
-            this.attachListenersToGallery();
+            if (content != html) {
+                console.log("html and content are not identical");
+                console.log(content);
+                console.log(html);
+                this.gallerySection.innerHTML = html;
+                this.attachListenersToGallery();
+            }
+            this.galleryStatus.innerHTML = '';
         } catch (err) {
-            this.gallery.innerHTML = 'Failed to load gallery.';
+            this.galleryStatus.innerHTML = 'Failed to load gallery.';
             console.error(`Image upload failed: ${err?.message || err}`);
         }
     }
@@ -384,13 +402,7 @@ class GalleryController {
     }
 
     attachListenersToGallery() {
-        const gallerySection = document.getElementById('gallery-section');
-        const galleryItems = gallerySection.querySelectorAll('.gallery-item');
-        const galleryCloseButton = document.getElementById('gallery-close');
-
-        galleryCloseButton.addEventListener('click', () => {
-            window.dispatchEvent(new CustomEvent('gallery-close'));
-        });
+        const galleryItems = this.gallerySection.querySelectorAll('.gallery-item');
 
         galleryItems.forEach((btn) => {
             const alt = btn.dataset.alt || '';
@@ -416,8 +428,9 @@ class GalleryController {
 }
 
 class ShortcutsController {
-    constructor({ onPreview }) {
+    constructor({ onPreview }, { onGallery }) {
         this.onPreview = onPreview;
+        this.onGallery = onGallery;
         this._onKeyDown = this.onKeyDown.bind(this);
     }
 
@@ -438,19 +451,40 @@ class ShortcutsController {
 
     onKeyDown(event) {
         try {
-            const active = document.activeElement;
-            if (this.isInputLike(active)) { return; }
-            const isMac = navigator.platform.toUpperCase().includes('MAC');
-            const cmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
-            const alt = event.altKey;
-            const shift = event.shiftKey;
-            const isPKey = event.code === 'KeyP';
-            if (cmdOrCtrl && alt && !shift && isPKey) {
-                event.preventDefault();
-                if (typeof this.onPreview === 'function') this.onPreview();
-            }
-        } catch (_) {
-            // ignore
+            this.preview();
+            this.gallery();
+        } catch (err) {
+            console.error(`Key down handler failed. ${err?.message || err}`)
+        }
+    }
+    
+    preview() {
+        const isMac = navigator.platform.toUpperCase().includes('MAC');
+        const cmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
+        const alt = event.altKey;
+        const shift = event.shiftKey;
+        const isPKey = event.code === 'KeyP';
+        if (cmdOrCtrl && alt && !shift && isPKey && typeof this.onPreview === 'function') {
+            event.preventDefault();
+            this.onPreview();
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    gallery() {
+        const isMac = navigator.platform.toUpperCase().includes('MAC');
+        const cmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
+        const alt = event.altKey;
+        const shift = event.shiftKey;
+        const isGKey = event.code === 'KeyG';
+        if (cmdOrCtrl && alt && !shift && isGKey && typeof this.onGallery === 'function') {
+            event.preventDefault();
+            this.onGallery();
+            return true;
+        } else {
+            return false;
         }
     }
 }
@@ -462,8 +496,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const bodyTextArea = document.getElementById('editor-post-body');
     const publishedCheckbox = document.getElementById('editor-post-published');
     const previewButton = document.getElementById('editor-post-preview');
+    
     const gallery = document.getElementById('gallery');
-    const galleryButton = document.getElementById('gallery-open');
+    const gallerySection = document.getElementById('gallery-section');
+    const galleryStatus = document.getElementById('gallery-status');
+    const galleryOpenButton = document.getElementById('gallery-open');
+    const galleryCloseButton = document.getElementById('gallery-close');
 
     const persistence = new PersistenceController();
 
@@ -482,14 +520,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const galleryController = new GalleryController({
         gallery,
-        galleryButton,
+        gallerySection,
+        galleryStatus,
+        galleryOpenButton,
+        galleryCloseButton,
         onInsertMarkdown: (md) => editor.insertAtCaret(md),
     });
     galleryController.init();
 
-    const shortcuts = new ShortcutsController({ onPreview: () => editor.preview() });
+    const shortcuts = new ShortcutsController(
+        { onPreview: () => editor.preview() },
+        { onGallery: () => galleryController.toggle() }
+    );
     shortcuts.init();
 
     form.addEventListener('submit', () => persistence.markPendingClear(editor.getStorageKey()));
     window.addEventListener('pageshow', () => persistence.clearPendingIfNavigatedAway());
 });
+
