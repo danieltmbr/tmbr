@@ -1,0 +1,33 @@
+#gallery-grid {
+    column-count: 3;
+    column-gap: 3px;
+    line-height: 0;
+}
+
+#gallery-grid a {
+    display: inline-block;
+    width: 100%;
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    overflow: hidden;
+    margin: 0 0 3px 0;
+    line-height: normal;
+}
+
+#gallery-grid img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+#gallery-grid a:hover img {
+    filter: brightness(0.95);
+}
+
+@media screen and (max-width: 600px) {
+    
+    #gallery-grid {
+        column-count: 2;
+    }
+}

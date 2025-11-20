@@ -73,6 +73,7 @@ main > section {
     
     display: flex;
     flex: 1 1 auto;
+    flex-direction: column;
     min-height: 0;
 }
 
@@ -129,6 +130,7 @@ main > section > article {
     padding-bottom: 60px;
 }
 
+main > section > h1,
 main > section > article > h1 {
     font-size: 3.2rem;
     line-height: normal;
