@@ -182,7 +182,7 @@ button.icon > svg:hover {
     right: 1em;
     bottom: 1em;
     width: 33%;
-    max-width: 40vw;
+    max-width: 640px;
     z-index: 1100;
 
     /* Translucent, blurred background */
@@ -212,7 +212,7 @@ button.icon > svg:hover {
 
 #gallery-grid {
     display: block;
-    columns: 140px 2;
+    columns: 140px 3;
     column-gap: 3px;
     line-height: 0;
 }
