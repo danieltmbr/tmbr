@@ -36,11 +36,11 @@ final class Image: Model, Content, @unchecked Sendable {
     @OptionalField(key: "alt")
     var alt: String?
     
-    @Field(key: "name")
-    private(set) var name: String
+    @Field(key: "key")
+    private(set) var key: String
     
-    @Field(key: "thumbnail")
-    private(set) var thumbnail: String
+    @Field(key: "thumbnail_key")
+    private(set) var thumbnailKey: String
     
     @Group(key: "size")
     private(set) var size: Size
@@ -56,8 +56,8 @@ final class Image: Model, Content, @unchecked Sendable {
     convenience init(
         id: Int? = nil,
         alt: String?,
-        name: String,
-        thumbnail: String,
+        key: String,
+        thumbnailKey: String,
         width: Int,
         height: Int,
         ownerID: UserID,
@@ -66,8 +66,8 @@ final class Image: Model, Content, @unchecked Sendable {
         self.init(
             id: id,
             alt: alt,
-            name: name,
-            thumbnail: thumbnail,
+            key: key,
+            thumbnailKey: thumbnailKey,
             size: CGSize(width: width, height: height),
             ownerID: ownerID
         )
@@ -76,16 +76,16 @@ final class Image: Model, Content, @unchecked Sendable {
     init(
         id: Int? = nil,
         alt: String?,
-        name: String,
-        thumbnail: String,
+        key: String,
+        thumbnailKey: String,
         size: CGSize,
         ownerID: UserID,
         uploadedAt: Date? = nil
     ) {
         self.id = id
         self.alt = alt
-        self.name = name
-        self.thumbnail = thumbnail
+        self.key = key
+        self.thumbnailKey = thumbnailKey
         self.size = Size(width: Int(size.width), height: Int(size.height))
         self.$owner.id = ownerID
         self.uploadedAt = uploadedAt

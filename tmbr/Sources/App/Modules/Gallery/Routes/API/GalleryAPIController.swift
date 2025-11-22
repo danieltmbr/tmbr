@@ -15,9 +15,9 @@ struct GalleryAPIController: RouteCollection {
         
         galleryRoute.get("images", ":id") { req async throws -> ImageResponse in
             guard let id = req.parameters.get("id", as: Int.self) else {
-                throw Abort(.badRequest, reason: "Invalid image id")
+                throw Abort(.badRequest, reason: "Invalid image id.")
             }
-            let image = try await req.commands.gallery.fetch(id)
+            let image = try await req.commands.gallery.fetch(id, for: .read)
             return makeResponse(from: image, req: req)
         }
 
@@ -27,9 +27,19 @@ struct GalleryAPIController: RouteCollection {
             return makeResponse(from: image, req: req)
         }
         
+        galleryRoute.put("images", ":id") { req async throws -> ImageResponse in
+            guard let id = req.parameters.get("id", as: Int.self) else {
+                throw Abort(.badRequest, reason: "Invalid image id.")
+            }
+            let payload = try req.content.decode(ImageEditPayload.self)
+            let input = EditImageCommand.Input(imageID: id, alt: payload.alt)
+            let image = try await req.commands.gallery.edit(input)
+            return makeResponse(from: image, req: req)
+        }
+        
         galleryRoute.delete("images", ":id") { req async throws -> HTTPStatus in
             guard let id = req.parameters.get("id", as: Int.self) else {
-                throw Abort(.badRequest, reason: "Invalid image id")
+                throw Abort(.badRequest, reason: "Invalid image id.")
             }
             try await req.commands.gallery.delete(id)
             return .noContent
@@ -41,8 +51,8 @@ struct GalleryAPIController: RouteCollection {
         ImageResponse(
             id: image.id,
             alt: image.alt,
-            url: absoluteURL(for: image.name, on: req),
-            thumbnailUrl: absoluteURL(for: image.thumbnail, on: req),
+            url: absoluteURL(for: image.key, on: req),
+            thumbnailUrl: absoluteURL(for: image.thumbnailKey, on: req),
             size: CGSize(width: image.size.width, height: image.size.height),
             uploadedAt: image.uploadedAt ?? .now
         )

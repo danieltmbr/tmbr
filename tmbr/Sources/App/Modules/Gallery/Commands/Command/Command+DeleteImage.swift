@@ -19,9 +19,9 @@ extension Command where Self == PlainCommand<ImageID, Void> {
             try await permission.grant(image)
             try await image.delete(on: database)
             do {
-                try await storage.delete(image.name)
-                if image.thumbnail != image.name {
-                    try await storage.delete(image.thumbnail)
+                try await storage.delete(image.key)
+                if image.thumbnailKey != image.key {
+                    try await storage.delete(image.thumbnailKey)
                 }
             } catch {
                 logger.error("Image resources hasn't been properly cleared from storage: \(error.localizedDescription)")

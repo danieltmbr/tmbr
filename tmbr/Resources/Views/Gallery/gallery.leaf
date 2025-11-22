@@ -8,9 +8,9 @@
         <section aria-label="Gallery">
             <h1>#(title)</h1>
             <div id="gallery-grid">
-            #for(item in items):
-              <a href="/gallery/data/#(item.key)">
-                <img src="#(item.thumbnailURL)" alt="#(item.alt)" loading="lazy" />
+            #for(image in images):
+              <a href="/gallery/#(image.id)">
+                <img src="#(image.thumbnailURL)" alt="#(image.alt)" loading="lazy" />
               </a>
             #endfor
             </div>

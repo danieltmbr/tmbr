@@ -1,6 +1,33 @@
+:root {
+    color-scheme: light dark;
+    
+    --button-primary-background: #007aff;
+    --button-primary-gradient: linear-gradient(to bottom, #3696ff, #007aff);
+    --button-primary-gradient-hover: linear-gradient(to bottom, #5eabff, #007aff);
+    --button-primary-gradient-active: linear-gradient(to bottom, #0572eb, #007aff);
+    
+    --button-destructive-background: #d60000;
+    --button-destructive-gradient: linear-gradient(to bottom, #ff1c14, #d60000);
+    --button-destructive-gradient-hover: linear-gradient(to bottom, #ff3c36, #d60000);
+    --button-destructive-gradient-active: linear-gradient(to bottom, #b80600, #d60000);
+
+    --button-neutral-background: color-mix(in srgb, CanvasText 10%, transparent);
+    --button-neutral-background-hover: color-mix(in srgb, CanvasText 16%, transparent);
+    --button-neutral-background-active: color-mix(in srgb, CanvasText 22%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --button-neutral-background: color-mix(in srgb, CanvasText 18%, transparent);
+        --button-neutral-background-hover: color-mix(in srgb, CanvasText 26%, transparent);
+        --button-neutral-background-active: color-mix(in srgb, CanvasText 34%, transparent);
+    }
+}
+
+
 /*
  ------------------------------------------------
- Post editor
+ Form & Inputs
  ------------------------------------------------
  */
 
@@ -12,7 +39,8 @@ main > section > form {
     min-height: 0;
 }
 
-main > section > form > input {
+form > input,
+form > label > input {
     width: 100%;
     border: none;
     outline: none;
@@ -24,14 +52,8 @@ main > section > form > input {
     margin: 0;
 }
 
-main > section > form > input[name=title] {
-    font-size: 3.2rem;
-    font-weight: 700;
-    margin: 3.2rem 0;
-    flex: 0 0 auto;
-}
-
-main > section > form > textarea  {
+form > textarea,
+form > label > textarea {
     width: 100%;
     border: none;
     outline: none;
@@ -47,13 +69,15 @@ main > section > form > textarea  {
     overflow: visible;
 }
 
-main > section > form > input::placeholder,
-main > section > form > textarea::placeholder {
+form > input::placeholder,
+form > label > input::placeholder,
+form > textarea::placeholder,
+form > label > textarea::placeholder {
     color: currentColor;
     opacity: 0.35;
 }
 
-main > section > form .editor-actions {
+form .editor-actions {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -63,89 +87,60 @@ main > section > form .editor-actions {
     font-size: 1.5rem;
 }
 
-main > section > form .editor-actions > div {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-}
-
-main > section > form button {
-    font-weight: 500;
-    font-size: 1.5rem;
-}
-
-button.primary {
-    background-color: #007aff;
-    background-image: linear-gradient(to bottom, #3696ff, #007aff);
-    padding: 3px 8px 4px 8px;
-    border: 0;
-    border-radius: 5px;
-    color: #FFFFFF;
-}
-
-button.primary:hover {
-    background-image: linear-gradient(to bottom, #5eabff, #007aff);
-}
-
-button.primary:active {
-    background-image: linear-gradient(to bottom, #0572eb, #007aff);
-}
-
-main > section > form button.link {
-    background: none;
-    border: none;
-    color: inherit;
-    text-decoration: underline;
-    padding: 0;
-    cursor: pointer;
-}
-
-main > section > form label.published {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-main > section > form .editor-error {
+form .editor-error {
     margin: 0.5em 0 0.75em 0;
     font-size: 1.4rem;
     color: var(--error-color);
     flex: 0 0 auto;
 }
 
-main > section > form#preview-form {
-    display: none;
-}
-
-/* Full-page drag cue */
-body.dragging-page::after {
-    content: 'Drop images here';
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--drop-area-background-color);
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
-    font-weight: 600;
-    font-size: 1.6rem;
-    letter-spacing: 0.2px;
-    pointer-events: none;
-    z-index: 9999;
-}
-
 /*
  ------------------------------------------------
- Gallery button placement
+ Buttons
  ------------------------------------------------
  */
 
-#gallery-open {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    z-index: 1000;
+form button {
+    font-weight: 500;
+    font-size: 1.5rem;
+    padding: 3px 8px 4px 8px;
+    border: 0;
+    border-radius: 5px;
+    background-color: var(--button-neutral-background);
+    color: inherit;
+/*    transition: background-color 140ms ease, filter 140ms ease;*/
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: var(--button-neutral-background-hover);
+    filter: brightness(1.1);
+}
+
+form button:active {
+    background-color: var(--button-neutral-background-active);
+    filter: brightness(0.9);
+}
+
+button.primary {
+    background-color: var(--button-primary-background);
+    background-image: var(--button-primary-gradient);
+    color: #FFFFFF;
+}
+
+button.destructive {
+    background-color: var(--button-destructive-background);
+    background-image: var(--button-destructive-gradient);
+    color: #FFFFFF;
+}
+
+button.link {
+    background: none;
+    border: none;
+    color: inherit;
+    text-decoration: underline;
+    padding: 0;
+    cursor: pointer;
 }
 
 button.icon {
@@ -171,92 +166,11 @@ button.icon > svg:hover {
 
 /*
  ------------------------------------------------
- Gallery layout
- ------------------------------------------------
- */
-
-#gallery {
-    display: none;
-    position: fixed;
-    top: 1em;
-    right: 1em;
-    bottom: 1em;
-    width: 33%;
-    max-width: 640px;
-    z-index: 1100;
-
-    /* Translucent, blurred background */
-    background: var(--panel-background-color);
-    -webkit-backdrop-filter: blur(12px) saturate(120%);
-    backdrop-filter: blur(12px) saturate(120%);
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-
-    padding: 1em;
-    overflow: hidden;
-    flex-direction: column;
-}
-
-#gallery.open {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-}
-
-#gallery-section {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: auto;
-    width: 100%;
-}
-
-#gallery-grid {
-    display: block;
-    columns: 140px 3;
-    column-gap: 3px;
-    line-height: 0;
-}
-
-#gallery-grid .gallery-item {
-    display: inline-block;
-    width: 100%;
-    margin: 0 0 3px 0;
-    break-inside: avoid;
-    -webkit-column-break-inside: avoid;
-    page-break-inside: avoid;
-
-    border-radius: 5px;
-    padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    overflow: hidden;
-    background: var(--panel-item-background-color);
-
-    aspect-ratio: auto;
-    cursor: pointer;
-}
-
-#gallery-grid .gallery-item img {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-    display: block;
-}
-
-#gallery-grid .gallery-item:hover img {
-    filter: brightness(0.95);
-}
-
-/*
- ------------------------------------------------
  Mobile adjustments
  ------------------------------------------------
  */
 
 @media screen and (max-width: 600px) {
-    
-    main > section > form .editor {
-        padding-bottom: 20px;
-    }
 
     #gallery {
         width: auto;
@@ -270,3 +184,4 @@ button.icon > svg:hover {
         columns: 120px 4;
     }
 }
+

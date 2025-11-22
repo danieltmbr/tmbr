@@ -4,7 +4,7 @@ import Vapor
 import Fluent
 import AuthKit
 
-struct PostEditorViewModel: Encodable {
+struct PostEditorViewModel: Encodable, Sendable {
     
     private let id: Int?
     
@@ -52,8 +52,7 @@ struct PostEditorViewModel: Encodable {
             state: post.state,
             submit: Form.Submit(
                 action: "/post/\(id)",
-                label: "Save",
-                method: .POST
+                label: "Save"
             ),
             csrf: csrf
         )
@@ -70,8 +69,7 @@ extension Page {
             try await req.permissions.posts.create()
             let submit = Form.Submit(
                 action: "/post",
-                label: "Save",
-                method: .POST
+                label: "Save"
             )
             let csrf = UUID().uuidString
             req.session.data["csrf.editor"] = csrf

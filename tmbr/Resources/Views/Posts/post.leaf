@@ -12,6 +12,6 @@
     #endexport
     
     #export("scripts"):
-        <script src="/Scripts/post.js"></script>
+    <script src="/Scripts/edit-shortcut.js"></script>
     #endexport
 #endextend

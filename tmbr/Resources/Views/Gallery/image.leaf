@@ -1,0 +1,27 @@
+#extend("Shared/page"):
+
+    #export("styles"):
+    <link rel="stylesheet" href="/Styles/image.css">
+    #endexport
+
+    #export("main"):
+    <section id="image-detail" aria-label="Image details">
+        <div id="image-detail-container">
+            <div id="image-detail-media">
+                <img src="#(url)" alt="#(alt)">
+            </div>
+            <div id="image-detail-meta">
+                <p><strong>Description:</strong> #(alt)</p>
+                <p><strong>Size:</strong> #(width) x #(height)</p>
+                <p><strong>URL:</strong> #(url)</p>
+                <p><strong>Thumbnail:</strong> #(thumbnailURL)</p>
+                <p><strong>Uploaded:</strong> #(uploadedAt)</p>
+            </div>
+        </div>
+    </section>
+    #endexport
+    
+    #export("scripts"):
+    <script src="/Scripts/edit-shortcut.js"></script>
+    #endexport
+#endextend
