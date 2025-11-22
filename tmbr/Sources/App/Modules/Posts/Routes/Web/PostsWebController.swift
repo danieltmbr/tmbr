@@ -62,11 +62,11 @@ struct PostsWebController: RouteCollection {
             switch mode {
             case .create:
                 postID = nil
-                submit = Form.Submit(action: "/post", label: "Save", method: .POST)
+                submit = Form.Submit(action: "/post", label: "Save")
                 pageTitle = "New post"
             case .update(let id):
                 postID = id
-                submit = Form.Submit(action: "/post/\(id)", label: "Save", method: .POST)
+                submit = Form.Submit(action: "/post/\(id)", label: "Save")
                 pageTitle = "Edit '\(submitted.title)'"
             }
             

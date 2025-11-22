@@ -1,52 +1,14 @@
 import Core
 
-
 struct GalleryViewModel: Encodable, Sendable {
-    struct Item: Encodable, Sendable {
-        
-        private let id: ImageID
-        
-        private let key: String
-        
-        private let thumbnailKey: String
-        
-        private let alt: String
-                
-        private let url: String
-        
-        private let thumbnailURL: String
-        
-        init(
-            id: ImageID,
-            key: String,
-            thumbnailKey: String,
-            alt: String,
-            baseURL: String
-        ) {
-            self.id = id
-            self.key = key
-            self.thumbnailKey = thumbnailKey
-            self.alt = alt
-            self.url = "\(baseURL)/gallery/data/\(key)"
-            self.thumbnailURL = "\(baseURL)/gallery/data/\(thumbnailKey)"
 
-        }
-    }
-    
     private let title: String = "Gallery"
     
-    private let items: [Item]
+    private let images: [ImageViewModel]
     
     init(images: [Image], baseURL: String) {
-        self.items = images.compactMap { image in
-            guard let imageID = image.id else { return nil }
-            return Item(
-                id: imageID,
-                key: image.name,
-                thumbnailKey: image.thumbnail,
-                alt: image.alt ?? image.name,
-                baseURL: baseURL
-            )
+        self.images = images.compactMap { image in
+            ImageViewModel(image: image, baseURL: baseURL)
         }
     }
 }

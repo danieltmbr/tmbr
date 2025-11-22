@@ -2,6 +2,7 @@
 
     #export("styles"):
     <link rel="stylesheet" href="/Styles/editor.css">
+    <link rel="stylesheet" href="/Styles/post-editor.css">
     #endexport
 
     #export("main"):

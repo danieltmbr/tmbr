@@ -36,8 +36,8 @@ struct AddImageCommand: Command {
         let meta = try await storage.store(image: payload.image)
         let image = Image(
             alt: payload.alt,
-            name: meta.key,
-            thumbnail: meta.thumbnailKey,
+            key: meta.key,
+            thumbnailKey: meta.thumbnailKey,
             size: meta.size,
             ownerID: user.id!
         )

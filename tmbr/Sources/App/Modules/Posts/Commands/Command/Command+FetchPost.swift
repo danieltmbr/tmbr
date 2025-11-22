@@ -5,27 +5,11 @@ import Logging
 import Fluent
 import AuthKit
 
-public enum FetchReason: Sendable {
-    case read
-    case write
-}
-
-public struct FetchPostParameters: Sendable {
-    fileprivate let postID: PostID
-    
-    fileprivate let reason: FetchReason
-    
-    init(postID: PostID, reason: FetchReason) {
-        self.postID = postID
-        self.reason = reason
-    }
-}
-
 struct FetchPostCommand: Command {
     
     typealias PermissionInput = (post: Post, reason: FetchReason)
     
-    typealias Input = FetchPostParameters
+    typealias Input = FetchParameters<PostID>
     
     typealias Output = Post
     
@@ -63,8 +47,8 @@ struct FetchPostCommand: Command {
         )
     }
     
-    func execute(_ params: FetchPostParameters) async throws -> Post {
-        guard let post = try await Post.find(params.postID, on: database) else {
+    func execute(_ params: FetchParameters<PostID>) async throws -> Post {
+        guard let post = try await Post.find(params.itemID, on: database) else {
             throw Abort(.notFound, reason: "Post not found")
         }
         try await permission.grant((post, params.reason))
@@ -72,7 +56,7 @@ struct FetchPostCommand: Command {
     }
 }
 
-extension CommandFactory<FetchPostParameters, Post> {
+extension CommandFactory<FetchParameters<PostID>, Post> {
     
     static var fetchPost: Self {
         CommandFactory { request in
@@ -84,11 +68,5 @@ extension CommandFactory<FetchPostParameters, Post> {
             )
             .logged(logger: request.logger)
         }
-    }
-}
-
-extension CommandResolver<FetchPostParameters, Post> {
-    func callAsFunction(_ postID: PostID, for reason: FetchReason) async throws -> Post {
-        try await callAsFunction(FetchPostParameters(postID: postID, reason: reason))
     }
 }

@@ -14,7 +14,7 @@ extension Commands {
                 
         let edit: CommandFactory<EditPostPayload, Post>
         
-        let fetch: CommandFactory<FetchPostParameters, Post>
+        let fetch: CommandFactory<FetchParameters<PostID>, Post>
         
         let list: CommandFactory<Void, [Post]>
         
@@ -22,7 +22,7 @@ extension Commands {
             create: CommandFactory<PostPayload, Post> = .createPost,
             delete: CommandFactory<PostID, Void> = .deletePost,
             edit: CommandFactory<EditPostPayload, Post> = .editPost,
-            fetch: CommandFactory<FetchPostParameters, Post> = .fetchPost,
+            fetch: CommandFactory<FetchParameters<PostID>, Post> = .fetchPost,
             list: CommandFactory<Void, [Post]> = .listPosts
         ) {
             self.create = create
@@ -33,5 +33,3 @@ extension Commands {
         }
     }
 }
-
-

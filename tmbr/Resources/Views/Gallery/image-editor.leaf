@@ -1,0 +1,63 @@
+#extend("Shared/page"):
+
+    #export("styles"):
+    <link rel="stylesheet" href="/Styles/editor.css">
+    <link rel="stylesheet" href="/Styles/image.css">
+    #endexport
+
+    #export("main"):
+    <section id="image-detail" aria-label="Image edit form">
+        <div id="image-detail-container">
+            <div id="image-detail-media">
+                <img src="#(image.url)" alt="#(image.alt)">
+            </div>
+            <div id="image-detail-meta">
+                <form id="image-form" method="#(submit.method)" action="#(submit.action)">
+                    <input id="editor-image-id" type="hidden" name="id" value="#(image.id)" />
+                    #if(_csrf):
+                    <input type="hidden" name="_csrf" value="#(_csrf)" />
+                    #endif
+                    <label for="editor-image-alt">
+                        <strong>Description:</strong>
+                        <input
+                            id="editor-image-alt"
+                            name="alt"
+                            type="text"
+                            value="#(image.alt)"
+                            placeholder="Description"
+                            autocomplete="off"
+                            spellcheck="true"
+                        />
+                    </label>
+                    <p><strong>Size:</strong> #(image.width) x #(image.height)</p>
+                    <p><strong>URL:</strong> #(image.url)</p>
+                    <p><strong>Thumbnail:</strong> #(image.thumbnailURL)</p>
+                    <p><strong>Uploaded:</strong> #(image.uploadedAt)</p>
+                    
+                    #if(error):
+                    <p class="editor-error">#unsafeHTML(error)</p>
+                    #endif
+                    
+                    <div class="editor-actions">
+                        <div>
+                            <button id="editor-image-delete" type="button">Delete</button>
+                            <button id="editor-image-update" class="primary" type="submit">#(submit.label)</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <form id="image-delete-form" method="post" action="/gallery/#(image.id)/delete" hidden>
+                    #if(_csrf):
+                    <input type="hidden" name="_csrf" value="#(_csrf)"/>
+                    #endif
+                    <input type="hidden" name="id" value="#(image.id)"/>
+                </form>
+            </div>
+        </div>
+    </section>
+    #endexport
+    
+    #export("scripts"):
+        <script src="/Scripts/image-editor.js"></script>
+    #endexport
+#endextend

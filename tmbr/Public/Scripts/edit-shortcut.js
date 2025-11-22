@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
     document.addEventListener('keydown', (event) => {
         try {
             let isE = event.key === 'e' || event.key === 'E'

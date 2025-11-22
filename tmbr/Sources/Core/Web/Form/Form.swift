@@ -13,7 +13,7 @@ public struct Form: Encodable, Hashable, Sendable {
         public init(
             action: String,
             label: String,
-            method: HTTPMethod
+            method: HTTPMethod = .POST
         ) {
             self.action = action
             self.label = label

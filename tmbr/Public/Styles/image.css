@@ -1,0 +1,50 @@
+section#image-detail {
+    max-width: initial;
+}
+
+#image-detail-container {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#image-detail-media {
+    flex: 0 1 500px;
+    max-width: 500px;
+}
+
+#image-detail-media img {
+    width: 100%;
+    height: auto;
+    max-width: 500px;
+    max-height: calc(80vh);
+    min-height: 280px;
+    object-fit: contain;
+    display: block;
+}
+
+#image-detail-meta {
+    font-size: 1.5rem;
+    font-family: system-ui, -apple-system, Helvetica, sans-serif;
+    flex: 0 1 500px;
+    max-width: 500px;
+}
+
+#image-detail-meta > form > p {
+    opacity: 0.6;
+}
+
+@media (max-width: 600px) {
+    #image-detail-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #image-detail-media,
+    #image-detail-meta {
+        max-width: 100%;
+        width: 100%;
+    }
+}
