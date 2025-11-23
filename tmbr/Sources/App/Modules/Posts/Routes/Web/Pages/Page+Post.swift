@@ -61,6 +61,5 @@ extension Page {
             let post = try await req.commands.posts.fetch(postID, for: .read)
             return PostViewModel(post: post)
         }
-        .recover(.aborts)
     }
 }

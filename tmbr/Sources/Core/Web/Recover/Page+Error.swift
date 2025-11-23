@@ -21,11 +21,11 @@ public struct ErrorViewModel: Encodable, Sendable {
     }
     
     @Sendable
-    public init(abort: Abort) {
+    public init(abort: AbortError) {
         self.init(
             title: abort.status.reasonPhrase,
             message: abort.reason,
-            suggestedFixes: abort.suggestedFixes
+            suggestedFixes: []
         )
     }
 }

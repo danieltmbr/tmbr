@@ -26,7 +26,9 @@ struct Posts: Module {
     
     func boot(_ routes: RoutesBuilder) async throws {
         try routes.register(collection: PostsAPIController())
-        try routes.register(collection: PostsWebController())
+        try routes
+            .grouped(RecoverMiddleware())
+            .register(collection: PostsWebController())
     }
 }
 
