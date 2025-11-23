@@ -26,7 +26,7 @@ extension Commands {
             edit: CommandFactory<EditImageInput, Image> = .editImage,
             fetch: CommandFactory<FetchParameters<ImageID>, Image> = .fetchImage,
             list: CommandFactory<Void, [Image]> = .listImages,
-            resource: CommandFactory<String, ImageResource> = .fetchResource,
+            resource: CommandFactory<String, ImageResource> = .fetchResource
         ) {
             self.add = add
             self.delete = delete
