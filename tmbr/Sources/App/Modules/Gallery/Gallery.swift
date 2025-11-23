@@ -35,7 +35,9 @@ struct Gallery: Module {
     
     func boot(_ routes: RoutesBuilder) async throws {
         try routes.register(collection: GalleryAPIController())
-        try routes.register(collection: GalleryWebController())
+        try routes
+            .grouped(RecoverMiddleware())
+            .register(collection: GalleryWebController())
     }
 }
 

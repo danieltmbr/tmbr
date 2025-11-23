@@ -88,7 +88,6 @@ extension Page {
             req.session.data["csrf.editor"] = csrf
             return try PostEditorViewModel(post: post, csrf: csrf)
         }
-        .recover(.aborts)
     }
 }
 

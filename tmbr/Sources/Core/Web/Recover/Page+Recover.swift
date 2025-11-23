@@ -5,6 +5,20 @@ extension Page {
     public struct Recover {
         public typealias Handler = @Sendable (Error, Request) async throws -> AsyncResponseEncodable
         
+        public static var all: Self {
+            let throwAbort = Self.init { error in
+                if error is AbortError {
+                    throw error
+                } else {
+                    throw Abort(
+                        .internalServerError,
+                        reason: "Unknown error: \(error.localizedDescription)"
+                    )
+                }
+            }
+            return throwAbort.combine(with: .aborts)
+        }
+        
         public static var aborts: Self {
             .unathorized
                 .combine(with: .fourhundreds)
@@ -31,9 +45,9 @@ extension Page {
             self.init(error: map, template: .error)
         }
         
-        public init(abort map: @escaping @Sendable (Abort) throws -> ErrorViewModel = ErrorViewModel.init(abort:)) {
+        public init(abort map: @escaping @Sendable (AbortError) throws -> ErrorViewModel) {
             self.init { error in
-                guard let abort = error as? Abort else { throw error }
+                guard let abort = error as? AbortError else { throw error }
                 return try map(abort)
             }
         }
@@ -42,7 +56,7 @@ extension Page {
             status: HTTPResponseStatus,
             response: Response
         ) where Response: AsyncResponseEncodable & Sendable {
-            self.init { error, request in
+            self.init { error, _ in
                 guard let abort = error as? Abort, abort.status == status else { throw error }
                 return response
             }
@@ -81,7 +95,7 @@ extension Page {
         recover(Recover(error: map))
     }
     
-    public func recover(abort map: @escaping @Sendable (Abort) -> ErrorViewModel = ErrorViewModel.init(abort:)) -> Page {
+    public func recover(abort map: @escaping @Sendable (AbortError) -> ErrorViewModel) -> Page {
         recover(Recover(abort: map))
     }
     

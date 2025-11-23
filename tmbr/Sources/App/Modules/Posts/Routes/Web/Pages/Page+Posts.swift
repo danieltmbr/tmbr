@@ -43,7 +43,6 @@ extension Page {
             let posts = try await req.commands.posts.list()
             return PostsViewModel(posts: posts)
         }
-        .recover(.aborts)
     }
     
     static var drafts: Self {
@@ -56,6 +55,5 @@ extension Page {
                 .all()
             return PostsViewModel(posts: posts)
         }
-        .recover(.aborts)
     }
 }

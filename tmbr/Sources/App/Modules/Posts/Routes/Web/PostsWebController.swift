@@ -9,7 +9,7 @@ struct PostsWebController: RouteCollection {
         case create
         case update(postID: Int)
     }
-        
+
     func boot(routes: RoutesBuilder) throws {
         routes.get(page: .posts)
         routes.get("post", ":postID", page: .post)
