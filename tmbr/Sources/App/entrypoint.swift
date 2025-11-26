@@ -22,14 +22,16 @@ enum Entrypoint {
                 .database,
                 .commands,
                 .renderer,
+                .previews,
             ],
             modules: [
                 .rss,
                 .manifest,
                 .authentication,
                 .notifications,
-                .posts,
                 .gallery,
+                .posts,
+                .catalogue,
             ]
         )
         
