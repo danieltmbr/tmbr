@@ -6,12 +6,32 @@ typealias PostID = Post.IDValue
 
 final class Post: Model, Content, @unchecked Sendable {
     
+    struct Attachment {
+        let attachmentID: Int
+        
+        let attachmentType: String
+    }
+    
     enum State: String, Codable, Sendable {
         case published
         case draft
     }
     
     static let schema = "posts"
+    
+    var attachment: Attachment? {
+        guard let attachmentID, let attachmentType else { return nil }
+        return Attachment(
+            attachmentID: attachmentID,
+            attachmentType: attachmentType
+        )
+    }
+    
+    @OptionalField(key: "attachment_id")
+    private var attachmentID: Int?
+    
+    @OptionalField(key: "attachment_type")
+    private var attachmentType: String?
     
     @Parent(key: "author_id")
     var author: User
@@ -39,7 +59,9 @@ final class Post: Model, Content, @unchecked Sendable {
         createdAt: Date = .now,
         id: Int? = nil,
         state: State = .draft,
-        title: String
+        title: String,
+        attachmentID: Int? = nil,
+        attachmentType: String? = nil
     ) {
         self.$author.id = authorID
         self.content = content
@@ -47,5 +69,7 @@ final class Post: Model, Content, @unchecked Sendable {
         self.id = id
         self.state = state
         self.title = title
+        self.attachmentID = attachmentID
+        self.attachmentType = attachmentType
     }
 }

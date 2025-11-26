@@ -3,7 +3,9 @@ import Vapor
 import AuthKit
 import Core
 
-struct PostViewModel: Content {
+struct PostViewModel: Encodable {
+    
+    private let attachment: Preview?
 
     private let author: String
     
@@ -16,12 +18,14 @@ struct PostViewModel: Content {
     private let title: String
     
     init(
+        attachment: Preview?,
         author: String,
         content: String,
         id: Int?,
         publishDate: String,
         title: String
     ) {
+        self.attachment = attachment
         self.author = author
         self.content = content
         self.id = id
@@ -32,10 +36,12 @@ struct PostViewModel: Content {
     init(
         post: Post,
         markdownFormatter formatter: MarkdownFormatter = .html,
-        nameFormatter: NameFormatter = .author
+        nameFormatter: NameFormatter = .author,
+        attachment: Preview? = nil
     ) {
         
         self.init(
+            attachment: attachment,
             author: nameFormatter.format(
                 givenName: post.$author.value?.firstName,
                 familyName: post.$author.value?.lastName
@@ -58,8 +64,18 @@ extension Page {
             guard let postID = req.parameters.get("postID", as: Int.self) else {
                 throw Abort(.badRequest)
             }
+            // TODO: Perhaps make a combined command
             let post = try await req.commands.posts.fetch(postID, for: .read)
-            return PostViewModel(post: post)
+            if let attachment = post.attachment {
+                let params = FetchPreviewParameters(
+                    id: attachment.attachmentID,
+                    type: attachment.attachmentType
+                )
+                let preview = try await req.commands.previews.fetch(params)
+                return PostViewModel(post: post, attachment: preview)
+            } else {
+                return PostViewModel(post: post)
+            }
         }
     }
 }
