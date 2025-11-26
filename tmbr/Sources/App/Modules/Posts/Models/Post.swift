@@ -24,7 +24,7 @@ final class Post: Model, Content, @unchecked Sendable {
 
     @Field(key: "created_at")
     var createdAt: Date
-    
+
     @ID(custom: "id", generatedBy: .database)
     var id: Int?
     
