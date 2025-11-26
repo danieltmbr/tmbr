@@ -27,7 +27,6 @@ struct Notifications: Module {
             ServiceKey.self,
             to: try NotificationService(app: app)
         )
-
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)
     }
