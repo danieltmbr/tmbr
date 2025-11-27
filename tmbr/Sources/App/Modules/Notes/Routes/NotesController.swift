@@ -63,10 +63,8 @@ struct NotesController: RouteCollection {
             throw Abort(.notFound)
         }
 
-        if note.$author.id != user.id {
-            if let userRole = user.role, userRole != .admin {
-                throw Abort(.forbidden)
-            }
+        if note.$author.id != user.id || user.role != .admin {
+            throw Abort(.forbidden)
         }
 
         let payload = try req.content.decode(NoteUpdatePayload.self)
@@ -96,10 +94,8 @@ struct NotesController: RouteCollection {
             throw Abort(.notFound)
         }
 
-        if note.$author.id != user.id {
-            if let userRole = user.role, userRole != .admin {
-                throw Abort(.forbidden)
-            }
+        if note.$author.id != user.id || user.role != .admin {
+            throw Abort(.forbidden)
         }
 
         try await note.delete(on: req.db)
