@@ -5,7 +5,7 @@ import Core
 
 struct PostViewModel: Encodable {
     
-    private let attachment: Preview?
+    private let attachment: PreviewResponse?
 
     private let author: String
     
@@ -18,7 +18,7 @@ struct PostViewModel: Encodable {
     private let title: String
     
     init(
-        attachment: Preview?,
+        attachment: PreviewResponse?,
         author: String,
         content: String,
         id: Int?,
@@ -37,7 +37,7 @@ struct PostViewModel: Encodable {
         post: Post,
         markdownFormatter formatter: MarkdownFormatter = .html,
         nameFormatter: NameFormatter = .author,
-        attachment: Preview? = nil
+        attachment: PreviewResponse? = nil
     ) {
         
         self.init(
@@ -64,18 +64,9 @@ extension Page {
             guard let postID = req.parameters.get("postID", as: Int.self) else {
                 throw Abort(.badRequest)
             }
-            // TODO: Perhaps make a combined command
             let post = try await req.commands.posts.fetch(postID, for: .read)
-            if let attachment = post.attachment {
-                let params = FetchPreviewParameters(
-                    id: attachment.attachmentID,
-                    type: attachment.attachmentType
-                )
-                let preview = try await req.commands.previews.fetch(params)
-                return PostViewModel(post: post, attachment: preview)
-            } else {
-                return PostViewModel(post: post)
-            }
+            let attachment = post.attachment.map(PreviewResponse.init(preview:))
+            return PostViewModel(post: post, attachment: attachment)
         }
     }
 }

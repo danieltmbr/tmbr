@@ -17,6 +17,7 @@ extension Page {
             let markdownFormatter = MarkdownFormatter.html
             let nameFormatter: NameFormatter = .author
             return PostViewModel(
+                attachment: nil,
                 author: nameFormatter.format(
                     givenName: user.firstName,
                     familyName: user.lastName

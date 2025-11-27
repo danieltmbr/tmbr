@@ -5,7 +5,6 @@ import SQLKit
 struct AddPostAttachment: AsyncMigration {
     func prepare(on database: Database) async throws {
         try await database.schema(Post.schema)
-            .field("attachment_type", .string)
             .field("attachment_id", .int)
             .update()
         
@@ -15,12 +14,6 @@ struct AddPostAttachment: AsyncMigration {
                 .on(Note.schema)
                 .column("attachment_id")
                 .run()
-            
-            try await sqlDB
-                .create(index: "attachment_type_index")
-                .on(Note.schema)
-                .column("attachment_type")
-                .run()
         }
     }
     
@@ -29,14 +22,9 @@ struct AddPostAttachment: AsyncMigration {
             try await sqlDB
                 .drop(index: "attachment_id_index")
                 .run()
-            
-            try await sqlDB
-                .drop(index: "attachment_type_index")
-                .run()
         }
         
         try await database.schema(Post.schema)
-            .deleteField("attachment_type")
             .deleteField("attachment_id")
             .update()
     }
