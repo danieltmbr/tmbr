@@ -30,11 +30,10 @@ struct NotesController: RouteCollection {
         let payload = try req.content.decode(NotePayload.self)
 
         let note = Note(
+            attachmentID: payload.attachmentID,
             authorID: try user.requireID(),
             body: payload.body,
             state: payload.state ?? .draft,
-            attachmentType: payload.attachmentType,
-            attachmentID: payload.attachmentID,
             kind: payload.kind
         )
         try await note.save(on: req.db)

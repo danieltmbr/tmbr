@@ -12,43 +12,39 @@ struct QuotesController: RouteCollection {
         quotes.get("search", use: search)
     }
     
-    struct QuoteListQuery: Content {
-        var type: String?
+    struct QuoteListQuery: Decodable {
+        var types: Set<String>?
     }
     
-    struct QuoteSearchQuery: Content {
+    struct QuoteSearchQuery: Decodable {
         var term: String
-        var type: String?
+        var types: Set<String>?
     }
     
     struct QuoteResponse: Content {
-        let id: Int
-        let text: String
+        let body: String
         let noteID: Int
-        let attachmentType: String
-        let attachmentID: Int
+        let preview: PreviewResponse
     }
     
     @Sendable
     private func list(req: Request) async throws -> [QuoteResponse] {
-        let query = try req.query.decode(QuoteListQuery.self)
-        
-        var quoteQuery = Quote.query(on: req.db)
-            .join(Note.self, on: \Quote.$note.$id == \Note.$id)
+        let payload = try req.query.decode(QuoteListQuery.self)
+        var query = Quote.query(on: req.db)
+            .with(\.$note) { note in
+                note.with(\.$attachment)
+            }
             .sort(\Quote.$createdAt, .descending)
         
-        if let type = query.type {
-            quoteQuery = quoteQuery.filter(Note.self, \.$attachmentType == type)
+        if let types = payload.types {
+            query = query.filter(Preview.self, \.$ownerType ~~ types)
         }
         
-        return try await quoteQuery.all().map { quote in
-            let note = try quote.joined(Note.self)
-            return QuoteResponse(
-                id: try quote.requireID(),
-                text: quote.body,
-                noteID: try note.requireID(),
-                attachmentType: note.attachmentType,
-                attachmentID: note.attachmentID
+        return try await query.all().map { quote in
+            QuoteResponse(
+                body: quote.body,
+                noteID: try quote.note.requireID(),
+                preview: PreviewResponse(preview: quote.note.attachment)
             )
         }
     }
@@ -57,7 +53,9 @@ struct QuotesController: RouteCollection {
     private func ofTheDay(request: Request) async throws -> QuoteResponse {
         let quote = try await Quote
             .query(on: request.db)
-            .with(\.$note)
+            .with(\.$note) { note in
+                note.with(\.$attachment)
+            }
             .sort(.sql(unsafeRaw: "RANDOM()"))
             .limit(1)
             .first()
@@ -67,41 +65,36 @@ struct QuotesController: RouteCollection {
         }
         
         return QuoteResponse(
-            id: try quote.requireID(),
-            text: quote.body,
+            body: quote.body,
             noteID: try quote.note.requireID(),
-            attachmentType: quote.note.attachmentType,
-            attachmentID: quote.note.attachmentID
+            preview: PreviewResponse(preview: quote.note.attachment)
         )
     }
     
     @Sendable
     private func search(req: Request) async throws -> [QuoteResponse] {
-        let query = try req.query.decode(QuoteSearchQuery.self)
-        let term = query.term.trimmingCharacters(in: .whitespacesAndNewlines)
+        let payload = try req.query.decode(QuoteSearchQuery.self)
+        let term = payload.term.trimmingCharacters(in: .whitespacesAndNewlines)
         
         guard !term.isEmpty else { return [] }
         
-        var quoteQuery = Quote.query(on: req.db)
+        var query = Quote.query(on: req.db)
             .join(Note.self, on: \Quote.$note.$id == \Note.$id)
 
-        if let type = query.type {
-            quoteQuery = quoteQuery.filter(Note.self, \.$attachmentType == type)
+        if let types = payload.types {
+            query = query.filter(Preview.self, \.$ownerType ~~ types)
         }
 
-        quoteQuery = quoteQuery.group(.or) { group in
+        query = query.group(.or) { group in
             let sql = "text ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
             group.filter(.sql(unsafeRaw: sql))
         }
         
-        return try await quoteQuery.all().map { quote in
-            let note = try quote.joined(Note.self)
-            return QuoteResponse(
-                id: try quote.requireID(),
-                text: quote.body,
-                noteID: try note.requireID(),
-                attachmentType: note.attachmentType,
-                attachmentID: note.attachmentID
+        return try await query.all().map { quote in
+            QuoteResponse(
+                body: quote.body,
+                noteID: try quote.note.requireID(),
+                preview: PreviewResponse(preview: quote.note.attachment)
             )
         }
     }
