@@ -21,6 +21,9 @@ final class Note: Model, Content, @unchecked Sendable {
 
     @ID(custom: "id", generatedBy: .database)
     var id: Int?
+    
+    @Parent(key: "attachment_id")
+    var attachment: Preview
 
     @Parent(key: "author_id")
     var author: User
@@ -30,12 +33,6 @@ final class Note: Model, Content, @unchecked Sendable {
 
     @Enum(key: "state")
     var state: State
-
-    @Field(key: "attachment_type")
-    var attachmentType: String
-
-    @Field(key: "attachment_id")
-    var attachmentID: Int
 
     @OptionalField(key: "kind")
     var kind: Kind?
@@ -52,18 +49,16 @@ final class Note: Model, Content, @unchecked Sendable {
     init() {}
 
     init(
+        attachmentID: Int,
         authorID: Int,
         body: String,
         state: State = .draft,
-        attachmentType: String,
-        attachmentID: Int,
         kind: Kind? = nil
     ) {
+        self.$attachment.id = attachmentID
         self.$author.id = authorID
         self.body = body
         self.state = state
-        self.attachmentType = attachmentType
-        self.attachmentID = attachmentID
         self.kind = kind
     }
 }

@@ -14,12 +14,12 @@ struct CreateNote: AsyncMigration {
             .field("author_id", .int, .required)
             .field("body", .string, .required)
             .field("state", state, .required)
-            .field("attachment_type", .string, .required)
             .field("attachment_id", .int, .required)
             .field("kind", .string)
             .field("created_at", .datetime)
             .field("updated_at", .datetime)
             .foreignKey("author_id", references: "users", "id", onDelete: .cascade)
+            .foreignKey("attachment_id", references: "previews", "id", onDelete: .cascade)
             .create()
         
         if let sqlDB = database as? SQLDatabase {
@@ -28,12 +28,6 @@ struct CreateNote: AsyncMigration {
                 .on(Note.schema)
                 .column("attachment_id")
                 .run()
-
-            try await sqlDB
-                .create(index: "attachment_type_index")
-                .on(Note.schema)
-                .column("attachment_type")
-                .run()
         }
     }
     
@@ -41,10 +35,6 @@ struct CreateNote: AsyncMigration {
         if let sqlDB = database as? SQLDatabase {
             try await sqlDB
                 .drop(index: "attachment_id_index")
-                .run()
-            
-            try await sqlDB
-                .drop(index: "attachment_type_index")
                 .run()
         }
         
