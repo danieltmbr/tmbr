@@ -2,17 +2,19 @@ import Fluent
 import Vapor
 import Foundation
 
+typealias PreviewID = UUID
+
 final class Preview: Model, @unchecked Sendable {
     static let schema = "previews"
 
-    @ID(custom: "id", generatedBy: .database)
-    var id: Int?
+    @ID(custom: "id", generatedBy: .user)
+    var id: UUID?
     
-    @Field(key: "owner_id")
-    var ownerID: Int
+    @Field(key: "parent_id")
+    var parentID: Int
     
-    @Field(key: "owner_type")
-    var ownerType: String
+    @Field(key: "parent_type")
+    var parentType: String
 
     @Field(key: "primary_info")
     var primaryInfo: String
@@ -20,8 +22,8 @@ final class Preview: Model, @unchecked Sendable {
     @OptionalField(key: "secondary_info")
     var secondaryInfo: String?
 
-    @OptionalField(key: "image_url")
-    var imageURL: String?
+    @OptionalParent(key: "image_id")
+    var image: Image?
 
     @Field(key: "links")
     var links: [String]
@@ -35,18 +37,21 @@ final class Preview: Model, @unchecked Sendable {
     init() {}
 
     init(
-        ownerID: Int,
-        ownerType: String,
+        id: UUID,
+        parentID: Int,
+        parentType: String,
         primaryInfo: String,
         secondaryInfo: String? = nil,
-        imageURL: String? = nil,
+        imageID: ImageID? = nil,
         links: [String] = []
     ) {
-        self.ownerID = ownerID
-        self.ownerType = ownerType
+        self.id = id
+        self.parentID = parentID
+        self.parentType = parentType
         self.primaryInfo = primaryInfo
         self.secondaryInfo = secondaryInfo
-        self.imageURL = imageURL
+        self.$image.id = imageID
         self.links = links
     }
 }
+

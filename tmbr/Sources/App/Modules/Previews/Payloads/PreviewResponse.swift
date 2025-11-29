@@ -14,20 +14,22 @@ struct PreviewResponse: Content, Sendable {
     
     let subtitle: String?
     
-    let imageURL: String?
+    let image: ImageResponse?
     
     let links: [String]
     
     let source: Source
     
-    init(preview: Preview) {
+    init(preview: Preview, image) {
         self.title = preview.primaryInfo
         self.subtitle = preview.secondaryInfo
-        self.imageURL = preview.imageURL
+        self.image = preview.image.map { image in
+            ImageResponse(id: <#T##Int?#>, alt: <#T##String?#>, url: <#T##String#>, thumbnailUrl: <#T##String#>, size: <#T##CGSize#>, uploadedAt: <#T##Date#>)
+        }
         self.links = preview.links
         self.source = Source(
-            id: preview.ownerID,
-            type: preview.ownerType
+            id: preview.parentID,
+            type: preview.parentType
         )
     }
 }
