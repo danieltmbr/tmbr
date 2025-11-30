@@ -10,6 +10,7 @@ struct QuoteExtractor: MarkupWalker {
     
     mutating func visitDocument(_ document: Document) -> () {
         quotes.removeAll()
+        defaultVisit(document)
     }
     
     mutating func visitBlockQuote(_ blockQuote: BlockQuote) -> () {
@@ -21,7 +22,22 @@ struct QuoteExtractor: MarkupWalker {
         }
         isInsideQuote = false
     }
-
+    
+    mutating func visitInlineAttributes(_ attributes: InlineAttributes) -> () {
+        guard !isInsideQuote else { return }
+        defaultVisit(attributes)
+    }
+    
+    mutating func visitLineBreak(_ lineBreak: LineBreak) -> () {
+        guard isInsideQuote else { return }
+        currentQuote.append("\n")
+    }
+    
+    mutating func visitSoftBreak(_ softBreak: SoftBreak) -> () {
+        guard isInsideQuote else { return }
+        currentQuote.append("\n")
+    }
+    
     mutating func visitText(_ text: Text) -> () {
         guard isInsideQuote else { return }
         currentQuote.append(text.string)
@@ -31,7 +47,7 @@ struct QuoteExtractor: MarkupWalker {
 extension Document {
     public var quotes: [String] {
         var walker = QuoteExtractor()
-        walker.visit(self)
+        walker.visitDocument(self)
         return walker.quotes
     }
 }

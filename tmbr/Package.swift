@@ -77,6 +77,14 @@ let package = Package(
                 .product(name: "VaporTesting", package: "vapor"),
             ],
             swiftSettings: swiftSettings
+        ),
+        .testTarget(
+            name: "CoreTests",
+            dependencies: [
+                .target(name: "Core")
+            ],
+            path: "Tests/CoreTests",
+            swiftSettings: swiftSettings
         )
     ],
     swiftLanguageModes: [.v5]

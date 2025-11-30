@@ -1,0 +1,25 @@
+{
+  "configurations" : [
+    {
+      "id" : "6FECB347-BAC2-44CC-83B6-D0ADE5ACA4AD",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "performanceAntipatternCheckerEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "CoreTests",
+        "name" : "CoreTests"
+      }
+    }
+  ],
+  "version" : 1
+}
