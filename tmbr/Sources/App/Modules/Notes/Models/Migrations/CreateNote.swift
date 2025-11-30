@@ -15,7 +15,6 @@ struct CreateNote: AsyncMigration {
             .field("body", .string, .required)
             .field("state", state, .required)
             .field("attachment_id", .int, .required)
-            .field("kind", .string)
             .field("created_at", .datetime)
             .field("updated_at", .datetime)
             .foreignKey("author_id", references: "users", "id", onDelete: .cascade)

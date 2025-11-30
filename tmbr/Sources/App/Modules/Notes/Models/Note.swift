@@ -7,14 +7,7 @@ final class Note: Model, Content, @unchecked Sendable {
     
     enum State: String, Codable, Sendable {
         case `private`
-        case published
-        case draft
-    }
-    
-    enum Kind: String, Codable, Sendable {
-        case inspiration
-        case progress
-        case general
+        case `public`
     }
     
     static let schema = "notes"
@@ -34,9 +27,6 @@ final class Note: Model, Content, @unchecked Sendable {
     @Enum(key: "state")
     var state: State
 
-    @OptionalField(key: "kind")
-    var kind: Kind?
-
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
 
@@ -52,13 +42,11 @@ final class Note: Model, Content, @unchecked Sendable {
         attachmentID: Int,
         authorID: Int,
         body: String,
-        state: State = .draft,
-        kind: Kind? = nil
+        state: State = .draft
     ) {
         self.$attachment.id = attachmentID
         self.$author.id = authorID
         self.body = body
         self.state = state
-        self.kind = kind
     }
 }
