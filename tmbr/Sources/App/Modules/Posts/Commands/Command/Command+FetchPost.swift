@@ -52,6 +52,7 @@ struct FetchPostCommand: Command {
             throw Abort(.notFound, reason: "Post not found")
         }
         try await permission.grant((post, params.reason))
+        try await post.$attachment.load(on: database)
         return post
     }
 }

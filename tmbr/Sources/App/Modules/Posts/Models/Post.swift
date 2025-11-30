@@ -13,6 +13,9 @@ final class Post: Model, Content, @unchecked Sendable {
     
     static let schema = "posts"
     
+    @OptionalParent(key: "attachment_id")
+    var attachment: Preview?
+    
     @Parent(key: "author_id")
     var author: User
 
@@ -34,6 +37,7 @@ final class Post: Model, Content, @unchecked Sendable {
     init() {}
     
     init(
+        attachmentID: UUID? = nil,
         authorID: UserID,
         content: String,
         createdAt: Date = .now,
@@ -41,6 +45,7 @@ final class Post: Model, Content, @unchecked Sendable {
         state: State = .draft,
         title: String
     ) {
+        self.$attachment.id = attachmentID
         self.$author.id = authorID
         self.content = content
         self.createdAt = createdAt
