@@ -49,8 +49,6 @@ struct Authentication: Module {
             to: PermissionService()
         )
         
-        app.migrations.add(CreateUser())
-        
         try await app.permissions.add(scope: permissions)
     }
     

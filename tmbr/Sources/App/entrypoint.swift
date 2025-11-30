@@ -31,19 +31,20 @@ enum Entrypoint {
                 .previews,
                 .gallery,
                 .posts,
-                .catalogue,
             ]
         )
         
         do {
             try await registry.configure(app)
-            // try app.autoMigrate().wait()
+            try await app.autoMigrate()
             try await registry.boot(app)
         } catch {
             app.logger.report(error: error)
-            try? await app.asyncShutdown()
+            try await app.autoRevert()
+            try await app.asyncShutdown()
             throw error
         }
+        
         try await app.execute()
         try await app.asyncShutdown()
     }
