@@ -28,8 +28,9 @@ enum Entrypoint {
                 .manifest,
                 .authentication,
                 .notifications,
-                .previews,
                 .gallery,
+                .previews,
+                .notes,
                 .posts,
             ]
         )
