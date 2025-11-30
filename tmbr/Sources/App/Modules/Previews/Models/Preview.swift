@@ -25,8 +25,8 @@ final class Preview: Model, @unchecked Sendable {
     @OptionalParent(key: "image_id")
     var image: Image?
 
-    @Field(key: "links")
-    var links: [String]
+    @Field(key: "external_links")
+    var externalLinks: [String]
 
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
@@ -43,7 +43,7 @@ final class Preview: Model, @unchecked Sendable {
         primaryInfo: String,
         secondaryInfo: String? = nil,
         imageID: ImageID? = nil,
-        links: [String] = []
+        externalLinks: [String] = []
     ) {
         self.id = id
         self.parentID = parentID
@@ -51,7 +51,7 @@ final class Preview: Model, @unchecked Sendable {
         self.primaryInfo = primaryInfo
         self.secondaryInfo = secondaryInfo
         self.$image.id = imageID
-        self.links = links
+        self.externalLinks = externalLinks
     }
 }
 

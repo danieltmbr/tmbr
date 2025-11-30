@@ -7,7 +7,7 @@ protocol Previewable: Model where IDValue == Int {
     static var previewType: String { get }
 }
 
-final class PreviewMiddleware<M>: AsyncModelMiddleware where M: Model & Previewable {
+final class PreviewMiddleware<M: Previewable>: AsyncModelMiddleware {
     
     private let attach: @Sendable (PreviewID, M) throws -> Void
     

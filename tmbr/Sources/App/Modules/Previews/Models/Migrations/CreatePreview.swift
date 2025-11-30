@@ -11,7 +11,7 @@ struct CreatePreview: AsyncMigration {
             .field("primary_info", .string, .required)
             .field("secondary_info", .string)
             .field("image_id", .int)
-            .field("links", .array(of: .string), .required)
+            .field("external_links", .array(of: .string), .required)
             .field("created_at", .datetime)
             .field("updated_at", .datetime)
             .unique(on: "parent_type", "parent_id")
@@ -20,8 +20,14 @@ struct CreatePreview: AsyncMigration {
         if let sqlDB = database as? SQLDatabase {
             try await sqlDB
                 .create(index: "parent_id_index")
-                .on(Note.schema)
+                .on(Preview.schema)
                 .column("parent_id")
+                .run()
+            
+            try await sqlDB
+                .create(index: "parent_type_index")
+                .on(Preview.schema)
+                .column("parent_type")
                 .run()
         }
     }
@@ -30,6 +36,10 @@ struct CreatePreview: AsyncMigration {
         if let sqlDB = database as? SQLDatabase {
             try await sqlDB
                 .drop(index: "parent_id_index")
+                .run()
+            
+            try await sqlDB
+                .drop(index: "parent_type_index")
                 .run()
         }
         try await database.schema(Preview.schema).delete()
