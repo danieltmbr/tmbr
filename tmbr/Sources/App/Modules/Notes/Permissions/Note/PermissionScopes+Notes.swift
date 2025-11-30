@@ -1,4 +1,5 @@
 import AuthKit
+import Fluent
 
 extension PermissionScopes {
     var notes: PermissionScopes.Notes.Type { PermissionScopes.Notes.self }
@@ -6,25 +7,25 @@ extension PermissionScopes {
 
 extension PermissionScopes {
     struct Notes: PermissionScope, Sendable {
-        
-        let access: Permission<Note>
-        
+                
         let create: AuthPermission<Void>
         
         let delete: AuthPermission<Note>
         
         let edit: AuthPermission<Note>
         
+        let query: Permission<QueryBuilder<Note>>
+        
         init(
-            access: Permission<Note> = .accessNote,
             create: AuthPermission<Void> = .createNote,
             delete: AuthPermission<Note> = .deleteNote,
-            edit: AuthPermission<Note> = .editNote
+            edit: AuthPermission<Note> = .editNote,
+            query: Permission<QueryBuilder<Note>> = .queryNote
         ) {
-            self.access = access
             self.create = create
             self.delete = delete
             self.edit = edit
+            self.query = query
         }
     }
 }

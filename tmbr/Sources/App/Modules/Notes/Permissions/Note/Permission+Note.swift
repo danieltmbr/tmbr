@@ -2,15 +2,15 @@ import Foundation
 import Core
 import AuthKit
 import Vapor
+import Fluent
 
-extension Permission<Note> {
-    static var accessNote: Permission<Note> {
-        Permission<Note>(
-            "This note is private. Only its author can see it."
-        ) { user, note in
-            if note.visibility == .public { return true }
-            guard let user else { throw Abort(.unauthorized) }
-            return note.$author.id == user.userID || user.role == .admin
+extension AuthPermission<Void> {
+    
+    static var createNote: Self {
+        AuthPermission<Void>(
+            "Only authors can create notes."
+        ) { user, _ in
+            user.role == .author || user.role == .admin
         }
     }
 }
@@ -34,13 +34,16 @@ extension AuthPermission<Note> {
     }
 }
 
-extension AuthPermission<Void> {
+extension Permission<QueryBuilder<Note>> {
     
-    static var createNote: Self {
-        AuthPermission<Void>(
-            "Only authors can create notes."
-        ) { user, _ in
-            user.role == .author || user.role == .admin
+    static var queryNote: Permission<QueryBuilder<Note>> {
+        Permission<QueryBuilder<Note>> { user, query in
+            query.group(.or) { group in
+                group.filter(\.$visibility == .public)
+                if let userID = user?.id {
+                    group.filter(\.$author.$id == userID)
+                }
+            }
         }
     }
 }
