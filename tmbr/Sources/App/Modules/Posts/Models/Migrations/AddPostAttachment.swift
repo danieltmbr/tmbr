@@ -5,13 +5,13 @@ import SQLKit
 struct AddPostAttachment: AsyncMigration {
     func prepare(on database: Database) async throws {
         try await database.schema(Post.schema)
-            .field("attachment_id", .int)
+            .field("attachment_id", .uuid)
             .update()
         
         if let sqlDB = database as? SQLDatabase {
             try await sqlDB
-                .create(index: "attachment_id_index")
-                .on(Note.schema)
+                .create(index: "post_attachment_id_index")
+                .on(Post.schema)
                 .column("attachment_id")
                 .run()
         }
@@ -20,7 +20,7 @@ struct AddPostAttachment: AsyncMigration {
     func revert(on database: Database) async throws {
         if let sqlDB = database as? SQLDatabase {
             try await sqlDB
-                .drop(index: "attachment_id_index")
+                .drop(index: "post_attachment_id_index")
                 .run()
         }
         

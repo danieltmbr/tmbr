@@ -47,7 +47,7 @@ struct CreateNote: AsyncMigration {
                 .drop(index: "author_id_index")
                 .run()
         }
-        
+        try await database.enum("note_visibility").delete()
         try await database.schema(Note.schema).delete()
     }
 }

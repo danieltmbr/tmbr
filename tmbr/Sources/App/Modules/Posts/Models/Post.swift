@@ -37,20 +37,20 @@ final class Post: Model, Content, @unchecked Sendable {
     init() {}
     
     init(
+        attachmentID: UUID? = nil,
         authorID: UserID,
         content: String,
         createdAt: Date = .now,
         id: Int? = nil,
         state: State = .draft,
-        title: String,
-        attachmentID: Int? = nil
+        title: String
     ) {
+        self.$attachment.id = attachmentID
         self.$author.id = authorID
         self.content = content
         self.createdAt = createdAt
         self.id = id
         self.state = state
         self.title = title
-        self.$attachment.id = attachmentID
     }
 }

@@ -65,7 +65,9 @@ extension Page {
                 throw Abort(.badRequest)
             }
             let post = try await req.commands.posts.fetch(postID, for: .read)
-            let attachment = post.attachment.map(PreviewResponse.init(preview:))
+            let attachment = post.attachment.map {
+                PreviewResponse(preview: $0, baseURL: req.baseURL)
+            }
             return PostViewModel(post: post, attachment: attachment)
         }
     }
