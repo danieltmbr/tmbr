@@ -3,6 +3,8 @@ import Vapor
 import Foundation
 import AuthKit
 
+typealias NoteID = Note.IDValue
+
 final class Note: Model, Content, @unchecked Sendable {
     
     enum Visibility: String, Codable, Sendable {
@@ -16,10 +18,10 @@ final class Note: Model, Content, @unchecked Sendable {
     var id: Int?
     
     @Parent(key: "attachment_id")
-    var attachment: Preview
+    private(set) var attachment: Preview
 
     @Parent(key: "author_id")
-    var author: User
+    private(set) var author: User
 
     @Field(key: "body")
     var body: String
@@ -28,13 +30,13 @@ final class Note: Model, Content, @unchecked Sendable {
     var visibility: Visibility
 
     @Timestamp(key: "created_at", on: .create)
-    var createdAt: Date?
+    private(set) var createdAt: Date?
 
     @Timestamp(key: "updated_at", on: .update)
-    var updatedAt: Date?
+    private(set) var updatedAt: Date?
 
     @Children(for: \.$note)
-    var quotes: [Quote]
+    private(set) var quotes: [Quote]
 
     init() {}
 
