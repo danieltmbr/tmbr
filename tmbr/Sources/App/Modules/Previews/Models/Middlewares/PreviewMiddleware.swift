@@ -7,7 +7,7 @@ protocol Previewable: Model where IDValue == Int {
     static var previewType: String { get }
 }
 
-final class PreviewMiddleware<M: Previewable>: AsyncModelMiddleware {
+final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
     
     private let attach: @Sendable (PreviewID, M) throws -> Void
     
@@ -37,7 +37,6 @@ final class PreviewMiddleware<M: Previewable>: AsyncModelMiddleware {
         
         try attach(previewID, model)
         try await next.create(model, on: db)
-        let modelID = try model.requireID()
 
         try configure(&preview, model)
         try await preview.save(on: db)
@@ -60,7 +59,7 @@ final class PreviewMiddleware<M: Previewable>: AsyncModelMiddleware {
         on db: any Database,
         next: any AnyAsyncModelResponder
     ) async throws {
-        var preview = try await fetch(model, db)
+        let preview = try await fetch(model, db)
         try await next.delete(model, force: force, on: db)
         try await preview.delete(on: db)
     }
