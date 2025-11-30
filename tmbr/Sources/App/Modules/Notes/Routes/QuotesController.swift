@@ -28,64 +28,76 @@ struct QuotesController: RouteCollection {
     }
     
     @Sendable
-    private func list(req: Request) async throws -> [QuoteResponse] {
-        let payload = try req.query.decode(QuoteListQuery.self)
-        var query = Quote.query(on: req.db)
-            .with(\.$note) { note in
-                note.with(\.$attachment)
-            }
-            .sort(\Quote.$createdAt, .descending)
+    private func list(request: Request) async throws -> [QuoteResponse] {
+        let payload = try request.query.decode(QuoteListQuery.self)
+
+        let query = Quote
+            .query(on: request.db)
+            .with(\.$note) { note in note.with(\.$attachment) }
+        
+        try await request.permissions.quotes.query(query)
         
         if let types = payload.types {
-            query = query.filter(Preview.self, \.$ownerType ~~ types)
+            query.filter(Preview.self, \.$parentType ~~ types)
         }
+        
+        query.sort(\Quote.$createdAt, .descending)
         
         return try await query.all().map { quote in
             QuoteResponse(
                 body: quote.body,
                 noteID: try quote.note.requireID(),
-                preview: PreviewResponse(preview: quote.note.attachment)
+                preview: PreviewResponse(
+                    preview: quote.note.attachment,
+                    baseURL: request.baseURL
+                )
             )
         }
     }
     
     @Sendable
     private func ofTheDay(request: Request) async throws -> QuoteResponse {
-        let quote = try await Quote
+        let user = request.auth.get(User.self)
+        let query = Quote
             .query(on: request.db)
-            .with(\.$note) { note in
-                note.with(\.$attachment)
-            }
-            .sort(.sql(unsafeRaw: "RANDOM()"))
-            .limit(1)
-            .first()
+            .with(\.$note) { note in note.with(\.$attachment) }
         
-        guard let quote else {
+        try await request.permissions.quotes.query(query)
+        
+        query.sort(.sql(unsafeRaw: "RANDOM()")).limit(1)
+            
+        guard let quote = try await query.first() else {
             throw Abort(.notFound)
         }
         
         return QuoteResponse(
             body: quote.body,
             noteID: try quote.note.requireID(),
-            preview: PreviewResponse(preview: quote.note.attachment)
+            preview: PreviewResponse(
+                preview: quote.note.attachment,
+                baseURL: request.baseURL
+            )
         )
     }
     
     @Sendable
-    private func search(req: Request) async throws -> [QuoteResponse] {
-        let payload = try req.query.decode(QuoteSearchQuery.self)
+    private func search(request: Request) async throws -> [QuoteResponse] {
+        let payload = try request.query.decode(QuoteSearchQuery.self)
         let term = payload.term.trimmingCharacters(in: .whitespacesAndNewlines)
         
         guard !term.isEmpty else { return [] }
         
-        var query = Quote.query(on: req.db)
-            .join(Note.self, on: \Quote.$note.$id == \Note.$id)
+        let query = Quote
+            .query(on: request.db)
+            .with(\.$note) { note in note.with(\.$attachment) }
 
+        try await request.permissions.quotes.query(query)
+        
         if let types = payload.types {
-            query = query.filter(Preview.self, \.$ownerType ~~ types)
+            query.filter(Preview.self, \.$parentType ~~ types)
         }
 
-        query = query.group(.or) { group in
+        query.group(.or) { group in
             let sql = "text ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
             group.filter(.sql(unsafeRaw: sql))
         }
@@ -94,7 +106,10 @@ struct QuotesController: RouteCollection {
             QuoteResponse(
                 body: quote.body,
                 noteID: try quote.note.requireID(),
-                preview: PreviewResponse(preview: quote.note.attachment)
+                preview: PreviewResponse(
+                    preview: quote.note.attachment,
+                    baseURL: request.baseURL
+                )
             )
         }
     }

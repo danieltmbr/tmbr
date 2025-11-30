@@ -4,100 +4,79 @@ import AuthKit
 
 struct NotePayload: Content {
     var body: String
-    var state: Note.State?
-    var kind: Note.Kind?
-    var attachmentType: String
-    var attachmentID: Int
+    
+    var visibility: Note.Visibility
+
+    var attachmentID: UUID
 }
 
 struct NoteUpdatePayload: Content {
-    var body: String?
-    var state: Note.State?
-    var kind: Note.Kind?
+    
+    var body: String
+    
+    var visibility: Note.Visibility
 }
 
 struct NotesController: RouteCollection {
+    
     func boot(routes: RoutesBuilder) throws {
         let notes = routes.grouped("notes")
         notes.post(use: create)
-        notes.get(":noteID", use: get)
-        notes.put(":noteID", use: update)
+        notes.put(":noteID", use: edit)
         notes.delete(":noteID", use: delete)
     }
-
-    func create(req: Request) async throws -> Note {
+    
+    /// Create can be a Note endpoint as it is domain agnostic
+    /// Edit and delete as well.
+    ///
+    /// I don't think we need a fetch... Note's should not be fetched on their own
+    ///
+    /// We need a search though
+    
+    @Sendable
+    private func create(req: Request) async throws -> Note {
         let user = try req.auth.require(User.self)
         let payload = try req.content.decode(NotePayload.self)
-
+        // TODO: Fetch Preview and check its owner and visibility setting
         let note = Note(
             attachmentID: payload.attachmentID,
             authorID: try user.requireID(),
             body: payload.body,
-            state: payload.state ?? .draft,
-            kind: payload.kind
+            visibility: payload.visibility
         )
         try await note.save(on: req.db)
         return note
     }
-
-    func get(req: Request) async throws -> Note {
-        guard
-            let noteIDString = req.parameters.get("noteID"),
-            let noteID = Int(noteIDString),
-            let note = try await Note.find(noteID, on: req.db)
-        else {
+    
+    @Sendable
+    private func delete(request: Request) async throws -> HTTPStatus {
+        guard let noteID = request.parameters.get("noteID", as: NoteID.self) else {
+            throw Abort(.badRequest, reason: "Missing note ID")
+        }
+        guard let note = try await Note.find(noteID, on: request.db) else {
             throw Abort(.notFound)
         }
-        return note
-    }
-
-    func update(req: Request) async throws -> HTTPStatus {
-        let user = try req.auth.require(User.self)
-
-        guard
-            let noteIDString = req.parameters.get("noteID"),
-            let noteID = Int(noteIDString),
-            let note = try await Note.find(noteID, on: req.db)
-        else {
-            throw Abort(.notFound)
-        }
-
-        if note.$author.id != user.id || user.role != .admin {
-            throw Abort(.forbidden)
-        }
-
-        let payload = try req.content.decode(NoteUpdatePayload.self)
-
-        if let body = payload.body {
-            note.body = body
-        }
-        if let state = payload.state {
-            note.state = state
-        }
-        if let kind = payload.kind {
-            note.kind = kind
-        }
-
-        try await note.save(on: req.db)
-        return .ok
-    }
-
-    func delete(req: Request) async throws -> HTTPStatus {
-        let user = try req.auth.require(User.self)
-
-        guard
-            let noteIDString = req.parameters.get("noteID"),
-            let noteID = Int(noteIDString),
-            let note = try await Note.find(noteID, on: req.db)
-        else {
-            throw Abort(.notFound)
-        }
-
-        if note.$author.id != user.id || user.role != .admin {
-            throw Abort(.forbidden)
-        }
-
-        try await note.delete(on: req.db)
+        try await request.permissions.notes.delete(note)
+        try await note.delete(on: request.db)
         return .noContent
+    }
+    
+    @Sendable
+    private func edit(request: Request) async throws -> HTTPStatus {
+        guard let noteID = request.parameters.get("noteID", as: NoteID.self) else {
+            throw Abort(.badRequest, reason: "Missing note ID")
+        }
+        guard let note = try await Note.find(noteID, on: request.db) else {
+            throw Abort(.notFound)
+        }
+        try await request.permissions.notes.edit(note)
+        
+        // TODO: Visibility cannot be more lenient than parent's
+        let payload = try request.content.decode(NoteUpdatePayload.self)
+        note.body = payload.body
+        note.visibility = payload.visibility
+        try await note.save(on: request.db)
+        
+        return .ok
     }
 }
