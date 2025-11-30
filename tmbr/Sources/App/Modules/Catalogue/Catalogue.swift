@@ -55,8 +55,7 @@ struct Catalogue: Module {
         }
     }
     
-    func boot(_ routes: any Vapor.RoutesBuilder) async throws {
-    }
+    func boot(_ routes: any Vapor.RoutesBuilder) async throws {}
 }
 
 extension Module where Self == Catalogue {

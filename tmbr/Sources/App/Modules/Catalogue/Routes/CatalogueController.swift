@@ -2,7 +2,7 @@ import Vapor
 import Fluent
 import AuthKit
 
-struct MediaController: RouteCollection {
+struct CatalogueController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let media = routes.grouped("media")
         media.post(use: create)
@@ -22,16 +22,9 @@ struct MediaController: RouteCollection {
         let payload = try req.content.decode(MediaPayload.self)
 
         return try await req.db.transaction { db in
-            let preview = Media.Preview(
-                title: payload.preview.title,
-                subtitle: payload.preview.subtitle,
-                body: payload.preview.body,
-                imageURL: payload.preview.imageURL
-            )
             let media = Media(
                 kind: payload.kind,
-                ownerID: userID,
-                preview: preview
+                ownerID: userID
             )
             try await media.save(on: db)
             let mediaID = try media.requireID()
@@ -185,3 +178,4 @@ struct MediaController: RouteCollection {
         try resources.map { try $0.resource(supportedPlatforms: supported) }
     }
 }
+
