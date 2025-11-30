@@ -4,10 +4,10 @@ import PostgresKit
 
 struct CreateQuote: AsyncMigration {
     func prepare(on database: Database) async throws {
-        try await database.schema("quotes")
+        try await database.schema(Quote.schema)
             .field("id", .int, .identifier(auto: true), .required)
             .field("note_id", .int, .required)
-            .field("text", .string, .required)
+            .field("body", .string, .required)
             .field("created_at", .datetime)
             .foreignKey("note_id", references: "notes", "id", onDelete: .cascade)
             .create()

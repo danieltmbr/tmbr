@@ -25,15 +25,14 @@ struct NoteModelMiddleware: AsyncModelMiddleware {
     
     private func rematerializeQuotes(for note: Note, on db: any Database) async throws {
         guard let id = note.id else { return }
-
-        try await Quote.query(on: db)
-            .filter(\.$note.$id == id)
-            .delete()
-
-        for quote in Document(parsing: note.body).quotes {
-            // TODO: Populate Source based on Note attachment
-            let q = Quote(noteID: id, body: quote)
-            try await q.save(on: db)
+        try await db.transaction { tx in
+            try await Quote.query(on: tx)
+                .filter(\.$note.$id == id)
+                .delete()
+            
+            let document = Document(parsing: note.body)
+            let quotes = document.quotes.map { Quote(noteID: id, body: $0) }
+            try await quotes.create(on: tx)
         }
     }
 }

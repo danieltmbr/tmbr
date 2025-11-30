@@ -4,7 +4,7 @@ import SQLKit
 
 struct CreateNote: AsyncMigration {
     func prepare(on database: Database) async throws {
-        let state = try await database.enum("note_state")
+        let visibility = try await database.enum("note_visibility")
             .case("public")
             .case("private")
             .create()
@@ -13,8 +13,8 @@ struct CreateNote: AsyncMigration {
             .field("id", .int, .identifier(auto: true), .required)
             .field("author_id", .int, .required)
             .field("body", .string, .required)
-            .field("state", state, .required)
-            .field("attachment_id", .int, .required)
+            .field("note_visibility", visibility, .required)
+            .field("attachment_id", .uuid, .required)
             .field("created_at", .datetime)
             .field("updated_at", .datetime)
             .foreignKey("author_id", references: "users", "id", onDelete: .cascade)
@@ -27,6 +27,13 @@ struct CreateNote: AsyncMigration {
                 .on(Note.schema)
                 .column("attachment_id")
                 .run()
+            
+            try await sqlDB
+                .create(index: "author_id_index")
+                .on(Note.schema)
+                .column("author_id")
+                .run()
+
         }
     }
     
@@ -35,8 +42,12 @@ struct CreateNote: AsyncMigration {
             try await sqlDB
                 .drop(index: "attachment_id_index")
                 .run()
+            
+            try await sqlDB
+                .drop(index: "author_id_index")
+                .run()
         }
         
-        try await database.schema("notes").delete()
+        try await database.schema(Note.schema).delete()
     }
 }

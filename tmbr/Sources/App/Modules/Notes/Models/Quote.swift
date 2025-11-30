@@ -14,9 +14,6 @@ final class Quote: Model, Content, @unchecked Sendable {
     @Field(key: "body")
     private(set) var body: String
     
-    @Field(key: "source")
-    private(set) var source: String?
-    
     @Timestamp(key: "created_at", on: .create)
     private(set) var createdAt: Date?
         
@@ -24,11 +21,9 @@ final class Quote: Model, Content, @unchecked Sendable {
     
     init(
         noteID: Int,
-        body: String,
-        source: String? = nil
+        body: String
     ) {
         self.$note.id = noteID
         self.body = body
-        self.source = source
     }
 }

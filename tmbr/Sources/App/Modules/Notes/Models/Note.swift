@@ -5,7 +5,7 @@ import AuthKit
 
 final class Note: Model, Content, @unchecked Sendable {
     
-    enum State: String, Codable, Sendable {
+    enum Visibility: String, Codable, Sendable {
         case `private`
         case `public`
     }
@@ -24,8 +24,8 @@ final class Note: Model, Content, @unchecked Sendable {
     @Field(key: "body")
     var body: String
 
-    @Enum(key: "state")
-    var state: State
+    @Enum(key: "visibility")
+    var visibility: Visibility
 
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
@@ -39,14 +39,14 @@ final class Note: Model, Content, @unchecked Sendable {
     init() {}
 
     init(
-        attachmentID: Int,
+        attachmentID: UUID,
         authorID: Int,
         body: String,
-        state: State = .draft
+        visibility: Visibility = .private
     ) {
         self.$attachment.id = attachmentID
         self.$author.id = authorID
         self.body = body
-        self.state = state
+        self.visibility = visibility
     }
 }
