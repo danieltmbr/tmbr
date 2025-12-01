@@ -1,6 +1,7 @@
 import Fluent
 import Vapor
 import Foundation
+import AuthKit
 
 typealias PreviewID = UUID
 
@@ -11,10 +12,16 @@ final class Preview: Model, @unchecked Sendable {
     var id: UUID?
     
     @Field(key: "parent_id")
-    var parentID: Int
+    private(set) var parentID: Int
+    
+    @Enum(key: "parent_access")
+    private(set) var parentAccess: Access
+    
+    @Parent(key: "parent_owner")
+    private(set) var parentOwner: User
     
     @Field(key: "parent_type")
-    var parentType: String
+    private(set) var parentType: String
 
     @Field(key: "primary_info")
     var primaryInfo: String
@@ -29,29 +36,25 @@ final class Preview: Model, @unchecked Sendable {
     var externalLinks: [String]
 
     @Timestamp(key: "created_at", on: .create)
-    var createdAt: Date?
+    private(set) var createdAt: Date?
 
     @Timestamp(key: "updated_at", on: .update)
-    var updatedAt: Date?
+    private(set) var updatedAt: Date?
 
     init() {}
 
     init(
         id: UUID,
         parentID: Int,
-        parentType: String,
-        primaryInfo: String,
-        secondaryInfo: String? = nil,
-        imageID: ImageID? = nil,
-        externalLinks: [String] = []
+        parentAccess: Access,
+        parentOwner: UserID,
+        parentType: String
     ) {
         self.id = id
         self.parentID = parentID
+        self.parentAccess = parentAccess
+        self.$parentOwner.id = parentOwner
         self.parentType = parentType
-        self.primaryInfo = primaryInfo
-        self.secondaryInfo = secondaryInfo
-        self.$image.id = imageID
-        self.externalLinks = externalLinks
     }
 }
 

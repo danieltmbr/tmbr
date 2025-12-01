@@ -1,10 +1,15 @@
 import Fluent
 import Vapor
 import Foundation
+import AuthKit
 
 protocol Previewable: Model where IDValue == Int {
     
     static var previewType: String { get }
+    
+    var access: Access { get }
+    
+    var ownerID: UserID { get }
 }
 
 final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
@@ -31,13 +36,16 @@ final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
         next: any AnyAsyncModelResponder
     ) async throws {
         let previewID = UUID()
-        var preview = Preview()
-        preview.id = previewID
-        preview.parentType = M.previewType
-        
         try attach(previewID, model)
         try await next.create(model, on: db)
 
+        var preview = Preview(
+            id: previewID,
+            parentID: try model.requireID(),
+            parentAccess: model.access,
+            parentOwner: model.ownerID,
+            parentType: M.previewType
+        )
         try configure(&preview, model)
         try await preview.save(on: db)
     }

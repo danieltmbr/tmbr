@@ -7,11 +7,6 @@ typealias NoteID = Note.IDValue
 
 final class Note: Model, Content, @unchecked Sendable {
     
-    enum Visibility: String, Codable, Sendable {
-        case `private`
-        case `public`
-    }
-    
     static let schema = "notes"
 
     @ID(custom: "id", generatedBy: .database)
@@ -26,8 +21,8 @@ final class Note: Model, Content, @unchecked Sendable {
     @Field(key: "body")
     var body: String
 
-    @Enum(key: "visibility")
-    var visibility: Visibility
+    @Enum(key: "access")
+    var access: Access
 
     @Timestamp(key: "created_at", on: .create)
     private(set) var createdAt: Date?
@@ -44,11 +39,11 @@ final class Note: Model, Content, @unchecked Sendable {
         attachmentID: UUID,
         authorID: Int,
         body: String,
-        visibility: Visibility = .private
+        access: Access
     ) {
         self.$attachment.id = attachmentID
         self.$author.id = authorID
         self.body = body
-        self.visibility = visibility
+        self.access = access
     }
 }
