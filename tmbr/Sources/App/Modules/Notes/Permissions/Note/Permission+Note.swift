@@ -39,7 +39,7 @@ extension Permission<QueryBuilder<Note>> {
     static var queryNote: Permission<QueryBuilder<Note>> {
         Permission<QueryBuilder<Note>> { user, query in
             query.group(.or) { group in
-                group.filter(\.$visibility == .public)
+                group.filter(\.$access == .public)
                 if let userID = user?.id {
                     group.filter(\.$author.$id == userID)
                 }

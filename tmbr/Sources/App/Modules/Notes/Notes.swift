@@ -21,6 +21,7 @@ struct Notes: Module {
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(CreateNote())
         app.migrations.add(CreateQuote())
+        app.migrations.add(UpdateNoteVisibilityToAccess())
         app.databases.middleware.use(NoteModelMiddleware())
         
         try await app.permissions.add(scope: notePermissions)

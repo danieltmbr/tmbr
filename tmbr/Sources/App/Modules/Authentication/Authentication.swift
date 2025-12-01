@@ -21,6 +21,8 @@ struct Authentication: Module {
     }
     
     func configure(_ app: Application) async throws {
+        app.migrations.add(CreateAccess())
+        
         app.sessions.use(.memory)
         app.sessions.configuration.cookieFactory = { sessionID in
                 .init(
@@ -43,7 +45,7 @@ struct Authentication: Module {
             hmac: HMACKey(from: Environment.signIn.secret),
             digestAlgorithm: .sha256
         )
-        
+
         await app.storage.setWithAsyncShutdown(
             PermissionService.Key.self,
             to: PermissionService()
