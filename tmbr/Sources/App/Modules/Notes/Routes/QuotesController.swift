@@ -3,12 +3,13 @@ import Fluent
 import Foundation
 import AuthKit
 import PostgresKit
+import Core
 
 struct QuotesController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let quotes = routes.grouped("quotes")
         quotes.get(use: list)
-        quotes.get("of-the-day", use: ofTheDay)
+        quotes.get("random", use: random)
         quotes.get("search", use: search)
     }
     
@@ -34,14 +35,10 @@ struct QuotesController: RouteCollection {
         let query = Quote
             .query(on: request.db)
             .with(\.$note) { note in note.with(\.$attachment) }
+            .filter(Preview.self, \.$parentType ~~? payload.types)
+            .sort(\Quote.$createdAt, .descending)
         
         try await request.permissions.quotes.query(query)
-        
-        if let types = payload.types {
-            query.filter(Preview.self, \.$parentType ~~ types)
-        }
-        
-        query.sort(\Quote.$createdAt, .descending)
         
         return try await query.all().map { quote in
             QuoteResponse(
@@ -56,15 +53,13 @@ struct QuotesController: RouteCollection {
     }
     
     @Sendable
-    private func ofTheDay(request: Request) async throws -> QuoteResponse {
-        let user = request.auth.get(User.self)
+    private func random(request: Request) async throws -> QuoteResponse {
         let query = Quote
             .query(on: request.db)
             .with(\.$note) { note in note.with(\.$attachment) }
+            .sort(.sql(unsafeRaw: "RANDOM()")).limit(1)
         
         try await request.permissions.quotes.query(query)
-        
-        query.sort(.sql(unsafeRaw: "RANDOM()")).limit(1)
             
         guard let quote = try await query.first() else {
             throw Abort(.notFound)
@@ -90,18 +85,14 @@ struct QuotesController: RouteCollection {
         let query = Quote
             .query(on: request.db)
             .with(\.$note) { note in note.with(\.$attachment) }
+            .filter(Preview.self, \.$parentType ~~? payload.types)
+            .group(.or) { group in
+                let sql = "text ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
+                group.filter(.sql(unsafeRaw: sql))
+            }
 
         try await request.permissions.quotes.query(query)
-        
-        if let types = payload.types {
-            query.filter(Preview.self, \.$parentType ~~ types)
-        }
 
-        query.group(.or) { group in
-            let sql = "text ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
-            group.filter(.sql(unsafeRaw: sql))
-        }
-        
         return try await query.all().map { quote in
             QuoteResponse(
                 body: quote.body,

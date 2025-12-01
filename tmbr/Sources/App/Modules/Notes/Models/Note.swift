@@ -38,12 +38,12 @@ final class Note: Model, Content, @unchecked Sendable {
     init(
         attachmentID: UUID,
         authorID: Int,
-        body: String,
-        access: Access
+        access: Access,
+        body: String
     ) {
         self.$attachment.id = attachmentID
         self.$author.id = authorID
-        self.body = body
         self.access = access
+        self.body = body
     }
 }
