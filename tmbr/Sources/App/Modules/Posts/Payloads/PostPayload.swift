@@ -36,7 +36,7 @@ extension PostPayload {
     }
 }
 
-private extension String {
+extension String {
     var trimmed: String {
         trimmingCharacters(in: .whitespacesAndNewlines)
     }
