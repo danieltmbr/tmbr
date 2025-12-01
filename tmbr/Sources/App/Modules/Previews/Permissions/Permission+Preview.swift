@@ -2,6 +2,7 @@ import Foundation
 import Core
 import AuthKit
 import Vapor
+import Fluent
 
 extension Permission<Preview> {
     
@@ -23,6 +24,21 @@ extension AuthPermission<Preview> {
             "Only its owners can edit a preview."
         ) { user, preview in
             preview.$parentOwner.id == user.userID || user.role == .admin
+        }
+    }
+}
+
+
+extension Permission<QueryBuilder<Preview>> {
+    
+    static var queryPreview: Permission<QueryBuilder<Preview>> {
+        Permission<QueryBuilder<Preview>> { user, query in
+            query.group(.or) { group in
+                group.filter(\.$parentAccess == .public)
+                if let userID = user?.id {
+                    group.filter(\.$parentOwner.$id == userID)
+                }
+            }
         }
     }
 }
