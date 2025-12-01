@@ -6,15 +6,23 @@ import AuthKit
 
 struct Notes: Module {
     
+    private let noteCommands: Commands.Notes
+    
     private let notePermissions: PermissionScopes.Notes
+    
+    private let quoteCommands: Commands.Quotes
     
     private let quotePermissions: PermissionScopes.Quotes
     
     init(
+        noteCommands: Commands.Notes,
         notePermissions: PermissionScopes.Notes,
+        quoteCommands: Commands.Quotes,
         quotePermissions: PermissionScopes.Quotes
     ) {
+        self.noteCommands = noteCommands
         self.notePermissions = notePermissions
+        self.quoteCommands = quoteCommands
         self.quotePermissions = quotePermissions
     }
     
@@ -26,18 +34,20 @@ struct Notes: Module {
         
         try await app.permissions.add(scope: notePermissions)
         try await app.permissions.add(scope: quotePermissions)
+        
+        try await app.commands.add(collection: noteCommands)
+        try await app.commands.add(collection: quoteCommands)
     }
     
-    func boot(_ routes: any Vapor.RoutesBuilder) async throws {
-        try routes.register(collection: NotesController())
-        try routes.register(collection: QuotesController())
-    }
+    func boot(_ routes: any Vapor.RoutesBuilder) async throws {}
 }
 
 extension Module where Self == Notes {
     static var notes: Self {
         Notes(
+            noteCommands: Commands.Notes(),
             notePermissions: PermissionScopes.Notes(),
+            quoteCommands: Commands.Quotes(),
             quotePermissions: PermissionScopes.Quotes()
         )
     }

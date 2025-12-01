@@ -1,6 +1,7 @@
 import Foundation
 import AuthKit
 import Vapor
+import Core
 
 @dynamicMemberLookup
 struct EditNotePayload: Sendable {
@@ -33,5 +34,16 @@ struct EditNotePayload: Sendable {
     
     func validate() throws {
         try content.validate()
+    }
+}
+
+extension CommandResolver where Input == EditNotePayload {
+    
+    func callAsFunction(
+        _ noteID: NoteID,
+        with content: EditNotePayload.Content
+    ) async throws -> Output {
+        let input = EditNotePayload(id: noteID, content: content)
+        return try await self.callAsFunction(input)
     }
 }
