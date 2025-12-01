@@ -8,7 +8,7 @@ import AuthKit
 extension Command where Self == PlainCommand<Void, [Image]> {
     
     // TODO: Maybe filter by logged in owner
-    static func listPosts(
+    static func listImages(
         database: Database,
         permission: AuthPermissionResolver<Void>
     ) -> Self {
@@ -25,7 +25,7 @@ extension CommandFactory<Void, [Image]> {
     
     static var listImages: Self {
         CommandFactory { request in
-            .listPosts(
+            .listImages(
                 database: request.db,
                 permission: request.permissions.gallery.list
             )
