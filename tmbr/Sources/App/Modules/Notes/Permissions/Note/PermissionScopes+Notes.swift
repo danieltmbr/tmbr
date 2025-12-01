@@ -8,6 +8,8 @@ extension PermissionScopes {
 extension PermissionScopes {
     struct Notes: PermissionScope, Sendable {
                 
+        let attach: AuthPermission<AttachNotePermissionInput>
+        
         let create: AuthPermission<Void>
         
         let delete: AuthPermission<Note>
@@ -17,11 +19,13 @@ extension PermissionScopes {
         let query: Permission<QueryBuilder<Note>>
         
         init(
+            attach: AuthPermission<AttachNotePermissionInput> = .attachNote,
             create: AuthPermission<Void> = .createNote,
             delete: AuthPermission<Note> = .deleteNote,
             edit: AuthPermission<Note> = .editNote,
             query: Permission<QueryBuilder<Note>> = .queryNote
         ) {
+            self.attach = attach
             self.create = create
             self.delete = delete
             self.edit = edit

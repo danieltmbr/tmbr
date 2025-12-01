@@ -47,3 +47,31 @@ extension Permission<QueryBuilder<Note>> {
         }
     }
 }
+
+struct AttachNotePermissionInput: Sendable {
+    
+    let note: Note
+    
+    let preview: Preview
+}
+
+extension AuthPermission<AttachNotePermissionInput> {
+    
+    static var attachNote: Self {
+        AuthPermission<AttachNotePermissionInput>(
+            "Only the item's authors can add notes to it."
+        ) { user, input in
+            input.note.attachment.id == input.preview.id &&
+            input.preview.parentOwner.id == user.userID &&
+            input.note.author.id == user.userID
+        }
+    }
+}
+
+extension PermissionResolver where Input == AttachNotePermissionInput {
+    
+    @discardableResult
+    func callAsFunction(_ note: Note, to preview: Preview) async throws -> Output {
+        try await callAsFunction(AttachNotePermissionInput(note: note, preview: preview))
+    }
+}

@@ -7,7 +7,7 @@ public struct CreateAccess: AsyncMigration {
     public init() {}
     
     public func prepare(on database: Database) async throws {
-        let access = try await database.enum("access")
+        _ = try await database.enum("access")
             .case("public")
             .case("private")
             .create()
