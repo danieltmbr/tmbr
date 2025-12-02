@@ -33,7 +33,6 @@ struct CreateNote: AsyncMigration {
                 .on(Note.schema)
                 .column("author_id")
                 .run()
-
         }
     }
     
