@@ -2,9 +2,30 @@ import Vapor
 
 struct QuoteResponse: Content {
     
-    let body: String
+    private let body: String
     
-    let noteID: Int
+    private let noteID: Int
     
-    let preview: PreviewResponse
+    private let preview: PreviewResponse
+    
+    init(
+        body: String,
+        noteID: Int,
+        preview: PreviewResponse
+    ) {
+        self.body = body
+        self.noteID = noteID
+        self.preview = preview
+    }
+    
+    init(quote: Quote, baseURL: String) {
+        self.init(
+            body: quote.body,
+            noteID: quote.$note.id,
+            preview: PreviewResponse(
+                preview: quote.note.attachment,
+                baseURL: baseURL
+            )
+        )
+    }
 }
