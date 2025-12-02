@@ -40,6 +40,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "Markdown", package: "swift-markdown"),
+                .product(name: "Fluent", package: "fluent"),
             ]
         ),
         .target(
