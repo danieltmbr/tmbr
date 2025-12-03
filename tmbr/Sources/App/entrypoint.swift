@@ -32,6 +32,7 @@ enum Entrypoint {
                 .previews,
                 .notes,
                 .posts,
+                .catalogue
             ]
         )
         
@@ -39,14 +40,12 @@ enum Entrypoint {
             try await registry.configure(app)
             try await app.autoMigrate()
             try await registry.boot(app)
+            try await app.execute()
+            try await app.asyncShutdown()
         } catch {
             app.logger.report(error: error)
-            try await app.autoRevert()
             try await app.asyncShutdown()
             throw error
         }
-        
-        try await app.execute()
-        try await app.asyncShutdown()
     }
 }
