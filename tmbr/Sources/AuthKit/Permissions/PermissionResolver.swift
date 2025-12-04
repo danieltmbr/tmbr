@@ -42,7 +42,7 @@ public struct PermissionResolver<Input, Output>: Sendable {
         }
     }
     
-    public func ereaseOutput() -> PermissionResolver<Input, Void> {
+    public func eraseOutput() -> PermissionResolver<Input, Void> {
         PermissionResolver<Input, Void> { try await self.grant($0) }
     }
     

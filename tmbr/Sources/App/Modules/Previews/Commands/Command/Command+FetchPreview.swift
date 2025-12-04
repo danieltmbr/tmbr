@@ -34,8 +34,8 @@ struct FetchPreviewCommand: Command {
             database: database,
             permission: ErasedPermissionResolver(input: \.preview, condition: \.reason) { reason in
                 switch reason {
-                case .read: readPermission.ereaseOutput()
-                case .write: writePermission.ereaseOutput()
+                case .read: readPermission.eraseOutput()
+                case .write: writePermission.eraseOutput()
                 }
             }
         )
