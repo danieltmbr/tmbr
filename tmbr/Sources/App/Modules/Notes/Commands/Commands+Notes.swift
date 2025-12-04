@@ -8,20 +8,24 @@ extension Commands {
 extension Commands {
     struct Notes: CommandCollection, Sendable {
                 
-        let create: CommandFactory<NotePayload, Note>
+        let create: CommandFactory<CreateNoteInput, Note>
         
         let delete: CommandFactory<NoteID, Void>
                 
-        let edit: CommandFactory<EditNotePayload, Note>
+        let edit: CommandFactory<EditNoteInput, Note>
+        
+        let search: CommandFactory<NoteQueryPayload, [Note]>
         
         init(
-            create: CommandFactory<NotePayload, Note> = .createNote,
+            create: CommandFactory<CreateNoteInput, Note> = .createNote,
             delete: CommandFactory<NoteID, Void> = .deleteNote,
-            edit: CommandFactory<EditNotePayload, Note> = .editNote
+            edit: CommandFactory<EditNoteInput, Note> = .editNote,
+            search: CommandFactory<NoteQueryPayload, [Note]> = .searchNote
         ) {
             self.create = create
             self.delete = delete
             self.edit = edit
+            self.search = search
         }
     }
 }

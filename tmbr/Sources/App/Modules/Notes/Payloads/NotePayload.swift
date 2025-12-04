@@ -1,10 +1,10 @@
 import Foundation
 import AuthKit
+import Vapor
 
 struct NotePayload: Decodable {
-    var body: String
     
-    var access: Access
-
-    var attachmentID: UUID
+    let body: String
+    
+    let access: Access
 }

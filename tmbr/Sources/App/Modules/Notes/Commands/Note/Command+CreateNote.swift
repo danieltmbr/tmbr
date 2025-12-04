@@ -5,9 +5,17 @@ import Logging
 import Fluent
 import AuthKit
 
+struct CreateNoteInput: Decodable {
+    var body: String
+    
+    var access: Access
+    
+    var attachmentID: UUID
+}
+
 struct CreateNoteCommand: Command {
     
-    typealias Input = NotePayload
+    typealias Input = CreateNoteInput
     
     typealias Output = Note
     
@@ -31,14 +39,14 @@ struct CreateNoteCommand: Command {
         self.fetchPreview = fetchPreview
     }
 
-    func execute(_ payload: NotePayload) async throws -> Note {
+    func execute(_ input: CreateNoteInput) async throws -> Note {
         let user = try await createPermission.grant()
-        let preview = try await fetchPreview(payload.attachmentID, for: .write)
+        let preview = try await fetchPreview(input.attachmentID, for: .write)
         let note = Note(
-            attachmentID: payload.attachmentID,
+            attachmentID: input.attachmentID,
             authorID: user.userID,
-            access: preview.parentAccess && payload.access,
-            body: payload.body
+            access: preview.parentAccess && input.access,
+            body: input.body
         )
         try await attachPermission(note, to: preview)
         try await note.save(on: database)
@@ -46,7 +54,7 @@ struct CreateNoteCommand: Command {
     }
 }
 
-extension CommandFactory<NotePayload, Note> {
+extension CommandFactory<CreateNoteInput, Note> {
 
     static var createNote: Self {
         CommandFactory { request in
