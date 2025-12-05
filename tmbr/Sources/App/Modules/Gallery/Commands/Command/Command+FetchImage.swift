@@ -40,8 +40,8 @@ struct FetchImageCommand: Command {
             logger: logger,
             permission: ErasedPermissionResolver(input: \.image, condition: \.reason) { reason in
                 switch reason {
-                case .read: readPermission.ereaseOutput()
-                case .write: writePermission.ereaseOutput()
+                case .read: readPermission.eraseOutput()
+                case .write: writePermission.eraseOutput()
                 }
             }
         )
