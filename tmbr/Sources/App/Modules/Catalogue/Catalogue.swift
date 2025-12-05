@@ -10,6 +10,7 @@ struct Catalogue: Module {
     private let commands: [CommandCollection]
     
     init(
+        bookCommands: CommandCollection,
         bookPermissions: PermissionScope,
         moviePermissions: PermissionScope,
         podcastPermissions: PermissionScope,
@@ -23,7 +24,8 @@ struct Catalogue: Module {
             songPermissions
         ]
         self.commands = [
-            catalogueCommands
+            catalogueCommands,
+            bookCommands,
         ]
     }
 
@@ -60,6 +62,7 @@ struct Catalogue: Module {
 extension Module where Self == Catalogue {
     static var catalogue: Self {
         Catalogue(
+            bookCommands: Commands.Books(),
             bookPermissions: PreviewablePermissionScope.books,
             moviePermissions: PreviewablePermissionScope.movies,
             podcastPermissions: PreviewablePermissionScope.podcasts,

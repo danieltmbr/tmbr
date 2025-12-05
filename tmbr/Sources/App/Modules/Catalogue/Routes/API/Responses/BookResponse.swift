@@ -12,7 +12,7 @@ struct BookResponse: Encodable, Sendable {
     
     private let cover: ImageResponse?
     
-    private let genre: String
+    private let genre: String?
     
     private let notes: [NoteResponse]
     
@@ -22,7 +22,7 @@ struct BookResponse: Encodable, Sendable {
     
     private let post: PostResponse?
     
-    private let releaseDate: Date
+    private let releaseDate: Date?
     
     private let resources: [Resource]
 
@@ -33,12 +33,12 @@ struct BookResponse: Encodable, Sendable {
         access: Access,
         author: String,
         cover: ImageResponse?,
-        genre: String,
+        genre: String?,
         notes: [NoteResponse],
         owner: UserResponse,
         preview: PreviewResponse,
         post: PostResponse?,
-        releaseDate: Date,
+        releaseDate: Date?,
         resources: [Resource],
         title: String
     ) {
