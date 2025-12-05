@@ -3,6 +3,8 @@ import Vapor
 import Foundation
 import AuthKit
 
+typealias MovieID = Movie.IDValue
+
 final class Movie: Model, Previewable, @unchecked Sendable {
     
     static let previewType = "movie"

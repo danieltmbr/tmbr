@@ -7,7 +7,7 @@ extension Commands {
 
 extension Commands {
     struct Catalogue: CommandCollection, Sendable {
-                
+        
         let list: CommandFactory<CatalogueQueryPayload, [Preview]>
         
         let search: CommandFactory<CatalogueQueryPayload, [Note]>
