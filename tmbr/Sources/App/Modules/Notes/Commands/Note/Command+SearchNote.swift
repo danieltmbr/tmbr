@@ -5,44 +5,42 @@ import Logging
 import Fluent
 import AuthKit
 
-extension Command where Self == PlainCommand<QuoteQueryPayload, [Quote]> {
-    static func searchQuote(
+extension Command where Self == PlainCommand<NoteQueryPayload, [Note]> {
+    static func searchNote(
         database: Database,
-        permission: BasePermissionResolver<QueryBuilder<Quote>>
+        permission: BasePermissionResolver<QueryBuilder<Note>>
     ) -> Self {
         PlainCommand { input in
             guard let term = input.term?.trimmed, !term.isEmpty else {
                 return []
             }
-            let query = Quote
+            let query = Note
                 .query(on: database)
-                .with(\.$note) { note in
-                    note.with(\.$attachment) { attachment in
-                        attachment.with(\.$image)
-                    }
-                }
+                .with(\.$attachment) { $0.with(\.$image) }
+                .with(\.$author)
+                .with(\.$quotes)
                 .filter(Preview.self, \.$parentType ~~? input.types)
                 .group(.or) { group in
                     let sql = "body ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
                     group.filter(.sql(unsafeRaw: sql))
                 }
-                .sort(\Quote.$createdAt, .descending)
+                .sort(\Note.$createdAt, .descending)
             try await permission.grant(query)
             return try await query.all()
         }
     }
 }
 
-extension CommandFactory<QuoteQueryPayload, [Quote]> {
+extension CommandFactory<NoteQueryPayload, [Note]> {
     
-    static var searchQuote: Self {
+    static var searchNote: Self {
         CommandFactory { request in
-            .searchQuote(
+            .searchNote(
                 database: request.application.db,
-                permission: request.permissions.quotes.query
+                permission: request.permissions.notes.query
             )
             .logged(
-                name: "Search Quote",
+                name: "Search Note",
                 logger: request.logger
             )
         }
