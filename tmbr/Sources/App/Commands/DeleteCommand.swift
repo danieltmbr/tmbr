@@ -44,17 +44,4 @@ extension CommandFactory where Output == Void {
             ).logged(logger: request.logger)
         }
     }
-    
-    static func delete<Item>(
-        _ scope: KeyPath<PermissionScopes, PreviewablePermissionScope<Item>.Type>,
-    ) -> CommandFactory<Item.IDValue, Void>
-    where Item: Model & Previewable, Input == Item.IDValue {
-        CommandFactory { request in
-            let s = request.permissions[dynamicMember: scope]
-            return DeleteCommand<Item>(
-                database: request.db,
-                permission: s.delete.eraseOutput()
-            ).logged(logger: request.logger)
-        }
-    }
 }

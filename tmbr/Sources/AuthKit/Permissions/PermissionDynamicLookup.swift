@@ -1,7 +1,7 @@
 import Foundation
 import Vapor
 
-public protocol PermissionScope {}
+public protocol PermissionScope: Sendable {}
 
 @dynamicMemberLookup
 public struct PermissionDynamicLookup<T>: Sendable {
