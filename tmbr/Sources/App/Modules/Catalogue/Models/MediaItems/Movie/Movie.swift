@@ -27,16 +27,16 @@ final class Movie: Model, Previewable, @unchecked Sendable {
     var genre: String?
     
     @Children(for: \.$movie)
-    private var movieNotes: [MovieNote]
+    private(set) var movieNotes: [MovieNote]
     
     @Parent(key: "owner_id")
-    var owner: User
+    private(set) var owner: User
     
     @OptionalParent(key: "post_id")
     var post: Post?
     
     @Parent(key: "preview_id")
-    var preview: Preview
+    fileprivate(set) var preview: Preview
     
     @Field(key: "release_date")
     var releaseDate: Date?
@@ -52,4 +52,52 @@ final class Movie: Model, Previewable, @unchecked Sendable {
     }
     
     var ownerID: UserID { $owner.id }
+    
+    init() {}
+    
+    init(owner: UserID) {
+        self.$owner.id = owner
+    }
+    
+    init(
+        access: Access,
+        cover: ImageID?,
+        director: String?,
+        genre: String?,
+        owner: UserID,
+        releaseDate: Date?,
+        resourceURLs: [String],
+        title: String
+    ) {
+        self.id = id
+        self.access = access
+        self.$cover.id = cover
+        self.director = director
+        self.genre = genre
+        self.$owner.id = owner
+        self.releaseDate = releaseDate
+        self.resourceURLs = resourceURLs
+        self.title = title
+    }
+}
+
+extension PreviewModelMiddleware where M == Movie {
+    
+    static var movie: Self {
+        Self(
+            attach: { previewID, movie in
+                movie.$preview.id = previewID
+            },
+            configure: { preview, movie in
+                preview.primaryInfo = movie.title
+                preview.secondaryInfo = movie.releaseDate?.formatted()
+                preview.$image.id = movie.cover?.id
+                preview.externalLinks = movie.resourceURLs
+            },
+            fetch: { movie, database in
+                try await movie.$preview.load(on: database)
+                return movie.preview
+            }
+        )
+    }
 }
