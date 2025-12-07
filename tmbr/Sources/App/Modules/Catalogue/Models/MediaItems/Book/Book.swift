@@ -71,7 +71,6 @@ final class Book: Model, Previewable, @unchecked Sendable {
     ) {
         self.access = access
         self.author = author
-        self.bookNotes = bookNotes
         self.$cover.id = cover
         self.genre = genre
         self.$owner.id = owner
