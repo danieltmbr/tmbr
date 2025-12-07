@@ -9,8 +9,15 @@ final class SongNote: Model, @unchecked Sendable {
     var id: Int?
 
     @Parent(key: "note_id")
-    var note: Note
+    private(set) var note: Note
     
     @Parent(key: "song_id")
-    var song: Song
+    private(set) var song: Song
+    
+    init() {}
+    
+    init(note: NoteID, song: SongID) {
+        self.$note.id = note
+        self.$song.id = song
+    }
 }

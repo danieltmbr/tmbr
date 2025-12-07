@@ -16,6 +16,7 @@ struct Catalogue: Module {
         moviePermissions: PermissionScope,
         podcastCommands: CommandCollection,
         podcastPermissions: PermissionScope,
+        songCommands: CommandCollection,
         songPermissions: PermissionScope,
         catalogueCommands: CommandCollection
     ) {
@@ -30,6 +31,7 @@ struct Catalogue: Module {
             bookCommands,
             movieCommands,
             podcastCommands,
+            songCommands,
         ]
     }
 
@@ -72,6 +74,7 @@ extension Module where Self == Catalogue {
             moviePermissions: PreviewablePermissionScope.movies,
             podcastCommands: Commands.Podcasts(),
             podcastPermissions: PreviewablePermissionScope.podcasts,
+            songCommands: Commands.Songs(),
             songPermissions: PreviewablePermissionScope.songs,
             catalogueCommands: Commands.Catalogue()
         )

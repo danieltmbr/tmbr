@@ -16,9 +16,6 @@ final class Song: Model, Previewable, @unchecked Sendable {
     
     @Enum(key: "access")
     var access: Access
-
-    @Parent(key: "owner_id")
-    var owner: User
     
     @Field(key: "album")
     var album: String?
@@ -32,27 +29,80 @@ final class Song: Model, Previewable, @unchecked Sendable {
     @Field(key: "genre")
     var genre: String?
     
-    @Field(key: "release_date")
-    var releaseDate: Date?
-
-    @Field(key: "title")
-    var title: String
+    @Parent(key: "owner_id")
+    private(set) var owner: User
 
     @OptionalParent(key: "post_id")
     var post: Post?
     
     @Parent(key: "preview_id")
-    var preview: Preview
+    fileprivate(set) var preview: Preview
+    
+    @Field(key: "release_date")
+    var releaseDate: Date?
     
     @Field(key: "resource_urls")
     var resourceURLs: [String]
 
     @Children(for: \.$song)
-    private var songNotes: [SongNote]
+    private(set) var songNotes: [SongNote]
+    
+    @Field(key: "title")
+    var title: String
     
     var notes: [Note] {
         songNotes.map { $0.$note.wrappedValue }
     }
     
     var ownerID: UserID { $owner.id }
+    
+    init() {}
+    
+    init(owner: UserID) {
+        self.$owner.id = owner
+    }
+    
+    init(
+        access: Access,
+        album: String?,
+        artist: String,
+        artwork: ImageID?,
+        genre: String?,
+        owner: UserID,
+        releaseDate: Date?,
+        resourceURLs: [String],
+        title: String
+    ) {
+        self.access = access
+        
+        self.album = album
+        self.artist = artist
+        self.$artwork.id = artwork
+        self.genre = genre
+        self.$owner.id = owner
+        self.resourceURLs = resourceURLs
+        self.releaseDate = releaseDate
+        self.title = title
+    }
+}
+
+extension PreviewModelMiddleware where M == Song {
+    
+    static var song: Self {
+        Self(
+            attach: { previewID, song in
+                song.$preview.id = previewID
+            },
+            configure: { preview, song in
+                preview.primaryInfo = song.title
+                preview.secondaryInfo = song.artist
+                preview.$image.id = song.artwork?.id
+                preview.externalLinks = song.resourceURLs
+            },
+            fetch: { song, database in
+                try await song.$preview.load(on: database)
+                return song.preview
+            }
+        )
+    }
 }
