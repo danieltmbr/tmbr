@@ -6,30 +6,14 @@ import Fluent
 import AuthKit
 
 struct CreateMovieInput {
-    struct Note {
-        fileprivate let access: Access
-        
-        fileprivate let body: String
-        
-        init(payload: NotePayload) {
-            access = payload.access
-            body = payload.body
-        }
-        
-        fileprivate func validate() throws {
-            guard !body.trimmed.isEmpty else {
-                throw Abort(.badRequest, reason: "Note's content is missing.")
-            }
-        }
-    }
     
     fileprivate let movie: MovieInput
     
-    fileprivate let notes: [Note]
+    fileprivate let notes: [NoteInput]
     
     init(payload: MoviePayload) {
         movie = MovieInput(payload: payload)
-        notes = payload.notes?.map(Note.init) ?? []
+        notes = payload.notes?.map(NoteInput.init) ?? []
     }
     
     fileprivate func validate() throws {
