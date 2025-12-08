@@ -5,37 +5,37 @@ import Logging
 import Fluent
 import AuthKit
 
-struct CreateBookInput {
+struct CreateSongInput {
     
-    fileprivate let book: BookInput
+    fileprivate let song: SongInput
     
     fileprivate let notes: [NoteInput]
     
-    init(payload: BookPayload) {
-        book = BookInput(payload: payload)
+    init(payload: SongPayload) {
+        song = SongInput(payload: payload)
         notes = payload.notes?.map(NoteInput.init) ?? []
     }
     
     fileprivate func validate() throws {
-        try book.validate()
+        try song.validate()
         try notes.forEach { try $0.validate() }
     }
 }
 
-struct CreateBookCommand: Command {
+struct CreateSongCommand: Command {
     
-    typealias Input = CreateBookInput
+    typealias Input = CreateSongInput
     
-    typealias Output = Book
+    typealias Output = Song
     
-    private let configure: BookConfiguration
+    private let configure: SongConfiguration
 
     private let database: Database
         
     private let permission: AuthPermissionResolver<Void>
 
     init(
-        configure: BookConfiguration = .default,
+        configure: SongConfiguration = .default,
         database: Database,
         permission: AuthPermissionResolver<Void>
     ) {
@@ -44,43 +44,43 @@ struct CreateBookCommand: Command {
         self.permission = permission
     }
 
-    func execute(_ input: CreateBookInput) async throws -> Book {
+    func execute(_ input: CreateSongInput) async throws -> Song {
         let user = try await permission.grant()
         try input.validate()
         return try await database.transaction { db in
-            let book = Book(owner: user.userID)
-            configure(book, with: input.book)
-            try await book.save(on: database)
+            let song = Song(owner: user.userID)
+            configure(song, with: input.song)
+            try await song.save(on: database)
             
-            let bookID = try book.requireID()
-            let previewID = try book.preview.requireID()
+            let songID = try song.requireID()
+            let previewID = try song.preview.requireID()
             let notes = input.notes.map { note in
                 Note(
                     attachmentID: previewID,
                     authorID: user.userID,
-                    access: note.access && book.access,
+                    access: note.access && song.access,
                     body: note.body
                 )
             }
             try await notes.create(on: db)
             
-            let bookNotes = try notes.map { note in
-                BookNote(book: bookID, note: try note.requireID())
+            let songNotes = try notes.map { note in
+                SongNote(note: try note.requireID(), song: songID)
             }
-            try await bookNotes.create(on: db)
-            try await book.$bookNotes.load(on: db, include: \.$note)
-            return book
+            try await songNotes.create(on: db)
+            try await song.$songNotes.load(on: db, include: \.$note)
+            return song
         }
     }
 }
 
-extension CommandFactory<CreateBookInput, Book> {
+extension CommandFactory<CreateSongInput, Song> {
 
-    static var createBook: Self {
+    static var createSong: Self {
         CommandFactory { request in
-            CreateBookCommand(
+            CreateSongCommand(
                 database: request.application.db,
-                permission: request.permissions.books.create
+                permission: request.permissions.songs.create
             )
             .logged(logger: request.logger)
         }

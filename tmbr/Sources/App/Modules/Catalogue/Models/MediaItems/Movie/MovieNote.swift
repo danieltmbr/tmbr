@@ -9,8 +9,15 @@ final class MovieNote: Model, @unchecked Sendable {
     var id: Int?
 
     @Parent(key: "moive_id")
-    var movie: Movie
+    private(set) var movie: Movie
 
     @Parent(key: "note_id")
-    var note: Note
+    private(set) var note: Note
+    
+    init() {}
+    
+    init(movie: MovieID, note: NoteID) {
+        self.$movie.id = movie
+        self.$note.id = note
+    }
 }

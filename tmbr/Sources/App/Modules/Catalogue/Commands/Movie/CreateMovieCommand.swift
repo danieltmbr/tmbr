@@ -5,37 +5,37 @@ import Logging
 import Fluent
 import AuthKit
 
-struct CreateBookInput {
+struct CreateMovieInput {
     
-    fileprivate let book: BookInput
+    fileprivate let movie: MovieInput
     
     fileprivate let notes: [NoteInput]
     
-    init(payload: BookPayload) {
-        book = BookInput(payload: payload)
+    init(payload: MoviePayload) {
+        movie = MovieInput(payload: payload)
         notes = payload.notes?.map(NoteInput.init) ?? []
     }
     
     fileprivate func validate() throws {
-        try book.validate()
+        try movie.validate()
         try notes.forEach { try $0.validate() }
     }
 }
 
-struct CreateBookCommand: Command {
+struct CreateMovieCommand: Command {
     
-    typealias Input = CreateBookInput
+    typealias Input = CreateMovieInput
     
-    typealias Output = Book
+    typealias Output = Movie
     
-    private let configure: BookConfiguration
+    private let configure: MovieConfiguration
 
     private let database: Database
         
     private let permission: AuthPermissionResolver<Void>
 
     init(
-        configure: BookConfiguration = .default,
+        configure: MovieConfiguration = .default,
         database: Database,
         permission: AuthPermissionResolver<Void>
     ) {
@@ -44,43 +44,43 @@ struct CreateBookCommand: Command {
         self.permission = permission
     }
 
-    func execute(_ input: CreateBookInput) async throws -> Book {
+    func execute(_ input: CreateMovieInput) async throws -> Movie {
         let user = try await permission.grant()
         try input.validate()
         return try await database.transaction { db in
-            let book = Book(owner: user.userID)
-            configure(book, with: input.book)
-            try await book.save(on: database)
+            let movie = Movie(owner: user.userID)
+            configure(movie, with: input.movie)
+            try await movie.save(on: database)
             
-            let bookID = try book.requireID()
-            let previewID = try book.preview.requireID()
+            let movieID = try movie.requireID()
+            let previewID = try movie.preview.requireID()
             let notes = input.notes.map { note in
                 Note(
                     attachmentID: previewID,
                     authorID: user.userID,
-                    access: note.access && book.access,
+                    access: note.access && movie.access,
                     body: note.body
                 )
             }
             try await notes.create(on: db)
             
-            let bookNotes = try notes.map { note in
-                BookNote(book: bookID, note: try note.requireID())
+            let movieNotes = try notes.map { note in
+                MovieNote(movie: movieID, note: try note.requireID())
             }
-            try await bookNotes.create(on: db)
-            try await book.$bookNotes.load(on: db, include: \.$note)
-            return book
+            try await movieNotes.create(on: db)
+            try await movie.$movieNotes.load(on: db, include: \.$note)
+            return movie
         }
     }
 }
 
-extension CommandFactory<CreateBookInput, Book> {
+extension CommandFactory<CreateMovieInput, Movie> {
 
-    static var createBook: Self {
+    static var createMovie: Self {
         CommandFactory { request in
-            CreateBookCommand(
+            CreateMovieCommand(
                 database: request.application.db,
-                permission: request.permissions.books.create
+                permission: request.permissions.movies.create
             )
             .logged(logger: request.logger)
         }

@@ -30,16 +30,16 @@ final class Podcast: Model, Previewable, @unchecked Sendable {
     var genre: String?
     
     @Parent(key: "owner_id")
-    var owner: User
+    private(set) var owner: User
     
     @Children(for: \.$podcast)
-    private var podcastNotes: [PodcastNote]
+    private(set) var podcastNotes: [PodcastNote]
     
     @OptionalParent(key: "post_id")
     var post: Post?
     
     @Parent(key: "preview_id")
-    var preview: Preview
+    fileprivate(set) var preview: Preview
     
     @Field(key: "release_date")
     var releaseDate: Date?
@@ -58,4 +58,55 @@ final class Podcast: Model, Previewable, @unchecked Sendable {
     }
     
     var ownerID: UserID { $owner.id }
+    
+    init() {}
+    
+    init(owner: UserID) {
+        self.$owner.id = owner
+    }
+    
+    init(
+        access: Access,
+        artwork: ImageID?,
+        episodeNumber: Int?,
+        episodeTitle: String,
+        genre: String?,
+        owner: UserID,
+        releaseDate: Date?,
+        resourceURLs: [String],
+        seasonNumber: Int?,
+        title: String
+    ) {
+        self.access = access
+        self.$artwork.id = artwork
+        self.episodeNumber = episodeNumber
+        self.episodeTitle = episodeTitle
+        self.genre = genre
+        self.$owner.id = owner
+        self.releaseDate = releaseDate
+        self.resourceURLs = resourceURLs
+        self.seasonNumber = seasonNumber
+        self.title = title
+    }
+}
+
+extension PreviewModelMiddleware where M == Podcast {
+    
+    static var podcast: Self {
+        Self(
+            attach: { previewID, podcast in
+                podcast.$preview.id = previewID
+            },
+            configure: { preview, podcast in
+                preview.primaryInfo = podcast.episodeTitle
+                preview.secondaryInfo = podcast.title
+                preview.$image.id = podcast.artwork?.id
+                preview.externalLinks = podcast.resourceURLs
+            },
+            fetch: { podcast, database in
+                try await podcast.$preview.load(on: database)
+                return podcast.preview
+            }
+        )
+    }
 }
