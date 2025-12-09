@@ -1,6 +1,6 @@
 import Vapor
 
-public struct ModuleRegistry {
+public struct ModuleRegistry: Module {
     
     private let configurations: [Configuration]
     
@@ -17,9 +17,9 @@ public struct ModuleRegistry {
         }
     }
     
-    public func boot(_ app: Application) async throws {
+    public func boot(_ routes: any Vapor.RoutesBuilder) async throws {
         for module in modules {
-            try await module.boot(app)
+            try await module.boot(routes)
         }
     }
 }

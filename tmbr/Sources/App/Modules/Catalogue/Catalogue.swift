@@ -5,78 +5,41 @@ import AuthKit
 
 struct Catalogue: Module {
     
-    private let permissions: [PermissionScope]
+    private let commands: CommandCollection
     
-    private let commands: [CommandCollection]
+    private let media: ModuleRegistry
     
     init(
-        bookCommands: CommandCollection,
-        bookPermissions: PermissionScope,
-        movieCommands: CommandCollection,
-        moviePermissions: PermissionScope,
-        podcastCommands: CommandCollection,
-        podcastPermissions: PermissionScope,
-        songCommands: CommandCollection,
-        songPermissions: PermissionScope,
-        catalogueCommands: CommandCollection
+        commands: CommandCollection,
+        media: ModuleRegistry
     ) {
-        self.permissions = [
-            bookPermissions,
-            moviePermissions,
-            podcastPermissions,
-            songPermissions
-        ]
-        self.commands = [
-            catalogueCommands,
-            bookCommands,
-            movieCommands,
-            podcastCommands,
-            songCommands,
-        ]
+        self.commands = commands
+        self.media = media
     }
 
     func configure(_ app: Vapor.Application) async throws {
-        app.migrations.add(CreateBook())
-        app.migrations.add(CreateBookNote())
-        
-        app.migrations.add(CreateMovie())
-        app.migrations.add(CreateMovieNote())
-        
-        app.migrations.add(CreatePodcast())
-        app.migrations.add(CreatePodcastNote())
-        
-        app.migrations.add(CreateSong())
-        app.migrations.add(CreateSongNote())
-
-        app.databases.middleware.use(PreviewModelMiddleware.book, on: .psql)
-        app.databases.middleware.use(PreviewModelMiddleware.movie, on: .psql)
-        app.databases.middleware.use(PreviewModelMiddleware.podcast, on: .psql)
-        app.databases.middleware.use(PreviewModelMiddleware.song, on: .psql)
-        
-        for scope in permissions {
-            try await app.permissions.add(scope: scope)
-        }
-        for collection in commands {
-            try await app.commands.add(collection: collection)
-        }
+        try await app.commands.add(collection: commands)
+        try await media.configure(app)
     }
     
     func boot(_ routes: any Vapor.RoutesBuilder) async throws {
+        try await media.boot(routes)
     }
 }
 
 extension Module where Self == Catalogue {
     static var catalogue: Self {
         Catalogue(
-            bookCommands: Commands.Books(),
-            bookPermissions: PreviewablePermissionScope.books,
-            movieCommands: Commands.Movies(),
-            moviePermissions: PreviewablePermissionScope.movies,
-            podcastCommands: Commands.Podcasts(),
-            podcastPermissions: PreviewablePermissionScope.podcasts,
-            songCommands: Commands.Songs(),
-            songPermissions: PreviewablePermissionScope.songs,
-            catalogueCommands: Commands.Catalogue()
+            commands: Commands.Catalogue(),
+            media: ModuleRegistry(
+                configurations: [],
+                modules: [
+                    .books,
+                    .movies,
+                    .podcasts,
+                    .songs,
+                ]
+            )
         )
     }
 }
