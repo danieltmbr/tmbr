@@ -13,7 +13,7 @@ public actor CommandStorage {
         self.storage = storage
     }
     
-    public func add<C: CommandCollection>(collection: C) {
+    public func add(collection: CommandCollection) {
         storage[String(reflecting: type(of: collection))] = collection
     }
 
