@@ -79,7 +79,7 @@ extension CommandFactory<CreateSongInput, Song> {
     static var createSong: Self {
         CommandFactory { request in
             CreateSongCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.songs.create
             )
             .logged(logger: request.logger)

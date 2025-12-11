@@ -36,7 +36,7 @@ extension CommandFactory<NoteQueryPayload, [Note]> {
     static var searchNote: Self {
         CommandFactory { request in
             .searchNote(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.notes.query
             )
             .logged(

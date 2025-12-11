@@ -42,7 +42,7 @@ extension CommandFactory<Post, Void> {
     static var postNotification: Self {
         CommandFactory { request in
             .notification(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.notifications.post,
                 service: request.application.notificationService
             )
@@ -56,7 +56,7 @@ extension CommandFactory<PostID, Void> {
     static var postNotificationByID: Self {
         CommandFactory { request in
             .notificationByID(
-                database: request.application.db,
+                database: request.commandDB,
                 notify: request.commands.notifications.post
             )
         }

@@ -61,7 +61,7 @@ extension CommandFactory<CreateNoteInput, Note> {
             CreateNoteCommand(
                 attachPermission: request.permissions.notes.attach,
                 createPermission: request.permissions.notes.create,
-                database: request.application.db,
+                database: request.commandDB,
                 fetchPreview: request.commands.previews.fetch
             )
             .logged(logger: request.logger)

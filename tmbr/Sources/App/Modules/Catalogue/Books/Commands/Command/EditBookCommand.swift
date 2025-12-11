@@ -64,7 +64,7 @@ extension CommandFactory<EditBookInput, Book> {
     static var editBook: Self {
         CommandFactory { request in
             EditBookCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.books.edit
             )
             .logged(logger: request.logger)

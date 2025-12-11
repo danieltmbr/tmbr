@@ -58,7 +58,7 @@ extension CommandFactory<PostPayload, Post> {
     static var createPost: Self {
         CommandFactory { request in
             CreatePostCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 logger: request.application.logger,
                 notify: request.commands.notifications.post,
                 permission: request.permissions.posts.create

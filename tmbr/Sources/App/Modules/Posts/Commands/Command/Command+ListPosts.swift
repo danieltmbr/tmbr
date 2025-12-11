@@ -21,7 +21,7 @@ extension CommandFactory<Void, [Post]> {
     
     static var listPosts: Self {
         CommandFactory { request in
-            .listPosts(database: request.db)
+            .listPosts(database: request.commandDB)
             .logged(
                 name: "List posts",
                 logger: request.logger

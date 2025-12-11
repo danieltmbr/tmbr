@@ -1,5 +1,6 @@
 import Foundation
 import Vapor
+import Fluent
 
 public protocol CommandCollection: Sendable {}
 
@@ -25,5 +26,20 @@ public struct CommandDynamicLookup<T: Sendable>: Sendable {
             return try factory(request)
         }
     }
-
+    
+    public func transaction<V>(_ execute: @escaping @Sendable (Self) async throws -> V) async throws -> V
+    where T == Commands {
+        let database: any Database = request.commandDB
+        if database.inTransaction {
+            return try await CommandContext.$database.withValue(database) {
+                try await execute(self)
+            }
+        } else {
+            return try await database.transaction { tx in
+                try await CommandContext.$database.withValue(tx) {
+                    try await execute(self)
+                }
+            }
+        }
+    }
 }

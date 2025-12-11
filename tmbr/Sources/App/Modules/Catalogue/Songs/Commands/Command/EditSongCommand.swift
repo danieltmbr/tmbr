@@ -64,7 +64,7 @@ extension CommandFactory<EditSongInput, Song> {
     static var editSong: Self {
         CommandFactory { request in
             EditSongCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.songs.edit
             )
             .logged(logger: request.logger)

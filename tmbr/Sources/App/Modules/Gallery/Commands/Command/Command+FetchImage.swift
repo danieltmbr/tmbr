@@ -61,7 +61,7 @@ extension CommandFactory<FetchParameters<ImageID>, Image> {
     static var fetchImage: Self {
         CommandFactory { request in
             FetchImageCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 logger: request.application.logger,
                 readPermission: request.permissions.gallery.access,
                 writePermission: request.permissions.gallery.edit

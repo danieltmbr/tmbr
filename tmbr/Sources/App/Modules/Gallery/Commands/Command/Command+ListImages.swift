@@ -26,7 +26,7 @@ extension CommandFactory<Void, [Image]> {
     static var listImages: Self {
         CommandFactory { request in
             .listImages(
-                database: request.db,
+                database: request.commandDB,
                 permission: request.permissions.gallery.list
             )
             .logged(name: "List images", logger: request.logger)

@@ -35,7 +35,7 @@ extension CommandFactory<QuoteQueryPayload, Quote> {
     static var randomQuote: Self {
         CommandFactory { request in
             .randomQuote(
-                database: request.db,
+                database: request.commandDB,
                 permission: request.permissions.quotes.query
             )
             .logged(

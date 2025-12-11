@@ -38,7 +38,7 @@ extension CommandFactory<QuoteQueryPayload, [Quote]> {
     static var searchQuote: Self {
         CommandFactory { request in
             .searchQuote(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.quotes.query
             )
             .logged(

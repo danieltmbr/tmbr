@@ -79,7 +79,7 @@ extension CommandFactory<CreatePodcastInput, Podcast> {
     static var createPodcast: Self {
         CommandFactory { request in
             CreatePodcastCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.podcasts.create
             )
             .logged(logger: request.logger)

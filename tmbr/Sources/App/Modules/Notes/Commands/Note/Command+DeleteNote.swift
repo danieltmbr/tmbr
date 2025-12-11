@@ -25,7 +25,7 @@ extension CommandFactory<NoteID, Void> {
     static var deleteNote: Self {
         CommandFactory { request in
             .deleteNote(
-                database: request.db,
+                database: request.commandDB,
                 permission: request.permissions.notes.delete
             )
             .logged(name: "Delete Note", logger: request.logger)

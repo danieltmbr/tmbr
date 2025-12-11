@@ -5,7 +5,7 @@ import Logging
 import Fluent
 import AuthKit
 
-struct PreviewQueryInput: Decodable, Sendable {
+struct PreviewQueryInput: Sendable {
     let types: Set<String>?
 }
 
@@ -32,7 +32,7 @@ extension CommandFactory<PreviewQueryInput, [Preview]> {
     static var listPreviews: Self {
         CommandFactory { request in
             .listPreviews(
-                database: request.db,
+                database: request.commandDB,
                 permission: request.permissions.previews.query
             )
             .logged(

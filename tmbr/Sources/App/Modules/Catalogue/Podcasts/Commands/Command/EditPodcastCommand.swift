@@ -64,7 +64,7 @@ extension CommandFactory<EditPodcastInput, Podcast> {
     static var editPodcast: Self {
         CommandFactory { request in
             EditPodcastCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.podcasts.edit
             )
             .logged(logger: request.logger)
