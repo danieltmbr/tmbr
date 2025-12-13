@@ -1,6 +1,7 @@
 import Foundation
 import Vapor
 import AuthKit
+import Core
 
 struct BookInput {
     
@@ -17,12 +18,6 @@ struct BookInput {
     fileprivate let resourceURLs: [String]
     
     fileprivate let title: String
-
-    func validate() throws {
-        guard !author.trimmed.isEmpty && !title.trimmed.isEmpty else {
-            throw Abort(.badRequest, reason: "The book author or title is missing")
-        }
-    }
     
     init(
         access: Access,
@@ -55,25 +50,29 @@ struct BookInput {
     }
 }
 
-struct BookConfiguration {
+extension ModelConfiguration where Model == Book, Parameters == BookInput {
     
-    static let `default` = BookConfiguration { book, input in
-        book.access = input.access
-        book.author = input.author
-        book.$cover.id = input.cover
-        book.genre = input.genre
-        book.releaseDate = input.releaseDate
-        book.resourceURLs = input.resourceURLs
-        book.title = input.title
+    static var book: Self {
+        ModelConfiguration { book, input in
+            book.access = input.access
+            book.author = input.author
+            book.$cover.id = input.cover
+            book.genre = input.genre
+            book.releaseDate = input.releaseDate
+            book.resourceURLs = input.resourceURLs
+            book.title = input.title
+        }
     }
-    
-    private let configure: @Sendable (Book, BookInput) -> Void
-    
-    init(configure: @Sendable @escaping (Book, BookInput) -> Void) {
-        self.configure = configure
-    }
-    
-    func callAsFunction(_ book: Book, with input: BookInput) {
-        configure(book, input)
+}
+
+extension Validator where Input == BookInput {
+
+    static var book: Self {
+        Validator { book in
+            guard !book.author.trimmed.isEmpty,
+                  !book.title.trimmed.isEmpty else {
+                throw Abort(.badRequest, reason: "The book author or title is missing")
+            }
+        }
     }
 }
