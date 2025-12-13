@@ -7,7 +7,7 @@ import AuthKit
 extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDValue> {
     
     typealias PermissionInput = (item: Output, reason: FetchReason)
-        
+    
     static func fetch(
         database: Database,
         permission: ErasedPermissionResolver<PermissionInput>,
@@ -22,7 +22,24 @@ extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDVa
             return item
         }
     }
-
+    
+    static func fetch(
+        database: Database,
+        readPermission: BasePermissionResolver<Output>,
+        writePermission: AuthPermissionResolver<Output>
+    ) -> Self {
+        self.fetch(
+            database: database,
+            permission: ErasedPermissionResolver(input: \.item, condition: \.reason) { reason in
+                switch reason {
+                case .read: readPermission.eraseOutput()
+                case .write: writePermission.eraseOutput()
+                }
+            },
+            eagerLoad: { model, db in }
+        )
+    }
+    
     static func fetch<each Property>(
         database: Database,
         readPermission: BasePermissionResolver<Output>,
@@ -39,12 +56,14 @@ extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDVa
                 }
             },
             eagerLoad: { model, db in
-                try await withThrowingTaskGroup(of: Void.self) { group in
-                    repeat group.addTask {
-                        try await model[keyPath: (each properties)].load(on: db)
-                    }
-                    for try await _ in group {}
-                }
+                // FIXME: this crashes the compiler... so fall back to sequential execution
+                //                try await withThrowingTaskGroup(of: Void.self) { group in
+                //                    repeat group.addTask {
+                //                        try await model[keyPath: (each properties)].load(on: db)
+                //                    }
+                //                    for try await _ in group {}
+                //                }
+                try await (repeat model[keyPath: (each properties)].load(on: db))
             }
         )
     }
