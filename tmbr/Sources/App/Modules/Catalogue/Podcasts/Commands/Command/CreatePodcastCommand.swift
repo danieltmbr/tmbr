@@ -5,82 +5,49 @@ import Logging
 import Fluent
 import AuthKit
 
-struct CreatePodcastInput {
-    
-    fileprivate let podcast: PodcastInput
-    
-    fileprivate let notes: [NoteInput]
-    
-    init(payload: PodcastPayload) {
-        podcast = PodcastInput(payload: payload)
-        notes = payload.notes?.map(NoteInput.init) ?? []
-    }
-    
-    fileprivate func validate() throws {
-        try podcast.validate()
-        try notes.forEach { try $0.validate() }
-    }
-}
-
 struct CreatePodcastCommand: Command {
     
-    typealias Input = CreatePodcastInput
+    private let configure: ModelConfiguration<Podcast, PodcastInput>
     
-    typealias Output = Podcast
-    
-    private let configure: PodcastConfiguration
-
     private let database: Database
-        
+    
     private let permission: AuthPermissionResolver<Void>
-
+    
+    private let validate: Validator<PodcastInput>
+    
     init(
-        configure: PodcastConfiguration = .default,
+        configure: ModelConfiguration<Podcast, PodcastInput>,
         database: Database,
-        permission: AuthPermissionResolver<Void>
+        permission: AuthPermissionResolver<Void>,
+        validate: Validator<PodcastInput>
     ) {
         self.configure = configure
         self.database = database
         self.permission = permission
+        self.validate = validate
     }
-
-    func execute(_ input: CreatePodcastInput) async throws -> Podcast {
+    
+    func execute(_ input: PodcastInput) async throws -> Podcast {
         let user = try await permission.grant()
-        try input.validate()
-        return try await database.transaction { db in
-            let podcast = Podcast(owner: user.userID)
-            configure(podcast, with: input.podcast)
-            try await podcast.save(on: database)
-            
-            let podcastID = try podcast.requireID()
-            let previewID = try podcast.preview.requireID()
-            let notes = input.notes.map { note in
-                Note(
-                    attachmentID: previewID,
-                    authorID: user.userID,
-                    access: note.access && podcast.access,
-                    body: note.body
-                )
-            }
-            try await notes.create(on: db)
-            
-            let podcastNotes = try notes.map { note in
-                PodcastNote(note: try note.requireID(), podcast: podcastID)
-            }
-            try await podcastNotes.create(on: db)
-            try await podcast.$podcastNotes.load(on: db, include: \.$note)
-            return podcast
-        }
+        try validate(input)
+        
+        var podcast = Podcast(owner: user.userID)
+        configure(&podcast, with: input)
+        try await podcast.save(on: database)
+        
+        return podcast
     }
 }
 
-extension CommandFactory<CreatePodcastInput, Podcast> {
-
+extension CommandFactory<PodcastInput, Podcast> {
+    
     static var createPodcast: Self {
         CommandFactory { request in
             CreatePodcastCommand(
+                configure: .podcast,
                 database: request.commandDB,
-                permission: request.permissions.podcasts.create
+                permission: request.permissions.podcasts.create,
+                validate: .podcast
             )
             .logged(logger: request.logger)
         }

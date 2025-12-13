@@ -1,6 +1,7 @@
 import Foundation
 import Vapor
 import AuthKit
+import Core
 
 struct PodcastInput {
     
@@ -21,13 +22,6 @@ struct PodcastInput {
     fileprivate let seasonNumber: Int?
     
     fileprivate let title: String
-
-    func validate() throws {
-        guard !title.trimmed.isEmpty,
-              !episodeTitle.trimmed.isEmpty else {
-            throw Abort(.badRequest, reason: "The podcast title or episode title is missing")
-        }
-    }
     
     init(
         access: Access,
@@ -66,27 +60,31 @@ struct PodcastInput {
     }
 }
 
-struct PodcastConfiguration {
+extension ModelConfiguration where Model == Podcast, Parameters == PodcastInput {
     
-    static let `default` = PodcastConfiguration { podcast, input in
-        podcast.access = input.access
-        podcast.$artwork.id = input.artwork
-        podcast.episodeNumber = input.episodeNumber
-        podcast.episodeTitle = input.episodeTitle
-        podcast.genre = input.genre
-        podcast.releaseDate = input.releaseDate
-        podcast.resourceURLs = input.resourceURLs
-        podcast.seasonNumber = input.seasonNumber
-        podcast.title = input.title
+    static var podcast: Self {
+        ModelConfiguration { podcast, input in
+            podcast.access = input.access
+            podcast.$artwork.id = input.artwork
+            podcast.episodeNumber = input.episodeNumber
+            podcast.episodeTitle = input.episodeTitle
+            podcast.genre = input.genre
+            podcast.releaseDate = input.releaseDate
+            podcast.resourceURLs = input.resourceURLs
+            podcast.seasonNumber = input.seasonNumber
+            podcast.title = input.title
+        }
     }
+}
+
+extension Validator where Input == PodcastInput {
     
-    private let configure: @Sendable (Podcast, PodcastInput) -> Void
-    
-    init(configure: @Sendable @escaping (Podcast, PodcastInput) -> Void) {
-        self.configure = configure
-    }
-    
-    func callAsFunction(_ podcast: Podcast, with input: PodcastInput) {
-        configure(podcast, input)
+    static var podcast: Self {
+        Validator { podcast in
+            guard !podcast.title.trimmed.isEmpty,
+                  !podcast.episodeTitle.trimmed.isEmpty else {
+                throw Abort(.badRequest, reason: "The podcast title or episode title is missing")
+            }
+        }
     }
 }

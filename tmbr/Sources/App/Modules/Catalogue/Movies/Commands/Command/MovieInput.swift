@@ -1,6 +1,7 @@
 import Foundation
 import Vapor
 import AuthKit
+import Core
 
 struct MovieInput {
     
@@ -17,12 +18,6 @@ struct MovieInput {
     fileprivate let resourceURLs: [String]
     
     fileprivate let title: String
-
-    func validate() throws {
-        guard !title.trimmed.isEmpty else {
-            throw Abort(.badRequest, reason: "The movie author or title is missing")
-        }
-    }
     
     init(
         access: Access,
@@ -55,25 +50,29 @@ struct MovieInput {
     }
 }
 
-struct MovieConfiguration {
+extension ModelConfiguration where Model == Movie, Parameters == MovieInput {
     
-    static let `default` = MovieConfiguration { movie, input in
-        movie.access = input.access
-        movie.$cover.id = input.cover
-        movie.director = input.director
-        movie.genre = input.genre
-        movie.releaseDate = input.releaseDate
-        movie.resourceURLs = input.resourceURLs
-        movie.title = input.title
+    static var movie: Self {
+        ModelConfiguration { movie, input in
+            movie.access = input.access
+            movie.$cover.id = input.cover
+            movie.director = input.director
+            movie.genre = input.genre
+            movie.releaseDate = input.releaseDate
+            movie.resourceURLs = input.resourceURLs
+            movie.title = input.title
+        }
     }
+}
+
+extension Validator where Input == MovieInput {
     
-    private let configure: @Sendable (Movie, MovieInput) -> Void
-    
-    init(configure: @Sendable @escaping (Movie, MovieInput) -> Void) {
-        self.configure = configure
-    }
-    
-    func callAsFunction(_ movie: Movie, with input: MovieInput) {
-        configure(movie, input)
+    static var movie: Self {
+        Validator { movie in
+            guard !movie.title.trimmed.isEmpty else {
+                throw Abort(.badRequest, reason: "The movie author or title is missing")
+            }
+
+        }
     }
 }

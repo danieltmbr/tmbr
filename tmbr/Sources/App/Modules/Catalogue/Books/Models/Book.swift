@@ -20,9 +20,6 @@ final class Book: Model, Previewable, @unchecked Sendable {
     @Field(key: "artist")
     var author: String
     
-    @Children(for: \.$book)
-    var bookNotes: [BookNote]
-    
     @OptionalParent(key: "cover_id")
     var cover: Image?
 
@@ -46,10 +43,6 @@ final class Book: Model, Previewable, @unchecked Sendable {
 
     @Field(key: "title")
     var title: String
-        
-    var notes: [Note] {
-        bookNotes.map { $0.$note.wrappedValue }
-    }
     
     var ownerID: UserID { $owner.id }
     

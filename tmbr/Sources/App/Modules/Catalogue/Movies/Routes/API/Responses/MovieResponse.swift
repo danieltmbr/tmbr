@@ -59,6 +59,7 @@ struct MovieResponse: Encodable, Sendable {
     init(
         movie: Movie,
         baseURL: String,
+        notes: [Note],
         platform: Platform<Movie> = .all
     ) {
         self.init(
@@ -67,7 +68,7 @@ struct MovieResponse: Encodable, Sendable {
             cover: movie.cover.map { ImageResponse(image: $0, baseURL: baseURL) },
             director: movie.director,
             genre: movie.genre,
-            notes: movie.notes.map { NoteResponse(note: $0, baseURL: baseURL) },
+            notes: notes.map { NoteResponse(note: $0, baseURL: baseURL) },
             owner: UserResponse(user: movie.owner),
             preview: PreviewResponse(preview: movie.preview, baseURL: baseURL),
             post: movie.post.map { PostResponse(post: $0, baseURL: baseURL) },

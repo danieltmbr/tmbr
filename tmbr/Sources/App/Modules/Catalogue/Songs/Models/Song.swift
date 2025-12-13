@@ -43,16 +43,9 @@ final class Song: Model, Previewable, @unchecked Sendable {
     
     @Field(key: "resource_urls")
     var resourceURLs: [String]
-
-    @Children(for: \.$song)
-    private(set) var songNotes: [SongNote]
     
     @Field(key: "title")
     var title: String
-    
-    var notes: [Note] {
-        songNotes.map { $0.$note.wrappedValue }
-    }
     
     var ownerID: UserID { $owner.id }
     

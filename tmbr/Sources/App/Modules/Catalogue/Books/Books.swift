@@ -19,7 +19,6 @@ struct Books: Module {
     
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(CreateBook())
-        app.migrations.add(CreateBookNote())
         app.databases.middleware.use(PreviewModelMiddleware.book, on: .psql)
         
         try await app.permissions.add(scope: permissions)

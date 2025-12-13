@@ -59,6 +59,7 @@ struct BookResponse: Encodable, Sendable {
     init(
         book: Book,
         baseURL: String,
+        notes: [Note],
         platform: Platform<Book> = .all
     ) {
         self.init(
@@ -67,7 +68,7 @@ struct BookResponse: Encodable, Sendable {
             author: book.author,
             cover: book.cover.map { ImageResponse(image: $0, baseURL: baseURL) },
             genre: book.genre,
-            notes: book.notes.map { NoteResponse(note: $0, baseURL: baseURL) },
+            notes: notes.map { NoteResponse(note: $0, baseURL: baseURL) },
             owner: UserResponse(user: book.owner),
             preview: PreviewResponse(preview: book.preview, baseURL: baseURL),
             post: book.post.map { PostResponse(post: $0, baseURL: baseURL) },

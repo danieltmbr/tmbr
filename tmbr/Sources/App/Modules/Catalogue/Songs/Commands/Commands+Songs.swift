@@ -9,7 +9,7 @@ extension Commands {
     
     struct Songs: CommandCollection, Sendable {
         
-        let create: CommandFactory<CreateSongInput, Song>
+        let create: CommandFactory<SongInput, Song>
         
         let delete: CommandFactory<SongID, Void>
         
@@ -18,7 +18,7 @@ extension Commands {
         let fetch: CommandFactory<FetchParameters<SongID>, Song>
         
         init(
-            create: CommandFactory<CreateSongInput, Song> = .createSong,
+            create: CommandFactory<SongInput, Song> = .createSong,
             delete: CommandFactory<SongID, Void> = .delete(\.songs),
             edit: CommandFactory<EditSongInput, Song> = .editSong,
             fetch: CommandFactory<FetchParameters<SongID>, Song> = .fetchSong

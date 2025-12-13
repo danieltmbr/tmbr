@@ -9,7 +9,7 @@ extension Commands {
     
     struct Movies: CommandCollection, Sendable {
         
-        let create: CommandFactory<CreateMovieInput, Movie>
+        let create: CommandFactory<MovieInput, Movie>
         
         let delete: CommandFactory<MovieID, Void>
         
@@ -18,7 +18,7 @@ extension Commands {
         let fetch: CommandFactory<FetchParameters<MovieID>, Movie>
         
         init(
-            create: CommandFactory<CreateMovieInput, Movie> = .createMovie,
+            create: CommandFactory<MovieInput, Movie> = .createMovie,
             delete: CommandFactory<MovieID, Void> = .delete(\.movies),
             edit: CommandFactory<EditMovieInput, Movie> = .editMovie,
             fetch: CommandFactory<FetchParameters<MovieID>, Movie> = .fetchMovie

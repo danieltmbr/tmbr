@@ -9,7 +9,7 @@ extension Commands {
     
     struct Books: CommandCollection, Sendable {
         
-        let create: CommandFactory<CreateBookInput, Book>
+        let create: CommandFactory<BookInput, Book>
         
         let delete: CommandFactory<BookID, Void>
         
@@ -18,7 +18,7 @@ extension Commands {
         let fetch: CommandFactory<FetchParameters<BookID>, Book>
         
         init(
-            create: CommandFactory<CreateBookInput, Book> = .createBook,
+            create: CommandFactory<BookInput, Book> = .createBook,
             delete: CommandFactory<BookID, Void> = .delete(\.books),
             edit: CommandFactory<EditBookInput, Book> = .editBook,
             fetch: CommandFactory<FetchParameters<BookID>, Book> = .fetchBook
