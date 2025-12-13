@@ -5,82 +5,49 @@ import Logging
 import Fluent
 import AuthKit
 
-struct CreateMovieInput {
-    
-    fileprivate let movie: MovieInput
-    
-    fileprivate let notes: [NoteInput]
-    
-    init(payload: MoviePayload) {
-        movie = MovieInput(payload: payload)
-        notes = payload.notes?.map(NoteInput.init) ?? []
-    }
-    
-    fileprivate func validate() throws {
-        try movie.validate()
-        try notes.forEach { try $0.validate() }
-    }
-}
-
 struct CreateMovieCommand: Command {
     
-    typealias Input = CreateMovieInput
+    private let configure: ModelConfiguration<Movie, MovieInput>
     
-    typealias Output = Movie
-    
-    private let configure: MovieConfiguration
-
     private let database: Database
-        
+    
     private let permission: AuthPermissionResolver<Void>
-
+    
+    private let validate: Validator<MovieInput>
+    
     init(
-        configure: MovieConfiguration = .default,
+        configure: ModelConfiguration<Movie, MovieInput>,
         database: Database,
-        permission: AuthPermissionResolver<Void>
+        permission: AuthPermissionResolver<Void>,
+        validate: Validator<MovieInput>
     ) {
         self.configure = configure
         self.database = database
         self.permission = permission
+        self.validate = validate
     }
-
-    func execute(_ input: CreateMovieInput) async throws -> Movie {
+    
+    func execute(_ input: MovieInput) async throws -> Movie {
         let user = try await permission.grant()
-        try input.validate()
-        return try await database.transaction { db in
-            let movie = Movie(owner: user.userID)
-            configure(movie, with: input.movie)
-            try await movie.save(on: database)
-            
-            let movieID = try movie.requireID()
-            let previewID = try movie.preview.requireID()
-            let notes = input.notes.map { note in
-                Note(
-                    attachmentID: previewID,
-                    authorID: user.userID,
-                    access: note.access && movie.access,
-                    body: note.body
-                )
-            }
-            try await notes.create(on: db)
-            
-            let movieNotes = try notes.map { note in
-                MovieNote(movie: movieID, note: try note.requireID())
-            }
-            try await movieNotes.create(on: db)
-            try await movie.$movieNotes.load(on: db, include: \.$note)
-            return movie
-        }
+        try validate(input)
+        
+        var movie = Movie(owner: user.userID)
+        configure(&movie, with: input)
+        try await movie.save(on: database)
+        
+        return movie
     }
 }
 
-extension CommandFactory<CreateMovieInput, Movie> {
-
+extension CommandFactory<MovieInput, Movie> {
+    
     static var createMovie: Self {
         CommandFactory { request in
             CreateMovieCommand(
+                configure: .movie,
                 database: request.commandDB,
-                permission: request.permissions.movies.create
+                permission: request.permissions.movies.create,
+                validate: .movie
             )
             .logged(logger: request.logger)
         }
