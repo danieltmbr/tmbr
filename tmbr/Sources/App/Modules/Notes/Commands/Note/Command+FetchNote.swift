@@ -50,10 +50,14 @@ extension CommandFactory<QueryNotesInput, [Note]> {
 
 extension CommandResolver where Input == QueryNotesInput {
     
-    func callAsFunction<Item: Previewable>(for item: Item) async throws -> Output {
+    func callAsFunction(id: Int, of type: String) async throws -> Output {
         try await callAsFunction(QueryNotesInput(
-            ownerID: item.requireID(),
-            ownerType: Item.previewType)
-        )
+            ownerID: id,
+            ownerType: type
+        ))
+    }
+    
+    func callAsFunction<Item: Previewable>(for item: Item) async throws -> Output {
+        try await callAsFunction(id: item.requireID(), of: Item.previewType)
     }
 }

@@ -1,0 +1,36 @@
+#extend("Shared/page"):
+    
+    #export("main"):
+        <article>
+            <header>
+                #import("details-header")
+            </header>
+            
+            #if(post):
+            <section class="post">
+                <h3>Post</h3>
+                <a href="/post/#(post.id)">
+                    <span class="post-id">#(post.id).</span>
+                    <span class="post-title">#(post.title)</span>
+                    <span class="post-date published-date">#(post.publishDate)</span>
+                </a>
+            </section>
+            #endif
+                    
+            #if(count(notes) > 0):
+            <section>
+                <h3>Notes</h3>
+                #for(n in notes):
+                <article class="note">
+                    <p class="published-date">#(n.created)</p>
+                    #unsafeHTML(n.body)
+                </article>
+                #endfor
+            </section>
+            #endif
+
+            <a href="/">#extend("Shared/signature")</a>
+        </article>
+    #endexport
+
+#endextend

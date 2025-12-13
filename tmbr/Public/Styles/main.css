@@ -46,7 +46,7 @@ body {
     overflow: auto;
     font-size: 1.7rem;
     letter-spacing: 0.01em;
-    line-height: 150%;
+    line-height: 180%;
 }
 
 /* 
@@ -67,7 +67,8 @@ main {
     min-height: 0;
 }
 
-main > section {
+main > section,
+main > article {
     width: 100%;
     max-width: 600px;
     
@@ -100,16 +101,16 @@ main > section > ul > a:hover > li {
     color: LinkText !important;
 }
 
-main > section > ul > a > li > span.post-id {
+main section a span.post-id {
     text-align: right;
 }
 
-main > section > ul > a > li > span.post-title {
+main section a span.post-title {
     text-decoration: underline;
     text-decoration-thickness: 1px;
 }
 
-main > section > ul > a > li > span.post-date {
+main section a span.post-date {
     text-align: right;
 }
 
@@ -123,7 +124,7 @@ body > main > svg {
     margin-bottom: 20px;
 }
 
-main > section > article {
+main article {
     display: flex;
     flex-direction: column;
     margin: 0;
@@ -131,49 +132,49 @@ main > section > article {
 }
 
 main > section > h1,
-main > section > article > h1 {
+main article h1 {
     font-size: 3.2rem;
     line-height: normal;
 }
 
-main > section > article > h4 {
+main article h4 {
     margin-block-end: 0.3em;
 }
 
-main > section > article > p {
+main article p {
     margin: 0.5em 0;
 }
 
-main > section > article sup {
+main article sup {
     line-height: 0;
     font-size: 1.3rem;
 }
 
-main > section > article > p span.reference {
+main article p span.reference {
     font-size: 1.3rem;
 }
 
-main > section > article  li {
+main article li {
     padding: 0 0;
 }
 
-main > section > article  li > p {
+main article li p {
     margin-block-start: 0.5em;
     margin-block-end: 0.5em;
 }
 
-main > section > article > blockquote {
+main article blockquote {
     font-style: italic;
     font-size: 1.25em;
     line-height: 160%;
     opacity: 0.8;
 }
 
-main > section > article > a {
+main article a {
     color: inherit;
 }
 
-main > section > article > table {
+main article table {
     background: var(--table-background-color);
     border-radius: 12px;
     font-size: 0.8em;
@@ -181,30 +182,30 @@ main > section > article > table {
     margin: 20px 0px;
 }
 
-main > section > article > table > thead th {
+main article table > thead th {
     background: var(--table-header-background-color);
     padding: 8px;
 }
 
-main > section > article > table > thead th:first-child {
+main article table > thead th:first-child {
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
 }
 
-main > section > article > table > thead th:last-child {
+main article table > thead th:last-child {
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
 }
 
-main > section > article > table td {
+main article table td {
     padding: 4px 6px;
 }
 
-main > section > article > ul {
+main article ul {
     margin: 0.5em 0;
 }
 
-main > section > article img {
+main article img {
     max-width: 100%;
 }
 
@@ -213,8 +214,110 @@ main > a > svg {
     color: inherit;
 }
 
-main > section > article > a > svg.signature {
+main article > a > svg.signature {
     transform: translateX(-16px);
+}
+
+main article > header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 16px;
+    width: 100%;
+    margin: 1em 0 2em 0;
+}
+
+main article > header .details {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    line-height: 150%;
+}
+
+main article > header h1 {
+    margin: 0;
+}
+
+main article > header h3 {
+    margin: 0.25em 0;
+}
+
+main article > header p {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+main article > header ul {
+    margin: 0.5em 0 0 0;
+    padding: 0;
+    font-size: 1.4rem;
+}
+
+main article > header ul > li {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+}
+
+main article > header ul > li + li::before {
+    content: " · ";
+}
+
+main article > header ul > li > a:hover {
+    color: LinkText !important;
+}
+
+main article > header .artwork {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+main article > header .artwork > img {
+    max-width: 130px;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+    border-radius: 5px;
+}
+
+main article section.post {
+    padding-bottom: 30px;
+}
+
+main article section.post a {
+    text-decoration: none;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.4rem;
+    row-gap: 0;
+    align-items: baseline;
+}
+
+main article section.post a:hover {
+    color: LinkText !important;
+}
+
+main section.quotes article * {
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+}
+
+main section.quotes article blockquote {
+    height: auto;
+    margin: 20px 0;
+    font-size: 1.5em;
+}
+
+main section.quotes article blockquote * {
+    height: auto;
+}
+
+article.note > p.published-date {
+    margin: 0;
 }
 
 ol.instructions {
@@ -386,12 +489,12 @@ p.published-date {
         text-align: left;
     }
     
-    main > section > article > blockquote {
+    main article > blockquote {
         margin-inline-start: 20px;
         margin-inline-end: 20px;
     }
     
-    main > section > article > a > svg.signature {
+    main article > a > svg.signature {
         transform: translateX(-12px);
     }
 }

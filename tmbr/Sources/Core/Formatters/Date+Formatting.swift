@@ -34,6 +34,20 @@ public struct DateFormat: Sendable {
 #endif
     }
     
+    public static let releaseDate = Self { date in
+#if os(Linux)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .long
+        dateFormatter.timeStyle = .none
+        return dateFormatter.string(from: date)
+#else
+        return date.formatted(
+            date: .long,
+            time: .omitted
+        )
+#endif
+    }
+    
     public static let rfc822 = Self { date in
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")

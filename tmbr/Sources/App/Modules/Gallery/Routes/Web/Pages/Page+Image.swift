@@ -26,19 +26,43 @@ struct ImageViewModel: Encodable, Sendable {
         key: String,
         thumbnailKey: String,
         alt: String,
-        size: CGSize,
-        uploadedAt: String,
-        baseURL: String
+        url: String,
+        thumbnailURL: String,
+        width: Int,
+        height: Int,
+        uploadedAt: String
     ) {
         self.id = id
         self.key = key
         self.thumbnailKey = thumbnailKey
         self.alt = alt
-        self.width = Int(size.width)
-        self.height = Int(size.height)
+        self.url = url
+        self.thumbnailURL = thumbnailURL
+        self.width = width
+        self.height = height
         self.uploadedAt = uploadedAt
-        self.url = "\(baseURL)/gallery/data/\(key)"
-        self.thumbnailURL = "\(baseURL)/gallery/data/\(thumbnailKey)"
+    }
+    
+    init(
+        id: ImageID,
+        key: String,
+        thumbnailKey: String,
+        alt: String,
+        size: CGSize,
+        uploadedAt: String,
+        baseURL: String
+    ) {
+        self.init(
+            id: id,
+            key: key,
+            thumbnailKey: thumbnailKey,
+            alt: alt,
+            url: "\(baseURL)/gallery/data/\(key)",
+            thumbnailURL: "\(baseURL)/gallery/data/\(thumbnailKey)",
+            width: Int(size.width),
+            height: Int(size.height),
+            uploadedAt: uploadedAt
+        )
     }
     
     init(
