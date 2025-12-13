@@ -64,7 +64,7 @@ extension CommandFactory<EditMovieInput, Movie> {
     static var editMovie: Self {
         CommandFactory { request in
             EditMovieCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.movies.edit
             )
             .logged(logger: request.logger)

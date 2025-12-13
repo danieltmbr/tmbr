@@ -35,7 +35,7 @@ extension CommandFactory<ImageID, Void> {
     static var deleteImage: Self {
         CommandFactory { request in
             .deleteImage(
-                database: request.db,
+                database: request.commandDB,
                 logger: request.logger,
                 permission: request.permissions.gallery.delete,
                 storage: request.application.imageService!

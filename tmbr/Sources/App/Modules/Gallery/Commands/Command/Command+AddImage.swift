@@ -57,7 +57,7 @@ extension CommandFactory<ImageUploadPayload, Image> {
     static var addImage: Self {
         CommandFactory { request in
             AddImageCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 logger: request.application.logger,
                 permission: request.permissions.gallery.create,
                 storage: request.application.imageService!

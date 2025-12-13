@@ -53,7 +53,7 @@ extension CommandFactory<EditNoteInput, Note> {
     static var editNote: Self {
         CommandFactory { request in
             EditNoteCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.notes.edit
             )
             .logged(logger: request.logger)

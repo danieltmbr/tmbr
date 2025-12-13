@@ -32,7 +32,7 @@ extension CommandFactory<QuoteQueryPayload, [Quote]> {
     static var listQuotes: Self {
         CommandFactory { request in
             .listQuotes(
-                database: request.db,
+                database: request.commandDB,
                 permission: request.permissions.quotes.query
             )
             .logged(

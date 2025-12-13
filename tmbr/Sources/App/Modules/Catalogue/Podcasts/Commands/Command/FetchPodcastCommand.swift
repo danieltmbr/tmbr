@@ -23,7 +23,7 @@ extension CommandFactory<FetchParameters<PodcastID>, Podcast> {
     static var fetchPodcast: Self {
         CommandFactory { request in
             FetchPodcastCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 readPermission: request.permissions.podcasts.access,
                 writePermission: request.permissions.podcasts.edit
             )

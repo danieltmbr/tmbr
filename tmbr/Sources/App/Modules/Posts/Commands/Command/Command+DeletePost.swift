@@ -26,7 +26,7 @@ extension CommandFactory<PostID, Void> {
     static var deletePost: Self {
         CommandFactory { request in
             .deletePost(
-                database: request.db,
+                database: request.commandDB,
                 logger: request.logger,
                 permission: request.permissions.posts.delete
             )

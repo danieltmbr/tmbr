@@ -27,7 +27,7 @@ extension CommandFactory<PushNotification, Void> {
     static var send: Self {
         CommandFactory { request in
             .send(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.notifications.generic,
                 service: request.application.notificationService
             )

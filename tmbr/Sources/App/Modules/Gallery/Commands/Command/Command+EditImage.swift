@@ -54,7 +54,7 @@ extension CommandFactory<EditImageInput, Image> {
     static var editImage: Self {
         CommandFactory { request in
             EditImageCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 logger: request.application.logger,
                 permission: request.permissions.gallery.edit,
                 storage: request.application.imageService!

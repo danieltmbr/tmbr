@@ -79,7 +79,7 @@ extension CommandFactory<CreateMovieInput, Movie> {
     static var createMovie: Self {
         CommandFactory { request in
             CreateMovieCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 permission: request.permissions.movies.create
             )
             .logged(logger: request.logger)

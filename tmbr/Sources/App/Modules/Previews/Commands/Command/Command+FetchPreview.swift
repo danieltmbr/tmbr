@@ -57,7 +57,7 @@ extension CommandFactory<FetchParameters<PreviewID>, Preview> {
     static var fetchPreview: Self {
         CommandFactory { request in
             FetchPreviewCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 readPermission: request.permissions.previews.access,
                 writePermission: request.permissions.previews.edit
             )

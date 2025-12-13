@@ -23,7 +23,7 @@ extension CommandFactory<FetchParameters<MovieID>, Movie> {
     static var fetchMovie: Self {
         CommandFactory { request in
             FetchMovieCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 readPermission: request.permissions.movies.access,
                 writePermission: request.permissions.movies.edit
             )

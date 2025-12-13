@@ -54,7 +54,7 @@ extension CommandFactory<EditPostPayload, Post> {
     static var editPost: Self {
         CommandFactory { request in
             EditPostCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 logger: request.application.logger,
                 notify: request.commands.notifications.post,
                 permission: request.permissions.posts.edit

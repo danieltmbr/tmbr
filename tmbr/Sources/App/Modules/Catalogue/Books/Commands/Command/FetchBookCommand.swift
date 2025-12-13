@@ -23,7 +23,7 @@ extension CommandFactory<FetchParameters<BookID>, Book> {
     static var fetchBook: Self {
         CommandFactory { request in
             FetchBookCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 readPermission: request.permissions.books.access,
                 writePermission: request.permissions.books.edit
             )

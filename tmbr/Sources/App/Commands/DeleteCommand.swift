@@ -39,7 +39,7 @@ extension CommandFactory where Output == Void {
             let s = request.permissions[dynamicMember: scope]
             let p = s[dynamicMember: permission]
             return DeleteCommand<Item>(
-                database: request.db,
+                database: request.commandDB,
                 permission: p.eraseOutput()
             ).logged(logger: request.logger)
         }
@@ -52,7 +52,7 @@ extension CommandFactory where Output == Void {
         CommandFactory { request in
             let s = request.permissions[dynamicMember: scope]
             return DeleteCommand<Item>(
-                database: request.db,
+                database: request.commandDB,
                 permission: s.delete.eraseOutput()
             ).logged(logger: request.logger)
         }

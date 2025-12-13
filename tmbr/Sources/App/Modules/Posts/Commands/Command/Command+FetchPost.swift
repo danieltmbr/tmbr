@@ -62,7 +62,7 @@ extension CommandFactory<FetchParameters<PostID>, Post> {
     static var fetchPost: Self {
         CommandFactory { request in
             FetchPostCommand(
-                database: request.application.db,
+                database: request.commandDB,
                 logger: request.application.logger,
                 readPermission: request.permissions.posts.access,
                 writePermission: request.permissions.posts.edit
