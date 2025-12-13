@@ -57,12 +57,12 @@ extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDVa
             },
             eagerLoad: { model, db in
                 // FIXME: this crashes the compiler... so fall back to sequential execution
-                //                try await withThrowingTaskGroup(of: Void.self) { group in
-                //                    repeat group.addTask {
-                //                        try await model[keyPath: (each properties)].load(on: db)
-                //                    }
-                //                    for try await _ in group {}
-                //                }
+                // try await withThrowingTaskGroup(of: Void.self) { group in
+                //     repeat group.addTask {
+                //         try await model[keyPath: (each properties)].load(on: db)
+                //     }
+                //     for try await _ in group {}
+                // }
                 try await (repeat model[keyPath: (each properties)].load(on: db))
             }
         )
