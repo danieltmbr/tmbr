@@ -25,25 +25,32 @@ struct PreviewResponse: Content, Sendable {
     
     private let source: Source
     
+    init(
+        primaryInfo: String,
+        secondaryInfo: String?,
+        image: ImageResponse?,
+        resources: [String],
+        source: Source
+    ) {
+        self.primaryInfo = primaryInfo
+        self.secondaryInfo = secondaryInfo
+        self.image = image
+        self.resources = resources
+        self.source = source
+    }
+    
     init(preview: Preview, baseURL: String) {
-        self.primaryInfo = preview.primaryInfo
-        self.secondaryInfo = preview.secondaryInfo
-        self.image = preview.image.map { image in
-            ImageResponse(
-                id: image.id,
-                alt: image.alt,
-                // TODO: Align image URL assembly across project
-                // https://github.com/danieltmbr/tmbr/issues/56
-                url: baseURL + "/gallery/data/\(image.thumbnailKey)",
-                thumbnailUrl: baseURL + "/gallery/data/\(image.thumbnailKey)",
-                size: CGSize(width: image.size.width, height: image.size.height),
-                uploadedAt: image.uploadedAt ?? .now
+        self.init(
+            primaryInfo: preview.primaryInfo,
+            secondaryInfo: preview.secondaryInfo,
+            image: preview.image.map { image in
+                ImageResponse(image: image, baseURL: baseURL)
+            },
+            resources: preview.externalLinks,
+            source: Source(
+                id: preview.parentID,
+                type: preview.parentType
             )
-        }
-        self.resources = preview.externalLinks
-        self.source = Source(
-            id: preview.parentID,
-            type: preview.parentType
         )
     }
 }
