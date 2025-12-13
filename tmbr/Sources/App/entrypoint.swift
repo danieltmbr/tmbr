@@ -6,8 +6,8 @@ import Core
 
 typealias Command = Core.Command
 typealias Commands = Core.Commands
-
 typealias Page = Core.Page
+typealias Validator = Core.Validator
 
 @main
 enum Entrypoint {
