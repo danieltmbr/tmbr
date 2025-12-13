@@ -50,9 +50,19 @@ extension Permission<QueryBuilder<Note>> {
 
 struct AttachNotePermissionInput: Sendable {
     
-    let note: Note
+    let notes: [Note]
     
     let preview: Preview
+    
+    init(notes: [Note], preview: Preview) {
+        self.notes = notes
+        self.preview = preview
+    }
+    
+    init(note: Note, preview: Preview) {
+        self.notes = [note]
+        self.preview = preview
+    }
 }
 
 extension AuthPermission<AttachNotePermissionInput> {
@@ -61,9 +71,10 @@ extension AuthPermission<AttachNotePermissionInput> {
         AuthPermission<AttachNotePermissionInput>(
             "Only the item's authors can add notes to it."
         ) { user, input in
-            input.note.attachment.id == input.preview.id &&
-            input.preview.parentOwner.id == user.userID &&
-            input.note.author.id == user.userID
+            let authorIDs = Set(input.notes.compactMap(\.author.id))
+            guard authorIDs.count == 1 else { return false }
+            let authorID = authorIDs.first!
+            return authorID == user.userID && authorID == input.preview.parentOwner.id
         }
     }
 }
@@ -73,5 +84,10 @@ extension PermissionResolver where Input == AttachNotePermissionInput {
     @discardableResult
     func callAsFunction(_ note: Note, to preview: Preview) async throws -> Output {
         try await callAsFunction(AttachNotePermissionInput(note: note, preview: preview))
+    }
+    
+    @discardableResult
+    func callAsFunction(_ notes: [Note], to preview: Preview) async throws -> Output {
+        try await callAsFunction(AttachNotePermissionInput(notes: notes, preview: preview))
     }
 }
