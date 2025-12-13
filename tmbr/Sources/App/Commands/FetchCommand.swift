@@ -4,49 +4,48 @@ import Core
 import Fluent
 import AuthKit
 
-class FetchCommand<Item: Model>: Command, @unchecked Sendable {
+extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDValue> {
     
-    typealias ItemID = Item.IDValue
-    
-    typealias Input = FetchParameters<Item.IDValue>
-    
-    typealias Output = Item
-
-    typealias PermissionInput = (item: Item, reason: FetchReason)
-    
-    let database: Database
-            
-    private let permission: ErasedPermissionResolver<PermissionInput>
-
-    init(
+    typealias PermissionInput = (item: Output, reason: FetchReason)
+        
+    static func fetch(
         database: Database,
-        permission: ErasedPermissionResolver<PermissionInput>
-    ) {
-        self.database = database
-        self.permission = permission
+        permission: ErasedPermissionResolver<PermissionInput>,
+        eagerLoad: @escaping @Sendable (Output, Database) async throws -> Void
+    ) -> Self {
+        PlainCommand { params in
+            guard let item = try await Output.find(params.itemID, on: database) else {
+                throw Abort(.notFound, reason: "\(Output.self) not found")
+            }
+            try await permission.grant((item, params.reason))
+            try await eagerLoad(item, database)
+            return item
+        }
     }
-    
-    convenience init(
+
+    static func fetch<each Property>(
         database: Database,
-        readPermission: BasePermissionResolver<Item>,
-        writePermission: AuthPermissionResolver<Item>
-    ) {
-        self.init(
+        readPermission: BasePermissionResolver<Output>,
+        writePermission: AuthPermissionResolver<Output>,
+        load properties: repeat KeyPath<Output, each Property>
+    ) -> Self
+    where repeat (each Property): AsyncLoadable {
+        self.fetch(
             database: database,
             permission: ErasedPermissionResolver(input: \.item, condition: \.reason) { reason in
                 switch reason {
                 case .read: readPermission.eraseOutput()
                 case .write: writePermission.eraseOutput()
                 }
+            },
+            eagerLoad: { model, db in
+                try await withThrowingTaskGroup(of: Void.self) { group in
+                    repeat group.addTask {
+                        try await model[keyPath: (each properties)].load(on: db)
+                    }
+                    for try await _ in group {}
+                }
             }
         )
-    }
-    
-    func execute(_ params: FetchParameters<ItemID>) async throws -> Item {
-        guard let item = try await Item.find(params.itemID, on: database) else {
-            throw Abort(.notFound, reason: "Item not found")
-        }
-        try await permission.grant((item, params.reason))
-        return item
     }
 }

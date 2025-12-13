@@ -47,10 +47,11 @@ extension Permission {
     where M: Previewable,
           A: QueryableProperty, A.Model == M, A.Value == Access,
           O: QueryableProperty, O.Model == M, O.Value == UserID,
-            Input == QueryBuilder<M> {
+          Input == QueryBuilder<M>
+    {
         Permission { (user: User?, query: Input) in
             query.group(.or) { group in
-                 group.filter(access == .public)
+                group.filter(access == .public)
                 if let userID = user?.id {
                     group.filter(owner == userID)
                 }
