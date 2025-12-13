@@ -19,7 +19,6 @@ struct Songs: Module {
 
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(CreateSong())
-        app.migrations.add(CreateSongNote())
         app.databases.middleware.use(PreviewModelMiddleware.song, on: .psql)
         
         try await app.permissions.add(scope: permissions)

@@ -1,6 +1,7 @@
 import Foundation
 import Vapor
 import AuthKit
+import Core
 
 struct SongInput {
     
@@ -19,13 +20,6 @@ struct SongInput {
     fileprivate let resourceURLs: [String]
     
     fileprivate let title: String
-
-    func validate() throws {
-        guard !title.trimmed.isEmpty,
-              !artist.trimmed.isEmpty else {
-            throw Abort(.badRequest, reason: "The song title or artist name is missing")
-        }
-    }
     
     init(
         access: Access,
@@ -61,26 +55,30 @@ struct SongInput {
     }
 }
 
-struct SongConfiguration {
+extension ModelConfiguration where Model == Song, Parameters == SongInput {
     
-    static let `default` = SongConfiguration { song, input in
-        song.access = input.access
-        song.album = input.album
-        song.artist = input.artist
-        song.$artwork.id = input.artwork
-        song.genre = input.genre
-        song.releaseDate = input.releaseDate
-        song.resourceURLs = input.resourceURLs
-        song.title = input.title
+    static var song: Self {
+        ModelConfiguration { song, input in
+            song.access = input.access
+            song.album = input.album
+            song.artist = input.artist
+            song.$artwork.id = input.artwork
+            song.genre = input.genre
+            song.releaseDate = input.releaseDate
+            song.resourceURLs = input.resourceURLs
+            song.title = input.title
+        }
     }
+}
+
+extension Validator where Input == SongInput {
     
-    private let configure: @Sendable (Song, SongInput) -> Void
-    
-    init(configure: @Sendable @escaping (Song, SongInput) -> Void) {
-        self.configure = configure
-    }
-    
-    func callAsFunction(_ song: Song, with input: SongInput) {
-        configure(song, input)
+    static var song: Self {
+        Validator { song in
+            guard !song.title.trimmed.isEmpty,
+                  !song.artist.trimmed.isEmpty else {
+                throw Abort(.badRequest, reason: "The song title or artist name is missing")
+            }
+        }
     }
 }

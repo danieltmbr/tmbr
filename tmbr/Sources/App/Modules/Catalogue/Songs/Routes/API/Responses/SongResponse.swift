@@ -63,6 +63,7 @@ struct SongResponse: Encodable, Sendable {
     init(
         song: Song,
         baseURL: String,
+        notes: [Note],
         platform: Platform<Song> = .all
     ) {
         self.init(
@@ -72,7 +73,7 @@ struct SongResponse: Encodable, Sendable {
             artist: song.artist,
             artwork: song.artwork.map { ImageResponse(image: $0, baseURL: baseURL) },
             genre: song.genre,
-            notes: song.notes.map { NoteResponse(note: $0, baseURL: baseURL) },
+            notes: notes.map { NoteResponse(note: $0, baseURL: baseURL) },
             owner: UserResponse(user: song.owner),
             preview: PreviewResponse(preview: song.preview, baseURL: baseURL),
             post: song.post.map { PostResponse(post: $0, baseURL: baseURL) },
