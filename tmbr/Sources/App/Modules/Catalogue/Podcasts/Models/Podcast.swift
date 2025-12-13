@@ -32,9 +32,6 @@ final class Podcast: Model, Previewable, @unchecked Sendable {
     @Parent(key: "owner_id")
     private(set) var owner: User
     
-    @Children(for: \.$podcast)
-    private(set) var podcastNotes: [PodcastNote]
-    
     @OptionalParent(key: "post_id")
     var post: Post?
     
@@ -52,10 +49,6 @@ final class Podcast: Model, Previewable, @unchecked Sendable {
 
     @Field(key: "title")
     var title: String
-    
-    var notes: [Note] {
-        podcastNotes.map { $0.$note.wrappedValue }
-    }
     
     var ownerID: UserID { $owner.id }
     

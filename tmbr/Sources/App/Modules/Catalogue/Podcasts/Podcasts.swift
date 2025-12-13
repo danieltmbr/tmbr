@@ -19,7 +19,6 @@ struct Podcasts: Module {
 
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(CreatePodcast())
-        app.migrations.add(CreatePodcastNote())
         app.databases.middleware.use(PreviewModelMiddleware.podcast, on: .psql)
         
         try await app.permissions.add(scope: permissions)

@@ -67,6 +67,7 @@ struct PodcastResponse: Encodable, Sendable {
     init(
         podcast: Podcast,
         baseURL: String,
+        notes: [Note],
         platform: Platform<Podcast> = .all
     ) {
         self.init(
@@ -76,7 +77,7 @@ struct PodcastResponse: Encodable, Sendable {
             episodeNumber: podcast.episodeNumber,
             episodeTitle: podcast.episodeTitle,
             genre: podcast.genre,
-            notes: podcast.notes.map { NoteResponse(note: $0, baseURL: baseURL) },
+            notes: notes.map { NoteResponse(note: $0, baseURL: baseURL) },
             owner: UserResponse(user: podcast.owner),
             preview: PreviewResponse(preview: podcast.preview, baseURL: baseURL),
             post: podcast.post.map { PostResponse(post: $0, baseURL: baseURL) },
