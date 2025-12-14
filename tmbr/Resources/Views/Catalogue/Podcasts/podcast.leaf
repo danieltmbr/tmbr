@@ -1,0 +1,40 @@
+#extend("Catalogue/details"):
+    
+    #export("details-header"):
+    <div class="details">
+        <h1>#(episodeTitle)</h1>
+        <h3>by #(title)</h3>
+        
+        <p>
+            #if(seasonNumber):
+                #if(episodeNumber):
+                    S#(seasonNumber):E#(episodeNumber),
+                #endif
+            #endif
+            #if(releaseDate) #(releaseDate),
+            #if(genre) #(genre)
+        </p>
+        
+        #if(count(resources) > 0):
+        <ul>
+            #for(res in resources):
+            <li>
+                <a
+                    href="#(res.url)"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                >#(res.platform)</a>
+            </li>
+            #endfor
+        </ul>
+        #endif
+    </div>
+    #if(artwork):
+    <div class="artwork">
+        <img src="#(artwork.url)" alt="Artwork image of #(title)">
+    </div>
+    #endif
+    
+    #endexport
+
+#endextend

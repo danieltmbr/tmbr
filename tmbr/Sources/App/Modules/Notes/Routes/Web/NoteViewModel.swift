@@ -13,4 +13,12 @@ struct NoteViewModel: Encodable, Sendable {
         self.body = body
         self.created = created
     }
+    
+    init(note: Note) throws {
+        self.init(
+            id: try note.requireID(),
+            body: note.body,
+            created: (note.createdAt ?? .now).formatted(.publishDate)
+        )
+    }
 }

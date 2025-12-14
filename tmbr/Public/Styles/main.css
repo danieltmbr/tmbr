@@ -232,7 +232,6 @@ main article > header .details {
     display: flex;
     flex-direction: column;
     justify-content: stretch;
-    line-height: 150%;
 }
 
 main article > header h1 {
@@ -240,7 +239,7 @@ main article > header h1 {
 }
 
 main article > header h3 {
-    margin: 0.25em 0;
+    margin: 0.6em 0;
 }
 
 main article > header p {
@@ -489,13 +488,24 @@ p.published-date {
         text-align: left;
     }
     
-    main article > blockquote {
+    main article blockquote {
         margin-inline-start: 20px;
         margin-inline-end: 20px;
     }
     
     main article > a > svg.signature {
         transform: translateX(-12px);
+    }
+    
+    main article > header {
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: initial;
+        gap: 2em;
+    }
+    
+    main article > header .artwork {
+        justify-content: center;
     }
 }
 

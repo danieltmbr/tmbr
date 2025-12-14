@@ -16,6 +16,14 @@ struct PostItemViewModel: Content {
         self.title = title
         self.publishDate = publishDate
     }
+    
+    init(post: Post) throws {
+        self.init(
+            id: try post.requireID(),
+            title: post.title,
+            publishDate: post.createdAt.formatted(.publishDate)
+        )
+    }
 }
 
 struct PostsViewModel: Content {

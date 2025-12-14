@@ -63,25 +63,12 @@ struct SongViewModel: Encodable, Sendable {
                 ImageViewModel(image: $0, baseURL: baseURL)
             },
             genre: song.genre,
-            notes: try notes.map {
-                NoteViewModel(
-                    id: try $0.requireID(),
-                    body: $0.body,
-                    created: $0.createdAt!.formatted(.publishDate)
-                )
-            },
-            post: try song.post.map {
-                PostItemViewModel(
-                    id: try $0.requireID(),
-                    title: $0.title,
-                    publishDate: $0.createdAt.formatted(.publishDate)
-                )
-            },
+            notes: try notes.map(NoteViewModel.init),
+            post: try song.post.map(PostItemViewModel.init),
             releaseDate: song.releaseDate?.formatted(.releaseDate),
-            resources: song.resourceURLs.compactMap {
-                guard let resource = platform.resource(from: $0) else { return nil }
-                return ResourceViewModel(resource: resource)
-            },
+            resources: song.resourceURLs
+                .compactMap(platform.resource)
+                .map(ResourceViewModel.init),
             title: song.title
         )
     }
