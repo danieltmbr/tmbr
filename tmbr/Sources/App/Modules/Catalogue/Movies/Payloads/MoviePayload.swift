@@ -17,7 +17,7 @@ struct MoviePayload: Decodable, Sendable {
     
     let notes: [NotePayload]?
     
-    let releaseDate: Date?
+    let releaseDate: Date
     
     let resourceURLs: [String]
     

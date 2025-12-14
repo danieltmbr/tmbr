@@ -48,6 +48,12 @@ public struct DateFormat: Sendable {
 #endif
     }
     
+    public static let year = Self { date in
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy"
+        return dateFormatter.string(from: date)
+    }
+    
     public static let rfc822 = Self { date in
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")

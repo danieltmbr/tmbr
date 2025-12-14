@@ -1,0 +1,35 @@
+#extend("Catalogue/details"):
+    
+    #export("details-header"):
+    <div class="details">
+        <h1>#(title)</h1>
+        <h3>#(releaseYear)</h3>
+        
+        <p>
+            #if(director) #(director),
+            #if(genre) #(genre)
+        </p>
+        
+        #if(count(resources) > 0):
+        <ul>
+            #for(res in resources):
+            <li>
+                <a
+                    href="#(res.url)"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                >#(res.platform)</a>
+            </li>
+            #endfor
+        </ul>
+        #endif
+    </div>
+    #if(cover):
+    <div class="artwork">
+        <img src="#(cover.url)" alt="Cover image of #(title)">
+    </div>
+    #endif
+    
+    #endexport
+
+#endextend
