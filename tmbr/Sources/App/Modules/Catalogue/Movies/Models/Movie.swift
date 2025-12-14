@@ -36,7 +36,7 @@ final class Movie: Model, Previewable, @unchecked Sendable {
     fileprivate(set) var preview: Preview
     
     @Field(key: "release_date")
-    var releaseDate: Date?
+    var releaseDate: Date
     
     @Field(key: "resource_urls")
     var resourceURLs: [String]
@@ -58,7 +58,7 @@ final class Movie: Model, Previewable, @unchecked Sendable {
         director: String?,
         genre: String?,
         owner: UserID,
-        releaseDate: Date?,
+        releaseDate: Date,
         resourceURLs: [String],
         title: String
     ) {
@@ -83,7 +83,7 @@ extension PreviewModelMiddleware where M == Movie {
             },
             configure: { preview, movie in
                 preview.primaryInfo = movie.title
-                preview.secondaryInfo = movie.releaseDate?.formatted()
+                preview.secondaryInfo = movie.releaseDate.formatted()
                 preview.$image.id = movie.cover?.id
                 preview.externalLinks = movie.resourceURLs
             },

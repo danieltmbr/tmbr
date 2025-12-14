@@ -88,5 +88,3 @@ struct QuoteExtractorTests {
         #expect(quotes.isEmpty)
     }
 }
-
-

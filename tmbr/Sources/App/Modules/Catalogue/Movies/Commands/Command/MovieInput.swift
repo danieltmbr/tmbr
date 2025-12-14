@@ -13,7 +13,7 @@ struct MovieInput {
     
     fileprivate let genre: String?
         
-    fileprivate let releaseDate: Date?
+    fileprivate let releaseDate: Date
     
     fileprivate let resourceURLs: [String]
     
@@ -24,7 +24,7 @@ struct MovieInput {
         cover: ImageID?,
         director: String?,
         genre: String?,
-        releaseDate: Date?,
+        releaseDate: Date,
         resourceURLs: [String],
         title: String
     ) {

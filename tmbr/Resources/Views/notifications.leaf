@@ -5,91 +5,89 @@
     #endexport
 
     #export("main"):
-            <section alt="Article">
-                <article>
-                    <h1>Notifications</h1>
-                    
-                    <p>To receive notifications from a desktop browser, just click on the bell icon below to grant permissions. You can disable them by clicking on it again.</p>
-                    
-                    <h4>Mobile notifications</h4>
-                    
-                    <p>In order to receive notifications on mobile the site needs to be added to your home screen first. Follow the instructions below.</p>
-                    
-                    <ol class="instructions">
-                      <li>
-                        Tap “Share”
-                        <picture>
-                          <source
-                            srcset="Assets/Images/Push/push-step-1-light.jpg 3x"
-                            media="(prefers-color-scheme: light)"
-                          />
-                          <source
-                            srcset="Assets/Images/Push/push-step-1-dark.jpg 3x"
-                            media="(prefers-color-scheme: dark)"
-                          />
-                          <img
-                            src="Assets/Images/Push/push-step-1-light.jpg"
-                            alt="Screenshot of the share button in iOS Safari"
-                          />
-                        </picture>
-                      </li>
-                      <li>
-                        Select “Add to Home Screen”
-                        <picture>
-                          <source
-                            srcset="Assets/Images/Push/push-step-2-light.jpg 3x"
-                            media="(prefers-color-scheme: light)"
-                          />
-                          <source
-                            srcset="Assets/Images/Push/push-step-2-dark.jpg 3x"
-                            media="(prefers-color-scheme: dark)"
-                          />
-                          <img
-                            src="Assets/Images/Push/push-step-2-light.jpg"
-                            alt="Screenshot of the "Add to Home Screen" option from the Safari Share Sheet"
-                          />
-                        </picture>
-                      </li>
-                      <li>
-                        Open the site from the Home Screen
-                        <picture>
-                          <source
-                            srcset="Assets/Images/Push/push-step-3-light.jpg 3x"
-                            media="(prefers-color-scheme: light)"
-                          />
-                          <source
-                            srcset="Assets/Images/Push/push-step-3-dark.jpg 3x"
-                            media="(prefers-color-scheme: dark)"
-                          />
-                          <img
-                            src="Assets/Images/Push/push-step-3-light.jpg"
-                            alt="Screenshot of the tmbr site added to the Home Screen"
-                          />
-                        </picture>
-                      </li>
-                      <li>
-                        Tap the bell at the bottom of the app
-                        <picture>
-                          <source
-                            srcset="Assets/Images/Push/push-step-4-light.jpg 3x"
-                            media="(prefers-color-scheme: light)"
-                          />
-                          <source
-                            srcset="Assets/Images/Push/push-step-4-dark.jpg 3x"
-                            media="(prefers-color-scheme: dark)"
-                          />
-                          <img
-                            src="Assets/Images/Push/push-step-4-light.jpg"
-                            alt="Screenshot of the bell icon at the bottom of the app"
-                          />
-                        </picture>
-                      </li>
-                    </ol>
-                    <p>Tap again on the crossed bell to disable notifications.</p>
-                    <p></p>
-                    <a href="/">#extend("Shared/signature")</a>
-                </article>
-            </section>
+        <article>
+            <h1>Notifications</h1>
+            
+            <p>To receive notifications from a desktop browser, just click on the bell icon below to grant permissions. You can disable them by clicking on it again.</p>
+            
+            <h4>Mobile notifications</h4>
+            
+            <p>In order to receive notifications on mobile the site needs to be added to your home screen first. Follow the instructions below.</p>
+            
+            <ol class="instructions">
+                <li>
+                Tap “Share”
+                <picture>
+                    <source
+                    srcset="Assets/Images/Push/push-step-1-light.jpg 3x"
+                    media="(prefers-color-scheme: light)"
+                    />
+                    <source
+                    srcset="Assets/Images/Push/push-step-1-dark.jpg 3x"
+                    media="(prefers-color-scheme: dark)"
+                    />
+                    <img
+                    src="Assets/Images/Push/push-step-1-light.jpg"
+                    alt="Screenshot of the share button in iOS Safari"
+                    />
+                </picture>
+                </li>
+                <li>
+                Select “Add to Home Screen”
+                <picture>
+                    <source
+                    srcset="Assets/Images/Push/push-step-2-light.jpg 3x"
+                    media="(prefers-color-scheme: light)"
+                    />
+                    <source
+                    srcset="Assets/Images/Push/push-step-2-dark.jpg 3x"
+                    media="(prefers-color-scheme: dark)"
+                    />
+                    <img
+                    src="Assets/Images/Push/push-step-2-light.jpg"
+                    alt="Screenshot of the "Add to Home Screen" option from the Safari Share Sheet"
+                    />
+                </picture>
+                </li>
+                <li>
+                Open the site from the Home Screen
+                <picture>
+                    <source
+                    srcset="Assets/Images/Push/push-step-3-light.jpg 3x"
+                    media="(prefers-color-scheme: light)"
+                    />
+                    <source
+                    srcset="Assets/Images/Push/push-step-3-dark.jpg 3x"
+                    media="(prefers-color-scheme: dark)"
+                    />
+                    <img
+                    src="Assets/Images/Push/push-step-3-light.jpg"
+                    alt="Screenshot of the tmbr site added to the Home Screen"
+                    />
+                </picture>
+                </li>
+                <li>
+                Tap the bell at the bottom of the app
+                <picture>
+                    <source
+                    srcset="Assets/Images/Push/push-step-4-light.jpg 3x"
+                    media="(prefers-color-scheme: light)"
+                    />
+                    <source
+                    srcset="Assets/Images/Push/push-step-4-dark.jpg 3x"
+                    media="(prefers-color-scheme: dark)"
+                    />
+                    <img
+                    src="Assets/Images/Push/push-step-4-light.jpg"
+                    alt="Screenshot of the bell icon at the bottom of the app"
+                    />
+                </picture>
+                </li>
+            </ol>
+            <p>Tap again on the crossed bell to disable notifications.</p>
+            <p></p>
+            <a href="/">#extend("Shared/signature")</a>
+        </article>
     #endexport
     
 #endextend

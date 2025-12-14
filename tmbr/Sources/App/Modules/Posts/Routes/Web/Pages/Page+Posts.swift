@@ -4,27 +4,36 @@ import Vapor
 import Fluent
 import AuthKit
 
-struct PostsViewModel: Content {
-    struct PostItem: Content {
-        private let id: Int
-        
-        private let title: String
-        
-        private let publishDate: String
-        
-        init(id: Int, title: String, publishDate: String) {
-            self.id = id
-            self.title = title
-            self.publishDate = publishDate
-        }
+struct PostItemViewModel: Content {
+    private let id: Int
+    
+    private let title: String
+    
+    private let publishDate: String
+    
+    init(id: Int, title: String, publishDate: String) {
+        self.id = id
+        self.title = title
+        self.publishDate = publishDate
     }
+    
+    init(post: Post) throws {
+        self.init(
+            id: try post.requireID(),
+            title: post.title,
+            publishDate: post.createdAt.formatted(.publishDate)
+        )
+    }
+}
 
-    private let posts: [PostItem]
+struct PostsViewModel: Content {
+    
+    private let posts: [PostItemViewModel]
     
     init(posts: [Post]) {
         self.posts = posts.compactMap { post in
             guard let id = post.id else { return nil }
-            return PostItem(
+            return PostItemViewModel(
                 id: id,
                 title: post.title,
                 publishDate: post.createdAt.formatted(.publishDate)

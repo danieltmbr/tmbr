@@ -13,7 +13,7 @@ struct CreateMovie: AsyncMigration {
             .field("owner_id", .int, .required)
             .field("post_id", .int)
             .field("preview_id", .uuid, .required)
-            .field("release_date", .datetime)
+            .field("release_date", .date, .required)
             .field("resource_urls", .array(of: .string), .required, .sql(.default("{}")))
             .field("title", .string, .required)
             .foreignKey("cover_id", references: Image.schema, "id", onDelete: .setNull)

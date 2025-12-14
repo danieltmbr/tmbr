@@ -1,14 +1,12 @@
 #extend("Shared/page"):
     
     #export("main"):
-        <section alt="Article">
-            <article>
-                <h1>#(title)</h1>
-                #unsafeHTML(content)
-                <p class="published-date">#(publishDate)</p>
-                <a href="/">#extend("Shared/signature")</a>
-            </article>
-        </section>
+        <article>
+            <h1>#(title)</h1>
+            #unsafeHTML(content)
+            <p class="published-date">#(publishDate)</p>
+            <a href="/">#extend("Shared/signature")</a>
+        </article>
     #endexport
     
     #export("scripts"):

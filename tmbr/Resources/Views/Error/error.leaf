@@ -1,19 +1,17 @@
 #extend("Shared/page"):
     #export("main"):
         <a href="/">#extend("Shared/signature")</a>
-        <section alt="Error">
-            <article>
-                <h1>#(title)</h1>
-                #unsafeHTML(message)
-                #if(suggestedFixes):
-                    <ul class="suggested-fix">
-                    #for(fix in suggestedFixes):
-                        <li>#unsafeHTML(fix)</li>
-                    #endfor
-                    </ul>
-                #endif
-            </article>
-        </section>
+        <article>
+            <h1>#(title)</h1>
+            #unsafeHTML(message)
+            #if(suggestedFixes):
+                <ul class="suggested-fix">
+                #for(fix in suggestedFixes):
+                    <li>#unsafeHTML(fix)</li>
+                #endfor
+                </ul>
+            #endif
+        </article>
     #endexport
 #endextend
 

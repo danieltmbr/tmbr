@@ -1,0 +1,24 @@
+#extend("Catalogue/details"):
+    
+    #export("details-header"):
+    <div class="details">
+        <h1>#(title)</h1>
+        <h3>by #(author)</h3>
+        
+        <p>
+            #if(genre) #(genre),
+            #if(releaseDate) #(releaseDate)
+        </p>
+        
+        #extend("Catalogue/resources")
+    </div>
+    
+    #if(cover):
+    <div class="artwork">
+        <img src="#(cover.url)" alt="Cover image of #(title)">
+    </div>
+    #endif
+    
+    #endexport
+
+#endextend
