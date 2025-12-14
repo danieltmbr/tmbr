@@ -3,19 +3,19 @@
     #export("details-header"):
     <div class="details">
         <h1>#(title)</h1>
-        <h3>by #(artist)</h3>
+        <h3>by #(author)</h3>
         
         <p>
-            #if(album) #(album),
             #if(genre) #(genre),
             #if(releaseDate) #(releaseDate)
         </p>
         
         #extend("Catalogue/resources")
     </div>
-    #if(artwork):
+    
+    #if(cover):
     <div class="artwork">
-        <img src="#(artwork.url)" alt="Artwork image of #(title)">
+        <img src="#(cover.url)" alt="Cover image of #(title)">
     </div>
     #endif
     

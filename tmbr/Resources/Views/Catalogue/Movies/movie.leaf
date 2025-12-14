@@ -10,19 +10,7 @@
             #if(genre) #(genre)
         </p>
         
-        #if(count(resources) > 0):
-        <ul>
-            #for(res in resources):
-            <li>
-                <a
-                    href="#(res.url)"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                >#(res.platform)</a>
-            </li>
-            #endfor
-        </ul>
-        #endif
+        #extend("Catalogue/resources")
     </div>
     #if(cover):
     <div class="artwork">
