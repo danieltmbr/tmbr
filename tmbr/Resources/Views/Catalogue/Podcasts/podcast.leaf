@@ -3,7 +3,7 @@
     #export("details-header"):
     <div class="details">
         <h1>#(episodeTitle)</h1>
-        <h3>by #(title)</h3>
+        <h3>from #(title)</h3>
         
         <p>
             #if(seasonNumber):
