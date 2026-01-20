@@ -46,7 +46,7 @@ extension CommandFactory where Output == Void {
     }
     
     static func delete<Item>(
-        _ scope: KeyPath<PermissionScopes, PreviewablePermissionScope<Item>.Type>,
+        _ scope: KeyPath<PermissionScopes, PreviewablePermissionScope<Item>.Type>
     ) -> CommandFactory<Item.IDValue, Void>
     where Item: Model & Previewable, Input == Item.IDValue {
         CommandFactory { request in
