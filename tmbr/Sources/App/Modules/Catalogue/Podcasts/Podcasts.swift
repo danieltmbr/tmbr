@@ -11,7 +11,7 @@ struct Podcasts: Module {
     
     init(
         commands: CommandCollection,
-        permissions: PermissionScope,
+        permissions: PermissionScope
     ) {
         self.commands = commands
         self.permissions = permissions
