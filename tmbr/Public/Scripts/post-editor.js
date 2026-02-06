@@ -50,8 +50,8 @@ class PersistenceController {
     }
 }
 
-class Uploads {
-    static async uploadImageFile(file) {
+class UploadsController {
+    async uploadImageFile(file) {
         const form = new FormData();
         form.append('image', file, file.name);
         form.append('alt', file.name.replace(/\.[^.]+$/, ''));
@@ -209,9 +209,9 @@ class EditorController {
 }
 
 class DragAndDropController {
-    constructor({ editor, upload = Uploads.uploadImageFile }) {
+    constructor({ editor }, { uploads }) {
         this.editor = editor;
-        this.upload = upload;
+        this.uploads = uploads;
         this.hideTimer = null;
         this._onDragEnter = this.onDragEnter.bind(this);
         this._onDragOver = this.onDragOver.bind(this);
@@ -318,9 +318,9 @@ class DragAndDropController {
             return { file, filename, placeholder };
         });
 
-        const uploads = entries.map(async ({ file, filename, placeholder }) => {
+        const uploadTasks = entries.map(async ({ file, filename, placeholder }) => {
             try {
-                const markdown = await this.upload(file);
+                const markdown = await this.uploads.uploadImageFile(file);
                 this.editor.replacePlaceholder(placeholder, markdown);
                 return { filename, ok: true };
             } catch (err) {
@@ -331,7 +331,7 @@ class DragAndDropController {
             }
         });
 
-        await Promise.allSettled(uploads);
+        await Promise.allSettled(uploadTasks);
     }
 }
 
@@ -504,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const galleryCloseButton = document.getElementById('gallery-close');
 
     const persistence = new PersistenceController();
+    const uploads = new UploadsController();
 
     const editor = new EditorController({
         form,
@@ -515,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { persistence });
     editor.init();
 
-    const dnd = new DragAndDropController({ editor });
+    const dnd = new DragAndDropController({ editor }, { uploads });
     dnd.init();
 
     const galleryController = new GalleryController({

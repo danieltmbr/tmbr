@@ -133,6 +133,56 @@ No CSS frameworks. No older-browser polyfills. Modern CSS/HTML only.
 - **Flexbox/grid for all layout.**
 - **Navigation = `<a>` links.** No JS history manipulation. Dynamic content loading is fine only when it doesn't change the navigable URL state (e.g. pre-filling form fields from an API call).
 
+### JavaScript
+
+Vanilla JS only — no frameworks or build tools. Scripts live in `Public/Scripts/`.
+
+**Controller pattern:** Complex features are split into single-responsibility Controller classes. Each controller owns one concern (editor state, drag-and-drop, gallery, keyboard shortcuts, persistence).
+
+```javascript
+class EditorController {
+    constructor({ form, titleInput, bodyTextArea }, { persistence }) {
+        // Store DOM elements
+        this.form = form;
+        this.titleInput = titleInput;
+        // Store injected dependencies
+        this.persistence = persistence;
+        // Bind event handlers in constructor
+        this._onInput = this.onInput.bind(this);
+    }
+
+    init() {
+        this.titleInput.addEventListener('input', this._onInput);
+    }
+
+    destroy() {
+        this.titleInput.removeEventListener('input', this._onInput);
+    }
+}
+```
+
+Key conventions:
+- **Constructor signature**: DOM elements as first object, dependencies as second object
+- **Lifecycle methods**: `init()` attaches listeners, `destroy()` removes them
+- **Handler binding**: Bind handlers in constructor, store as `this._onEventName`
+- **No static methods**: Even stateless operations should be instance methods on a controller, injected as a dependency — this keeps everything testable and consistent
+- **Bootstrap**: Initialize everything in `DOMContentLoaded`, wire controllers together
+
+```javascript
+document.addEventListener('DOMContentLoaded', () => {
+    const persistence = new PersistenceController();
+    const editor = new EditorController({ form, titleInput }, { persistence });
+    editor.init();
+
+    const shortcuts = new ShortcutsController({
+        onSave: () => editor.save()
+    });
+    shortcuts.init();
+});
+```
+
+Reference implementation: `Public/Scripts/post-editor.js`
+
 ### Templates and Pages
 
 Leaf templates (`Resources/Views/`) compose from shared fragments. `Shared/page.leaf` is the base layout with named slots (`main`, `toolbar`, `styles`, `scripts`). Page templates extend it via `#extend("Shared/page")` and `#export("main")`.
