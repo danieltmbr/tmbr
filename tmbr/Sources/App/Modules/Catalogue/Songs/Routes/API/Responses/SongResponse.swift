@@ -3,7 +3,7 @@ import Foundation
 import AuthKit
 import Core
 
-struct SongResponse: Encodable, Sendable {
+struct SongResponse: Encodable, Sendable, AsyncResponseEncodable {
     
     private let id: SongID
     
@@ -63,9 +63,9 @@ struct SongResponse: Encodable, Sendable {
     
     init(
         song: Song,
-        baseURL: String,
         notes: [Note],
-        platform: Platform<Void> = .song
+        baseURL: String,
+        platform: Platform<SongMetadata> = .song
     ) {
         self.init(
             id: song.id!,
