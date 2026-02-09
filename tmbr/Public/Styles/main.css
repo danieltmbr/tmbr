@@ -114,6 +114,11 @@ main section a span.post-date {
     text-align: right;
 }
 
+#new-item {
+    position: absolute;
+    right: 0;
+}
+
 /*
  ------------------------------------------------
  Blog post content
@@ -345,7 +350,82 @@ ol.instructions > li > picture img {
 hr {
     border: none;
     border-top: 1px solid;
+}
+
+article hr {
     margin: 1.5em 0;
+}
+
+/*
+ ------------------------------------------------
+ Panels
+ ------------------------------------------------
+ */
+
+.panel {
+    max-width: 640px;
+    z-index: 1100;
+    
+    /* Translucent, blurred background */
+    background: var(--panel-background-color);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    
+    padding: 1em;
+    overflow: hidden;
+}
+
+.panel ul li svg {
+    width: 17px;
+    max-height: 14px;
+}
+
+.panel hr {
+    opacity: 0.2;
+}
+
+#new-items {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 1em;
+    gap: 1rem;
+}
+
+#new-items.open {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;*/
+}
+
+#new-items .panel-header button {
+    padding: 0;
+}
+
+#new-items ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#new-items ul a {
+    text-decoration: none;
+    color: inherit;
+}
+
+#new-items ul a:hover {
+    color: LinkText !important;
+}
+
+#new-items ul li {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
 /*
@@ -454,6 +534,43 @@ p.published-date {
     font-weight: 500;
     opacity: 0.75;
     font-family: system-ui, -apple-system, Helvetica, sans-serif;
+}
+
+/*
+ ------------------------------------------------
+ Toolbar
+ ------------------------------------------------
+ */
+
+#toolbar {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+}
+
+#toolbar button {
+    margin: 16px;
+}
+
+button.icon {
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+button.icon > svg {
+    width: 20px;
+    max-height: 17px;
+    opacity: 0.65;
+}
+
+button.icon.small > svg {
+    width: 14px;
+    max-height: 12px;
+}
+
+button.icon > svg:hover {
+    opacity: 1;
 }
 
 /*

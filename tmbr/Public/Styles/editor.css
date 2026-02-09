@@ -1,11 +1,11 @@
 :root {
     color-scheme: light dark;
-    
+
     --button-primary-background: #007aff;
     --button-primary-gradient: linear-gradient(to bottom, #3696ff, #007aff);
     --button-primary-gradient-hover: linear-gradient(to bottom, #5eabff, #007aff);
     --button-primary-gradient-active: linear-gradient(to bottom, #0572eb, #007aff);
-    
+
     --button-destructive-background: #d60000;
     --button-destructive-gradient: linear-gradient(to bottom, #ff1c14, #d60000);
     --button-destructive-gradient-hover: linear-gradient(to bottom, #ff3c36, #d60000);
@@ -14,6 +14,8 @@
     --button-neutral-background: color-mix(in srgb, CanvasText 10%, transparent);
     --button-neutral-background-hover: color-mix(in srgb, CanvasText 16%, transparent);
     --button-neutral-background-active: color-mix(in srgb, CanvasText 22%, transparent);
+
+    --input-background-hover: color-mix(in srgb, CanvasText 5%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,9 +23,10 @@
         --button-neutral-background: color-mix(in srgb, CanvasText 18%, transparent);
         --button-neutral-background-hover: color-mix(in srgb, CanvasText 26%, transparent);
         --button-neutral-background-active: color-mix(in srgb, CanvasText 34%, transparent);
+
+        --input-background-hover: color-mix(in srgb, CanvasText 8%, transparent);
     }
 }
-
 
 /*
  ------------------------------------------------
@@ -31,48 +34,71 @@
  ------------------------------------------------
  */
 
-main > section > form {
+main > form {
     display: flex;
     flex-direction: column;
     
     flex: 1 1 auto;
     min-height: 0;
+    
+    width: 100%;
+    max-width: 600px;
 }
 
-form > input,
-form > label > input {
-    width: 100%;
+form input,
+form label > input {
+    width: calc(100% + 16px);
     border: none;
     outline: none;
     background: transparent;
     font: inherit;
     line-height: normal;
     color: inherit;
-    padding: 0;
-    margin: 0;
+    padding: 4px 8px;
+    margin: 0 -8px;
+    border-radius: 6px;
+    transition: background-color 1s ease;
 }
 
-form > textarea,
-form > label > textarea {
-    width: 100%;
+form input,
+form section label > input {
+    margin: 2px -8px;
+}
+
+form input:hover,
+form label > input:hover {
+    background: var(--input-background-hover);
+}
+
+form textarea,
+form label > textarea {
+    width: calc(100% + 16px);
     border: none;
     outline: none;
     background: transparent;
     font: inherit;
     line-height: inherit;
     color: inherit;
-    padding: 0;
+    padding: 4px 8px;
+    margin: 0 -8px;
     resize: none;
-    
+    border-radius: 6px;
+    transition: background-color 1s ease;
+
     flex: 1 1 auto;
     min-height: 0;
     overflow: visible;
 }
 
-form > input::placeholder,
-form > label > input::placeholder,
-form > textarea::placeholder,
-form > label > textarea::placeholder {
+form textarea:hover,
+form label > textarea:hover {
+    background: var(--input-background-hover);
+}
+
+form input::placeholder,
+form label > input::placeholder,
+form textarea::placeholder,
+form label > textarea::placeholder {
     color: currentColor;
     opacity: 0.35;
 }
@@ -143,25 +169,134 @@ button.link {
     cursor: pointer;
 }
 
-button.icon {
-    border: none;
-    background: none;
+/*
+ ------------------------------------------------
+ Gallery
+ ------------------------------------------------
+ */
+
+#gallery-open {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+}
+
+#gallery {
+    display: none;
+    position: fixed;
+    top: 1em;
+    right: 1em;
+    bottom: 1em;
+    width: 33%;
+    max-width: 640px;
+    z-index: 1100;
+    
+    /* Translucent, blurred background */
+    background: var(--panel-background-color);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    
+    padding: 1em;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+#gallery.open {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+#gallery-section {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    width: 100%;
+}
+
+#gallery-grid {
+    display: block;
+    columns: 140px 3;
+    column-gap: 3px;
+    line-height: 0;
+}
+
+#gallery-grid .gallery-item {
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 3px 0;
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    
+    border-radius: 5px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    background: var(--panel-item-background-color);
+    
+    aspect-ratio: auto;
     cursor: pointer;
 }
 
-button.icon > svg {
-    width: 20px;
-    max-height: 17px;
-    opacity: 0.65;
+#gallery-grid .gallery-item img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
 }
 
-button.icon.small > svg {
-    width: 14px;
-    max-height: 12px;
+#gallery-grid .gallery-item:hover img {
+    filter: brightness(0.95);
 }
 
-button.icon > svg:hover {
-    opacity: 1;
+/*
+ ------------------------------------------------
+ Post editor
+ ------------------------------------------------
+ */
+
+main > form > input[name=title] {
+    font-size: 3.2rem;
+    font-weight: 700;
+    margin: 3.2rem -8px;
+    flex: 0 0 auto;
+}
+
+main > form .editor-actions > div {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+main > form label.published {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+main > form#preview-form {
+    display: none;
+}
+
+body.dragging-page::after {
+    content: 'Drop images here';
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--drop-area-background-color);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    font-weight: 600;
+    font-size: 1.6rem;
+    letter-spacing: 0.2px;
+    pointer-events: none;
+    z-index: 9999;
 }
 
 /*
@@ -184,4 +319,3 @@ button.icon > svg:hover {
         columns: 120px 4;
     }
 }
-
