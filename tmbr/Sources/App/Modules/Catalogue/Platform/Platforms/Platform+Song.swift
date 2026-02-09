@@ -1,14 +1,10 @@
-extension Platform<Song> {
-    
-    static let all = Platform(platforms: [
-        .appleMusic,
-        .spotify,
-        .youtube
-    ])
-    
-    static let appleMusic = Platform(displayName: "Apple Music", parser: .appleMusic)
+extension Platform where M == Void {
 
-    static let spotify = Platform(displayName: "Spotify", parser: .spotify)
-    
-    static let youtube = Platform(displayName: "YouTube", parser: .youtube)
+    static var song: Platform<Void> {
+        Platform(platforms: [
+            Platform(name: "Apple Music", checker: .appleMusic),
+            Platform(name: "Spotify", checker: .spotify),
+            Platform(name: "YouTube", checker: .youtube)
+        ])
+    }
 }

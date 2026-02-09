@@ -19,7 +19,7 @@ struct MovieViewModel: Encodable, Sendable {
     
     private let releaseYear: String
     
-    private let resources: [ResourceViewModel]
+    private let resources: [Hyperlink]
     
     private let title: String
     
@@ -31,7 +31,7 @@ struct MovieViewModel: Encodable, Sendable {
         notes: [NoteViewModel],
         post: PostItemViewModel?,
         releaseYear: String,
-        resources: [ResourceViewModel],
+        resources: [Hyperlink],
         title: String
     ) {
         self.id = id
@@ -49,7 +49,7 @@ struct MovieViewModel: Encodable, Sendable {
         movie: Movie,
         notes: [Note],
         baseURL: String,
-        platform: Platform<Movie> = .all
+        platform: Platform<Void> = .movie
     ) throws {
         self.init(
             id: try movie.requireID(),
@@ -61,9 +61,7 @@ struct MovieViewModel: Encodable, Sendable {
             notes: try notes.map(NoteViewModel.init),
             post: try movie.post.map(PostItemViewModel.init),
             releaseYear: movie.releaseDate.formatted(.year),
-            resources: movie.resourceURLs
-                .compactMap(platform.resource)
-                .map(ResourceViewModel.init),
+            resources: movie.resourceURLs.compactMap(platform.hyperlink),
             title: movie.title
         )
     }

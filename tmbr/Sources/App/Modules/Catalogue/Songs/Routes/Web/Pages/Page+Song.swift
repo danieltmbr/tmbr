@@ -21,7 +21,7 @@ struct SongViewModel: Encodable, Sendable {
     
     private let releaseDate: String?
     
-    private let resources: [ResourceViewModel]
+    private let resources: [Hyperlink]
     
     private let title: String
     
@@ -34,7 +34,7 @@ struct SongViewModel: Encodable, Sendable {
         notes: [NoteViewModel],
         post: PostItemViewModel?,
         releaseDate: String?,
-        resources: [ResourceViewModel],
+        resources: [Hyperlink],
         title: String
     ) {
         self.id = id
@@ -53,7 +53,7 @@ struct SongViewModel: Encodable, Sendable {
         song: Song,
         notes: [Note],
         baseURL: String,
-        platform: Platform<Song> = .all
+        platform: Platform<Void> = .song
     ) throws {
         self.init(
             id: try song.requireID(),
@@ -66,9 +66,7 @@ struct SongViewModel: Encodable, Sendable {
             notes: try notes.map(NoteViewModel.init),
             post: try song.post.map(PostItemViewModel.init),
             releaseDate: song.releaseDate?.formatted(.releaseDate),
-            resources: song.resourceURLs
-                .compactMap(platform.resource)
-                .map(ResourceViewModel.init),
+            resources: song.resourceURLs.compactMap(platform.hyperlink),
             title: song.title
         )
     }

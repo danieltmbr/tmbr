@@ -1,6 +1,7 @@
 import Vapor
 import Foundation
 import AuthKit
+import Core
 
 struct BookResponse: Encodable, Sendable {
     
@@ -24,7 +25,7 @@ struct BookResponse: Encodable, Sendable {
     
     private let releaseDate: Date?
     
-    private let resources: [Resource]
+    private let resources: [Hyperlink]
 
     private let title: String
     
@@ -39,7 +40,7 @@ struct BookResponse: Encodable, Sendable {
         preview: PreviewResponse,
         post: PostResponse?,
         releaseDate: Date?,
-        resources: [Resource],
+        resources: [Hyperlink],
         title: String
     ) {
         self.id = id
@@ -60,7 +61,7 @@ struct BookResponse: Encodable, Sendable {
         book: Book,
         baseURL: String,
         notes: [Note],
-        platform: Platform<Book> = .all
+        platform: Platform<Void> = .book
     ) {
         self.init(
             id: book.id!,
@@ -73,7 +74,7 @@ struct BookResponse: Encodable, Sendable {
             preview: PreviewResponse(preview: book.preview, baseURL: baseURL),
             post: book.post.map { PostResponse(post: $0, baseURL: baseURL) },
             releaseDate: book.releaseDate,
-            resources: book.resourceURLs.compactMap(platform.resource),
+            resources: book.resourceURLs.compactMap(platform.hyperlink),
             title: book.title
         )
     }

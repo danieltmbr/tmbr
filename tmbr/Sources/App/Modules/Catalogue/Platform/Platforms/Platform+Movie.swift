@@ -1,14 +1,10 @@
-extension Platform<Movie> {
-    
-    static let all = Platform(platforms: [
-        .imdb,
-        .rottenTomatoes,
-        .youtube
-    ])
-    
-    static let imdb = Platform(displayName: "IMDb", parser: .imdb)
+extension Platform where M == Void {
 
-    static let rottenTomatoes = Platform(displayName: "Rotten Tomatoes", parser: .rottenTomatoes)
-    
-    static let youtube = Platform(displayName: "YouTube", parser: .youtube)
+    static var movie: Platform<Void> {
+        Platform(platforms: [
+            Platform(name: "IMDb", checker: .imdb),
+            Platform(name: "Rotten Tomatoes", checker: .rottenTomatoes),
+            Platform(name: "YouTube", checker: .youtube)
+        ])
+    }
 }

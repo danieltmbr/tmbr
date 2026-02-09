@@ -21,7 +21,7 @@ struct PodcastViewModel: Encodable, Sendable {
     
     private let releaseDate: String?
     
-    private let resources: [ResourceViewModel]
+    private let resources: [Hyperlink]
     
     private let seasonNumber: Int?
     
@@ -36,7 +36,7 @@ struct PodcastViewModel: Encodable, Sendable {
         notes: [NoteViewModel],
         post: PostItemViewModel?,
         releaseDate: String?,
-        resources: [ResourceViewModel],
+        resources: [Hyperlink],
         seasonNumber: Int?,
         title: String
     ) {
@@ -57,7 +57,7 @@ struct PodcastViewModel: Encodable, Sendable {
         podcast: Podcast,
         notes: [Note],
         baseURL: String,
-        platform: Platform<Podcast> = .all
+        platform: Platform<Void> = .podcast
     ) throws {
         self.init(
             id: try podcast.requireID(),
@@ -70,9 +70,7 @@ struct PodcastViewModel: Encodable, Sendable {
             notes: try notes.map(NoteViewModel.init),
             post: try podcast.post.map(PostItemViewModel.init),
             releaseDate: podcast.releaseDate?.formatted(.releaseDate),
-            resources: podcast.resourceURLs
-                .compactMap(platform.resource)
-                .map(ResourceViewModel.init),
+            resources: podcast.resourceURLs.compactMap(platform.hyperlink),
             seasonNumber: podcast.seasonNumber,
             title: podcast.title
         )

@@ -1,8 +1,8 @@
-extension Platform<Book> {
-    
-    static let all = Platform(platforms: [
-        .goodreads
-    ])
-    
-    static let goodreads = Platform(displayName: "GoodReads", parser: .goodreads)
+extension Platform where M == Void {
+
+    static var book: Platform<Void> {
+        Platform(platforms: [
+            Platform(name: "GoodReads", checker: .goodreads)
+        ])
+    }
 }

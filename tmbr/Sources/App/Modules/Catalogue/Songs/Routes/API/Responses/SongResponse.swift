@@ -1,6 +1,7 @@
 import Vapor
 import Foundation
 import AuthKit
+import Core
 
 struct SongResponse: Encodable, Sendable {
     
@@ -26,7 +27,7 @@ struct SongResponse: Encodable, Sendable {
     
     private let releaseDate: Date?
     
-    private let resources: [Resource]
+    private let resources: [Hyperlink]
     
     private let title: String
 
@@ -42,7 +43,7 @@ struct SongResponse: Encodable, Sendable {
         preview: PreviewResponse,
         post: PostResponse?,
         releaseDate: Date?,
-        resources: [Resource],
+        resources: [Hyperlink],
         title: String
     ) {
         self.id = id
@@ -64,7 +65,7 @@ struct SongResponse: Encodable, Sendable {
         song: Song,
         baseURL: String,
         notes: [Note],
-        platform: Platform<Song> = .all
+        platform: Platform<Void> = .song
     ) {
         self.init(
             id: song.id!,
@@ -78,7 +79,7 @@ struct SongResponse: Encodable, Sendable {
             preview: PreviewResponse(preview: song.preview, baseURL: baseURL),
             post: song.post.map { PostResponse(post: $0, baseURL: baseURL) },
             releaseDate: song.releaseDate,
-            resources: song.resourceURLs.compactMap(platform.resource),
+            resources: song.resourceURLs.compactMap(platform.hyperlink),
             title: song.title
         )
     }
