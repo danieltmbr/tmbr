@@ -1,6 +1,7 @@
 import Vapor
 import Foundation
 import AuthKit
+import Core
 
 struct PodcastResponse: Encodable, Sendable {
     
@@ -26,7 +27,7 @@ struct PodcastResponse: Encodable, Sendable {
     
     private let releaseDate: Date?
     
-    private let resources: [Resource]
+    private let resources: [Hyperlink]
 
     private let seasonNumber: Int?
     
@@ -44,7 +45,7 @@ struct PodcastResponse: Encodable, Sendable {
         preview: PreviewResponse,
         post: PostResponse?,
         releaseDate: Date?,
-        resources: [Resource],
+        resources: [Hyperlink],
         seasonNumber: Int?,
         title: String
     ) {
@@ -82,7 +83,7 @@ struct PodcastResponse: Encodable, Sendable {
             preview: PreviewResponse(preview: podcast.preview, baseURL: baseURL),
             post: podcast.post.map { PostResponse(post: $0, baseURL: baseURL) },
             releaseDate: podcast.releaseDate,
-            resources: podcast.resourceURLs.compactMap(platform.resource),
+            resources: podcast.resourceURLs.compactMap(platform.hyperlink),
             seasonNumber: podcast.seasonNumber,
             title: podcast.title
         )

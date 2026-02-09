@@ -1,6 +1,7 @@
 import Vapor
 import Foundation
 import AuthKit
+import Core
 
 struct MovieResponse: Encodable, Sendable {
     
@@ -24,7 +25,7 @@ struct MovieResponse: Encodable, Sendable {
     
     private let releaseDate: Date?
     
-    private let resources: [Resource]
+    private let resources: [Hyperlink]
     
     private let title: String
     
@@ -39,7 +40,7 @@ struct MovieResponse: Encodable, Sendable {
         preview: PreviewResponse,
         post: PostResponse?,
         releaseDate: Date?,
-        resources: [Resource],
+        resources: [Hyperlink],
         title: String
     ) {
         self.id = id
@@ -73,7 +74,7 @@ struct MovieResponse: Encodable, Sendable {
             preview: PreviewResponse(preview: movie.preview, baseURL: baseURL),
             post: movie.post.map { PostResponse(post: $0, baseURL: baseURL) },
             releaseDate: movie.releaseDate,
-            resources: movie.resourceURLs.compactMap(platform.resource),
+            resources: movie.resourceURLs.compactMap(platform.hyperlink),
             title: movie.title
         )
     }

@@ -19,7 +19,7 @@ struct BookViewModel: Encodable, Sendable {
     
     private let releaseDate: String?
     
-    private let resources: [ResourceViewModel]
+    private let resources: [Hyperlink]
     
     private let title: String
     
@@ -31,7 +31,7 @@ struct BookViewModel: Encodable, Sendable {
         notes: [NoteViewModel],
         post: PostItemViewModel?,
         releaseDate: String?,
-        resources: [ResourceViewModel],
+        resources: [Hyperlink],
         title: String
     ) {
         self.id = id
@@ -61,9 +61,7 @@ struct BookViewModel: Encodable, Sendable {
             notes: try notes.map(NoteViewModel.init),
             post: try book.post.map(PostItemViewModel.init),
             releaseDate: book.releaseDate?.formatted(.releaseDate),
-            resources: book.resourceURLs
-                .compactMap(platform.resource)
-                .map(ResourceViewModel.init),
+            resources: book.resourceURLs.compactMap(platform.hyperlink),
             title: book.title
         )
     }

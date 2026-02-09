@@ -1,11 +1,9 @@
-extension Platform<Podcast> {
-    
-    static let all = Platform(platforms: [
-        .spotify,
-        .applePodcasts
-    ])
-    
-    static let spotify = Platform(displayName: "Spotify", parser: .spotify)
+extension Platform where M == Void {
 
-    static let applePodcasts = Platform(displayName: "Podcasts", parser: .applePodcasts)
+    static var podcast: Platform<Void> {
+        Platform(platforms: [
+            Platform(name: "Spotify", checker: .spotify),
+            Platform(name: "Podcasts", checker: .applePodcasts)
+        ])
+    }
 }
