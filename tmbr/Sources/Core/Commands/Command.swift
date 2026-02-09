@@ -1,4 +1,5 @@
 import Foundation
+import Vapor
 
 public protocol Command<Input, Output>: Sendable {
     
@@ -25,5 +26,21 @@ public extension Command where Input == Void {
     
     func callAsFunction() async throws -> Output {
         try await execute()
+    }
+}
+
+public extension Command where Input == URL {
+            
+    func execute(_ stringURL: String) async throws -> Output {
+        guard let url = URL(string: stringURL),
+              let scheme = url.scheme,
+              ["http", "https"].contains(scheme) else {
+            throw Abort(.badRequest, reason: "Invalid or missing URL")
+        }
+        return try await self.execute(url)
+    }
+    
+    func callAsFunction(_ stringURL: String) async throws -> Output {
+        try await execute(stringURL)
     }
 }
