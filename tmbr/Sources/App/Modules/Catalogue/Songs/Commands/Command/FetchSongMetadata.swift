@@ -13,7 +13,7 @@ struct FetchSongMetadataCommand: Command {
 
     init(
         fetch: CommandResolver<URL, Metadata>,
-        platform: Platform<SongMetadata> = .all
+        platform: Platform<SongMetadata> = .song
     ) {
         self.fetch = fetch
         self.platform = platform
