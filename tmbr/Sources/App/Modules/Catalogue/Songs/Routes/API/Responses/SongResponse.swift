@@ -65,7 +65,7 @@ struct SongResponse: Encodable, Sendable {
         song: Song,
         baseURL: String,
         notes: [Note],
-        platform: Platform<Song> = .all
+        platform: Platform<Void> = .song
     ) {
         self.init(
             id: song.id!,
