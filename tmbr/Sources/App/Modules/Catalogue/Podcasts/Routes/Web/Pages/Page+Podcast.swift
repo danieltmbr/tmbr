@@ -57,7 +57,7 @@ struct PodcastViewModel: Encodable, Sendable {
         podcast: Podcast,
         notes: [Note],
         baseURL: String,
-        platform: Platform<Podcast> = .all
+        platform: Platform<Void> = .podcast
     ) throws {
         self.init(
             id: try podcast.requireID(),

@@ -61,7 +61,7 @@ struct MovieResponse: Encodable, Sendable {
         movie: Movie,
         baseURL: String,
         notes: [Note],
-        platform: Platform<Movie> = .all
+        platform: Platform<Void> = .movie
     ) {
         self.init(
             id: movie.id!,

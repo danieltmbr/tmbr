@@ -49,7 +49,7 @@ struct BookViewModel: Encodable, Sendable {
         book: Book,
         notes: [Note],
         baseURL: String,
-        platform: Platform<Book> = .all
+        platform: Platform<Void> = .book
     ) throws {
         self.init(
             id: try book.requireID(),

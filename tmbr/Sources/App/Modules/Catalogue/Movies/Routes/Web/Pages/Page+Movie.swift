@@ -49,7 +49,7 @@ struct MovieViewModel: Encodable, Sendable {
         movie: Movie,
         notes: [Note],
         baseURL: String,
-        platform: Platform<Movie> = .all
+        platform: Platform<Void> = .movie
     ) throws {
         self.init(
             id: try movie.requireID(),
