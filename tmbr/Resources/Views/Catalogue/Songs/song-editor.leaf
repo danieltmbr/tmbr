@@ -1,0 +1,148 @@
+#extend("Shared/page"):
+
+    #export("styles"):
+    <link rel="stylesheet" href="/Styles/editor.css">
+    #endexport
+
+    #export("main"):
+    <button id="gallery-open" class="icon" type="button">
+        #extend("Icons/gallery")
+    </button>
+
+    <form id="song-form" method="#(submit.method)" action="#(submit.action)">
+        <input id="editor-song-id" type="hidden" name="id" value="#(id)" />
+        #if(_csrf):
+            <input type="hidden" name="_csrf" value="#(_csrf)" />
+        #endif
+
+        <input
+            id="editor-song-title"
+            name="title"
+            type="text"
+            value="#(title)"
+            placeholder="Title"
+            autocomplete="off"
+            spellcheck="true"
+        />
+        
+        <section id="resources-section">
+            <h3>Resources</h3>
+            #for(url in resourceURLs):
+                <input
+                    class="resource-url"
+                    data-autofill-source="true"
+                    type="url"
+                    name="resourceURLs[]"
+                    value="#(url)"
+                    placeholder="https://…"
+                >
+            #endfor
+            <input
+                class="resource-url"
+                data-autofill-source="true"
+                type="url"
+                name="resourceURLs[]"
+                value=""
+                placeholder="https://…"
+            >
+        </section>
+
+        <section>
+            <h3>Details</h3>
+
+            <input
+                id="editor-song-artist"
+                name="artist"
+                type="text"
+                value="#(artist)"
+                placeholder="Artist"
+                autocomplete="off"
+                spellcheck="true"
+            />
+            
+            <input
+                id="editor-song-album"
+                name="album"
+                type="text"
+                value="#(album)"
+                placeholder="Album"
+                autocomplete="off"
+                spellcheck="true"
+            />
+            
+            <input
+                id="editor-song-release-date"
+                name="release-date"
+                type="date"
+                value="#(releaseDate)"
+                placeholder="Release Date"
+                autocomplete="off"
+                spellcheck="true"
+            />
+            
+            <input
+                id="editor-song-genre"
+                name="genre"
+                type="text"
+                value="#(genre)"
+                placeholder="Genre"
+                autocomplete="off"
+                spellcheck="true"
+            />
+        </section>
+                    
+        #if(error):
+            <p class="editor-error">#unsafeHTML(error)</p>
+        #endif
+
+        <section>
+            <h3>Notes</h3>
+            <textarea
+                id="editor-post-body"
+                name="body"
+                placeholder="Write your story"
+                autocapitalize="sentences"
+                spellcheck="true"
+            >#(body)</textarea>
+        </section>
+
+        <p id="autofill-status" class="system-info" hidden></p>
+            
+        <div class="editor-actions">
+            <div>
+                <label class="access">
+                    <select id="access" name="access">
+                        <option value="public" #if(access == "public"):selected#endif>Public</option>
+                        <option value="private" #if(access == "private"):selected#endif>Private</option>
+                    </select>
+                </label>
+                    
+                <button id="editor-post-save" class="primary" type="submit">#(submit.label)</button>
+            </div>
+        </div>
+    </form>
+
+    <form id="preview-form" method="post" action="/post/preview" target="_blank" hidden>
+        #if(_csrf):
+            <input type="hidden" name="_csrf" value="#(_csrf)" />
+        #endif
+        <input type="hidden" name="title" id="preview-title" />
+        <input type="hidden" name="body" id="preview-body" />
+    </form>
+    
+    <aside id="gallery" hidden>
+        <div id="gallery-header" alt="Gallery Header">
+            <button class="icon small" type="button" id="gallery-close" aria-label="Close">
+                #extend("Icons/close")
+            </button>
+            <span id="gallery-status" class="system-info"></span>
+        </div>
+        <section alt="Gallery" id="gallery-section"></section>
+    </aside>
+    #endexport
+    
+    #export("scripts"):
+        <script src="/Scripts/song-editor.js"></script>
+    #endexport
+#endextend
+

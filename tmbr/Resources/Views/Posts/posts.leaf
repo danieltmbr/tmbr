@@ -1,4 +1,10 @@
 #extend("Shared/page"):
+
+    #export("toolbar"):
+        <button id="new-item" class="icon" type="button">
+            #extend("Icons/pencil")
+        </button>
+    #endexport
     
     #export("main"):
         #extend("Shared/signature")
@@ -15,6 +21,30 @@
                 </ul>
             </section>
         #endif
+        
+        <aside id="new-items" class="panel">
+            <div class="panel-header">
+                <button class="icon small" type="button" id="new-item-close" aria-label="Close">
+                    #extend("Icons/close")
+                </button>
+                <span class="system-info" style="display:none;">New</span>
+            </div>
+    
+            <ul class="system-info">
+                <a href="post/new"><li>#extend("Icons/post") Post</li></a>
+                <hr/>
+                <a href="books/new"><li>#extend("Icons/book") Book</li></a>
+                <a href="movies/new"><li>#extend("Icons/movie") Movie</li></a>
+                <a href="podcasts/new"><li>#extend("Icons/podcast") Podcast</li></a>
+                <a href="songs/new"><li>#extend("Icons/song") Song</li></a>
+                <hr/>
+                <a href="catalogue/new"><li>#extend("Icons/clipboard") URL from clipboard</li></a>
+            </ul>
+        </aside>
+    #endexport
+    
+    #export("scripts"):
+        <script src="/Scripts/toolbar.js"></script>
     #endexport
     
 #endextend

@@ -2,8 +2,9 @@
 <html>
     #extend("Shared/head")
     <body>
+        <div id="toolbar">#import("toolbar")</div>
         <main>#import("main")</main>
         #extend("Shared/footer")
-        #extend("Shared/scripts")
     </body>
+    #extend("Shared/scripts")
 </html>
