@@ -1,21 +1,20 @@
 # Commands
 
-Business logic decoupled from HTTP handlers via composable, single-responsibility commands. Each command typically performs one focused DB operation (fetch, create, update, delete).
+## Rules
 
-## Access
+- **Always use `request.commandDB`**, never `application.db`
+- Define command Input types separately from API payloads
+- Map payloads to command inputs in controllers — never use payloads directly as inputs
 
-- Dot syntax: `request.commands.posts.create(input)`
-- Defined as `CommandFactory` statics in `Commands+ModuleName.swift`
+## Access Pattern
 
-## Database Access
+```swift
+request.commands.posts.create(input)
+```
 
-**CRITICAL**: Always use `request.commandDB`, never `application.db`.
+## When Running Multiple Commands Atomically
 
-`commandDB` is a `@TaskLocal` database instance defined in `CommandContext` that enables transaction support.
-
-## Transactions
-
-Wrap multiple commands for atomicity:
+Wrap in a transaction:
 
 ```swift
 request.commands.transaction { commands in
@@ -25,22 +24,17 @@ request.commands.transaction { commands in
 }
 ```
 
-- Transaction sets `CommandContext.database` (a `@TaskLocal`) to the transaction DB
-- All commands read from `request.commandDB`, so they transparently participate
-- Outside a transaction, `commandDB` falls back to `application.db`
+- `commandDB` is a `@TaskLocal` — transactions set it to the transaction DB
+- All commands read from `commandDB`, so they transparently participate
 - Nested transaction calls detect existing transaction and reuse it
+- Outside transactions, `commandDB` falls back to `application.db`
 
-## Input Types
+This is why `commandDB` is critical — using `application.db` bypasses transaction support.
 
-- Commands define their own `Input` types, NOT API payloads
-- Same command is reused by both REST API and Web controllers
-- Caller (API or Web) maps its endpoint-specific payload into command's input
-- Using a request payload directly as command input is an **anti-pattern**
+## When Adding Commands to a New Module
 
-## Adding Commands to a New Module
-
-1. Define command structs with their `Input` types
+1. Define command structs with `Input` types
 2. Create `CommandFactory` statics for each command
-3. Add `Commands+ModuleName.swift` with computed property on `Commands`
+3. Add computed property on `Commands` in `Commands+ModuleName.swift`
 
 Without the computed property extension, dot-syntax won't resolve.

@@ -1,8 +1,6 @@
 # CLAUDE.md
 
-## About
-
-Vapor web app for capturing thoughts as Posts or Notes on catalogue items (songs, books, movies, podcasts). Preview-based linking enables any entity to own Notes and be referenced by Posts.
+Vapor web app for capturing thoughts as Posts or Notes on catalogue items (songs, books, movies, podcasts).
 
 ## Stack
 
@@ -19,28 +17,14 @@ swift test --filter CoreTests
 
 Run from `tmbr/` subdirectory.
 
-## Collaboration
+## Rules
 
 - Discuss before implementing non-trivial features
 - Question new abstractions — prefer convenience initializers over new types
 
-## Gotchas
+## Before Starting
 
-- `.with()` is eager loading, NOT a SQL join — use `.join()` before `.filter(Model.self, ...)`
-- Always use `request.commandDB`, never `application.db`
-
-## Testing
-
-Uses Swift Testing: `@Suite`, `@Test`, `#expect`
-
-## Libraries
-
-- **Core** (`Sources/Core/`) — Module system, Page pattern, Form handling, Markdown, Validation
-- **AuthKit** (`Sources/AuthKit/`) — Authentication with Apple Sign-In, User model, Permission system
-
-## Before Working On
-
-- New modules → `/.claude/docs/modules.md`
-- Schema/relationships → `/.claude/docs/database.md`
-- New Swift types → `/.claude/docs/patterns.md`
-- Complex frontend → `/.claude/docs/frontend.md`
+- New modules → read `/.claude/docs/modules.md`
+- Schema/relationships → read `/.claude/docs/database.md`
+- New Swift types → read `/.claude/docs/patterns.md`
+- Complex frontend → read `/.claude/docs/frontend.md`

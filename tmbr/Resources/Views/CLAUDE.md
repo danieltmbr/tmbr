@@ -2,43 +2,34 @@
 
 ## HTML & CSS Rules
 
-No CSS frameworks. No older-browser polyfills. Modern CSS/HTML only.
-
-- **Never use `<div>` when a semantic element exists** — `<article>`, `<section>`, `<nav>`, `<aside>`, `<main>`, `<footer>`, `<form>`, `<h1>`–`<h6>`, etc.
-- **CSS targets tags, not classes** — e.g. `article`, `section > ul`. Only add a class when the same tag genuinely needs different visual variants that context can't distinguish.
-- **Flexbox/grid for all layout.**
-- **Navigation = `<a>` links.** No JS history manipulation. Dynamic content loading is fine only when it doesn't change the navigable URL state.
+- Never use `<div>` when a semantic element exists — use `<article>`, `<section>`, `<nav>`, `<aside>`, `<main>`, `<footer>`, `<form>`, `<h1>`–`<h6>`
+- Target tags in CSS, not classes — e.g. `article`, `section > ul`
+- Only add classes when the same tag needs different visual variants that context can't distinguish
+- Use flexbox/grid for all layout
+- Use `<a>` links for navigation — no JS history manipulation
 
 ## Leaf Templates
 
-Templates compose from shared fragments. `Shared/page.leaf` is the base layout with named slots (`main`, `toolbar`, `styles`, `scripts`).
+Extend `Shared/page.leaf` with named slots:
 
-Page templates extend via:
 ```leaf
 #extend("Shared/page")
 #export("main") { ... }
 ```
 
-## Template<Model> Pattern
+## When Creating Pages
 
-`Template<Model>` binds a Leaf template name to a ViewModel type for compile-time safety.
+Use `Template<Model>` for compile-time safety:
 
 ```swift
 Page(template: .postEditor, parser: { req in /* → ViewModel */ })
 ```
 
-## Error Recovery
+## When Handling Errors
 
-Two levels:
-- **Per-page**: `page.recover(handler)` for page-specific errors
-- **Per-route-group**: `RecoverMiddleware` wrapping a route collection
+- Per-page: `page.recover(handler)`
+- Per-route-group: wrap with `RecoverMiddleware`
 
-```swift
-routes.grouped(RecoverMiddleware()).register(collection: PostsWebController())
-```
+## Before Complex Frontend Work
 
-## Static Assets
-
-- `Public/Styles/` — CSS files
-- `Public/Scripts/` — JavaScript files
-- `Public/Assets/` — Images and other assets
+Read `/.claude/docs/frontend.md` for detailed semantic element guidance and template examples.
