@@ -2,7 +2,7 @@
 
 ## Closure-Based Functional Types
 
-Prefer structs that wrap closures over protocols with multiple implementations. This pattern is used throughout the codebase:
+Prefer structs that wrap closures over protocols with multiple implementations:
 
 ```swift
 struct PlatformChecker: Sendable {
@@ -27,7 +27,7 @@ extension PlatformChecker {
 For composable types that need to support both individual instances and aggregation:
 
 1. **Functional init** — full control, accepts closures directly
-2. **Convenience init** — common case, wraps simpler building blocks (checker, extractor, etc.)
+2. **Convenience init** — common case, wraps simpler building blocks
 3. **Composite init** — aggregates multiple instances, tries each in order
 
 ```swift
@@ -67,9 +67,3 @@ When some instances support a feature and others don't, make it optional rather 
 init(name: String, checker: PlatformChecker, extractor: MetadataExtractor<M>? = nil)
 // Platforms without extractors are "display-only" — they can identify URLs but not fetch metadata
 ```
-
-## Collaboration Philosophy
-
-**Discuss before implementing.** For non-trivial features, explore ideas through conversation first. Sketch out types, relationships, and responsibilities verbally before writing code. This surfaces design issues early and builds shared understanding.
-
-**Question proposed abstractions.** If a design introduces a new type, ask: can this be achieved with a convenience initializer instead? Extra types add cognitive load — prefer fewer types with flexible initializers.

@@ -34,22 +34,99 @@ Each module in `Sources/App/Modules/` follows this pattern:
 
 Response DTOs (e.g., `PostResponse`, `ImageResponse`) belong in `Routes/API/Responses/`, not in `Payloads/`. They are REST-specific objects — the API equivalent of Web Page view models.
 
+## Adding a New Module
+
+1. Create module folder with standard structure (see above)
+2. Add computed property on `Commands` in `Commands+ModuleName.swift`
+3. Add computed property on `PermissionScopes` in `PermissionScopes+ModuleName.swift`
+4. Register module in `entrypoint.swift`
+
+Without the computed property extensions, dot-syntax won't resolve.
+
 ## Catalogue Nested Module
 
 Unlike other top-level modules, Catalogue (`Sources/App/Modules/Catalogue/`) contains its own inner `ModuleRegistry` with sub-modules: Books, Movies, Songs, Podcasts, and a shared Catalogue controller.
 
-New catalogue item types are added as sub-modules inside Catalogue, not as top-level modules.
+New catalogue item types are added as sub-modules inside Catalogue, not as top-level modules. See `database.md` for adding new catalogue item types.
 
 ## Libraries
 
 - **Core** (`Sources/Core/`) — Shared utilities: Module system, Page pattern, Form handling, Markdown, Validation
 - **AuthKit** (`Sources/AuthKit/`) — Authentication with Apple Sign-In, User model, Permission system
 
-## Dot-Syntax Wiring
+## Command Pattern
 
-Both Commands and Permissions use `@dynamicMemberLookup` to enable dot-syntax access (e.g., `request.commands.posts.create`). When adding a new module, writing the command/permission logic alone is not enough — you must also add the extensions that wire it into the lookup chain:
+Business logic is decoupled from HTTP handlers via composable, single-responsibility commands.
 
-- **Commands**: Add a computed property on `Commands` returning the new collection type, and register the command factories in `Commands+ModuleName.swift`
-- **Permissions**: Add a computed property on `PermissionScopes` returning the new scope type, and define the scope struct in `PermissionScopes+ModuleName.swift`
+### Access Pattern
 
-Without these extensions, the dot-syntax won't resolve and the new module's commands/permissions will be inaccessible from the request.
+```swift
+request.commands.posts.create(input)
+```
+
+### Critical Rule
+
+**Always use `request.commandDB`**, never `application.db`. This is a `@TaskLocal` database instance that enables transaction support.
+
+### Transactions
+
+When multiple commands need to run atomically:
+
+```swift
+request.commands.transaction { commands in
+    let song = try await commands.songs.create(songInput)
+    let notes = try await commands.notes.batchCreate(notesInput)
+    return SongResponse(song: song, notes: notes)
+}
+```
+
+The transaction sets `CommandContext.database` (a `@TaskLocal`) to the transaction DB. Since all commands read from `request.commandDB`, they transparently participate in the transaction. Outside a transaction, `commandDB` falls back to `application.db`. Nested transaction calls detect an existing transaction and reuse it.
+
+### Command Input Types
+
+Commands define their own `Input` types, not API payloads. The same command is reused by both API and Web controllers. The caller maps its endpoint-specific payload into the command's input type.
+
+### Adding Commands to a Module
+
+1. Define command structs with `Input` types
+2. Create `CommandFactory` statics for each command
+3. Add computed property on `Commands` in `Commands+ModuleName.swift`
+
+## Permission Pattern
+
+Permissions follow the same composable pattern as commands.
+
+### Access Pattern
+
+```swift
+request.permissions.posts.create
+```
+
+### Permission Types
+
+- **`Permission<Input>`** — Returns `User?`. For public endpoints with auth-aware behavior (e.g., listing posts returns only published for anonymous, includes drafts for author).
+- **`AuthPermission<Input>`** — Returns `User` (non-optional). For private endpoints. Throws `.unauthorized` if no user, `.forbidden` if wrong role.
+
+### Injection and Grant
+
+Inject permissions into commands via `CommandFactory`:
+
+```swift
+CreatePostCommand(
+    database: request.commandDB,
+    permission: request.permissions.posts.create
+)
+```
+
+Inside the command, `grant()` enforces authorization and provides the user:
+
+```swift
+let user = try await permission.grant()
+let post = Post(authorID: user.userID, ...)
+```
+
+### Adding Permissions to a Module
+
+1. Create scope struct in `PermissionScopes+ModuleName.swift`
+2. Add computed property on `PermissionScopes` returning the scope
+3. Define static permissions in `Permission+ModuleName.swift`

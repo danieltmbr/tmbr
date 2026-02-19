@@ -70,6 +70,15 @@ Notes and Posts never reference parent entities directly — they hold a Preview
 
 Catalogue items conform to `Previewable`. The `PreviewModelMiddleware` automatically creates, updates, and deletes the associated Preview record in sync with the item's lifecycle — no manual Preview management needed. Each item type configures how its fields map to Preview's `primaryInfo`/`secondaryInfo`/`image`.
 
+### Adding a New Catalogue Item Type
+
+1. Create directory under `Catalogue/` (e.g., `Catalogue/Games/`)
+2. Conform model to `Previewable` protocol
+3. Configure field mappings to Preview's `primaryInfo`/`secondaryInfo`/`image`
+4. Register in `Catalogue.swift`'s inner `ModuleRegistry`
+
+`PreviewModelMiddleware` automatically manages Preview records — no manual Preview creation needed.
+
 ### Quotes
 
 **Quotes are ephemeral.** Quote entities are auto-extracted from a Note's markdown block quotes on every save. All existing Quotes for a Note are deleted and regenerated on each update. **Quote IDs are not stable** — never rely on persistent Quote IDs.
