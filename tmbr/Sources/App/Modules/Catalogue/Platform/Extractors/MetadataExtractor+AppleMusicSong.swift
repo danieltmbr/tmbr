@@ -8,9 +8,11 @@ extension MetadataExtractor where M == SongMetadata {
             throw MetadataExtractionError.invalidType(expected: "music.song", actual: song.type)
         }
 
+        var albumURLComponents = song.data["music:album"].flatMap(URLComponents.init)
+        albumURLComponents?.queryItems = nil
         async let album = extract(
             key: "apple:title",
-            from: song.data["music:album"],
+            from: albumURLComponents?.string,
             of: "music.album",
             with: fetcher
         )

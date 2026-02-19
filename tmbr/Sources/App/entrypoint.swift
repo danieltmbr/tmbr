@@ -22,6 +22,7 @@ enum Entrypoint {
                 .database,
                 .commands,
                 .renderer,
+                .content,
             ],
             modules: [
                 .rss,
