@@ -17,6 +17,7 @@
 
         <input
             id="editor-song-title"
+            class="text-input"
             name="title"
             type="text"
             value="#(title)"
@@ -29,7 +30,7 @@
             <h3>Resources</h3>
             #for(url in resourceURLs):
                 <input
-                    class="resource-url"
+                    class="text-input resource-url"
                     data-autofill-source="true"
                     type="url"
                     name="resourceURLs[]"
@@ -38,7 +39,7 @@
                 >
             #endfor
             <input
-                class="resource-url"
+                class="text-input resource-url"
                 data-autofill-source="true"
                 type="url"
                 name="resourceURLs[]"
@@ -52,6 +53,7 @@
 
             <input
                 id="editor-song-artist"
+                class="text-input"
                 name="artist"
                 type="text"
                 value="#(artist)"
@@ -59,9 +61,10 @@
                 autocomplete="off"
                 spellcheck="true"
             />
-            
+
             <input
                 id="editor-song-album"
+                class="text-input"
                 name="album"
                 type="text"
                 value="#(album)"
@@ -69,19 +72,25 @@
                 autocomplete="off"
                 spellcheck="true"
             />
-            
+
             <input
                 id="editor-song-release-date"
-                name="release-date"
+                class="text-input"
                 type="date"
                 value="#(releaseDate)"
                 placeholder="Release Date"
                 autocomplete="off"
-                spellcheck="true"
             />
-            
+            <input
+                id="editor-song-release-date-iso"
+                name="release-date"
+                type="hidden"
+                value=""
+            />
+
             <input
                 id="editor-song-genre"
+                class="text-input"
                 name="genre"
                 type="text"
                 value="#(genre)"
@@ -95,15 +104,24 @@
             <p class="editor-error">#unsafeHTML(error)</p>
         #endif
 
-        <section>
+        <section id="notes-section">
             <h3>Notes</h3>
+            #for(note in notes):
+                <textarea
+                    class="note-body"
+                    name="notes[]"
+                    placeholder="Write your thoughts..."
+                    autocapitalize="sentences"
+                    spellcheck="true"
+                >#(note)</textarea>
+            #endfor
             <textarea
-                id="editor-post-body"
-                name="body"
-                placeholder="Write your story"
+                class="note-body"
+                name="notes[]"
+                placeholder="Write your thoughts..."
                 autocapitalize="sentences"
                 spellcheck="true"
-            >#(body)</textarea>
+            ></textarea>
         </section>
 
         <p id="autofill-status" class="system-info" hidden></p>

@@ -45,8 +45,7 @@ main > form {
     max-width: 600px;
 }
 
-form input,
-form label > input {
+form input.text-input {
     width: calc(100% + 16px);
     border: none;
     outline: none;
@@ -60,13 +59,11 @@ form label > input {
     transition: background-color 1s ease;
 }
 
-form input,
-form section label > input {
+form section input.text-input {
     margin: 2px -8px;
 }
 
-form input:hover,
-form label > input:hover {
+form input.text-input:hover {
     background: var(--input-background-hover);
 }
 

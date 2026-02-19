@@ -17,6 +17,7 @@
 
         <input
             id="editor-post-title"
+            class="text-input"
             name="title"
             type="text"
             value="#(title)"

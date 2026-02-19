@@ -6,9 +6,7 @@
         <h3>by #(artist)</h3>
         
         <p>
-            #if(album) #(album),
-            #if(genre) #(genre),
-            #if(releaseDate) #(releaseDate)
+            #if(info) #(info)
         </p>
         
         #extend("Catalogue/resources")

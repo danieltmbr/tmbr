@@ -72,7 +72,7 @@ extension ModelConfiguration where Model == Song, Parameters == SongInput {
 }
 
 extension Validator where Input == SongInput {
-    
+
     static var song: Self {
         Validator { song in
             guard !song.title.trimmed.isEmpty,
@@ -80,5 +80,12 @@ extension Validator where Input == SongInput {
                 throw Abort(.badRequest, reason: "The song title or artist name is missing")
             }
         }
+    }
+}
+
+extension SongInput {
+
+    func edit(id: SongID) -> EditSongInput {
+        EditSongInput(id: id, parameters: self)
     }
 }
