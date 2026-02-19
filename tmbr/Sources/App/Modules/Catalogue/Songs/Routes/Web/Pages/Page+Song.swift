@@ -53,7 +53,7 @@ struct SongViewModel: Encodable, Sendable {
         song: Song,
         notes: [Note],
         baseURL: String,
-        platform: Platform<Void> = .song
+        platform: Platform<SongMetadata> = .song
     ) throws {
         self.init(
             id: try song.requireID(),

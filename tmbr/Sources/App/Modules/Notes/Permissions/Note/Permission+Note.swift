@@ -71,7 +71,7 @@ extension AuthPermission<AttachNotePermissionInput> {
         AuthPermission<AttachNotePermissionInput>(
             "Only the item's authors can add notes to it."
         ) { user, input in
-            let authorIDs = Set(input.notes.compactMap(\.author.id))
+            let authorIDs = Set(input.notes.map(\.$author.id))
             guard authorIDs.count == 1 else { return false }
             let authorID = authorIDs.first!
             return authorID == user.userID && authorID == input.preview.parentOwner.id

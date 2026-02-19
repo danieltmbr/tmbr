@@ -30,6 +30,7 @@ struct Notes: Module {
         app.migrations.add(CreateNote())
         app.migrations.add(CreateQuote())
         app.migrations.add(UpdateNoteVisibilityToAccess())
+        app.migrations.add(ChangeNoteIDToUUID())
         app.databases.middleware.use(NoteModelMiddleware())
         
         try await app.permissions.add(scope: notePermissions)
