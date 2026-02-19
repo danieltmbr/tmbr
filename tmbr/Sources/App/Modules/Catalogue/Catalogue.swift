@@ -20,7 +20,6 @@ struct Catalogue: Module {
 
         // Run after all catalogue sub-modules have added their table migrations
         app.migrations.add(DeferPreviewForeignKeys())
-        app.migrations.add(DropOldPreviewForeignKeys())
     }
     
     func boot(_ routes: any Vapor.RoutesBuilder) async throws {
