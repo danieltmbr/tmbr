@@ -4,25 +4,28 @@ import Core
 import Fluent
 import AuthKit
 
+struct FetchPermissionInput<Item: Sendable>: Sendable {
+    let item: Item
+    let reason: FetchReason
+}
+
 extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDValue> {
-    
-    typealias PermissionInput = (item: Output, reason: FetchReason)
-    
+
     static func fetch(
         database: Database,
-        permission: ErasedPermissionResolver<PermissionInput>,
+        permission: ErasedPermissionResolver<FetchPermissionInput<Output>>,
         eagerLoad: @escaping @Sendable (Output, Database) async throws -> Void
     ) -> Self {
         PlainCommand { params in
             guard let item = try await Output.find(params.itemID, on: database) else {
                 throw Abort(.notFound, reason: "\(Output.self) not found")
             }
-            try await permission.grant((item, params.reason))
+            try await permission.grant(FetchPermissionInput(item: item, reason: params.reason))
             try await eagerLoad(item, database)
             return item
         }
     }
-    
+
     static func fetch(
         database: Database,
         readPermission: BasePermissionResolver<Output>,
@@ -30,7 +33,7 @@ extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDVa
     ) -> Self {
         self.fetch(
             database: database,
-            permission: ErasedPermissionResolver(input: \.item, condition: \.reason) { reason in
+            permission: ErasedPermissionResolver(input: { $0.item }, condition: { $0.reason }) { reason in
                 switch reason {
                 case .read: readPermission.eraseOutput()
                 case .write: writePermission.eraseOutput()
@@ -39,7 +42,7 @@ extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDVa
             eagerLoad: { model, db in }
         )
     }
-    
+
     static func fetch<each Property>(
         database: Database,
         readPermission: BasePermissionResolver<Output>,
@@ -49,7 +52,7 @@ extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDVa
     where repeat (each Property): AsyncLoadable {
         self.fetch(
             database: database,
-            permission: ErasedPermissionResolver(input: \.item, condition: \.reason) { reason in
+            permission: ErasedPermissionResolver(input: { $0.item }, condition: { $0.reason }) { reason in
                 switch reason {
                 case .read: readPermission.eraseOutput()
                 case .write: writePermission.eraseOutput()
