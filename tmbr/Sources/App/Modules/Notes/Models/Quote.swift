@@ -20,7 +20,7 @@ final class Quote: Model, Content, @unchecked Sendable {
     init() {}
     
     init(
-        noteID: Int,
+        noteID: UUID,
         body: String
     ) {
         self.$note.id = noteID

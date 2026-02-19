@@ -4,13 +4,13 @@ struct QuoteResponse: Content {
     
     private let body: String
     
-    private let noteID: Int
+    private let noteID: UUID
     
     private let preview: PreviewResponse
     
     init(
         body: String,
-        noteID: Int,
+        noteID: UUID,
         preview: PreviewResponse
     ) {
         self.body = body

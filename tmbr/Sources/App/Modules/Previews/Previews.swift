@@ -20,7 +20,7 @@ struct Previews: Module {
     func configure(_ app: Application) async throws {
         app.migrations.add(CreatePreview())
         app.migrations.add(AddPreviewParentAccessAndOwner())
-        
+
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)
     }

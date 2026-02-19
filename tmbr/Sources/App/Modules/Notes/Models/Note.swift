@@ -9,8 +9,8 @@ final class Note: Model, Content, @unchecked Sendable {
     
     static let schema = "notes"
 
-    @ID(custom: "id", generatedBy: .database)
-    var id: Int?
+    @ID(key: .id)
+    var id: UUID?
     
     @Parent(key: "attachment_id")
     private(set) var attachment: Preview
@@ -36,11 +36,13 @@ final class Note: Model, Content, @unchecked Sendable {
     init() {}
 
     init(
+        id: UUID = UUID(),
         attachmentID: UUID,
         authorID: Int,
         access: Access,
         body: String
     ) {
+        self.id = id
         self.$attachment.id = attachmentID
         self.$author.id = authorID
         self.access = access

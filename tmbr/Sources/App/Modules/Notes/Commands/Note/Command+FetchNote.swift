@@ -20,11 +20,12 @@ extension Command where Self == PlainCommand<QueryNotesInput, [Note]> {
         PlainCommand { input in
             let query = Note
                 .query(on: database)
+                .join(Preview.self, on: \Note.$attachment.$id == \Preview.$id)
+                .filter(Preview.self, \.$parentType == input.ownerType)
+                .filter(Preview.self, \.$parentID == input.ownerID)
                 .with(\.$attachment) { attachment in
                     attachment.with(\.$image)
                 }
-                .filter(Preview.self, \.$parentType == input.ownerType)
-                .filter(Preview.self, \.$parentID == input.ownerID)
                 .sort(\Note.$createdAt, .descending)
             try await permission.grant(query)
             return try await query.all()

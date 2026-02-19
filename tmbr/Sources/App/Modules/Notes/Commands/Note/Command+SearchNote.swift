@@ -16,6 +16,7 @@ extension Command where Self == PlainCommand<NoteQueryPayload, [Note]> {
             }
             let query = Note
                 .query(on: database)
+                .join(Preview.self, on: \Note.$attachment.$id == \Preview.$id)
                 .with(\.$attachment) { $0.with(\.$image) }
                 .with(\.$author)
                 .with(\.$quotes)

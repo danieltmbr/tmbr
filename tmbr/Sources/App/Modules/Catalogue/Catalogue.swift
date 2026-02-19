@@ -17,6 +17,10 @@ struct Catalogue: Module {
         try await app.permissions.add(scope: PermissionScopes.Catalogue())
         try await app.commands.add(collection: Commands.Catalogue())
         try await media.configure(app)
+
+        // Run after all catalogue sub-modules have added their table migrations
+        app.migrations.add(DeferPreviewForeignKeys())
+        app.migrations.add(DropOldPreviewForeignKeys())
     }
     
     func boot(_ routes: any Vapor.RoutesBuilder) async throws {
