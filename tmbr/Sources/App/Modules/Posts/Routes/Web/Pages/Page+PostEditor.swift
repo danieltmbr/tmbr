@@ -75,7 +75,6 @@ extension Page {
             req.session.data["csrf.editor"] = csrf
             return PostEditorViewModel(pageTitle: "New post", submit: submit, csrf: csrf)
         }
-        .recover(.aborts)
     }
 
     static var editPost: Self {
@@ -90,4 +89,3 @@ extension Page {
         }
     }
 }
-
