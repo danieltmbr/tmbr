@@ -28,6 +28,20 @@ class PersistenceController {
         }
     }
 
+    clearIfPending(key) {
+        try {
+            const pending = localStorage.getItem(this.pendingKeyName);
+            if (pending === key) {
+                localStorage.removeItem(key);
+                localStorage.removeItem(this.pendingKeyName);
+                return true;
+            }
+            return false;
+        } catch (_) {
+            return false;
+        }
+    }
+
     markPendingClear(key) {
         try {
             localStorage.setItem(this.pendingKeyName, key);
@@ -36,18 +50,6 @@ class PersistenceController {
         }
     }
 
-    clearPendingIfNavigatedAway() {
-        try {
-            const pending = localStorage.getItem(this.pendingKeyName);
-            if (!pending) return;
-            const stillOnEditor = !!document.getElementById('post-form');
-            if (stillOnEditor) return;
-            localStorage.removeItem(pending);
-            localStorage.removeItem(this.pendingKeyName);
-        } catch (_) {
-            // ignore
-        }
-    }
 }
 
 class UploadsController {
@@ -192,6 +194,10 @@ class EditorController {
     }
 
     loadDraft() {
+        // If this key was marked for pending clear (after form submission), clear it now
+        if (this.persistence.clearIfPending(this.storageKey)) {
+            return;
+        }
         const saved = this.persistence.load(this.storageKey);
         if (saved) this.setState(saved);
     }
@@ -536,6 +542,5 @@ document.addEventListener('DOMContentLoaded', () => {
     shortcuts.init();
 
     form.addEventListener('submit', () => persistence.markPendingClear(editor.getStorageKey()));
-    window.addEventListener('pageshow', () => persistence.clearPendingIfNavigatedAway());
 });
 

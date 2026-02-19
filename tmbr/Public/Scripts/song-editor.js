@@ -28,6 +28,20 @@ class PersistenceController {
         }
     }
 
+    clearIfPending(key) {
+        try {
+            const pending = localStorage.getItem(this.pendingKeyName);
+            if (pending === key) {
+                localStorage.removeItem(key);
+                localStorage.removeItem(this.pendingKeyName);
+                return true;
+            }
+            return false;
+        } catch (_) {
+            return false;
+        }
+    }
+
     markPendingClear(key) {
         try {
             localStorage.setItem(this.pendingKeyName, key);
@@ -36,18 +50,6 @@ class PersistenceController {
         }
     }
 
-    clearPendingIfNavigatedAway() {
-        try {
-            const pending = localStorage.getItem(this.pendingKeyName);
-            if (!pending) return;
-            const stillOnEditor = !!document.getElementById('song-form');
-            if (stillOnEditor) return;
-            localStorage.removeItem(pending);
-            localStorage.removeItem(this.pendingKeyName);
-        } catch (_) {
-            // ignore
-        }
-    }
 }
 
 class MetadataController {
@@ -126,7 +128,7 @@ class ResourceInputsController {
 
     createInput() {
         const input = document.createElement('input');
-        input.className = 'resource-url';
+        input.className = 'text-input resource-url';
         input.dataset.autofillSource = 'true';
         input.type = 'url';
         input.name = 'resourceURLs[]';
@@ -280,13 +282,14 @@ class AutofillController {
         albumInput,
         releaseDateInput,
         statusEl
-    }, { metadata }) {
+    }, { metadata, onApply }) {
         this.titleInput = titleInput;
         this.artistInput = artistInput;
         this.albumInput = albumInput;
         this.releaseDateInput = releaseDateInput;
         this.statusEl = statusEl;
         this.metadata = metadata;
+        this.onApply = onApply;
     }
 
     async fetchAndApply(url) {
@@ -294,6 +297,9 @@ class AutofillController {
             const song = await this.metadata.fetch(url);
             this.applyMetadata(song);
             this.setStatus('');
+            if (typeof this.onApply === 'function') {
+                this.onApply();
+            }
         } catch (error) {
             console.error(error);
             this.setStatus('Failed to fetch metadata.');
@@ -438,6 +444,10 @@ class EditorController {
     }
 
     loadDraft() {
+        // If this key was marked for pending clear (after form submission), clear it now
+        if (this.persistence.clearIfPending(this.storageKey)) {
+            return;
+        }
         const saved = this.persistence.load(this.storageKey);
         if (saved) this.setState(saved);
     }
@@ -475,6 +485,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('song-form');
     if (!form) return;
 
+    const persistence = new PersistenceController();
+
     const idInput = document.getElementById('editor-song-id');
     const titleInput = document.getElementById('editor-song-title');
     const artistInput = document.getElementById('editor-song-artist');
@@ -487,7 +499,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const notesSection = document.getElementById('notes-section');
     const statusEl = document.getElementById('autofill-status');
 
-    const persistence = new PersistenceController();
     const metadata = new MetadataController();
 
     const notes = new NotesController(
@@ -511,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
         albumInput,
         releaseDateInput,
         statusEl
-    }, { metadata });
+    }, { metadata, onApply: () => editor.saveDraft() });
 
     const editor = new EditorController({
         form,
@@ -538,5 +549,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         persistence.markPendingClear(editor.getStorageKey());
     });
-    window.addEventListener('pageshow', () => persistence.clearPendingIfNavigatedAway());
 });

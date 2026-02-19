@@ -12,13 +12,18 @@ struct HTMLMetadataParser {
     }
 
     // MARK: - Helpers
-    
+
+    // Patterns handle quoted attributes properly - matching the same quote type that opened the value
+    // This allows apostrophes in double-quoted values and vice versa
+
     private func metaPattern(key: String) -> String {
-        "<meta\\b[^>]*\\b\(key)=[\"']([^\"']+)[\"'][^>]*\\bcontent=[\"']([^\"']*)[\"'][^>]*>"
+        // property="value" content="value" OR property='value' content='value'
+        "<meta\\b[^>]*\\b\(key)=(?:\"([^\"]+)\"|'([^']+)')[^>]*\\bcontent=(?:\"([^\"]*)\"|'([^']*)')[^>]*>"
     }
-    
+
     private func metaPatternContentFirst(key: String) -> String {
-        "<meta\\b[^>]*\\bcontent=[\"']([^\"']*)[\"'][^>]*\\b\(key)=[\"']([^\"']+)[\"'][^>]*>"
+        // content="value" property="value" OR content='value' property='value'
+        "<meta\\b[^>]*\\bcontent=(?:\"([^\"]*)\"|'([^']*)')[^>]*\\b\(key)=(?:\"([^\"]+)\"|'([^']+)')[^>]*>"
     }
     
     private let options: NSRegularExpression.Options = [.caseInsensitive, .dotMatchesLineSeparators]
@@ -43,28 +48,48 @@ struct HTMLMetadataParser {
         let regex1 = regex(pattern: metaPattern(key: key))
         let regex2 = regex(pattern: metaPatternContentFirst(key: key))
         var results: [String: String] = [:]
-        collectMatches(in: text, regex: regex1, keyIndex: 1, valueIndex: 2, into: &results)
-        collectMatches(in: text, regex: regex2, keyIndex: 2, valueIndex: 1, into: &results)
+        // metaPattern: groups 1,2 are key (double/single quoted), groups 3,4 are value
+        collectMatches(in: text, regex: regex1, keyIndices: [1, 2], valueIndices: [3, 4], into: &results)
+        // metaPatternContentFirst: groups 1,2 are value, groups 3,4 are key
+        collectMatches(in: text, regex: regex2, keyIndices: [3, 4], valueIndices: [1, 2], into: &results)
         return results
     }
 
     private func collectMatches(
         in text: String,
         regex: NSRegularExpression,
-        keyIndex: Int,
-        valueIndex: Int,
+        keyIndices: [Int],
+        valueIndices: [Int],
         into results: inout [String: String]
     ) {
         let nsRange = NSRange(text.startIndex..<text.endIndex, in: text)
         regex.enumerateMatches(in: text, options: [], range: nsRange) { m, _, _ in
-            guard let m = m,
-                  keyIndex < m.numberOfRanges,
-                  valueIndex < m.numberOfRanges,
-                  let keyRange = Range(m.range(at: keyIndex), in: text),
-                  let valueRange = Range(m.range(at: valueIndex), in: text) else { return }
+            guard let m = m else { return }
 
-            let key = text[keyRange].trimmingCharacters(in: .whitespacesAndNewlines)
-            let decodedValue = decodeEntities(String(text[valueRange]).trimmingCharacters(in: .whitespacesAndNewlines))
+            // Find which key group matched (alternation means only one will)
+            let keyString = keyIndices.lazy
+                .compactMap { index -> String? in
+                    guard index < m.numberOfRanges,
+                          m.range(at: index).location != NSNotFound,
+                          let range = Range(m.range(at: index), in: text) else { return nil }
+                    return String(text[range])
+                }
+                .first
+
+            // Find which value group matched
+            let valueString = valueIndices.lazy
+                .compactMap { index -> String? in
+                    guard index < m.numberOfRanges,
+                          m.range(at: index).location != NSNotFound,
+                          let range = Range(m.range(at: index), in: text) else { return nil }
+                    return String(text[range])
+                }
+                .first
+
+            guard let key = keyString?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  let value = valueString else { return }
+
+            let decodedValue = decodeEntities(value.trimmingCharacters(in: .whitespacesAndNewlines))
             results[key] = decodedValue
         }
     }
