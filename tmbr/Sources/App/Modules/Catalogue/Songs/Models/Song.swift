@@ -88,7 +88,7 @@ extension PreviewModelMiddleware where M == Song {
             },
             configure: { preview, song in
                 preview.primaryInfo = song.title
-                preview.secondaryInfo = song.artist
+                preview.secondaryInfo = "by \(song.artist)"
                 preview.$image.id = song.artwork?.id
                 preview.externalLinks = song.resourceURLs
             },

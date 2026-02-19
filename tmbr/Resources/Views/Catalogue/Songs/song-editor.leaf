@@ -72,12 +72,16 @@
             
             <input
                 id="editor-song-release-date"
-                name="release-date"
                 type="date"
                 value="#(releaseDate)"
                 placeholder="Release Date"
                 autocomplete="off"
-                spellcheck="true"
+            />
+            <input
+                id="editor-song-release-date-iso"
+                name="release-date"
+                type="hidden"
+                value=""
             />
             
             <input
@@ -95,15 +99,24 @@
             <p class="editor-error">#unsafeHTML(error)</p>
         #endif
 
-        <section>
+        <section id="notes-section">
             <h3>Notes</h3>
+            #for(note in notes):
+                <textarea
+                    class="note-body"
+                    name="notes[]"
+                    placeholder="Write your thoughts..."
+                    autocapitalize="sentences"
+                    spellcheck="true"
+                >#(note)</textarea>
+            #endfor
             <textarea
-                id="editor-post-body"
-                name="body"
-                placeholder="Write your story"
+                class="note-body"
+                name="notes[]"
+                placeholder="Write your thoughts..."
                 autocapitalize="sentences"
                 spellcheck="true"
-            >#(body)</textarea>
+            ></textarea>
         </section>
 
         <p id="autofill-status" class="system-info" hidden></p>
