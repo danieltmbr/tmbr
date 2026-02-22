@@ -64,15 +64,6 @@ class UploadsController {
         return await res.text();
     }
 
-    async uploadImageFromURL(url, alt) {
-        const res = await fetch('/gallery/from-url', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url, alt })
-        });
-        if (!res.ok) throw new Error(`Upload failed (${res.status})`);
-        return await res.json();
-    }
 }
 
 class MetadataController {
@@ -1082,7 +1073,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusEl = document.getElementById('autofill-status');
 
     const artworkIdInput = document.getElementById('editor-artwork-id');
-    const artworkExternalUrlInput = document.getElementById('editor-artwork-external-url');
+    const artworkSourceUrlInput = document.getElementById('editor-artwork-source-url');
     const artworkPlaceholder = document.getElementById('artwork-placeholder');
     const artworkImage = document.getElementById('artwork-image');
     const artworkClear = document.getElementById('artwork-clear');
@@ -1096,7 +1087,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const artwork = new ArtworkController({
         hiddenInput: artworkIdInput,
-        externalUrlInput: artworkExternalUrlInput,
+        externalUrlInput: artworkSourceUrlInput,
         placeholder: artworkPlaceholder,
         imageEl: artworkImage,
         clearButton: artworkClear
@@ -1177,49 +1168,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     shortcuts.init();
 
-    async function resolveArtwork() {
-        if (!artwork.hasExternalURL()) {
-            return true;
-        }
-
-        const externalURL = artwork.getExternalURL();
-        const titleValue = titleInput.value || 'Album artwork';
-
-        statusEl.textContent = 'Resolving artwork...';
-        statusEl.hidden = false;
-
-        try {
-            const lookupRes = await fetch(`/gallery/lookup?url=${encodeURIComponent(externalURL)}`);
-            if (lookupRes.ok) {
-                const existingImage = await lookupRes.json();
-                if (existingImage && existingImage.id) {
-                    artwork.setArtwork(existingImage.id, existingImage.thumbnailUrl);
-                    statusEl.hidden = true;
-                    return true;
-                }
-            }
-
-            const image = await uploads.uploadImageFromURL(externalURL, titleValue);
-            artwork.setArtwork(image.id, image.thumbnailUrl);
-            statusEl.hidden = true;
-            return true;
-        } catch (err) {
-            console.error(`Artwork resolution failed: ${err?.message || err}`);
-            statusEl.textContent = 'Failed to resolve artwork. Submitting without it.';
-            artwork.clear();
-            return true;
-        }
-    }
-
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
         e.preventDefault();
 
         const dateValue = releaseDateInput.value;
         if (dateValue) {
             releaseDateISOInput.value = new Date(dateValue).toISOString();
         }
-
-        await resolveArtwork();
 
         persistence.markPendingClear(editor.getStorageKey());
         form.submit();

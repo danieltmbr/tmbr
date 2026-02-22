@@ -51,8 +51,11 @@ struct SongsWebController: RouteCollection {
                 throw Abort(.forbidden, reason: "Invalid form token. Please reload the editor and try again.")
             }
 
+            // Resolve artwork: use existing ID, or lookup/upload from URL
+            let artworkId = try await resolveArtwork(payload: payload, on: req)
+
             let song = try await req.commands.transaction { commands in
-                let songInput = SongInput(payload: payload)
+                let songInput = SongInput(payload: payload, artworkId: artworkId)
                 let song: Song
 
                 switch mode {
@@ -63,7 +66,7 @@ struct SongsWebController: RouteCollection {
                 }
 
                 // Create notes if provided (only for create mode)
-                if case .create = mode, !payload.notes.isEmpty {
+                if case .create = mode {
                     let preview = try await commands.previews.fetch(song.$preview.id, for: .write)
                     let noteInputs = payload.notes.map { entry in
                         NoteInput(body: entry.body, access: entry.access && payload.access)
@@ -79,6 +82,30 @@ struct SongsWebController: RouteCollection {
         } catch {
             return try await renderEditorWithError(req, mode: mode, error: error)
         }
+    }
+
+    private func resolveArtwork(payload: SongEditorPayload, on req: Request) async throws -> ImageID? {
+        // If we already have an artwork ID (from drag-drop), use it
+        if let artworkId = payload.artworkId {
+            return artworkId
+        }
+
+        // If we have an artwork URL (from metadata), lookup or upload
+        guard let artworkURL = payload.artworkSourceURL else {
+            return nil
+        }
+
+        // Check if we already have this image in gallery
+        if let existingImage = try await req.commands.gallery.lookup(artworkURL) {
+            return try existingImage.requireID()
+        }
+
+        // Upload the image from URL
+        let alt = payload.title.isEmpty ? "Album artwork" : payload.title
+        let newImage = try await req.commands.gallery.addFromURL(
+            ImageURLPayload(url: artworkURL, alt: alt)
+        )
+        return try newImage.requireID()
     }
 
     private func renderEditorWithError(
@@ -114,6 +141,8 @@ struct SongsWebController: RouteCollection {
             album: submitted.album ?? "",
             artist: submitted.artist,
             artworkId: submitted.artworkId,
+            artworkSourceURL: submitted.artworkSourceURL,
+            artworkThumbnailURL: submitted.artworkSourceURL,
             genre: submitted.genre ?? "",
             notes: noteViewModels,
             releaseDate: submitted.releaseDate?.formatted(.iso8601.year().month().day()) ?? "",

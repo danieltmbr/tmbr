@@ -23,7 +23,7 @@ struct SongEditorViewModel: Encodable, Sendable {
 
     private let artworkId: Int?
 
-    private let artworkURL: String?
+    private let artworkSourceURL: String?
 
     private let artworkThumbnailURL: String?
 
@@ -50,7 +50,7 @@ struct SongEditorViewModel: Encodable, Sendable {
         album: String = "",
         artist: String = "",
         artworkId: Int? = nil,
-        artworkURL: String? = nil,
+        artworkSourceURL: String? = nil,
         artworkThumbnailURL: String? = nil,
         genre: String = "",
         notes: [NoteViewModel] = [],
@@ -67,7 +67,7 @@ struct SongEditorViewModel: Encodable, Sendable {
         self.album = album
         self.artist = artist
         self.artworkId = artworkId
-        self.artworkURL = artworkURL
+        self.artworkSourceURL = artworkSourceURL
         self.artworkThumbnailURL = artworkThumbnailURL
         self.genre = genre
         self.notes = notes
@@ -87,13 +87,11 @@ struct SongEditorViewModel: Encodable, Sendable {
     ) throws {
         let id = try song.requireID()
         let artworkId = song.$artwork.id
-        let artworkURL: String?
+        // artworkSourceURL is only for external URLs that need resolution - existing songs already have resolved artwork
         let artworkThumbnailURL: String?
         if let artwork = song.artwork {
-            artworkURL = "\(baseURL)/gallery/data/\(artwork.key)"
             artworkThumbnailURL = "\(baseURL)/gallery/data/\(artwork.thumbnailKey)"
         } else {
-            artworkURL = nil
             artworkThumbnailURL = nil
         }
         self.init(
@@ -103,7 +101,7 @@ struct SongEditorViewModel: Encodable, Sendable {
             album: song.album ?? "",
             artist: song.artist,
             artworkId: artworkId,
-            artworkURL: artworkURL,
+            artworkSourceURL: nil,
             artworkThumbnailURL: artworkThumbnailURL,
             genre: song.genre ?? "",
             notes: notes.map { NoteViewModel(body: $0.body, access: $0.access) },

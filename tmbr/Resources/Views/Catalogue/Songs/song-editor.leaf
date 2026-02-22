@@ -8,7 +8,7 @@
     <form id="song-form" method="#(submit.method)" action="#(submit.action)">
         <input id="editor-song-id" type="hidden" name="id" value="#(id)" />
         <input id="editor-artwork-id" type="hidden" name="artwork-id" value="#(artworkId)" />
-        <input id="editor-artwork-external-url" type="hidden" value="" />
+        <input id="editor-artwork-source-url" type="hidden" name="artwork-source-url" value="#(artworkSourceURL)" />
         #if(_csrf):
             <input type="hidden" name="_csrf" value="#(_csrf)" />
         #endif
@@ -100,7 +100,7 @@
                     />
                 </div>
 
-                <figure id="artwork-placeholder" class="image-picker #if(!artworkURL):empty#endif">
+                <figure id="artwork-placeholder" class="image-picker #if(!artworkThumbnailURL):empty#endif">
                     <img id="artwork-image" src="#(artworkThumbnailURL)" alt="Album artwork" />
                     <span>#extend("Icons/gallery")</span>
                     <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>

@@ -36,8 +36,14 @@ struct BatchCreateNoteCommand: Command {
 
     func execute(_ input: BatchCreateNoteInput) async throws -> [Note] {
         let user = try await createPermission.grant()
+
+        let inputNotes = input.notes.filter {
+            !$0.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+        guard !inputNotes.isEmpty else { return [] }
+
         let attachmentID = try input.attachment.requireID()
-        let notes = input.notes.map {
+        let notes = inputNotes.map {
             Note(
                 attachmentID: attachmentID,
                 authorID: user.userID,
