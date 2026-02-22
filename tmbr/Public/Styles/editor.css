@@ -361,6 +361,53 @@ form section > header {
 
 /*
  ------------------------------------------------
+ Note access
+ ------------------------------------------------
+ */
+
+.note-wrapper {
+    position: relative;
+}
+
+.note-wrapper textarea.note-body {
+    padding-right: 72px;
+}
+
+.note-access {
+    position: absolute;
+    top: 4px;
+    right: 0;
+    background: color-mix(in srgb, Canvas 90%, transparent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 1.2rem;
+    font-family: system-ui, -apple-system, Helvetica, sans-serif;
+    cursor: pointer;
+}
+
+.note-access:has(input[disabled]) {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/*
+ ------------------------------------------------
+ Control labels (functional, not content)
+ ------------------------------------------------
+ */
+
+form label.access {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: system-ui, -apple-system, Helvetica, sans-serif;
+}
+
+/*
+ ------------------------------------------------
  Post editor
  ------------------------------------------------
  */
@@ -378,11 +425,6 @@ main > form .editor-actions > div {
     gap: 12px;
 }
 
-main > form label.published {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
 
 main > form#preview-form {
     display: none;

@@ -48,7 +48,7 @@
                     type="hidden"
                     value="draft"
                 />
-                <label class="published">
+                <label class="access">
                     <input
                         id="editor-post-published"
                         name="state"

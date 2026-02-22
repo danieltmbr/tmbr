@@ -65,7 +65,9 @@ struct SongsWebController: RouteCollection {
                 // Create notes if provided (only for create mode)
                 if case .create = mode, !payload.notes.isEmpty {
                     let preview = try await commands.previews.fetch(song.$preview.id, for: .write)
-                    let noteInputs = payload.notes.map { NoteInput(body: $0, access: payload.access) }
+                    let noteInputs = payload.notes.map { entry in
+                        NoteInput(body: entry.body, access: entry.access && payload.access)
+                    }
                     _ = try await commands.notes.batchCreate(noteInputs, for: preview)
                 }
 
@@ -100,6 +102,10 @@ struct SongsWebController: RouteCollection {
             pageTitle = "Edit '\(submitted.title)'"
         }
 
+        let noteViewModels = submitted.notes.map {
+            SongEditorViewModel.NoteViewModel(body: $0.body, access: $0.access)
+        }
+
         let csrf = UUID().uuidString
         let model = SongEditorViewModel(
             id: songID,
@@ -109,7 +115,7 @@ struct SongsWebController: RouteCollection {
             artist: submitted.artist,
             artworkId: submitted.artworkId,
             genre: submitted.genre ?? "",
-            notes: submitted.notes,
+            notes: noteViewModels,
             releaseDate: submitted.releaseDate?.formatted(.iso8601.year().month().day()) ?? "",
             resourceURLs: submitted.resourceURLs,
             submit: submit,

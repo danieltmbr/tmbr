@@ -6,6 +6,11 @@ import AuthKit
 
 struct SongEditorViewModel: Encodable, Sendable {
 
+    struct NoteViewModel: Encodable, Sendable {
+        let body: String
+        let access: Access
+    }
+
     private let id: Int?
 
     private let pageTitle: String?
@@ -24,7 +29,7 @@ struct SongEditorViewModel: Encodable, Sendable {
 
     private let genre: String
 
-    private let notes: [String]
+    private let notes: [NoteViewModel]
 
     private let releaseDate: String
 
@@ -48,7 +53,7 @@ struct SongEditorViewModel: Encodable, Sendable {
         artworkURL: String? = nil,
         artworkThumbnailURL: String? = nil,
         genre: String = "",
-        notes: [String] = [],
+        notes: [NoteViewModel] = [],
         releaseDate: String = "",
         resourceURLs: [String] = [],
         submit: Form.Submit,
@@ -73,7 +78,7 @@ struct SongEditorViewModel: Encodable, Sendable {
         self._csrf = csrf
         self.error = error
     }
-    
+
     init(
         song: Song,
         notes: [Note],
@@ -101,7 +106,7 @@ struct SongEditorViewModel: Encodable, Sendable {
             artworkURL: artworkURL,
             artworkThumbnailURL: artworkThumbnailURL,
             genre: song.genre ?? "",
-            notes: notes.map(\.body),
+            notes: notes.map { NoteViewModel(body: $0.body, access: $0.access) },
             releaseDate: "",
             resourceURLs: song.resourceURLs,
             submit: Form.Submit(

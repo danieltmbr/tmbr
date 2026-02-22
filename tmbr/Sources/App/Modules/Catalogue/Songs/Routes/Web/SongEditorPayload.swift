@@ -4,6 +4,16 @@ import AuthKit
 
 struct SongEditorPayload: Decodable, Sendable {
 
+    struct NoteEntry: Decodable, Sendable {
+        let body: String
+        let access: Access
+
+        init(body: String, access: Access = .private) {
+            self.body = body
+            self.access = access
+        }
+    }
+
     let _csrf: String?
 
     let access: Access
@@ -16,7 +26,7 @@ struct SongEditorPayload: Decodable, Sendable {
 
     let genre: String?
 
-    let notes: [String]
+    let notes: [NoteEntry]
 
     let releaseDate: Date?
 
@@ -48,11 +58,9 @@ struct SongEditorPayload: Decodable, Sendable {
         self.releaseDate = try container.decodeIfPresent(Date.self, forKey: .releaseDate)
         self.title = try container.decode(String.self, forKey: .title)
 
-        // Filter out empty notes
-        let rawNotes = try container.decodeIfPresent([String].self, forKey: .notes) ?? []
-        self.notes = rawNotes
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+        // Decode notes as array of objects (using indexed form fields: notes[0][body], notes[0][access])
+        let rawNotes = try container.decodeIfPresent([NoteEntry].self, forKey: .notes) ?? []
+        self.notes = rawNotes.filter { !$0.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
         // Filter out empty resource URLs
         let urls = try container.decode([String].self, forKey: .resourceURLs)
@@ -66,7 +74,7 @@ struct SongEditorPayload: Decodable, Sendable {
         artist: String = "",
         artworkId: ImageID? = nil,
         genre: String? = nil,
-        notes: [String] = [],
+        notes: [NoteEntry] = [],
         releaseDate: Date? = nil,
         resourceURLs: [String] = [],
         title: String = ""

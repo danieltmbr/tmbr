@@ -282,73 +282,194 @@ class ResourceInputsController {
 }
 
 class NotesController {
-    constructor({ section }, { onInput }) {
+    constructor({ section }, { onInput, onAccessChange }) {
         this.section = section;
         this.onInputCallback = onInput;
+        this.onAccessChangeCallback = onAccessChange;
         this._onInput = this.onInput.bind(this);
         this._onBlur = this.onBlur.bind(this);
         this._onFocus = this.onFocus.bind(this);
-        this.textareaListeners = [];
+        this._onAccessChange = this.onAccessChange.bind(this);
+        this._onEditorActionsMousedown = this.onEditorActionsMousedown.bind(this);
+        this.wrapperListeners = [];
         this.lastFocusedTextarea = null;
+        this.nextIndex = parseInt(this.section.dataset.noteCount || '0', 10) + 1;
+        this.suppressBlur = false;
     }
 
     init() {
-        this.getTextareas().forEach((textarea) => this.attachListener(textarea));
+        this.getWrappers().forEach((wrapper) => this.attachListener(wrapper));
         this.autosizeAll();
+
+        // Suppress blur DOM changes when clicking on editor actions
+        const editorActions = document.querySelector('.editor-actions');
+        if (editorActions) {
+            editorActions.addEventListener('mousedown', this._onEditorActionsMousedown);
+        }
     }
 
     destroy() {
-        this.textareaListeners.forEach(({ textarea }) => {
+        this.wrapperListeners.forEach(({ wrapper, textarea, accessCheckbox }) => {
             textarea.removeEventListener('input', this._onInput);
             textarea.removeEventListener('blur', this._onBlur);
             textarea.removeEventListener('focus', this._onFocus);
+            if (accessCheckbox) {
+                accessCheckbox.removeEventListener('change', this._onAccessChange);
+            }
         });
-        this.textareaListeners = [];
+        this.wrapperListeners = [];
+
+        const editorActions = document.querySelector('.editor-actions');
+        if (editorActions) {
+            editorActions.removeEventListener('mousedown', this._onEditorActionsMousedown);
+        }
+    }
+
+    getWrappers() {
+        return Array.from(this.section.querySelectorAll('.note-wrapper'));
     }
 
     getTextareas() {
         return Array.from(this.section.querySelectorAll('textarea.note-body'));
     }
 
-    getValues() {
-        return this.getTextareas()
-            .map(textarea => textarea.value.trim())
-            .filter(note => note.length > 0);
+    getNotes() {
+        return this.getWrappers()
+            .map(wrapper => {
+                const textarea = wrapper.querySelector('textarea.note-body');
+                const checkbox = wrapper.querySelector('.note-access input[type="checkbox"]');
+                const body = textarea ? textarea.value.trim() : '';
+                const access = checkbox && checkbox.checked ? 'public' : 'private';
+                return { body, access };
+            })
+            .filter(note => note.body.length > 0);
     }
 
-    setValues(notes) {
+    getValues() {
+        return this.getNotes().map(n => n.body);
+    }
+
+    getAccessValues() {
+        return this.getNotes().map(n => n.access);
+    }
+
+    setNotes(notes, songIsPublic) {
         if (!Array.isArray(notes)) return;
-        const textareas = this.getTextareas();
+        const wrappers = this.getWrappers();
         notes.forEach((note, index) => {
-            if (textareas[index] && !textareas[index].value) {
-                textareas[index].value = note;
+            if (wrappers[index]) {
+                const textarea = wrappers[index].querySelector('textarea.note-body');
+                const checkbox = wrappers[index].querySelector('.note-access input[type="checkbox"]');
+                if (textarea && !textarea.value) {
+                    textarea.value = typeof note === 'string' ? note : (note.body || '');
+                }
+                if (checkbox) {
+                    checkbox.disabled = !songIsPublic;
+                    if (typeof note === 'object' && note.access) {
+                        checkbox.checked = note.access === 'public' && songIsPublic;
+                    }
+                }
             }
         });
         this.autosizeAll();
     }
 
-    attachListener(textarea) {
-        textarea.addEventListener('input', this._onInput);
-        textarea.addEventListener('blur', this._onBlur);
-        textarea.addEventListener('focus', this._onFocus);
-        this.textareaListeners.push({ textarea });
+    setValues(notes) {
+        this.setNotes(notes, true);
     }
 
-    detachListener(textarea) {
-        textarea.removeEventListener('input', this._onInput);
-        textarea.removeEventListener('blur', this._onBlur);
-        textarea.removeEventListener('focus', this._onFocus);
-        this.textareaListeners = this.textareaListeners.filter((entry) => entry.textarea !== textarea);
+    setAccessValues(accessValues, songIsPublic) {
+        if (!Array.isArray(accessValues)) return;
+        const wrappers = this.getWrappers();
+        wrappers.forEach((wrapper, index) => {
+            const checkbox = wrapper.querySelector('.note-access input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.disabled = !songIsPublic;
+                if (accessValues[index] !== undefined) {
+                    checkbox.checked = accessValues[index] === 'public' && songIsPublic;
+                }
+            }
+        });
     }
 
-    createTextarea() {
+    setSongAccess(songIsPublic) {
+        this.getWrappers().forEach(wrapper => {
+            const checkbox = wrapper.querySelector('.note-access input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.disabled = !songIsPublic;
+                if (!songIsPublic) {
+                    checkbox.checked = false;
+                }
+            }
+        });
+    }
+
+    attachListener(wrapper) {
+        const textarea = wrapper.querySelector('textarea.note-body');
+        const accessCheckbox = wrapper.querySelector('.note-access input[type="checkbox"]');
+
+        if (textarea) {
+            textarea.addEventListener('input', this._onInput);
+            textarea.addEventListener('blur', this._onBlur);
+            textarea.addEventListener('focus', this._onFocus);
+        }
+        if (accessCheckbox) {
+            accessCheckbox.addEventListener('change', this._onAccessChange);
+        }
+        this.wrapperListeners.push({ wrapper, textarea, accessCheckbox });
+    }
+
+    detachListener(wrapper) {
+        const entry = this.wrapperListeners.find(e => e.wrapper === wrapper);
+        if (entry) {
+            if (entry.textarea) {
+                entry.textarea.removeEventListener('input', this._onInput);
+                entry.textarea.removeEventListener('blur', this._onBlur);
+                entry.textarea.removeEventListener('focus', this._onFocus);
+            }
+            if (entry.accessCheckbox) {
+                entry.accessCheckbox.removeEventListener('change', this._onAccessChange);
+            }
+        }
+        this.wrapperListeners = this.wrapperListeners.filter(e => e.wrapper !== wrapper);
+    }
+
+    createWrapper(songIsPublic) {
+        const index = this.nextIndex++;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'note-wrapper';
+        wrapper.dataset.index = index;
+
         const textarea = document.createElement('textarea');
         textarea.className = 'note-body';
-        textarea.name = 'notes[]';
+        textarea.name = `notes[${index}][body]`;
         textarea.placeholder = 'Write your thoughts...';
         textarea.autocapitalize = 'sentences';
         textarea.spellcheck = true;
-        return textarea;
+
+        const fallback = document.createElement('input');
+        fallback.type = 'hidden';
+        fallback.name = `notes[${index}][access]`;
+        fallback.value = 'private';
+        fallback.className = 'note-access-fallback';
+
+        const label = document.createElement('label');
+        label.className = 'note-access';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = `notes[${index}][access]`;
+        checkbox.value = 'public';
+        checkbox.disabled = !songIsPublic;
+
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(' Public'));
+
+        wrapper.appendChild(textarea);
+        wrapper.appendChild(fallback);
+        wrapper.appendChild(label);
+
+        return wrapper;
     }
 
     autosize(textarea) {
@@ -373,18 +494,46 @@ class NotesController {
         }
     }
 
+    onAccessChange() {
+        if (typeof this.onAccessChangeCallback === 'function') {
+            this.onAccessChangeCallback();
+        }
+    }
+
+    onEditorActionsMousedown() {
+        this.suppressBlur = true;
+        setTimeout(() => { this.suppressBlur = false; }, 100);
+    }
+
     onBlur(event) {
         const textarea = event.target;
-        const textareas = this.getTextareas();
-        const emptyTextareas = textareas.filter((t) => !t.value.trim());
+        const wrapper = textarea.closest('.note-wrapper');
 
-        if (textarea.value.trim() && emptyTextareas.length === 0) {
-            const newTextarea = this.createTextarea();
-            this.section.appendChild(newTextarea);
-            this.attachListener(newTextarea);
-        } else if (!textarea.value.trim() && emptyTextareas.length > 1) {
-            this.detachListener(textarea);
-            textarea.remove();
+        // Defer if blur was caused by clicking editor actions
+        if (this.suppressBlur) {
+            setTimeout(() => this.manageWrappers(textarea, wrapper), 150);
+            return;
+        }
+
+        this.manageWrappers(textarea, wrapper);
+    }
+
+    manageWrappers(textarea, wrapper) {
+        const wrappers = this.getWrappers();
+        const emptyWrappers = wrappers.filter(w => {
+            const ta = w.querySelector('textarea.note-body');
+            return ta && !ta.value.trim();
+        });
+
+        if (textarea.value.trim() && emptyWrappers.length === 0) {
+            const accessCheckbox = document.getElementById('access');
+            const songIsPublic = accessCheckbox && accessCheckbox.checked;
+            const newWrapper = this.createWrapper(songIsPublic);
+            this.section.appendChild(newWrapper);
+            this.attachListener(newWrapper);
+        } else if (!textarea.value.trim() && emptyWrappers.length > 1 && wrapper && wrapper.parentNode) {
+            this.detachListener(wrapper);
+            wrapper.remove();
         }
     }
 
@@ -738,7 +887,7 @@ class EditorController {
         albumInput,
         genreInput,
         releaseDateInput,
-        accessSelect
+        accessCheckbox
     }, { persistence, resourceInputs, notes, artwork }) {
         this.form = form;
         this.idInput = idInput;
@@ -747,7 +896,7 @@ class EditorController {
         this.albumInput = albumInput;
         this.genreInput = genreInput;
         this.releaseDateInput = releaseDateInput;
-        this.accessSelect = accessSelect;
+        this.accessCheckbox = accessCheckbox;
         this.persistence = persistence;
         this.resourceInputs = resourceInputs;
         this.notes = notes;
@@ -757,6 +906,7 @@ class EditorController {
         this.storageKey = this.songID ? `editor:song:${this.songID}` : 'editor:song:new';
 
         this._onSaveDraft = this.saveDraft.bind(this);
+        this._onAccessChange = this.onAccessChange.bind(this);
     }
 
     init() {
@@ -767,7 +917,7 @@ class EditorController {
         this.albumInput.addEventListener('input', this._onSaveDraft);
         this.genreInput.addEventListener('input', this._onSaveDraft);
         this.releaseDateInput.addEventListener('input', this._onSaveDraft);
-        this.accessSelect.addEventListener('change', this._onSaveDraft);
+        this.accessCheckbox.addEventListener('change', this._onAccessChange);
     }
 
     destroy() {
@@ -776,11 +926,30 @@ class EditorController {
         this.albumInput.removeEventListener('input', this._onSaveDraft);
         this.genreInput.removeEventListener('input', this._onSaveDraft);
         this.releaseDateInput.removeEventListener('input', this._onSaveDraft);
-        this.accessSelect.removeEventListener('change', this._onSaveDraft);
+        this.accessCheckbox.removeEventListener('change', this._onAccessChange);
     }
 
     getStorageKey() {
         return this.storageKey;
+    }
+
+    onAccessChange() {
+        const isPublic = this.accessCheckbox.checked;
+        const wasPublic = !isPublic;
+
+        if (wasPublic && !isPublic) {
+            const hasPublicNotes = this.notes.getNotes().some(n => n.access === 'public');
+            if (hasPublicNotes) {
+                const confirmed = confirm('Making this private will also make all notes private. Continue?');
+                if (!confirmed) {
+                    this.accessCheckbox.checked = true;
+                    return;
+                }
+            }
+        }
+
+        this.notes.setSongAccess(isPublic);
+        this.saveDraft();
     }
 
     preview() {
@@ -804,8 +973,8 @@ class EditorController {
             album: this.albumInput.value || '',
             genre: this.genreInput.value || '',
             releaseDate: this.releaseDateInput.value || '',
-            notes: this.notes.getValues(),
-            access: this.accessSelect.value || 'private',
+            notes: this.notes.getNotes(),
+            access: this.accessCheckbox.checked ? 'public' : 'private',
             resourceURLs: this.resourceInputs.getValues(),
             artworkId: this.artwork.getArtworkId(),
             artworkThumbnailUrl: this.artwork.getThumbnailUrl(),
@@ -831,11 +1000,13 @@ class EditorController {
             this.releaseDateInput.value = state.releaseDate;
         }
         if (typeof state.access === 'string') {
-            this.accessSelect.value = state.access;
+            this.accessCheckbox.checked = state.access === 'public';
         }
+        const songIsPublic = this.accessCheckbox.checked;
         if (Array.isArray(state.notes)) {
-            this.notes.setValues(state.notes);
+            this.notes.setNotes(state.notes, songIsPublic);
         }
+        this.notes.setSongAccess(songIsPublic);
         if (Array.isArray(state.resourceURLs)) {
             this.resourceInputs.setValues(state.resourceURLs);
         }
@@ -904,7 +1075,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const genreInput = document.getElementById('editor-song-genre');
     const releaseDateInput = document.getElementById('editor-song-release-date');
     const releaseDateISOInput = document.getElementById('editor-song-release-date-iso');
-    const accessSelect = document.getElementById('access');
+    const accessCheckbox = document.getElementById('access');
     const resourcesSection = document.getElementById('resources-section');
     const detailsSection = document.getElementById('details-section');
     const notesSection = document.getElementById('notes-section');
@@ -937,7 +1108,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const notes = new NotesController(
         { section: notesSection },
-        { onInput: () => editor.saveDraft() }
+        {
+            onInput: () => editor.saveDraft(),
+            onAccessChange: () => editor.saveDraft()
+        }
     );
     notes.init();
 
@@ -970,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         albumInput,
         genreInput,
         releaseDateInput,
-        accessSelect
+        accessCheckbox
     }, { persistence, resourceInputs, notes, artwork });
     editor.init();
 
