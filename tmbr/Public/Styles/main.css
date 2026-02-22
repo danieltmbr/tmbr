@@ -665,6 +665,11 @@ button.icon {
     cursor: pointer;
 }
 
+button.icon:hover {
+    background: none;
+    filter: none;
+}
+
 button.icon > svg {
     width: 20px;
     max-height: 17px;

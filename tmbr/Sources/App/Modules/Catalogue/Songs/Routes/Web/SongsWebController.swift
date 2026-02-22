@@ -107,6 +107,7 @@ struct SongsWebController: RouteCollection {
             access: submitted.access,
             album: submitted.album ?? "",
             artist: submitted.artist,
+            artworkId: submitted.artworkId,
             genre: submitted.genre ?? "",
             notes: submitted.notes,
             releaseDate: submitted.releaseDate?.formatted(.iso8601.year().month().day()) ?? "",

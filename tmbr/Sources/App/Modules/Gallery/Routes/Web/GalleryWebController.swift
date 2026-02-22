@@ -18,6 +18,9 @@ struct GalleryWebController: RouteCollection {
         
         routes.grouped("gallery")
             .on(.POST, body: .collect(maxSize: "10mb"), use: upload)
+
+        routes.post("gallery", "from-url", use: uploadFromURL)
+        routes.get("gallery", "lookup", use: lookup)
     }
     
     @Sendable
@@ -99,6 +102,24 @@ struct GalleryWebController: RouteCollection {
         let image = try await req.commands.gallery.add(payload)
         let alt = image.alt ?? image.key
         return Response(markdown: "![\(alt)](\(req.baseURL)/gallery/data/\(image.key))")
+    }
+
+    @Sendable
+    private func uploadFromURL(_ req: Request) async throws -> ImageResponse {
+        let payload = try req.content.decode(ImageURLPayload.self)
+        let image = try await req.commands.gallery.addFromURL(payload)
+        return ImageResponse(image: image, baseURL: req.baseURL)
+    }
+
+    @Sendable
+    private func lookup(_ req: Request) async throws -> ImageResponse {
+        guard let url = req.query[String.self, at: "url"] else {
+            throw Abort(.badRequest, reason: "Missing url query parameter")
+        }
+        guard let image = try await req.commands.gallery.lookup(url) else {
+            throw Abort(.notFound)
+        }
+        return ImageResponse(image: image, baseURL: req.baseURL)
     }
     
     @Sendable

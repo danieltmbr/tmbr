@@ -5,12 +5,10 @@
     #endexport
 
     #export("main"):
-    <button id="gallery-open" class="icon" type="button">
-        #extend("Icons/gallery")
-    </button>
-
     <form id="song-form" method="#(submit.method)" action="#(submit.action)">
         <input id="editor-song-id" type="hidden" name="id" value="#(id)" />
+        <input id="editor-artwork-id" type="hidden" name="artwork-id" value="#(artworkId)" />
+        <input id="editor-artwork-external-url" type="hidden" value="" />
         #if(_csrf):
             <input type="hidden" name="_csrf" value="#(_csrf)" />
         #endif
@@ -25,7 +23,7 @@
             autocomplete="off"
             spellcheck="true"
         />
-        
+
         <section id="resources-section">
             <h3>Resources</h3>
             #for(url in resourceURLs):
@@ -48,64 +46,79 @@
             >
         </section>
 
-        <section>
+        <section id="details-section">
             <h3>Details</h3>
 
-            <input
-                id="editor-song-artist"
-                class="text-input"
-                name="artist"
-                type="text"
-                value="#(artist)"
-                placeholder="Artist"
-                autocomplete="off"
-                spellcheck="true"
-            />
+            <div class="details-content">
+                <div class="details-inputs">
+                    <input
+                        id="editor-song-artist"
+                        class="text-input"
+                        name="artist"
+                        type="text"
+                        value="#(artist)"
+                        placeholder="Artist"
+                        autocomplete="off"
+                        spellcheck="true"
+                    />
 
-            <input
-                id="editor-song-album"
-                class="text-input"
-                name="album"
-                type="text"
-                value="#(album)"
-                placeholder="Album"
-                autocomplete="off"
-                spellcheck="true"
-            />
+                    <input
+                        id="editor-song-album"
+                        class="text-input"
+                        name="album"
+                        type="text"
+                        value="#(album)"
+                        placeholder="Album"
+                        autocomplete="off"
+                        spellcheck="true"
+                    />
 
-            <input
-                id="editor-song-release-date"
-                class="text-input"
-                type="date"
-                value="#(releaseDate)"
-                placeholder="Release Date"
-                autocomplete="off"
-            />
-            <input
-                id="editor-song-release-date-iso"
-                name="release-date"
-                type="hidden"
-                value=""
-            />
+                    <input
+                        id="editor-song-release-date"
+                        class="text-input"
+                        type="date"
+                        value="#(releaseDate)"
+                        placeholder="Release Date"
+                        autocomplete="off"
+                    />
+                    <input
+                        id="editor-song-release-date-iso"
+                        name="release-date"
+                        type="hidden"
+                        value=""
+                    />
 
-            <input
-                id="editor-song-genre"
-                class="text-input"
-                name="genre"
-                type="text"
-                value="#(genre)"
-                placeholder="Genre"
-                autocomplete="off"
-                spellcheck="true"
-            />
+                    <input
+                        id="editor-song-genre"
+                        class="text-input"
+                        name="genre"
+                        type="text"
+                        value="#(genre)"
+                        placeholder="Genre"
+                        autocomplete="off"
+                        spellcheck="true"
+                    />
+                </div>
+
+                <figure id="artwork-placeholder" class="image-picker #if(!artworkURL):empty#endif">
+                    <img id="artwork-image" src="#(artworkThumbnailURL)" alt="Album artwork" />
+                    <span>#extend("Icons/gallery")</span>
+                    <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
+                </figure>
+            </div>
         </section>
-                    
+
         #if(error):
             <p class="editor-error">#unsafeHTML(error)</p>
         #endif
 
         <section id="notes-section">
-            <h3>Notes</h3>
+            <header>
+                <h3>Notes</h3>
+                <button id="notes-gallery-open" class="icon" type="button" data-gallery-mode="notes">
+                    #extend("Icons/gallery")
+                </button>
+            </header>
             #for(note in notes):
                 <textarea
                     class="note-body"
@@ -125,7 +138,7 @@
         </section>
 
         <p id="autofill-status" class="system-info" hidden></p>
-            
+
         <div class="editor-actions">
             <div>
                 <label class="access">
@@ -134,7 +147,7 @@
                         <option value="private" #if(access == "private"):selected#endif>Private</option>
                     </select>
                 </label>
-                    
+
                 <button id="editor-post-save" class="primary" type="submit">#(submit.label)</button>
             </div>
         </div>
@@ -147,20 +160,20 @@
         <input type="hidden" name="title" id="preview-title" />
         <input type="hidden" name="body" id="preview-body" />
     </form>
-    
+
     <aside id="gallery" hidden>
-        <div id="gallery-header" alt="Gallery Header">
+        <div id="gallery-header">
             <button class="icon small" type="button" id="gallery-close" aria-label="Close">
                 #extend("Icons/close")
             </button>
+            <h4 id="gallery-title">Gallery</h4>
             <span id="gallery-status" class="system-info"></span>
         </div>
-        <section alt="Gallery" id="gallery-section"></section>
+        <section id="gallery-section"></section>
     </aside>
     #endexport
-    
+
     #export("scripts"):
         <script src="/Scripts/song-editor.js"></script>
     #endexport
 #endextend
-

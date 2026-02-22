@@ -7,8 +7,12 @@ extension AuthPermission<Void> {
     static var createImage: AuthPermission<Void> {
         AuthPermission<Void>()
     }
-    
+
     static var listImages: AuthPermission<Void> {
+        AuthPermission<Void>()
+    }
+
+    static var lookupImage: AuthPermission<Void> {
         AuthPermission<Void>()
     }
 }

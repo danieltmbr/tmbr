@@ -12,6 +12,8 @@ struct SongEditorPayload: Decodable, Sendable {
 
     let artist: String
 
+    let artworkId: ImageID?
+
     let genre: String?
 
     let notes: [String]
@@ -27,6 +29,7 @@ struct SongEditorPayload: Decodable, Sendable {
         case access
         case album
         case artist
+        case artworkId = "artwork-id"
         case genre
         case notes
         case releaseDate = "release-date"
@@ -40,6 +43,7 @@ struct SongEditorPayload: Decodable, Sendable {
         self.access = try container.decode(Access.self, forKey: .access)
         self.album = try container.decodeIfPresent(String.self, forKey: .album)
         self.artist = try container.decode(String.self, forKey: .artist)
+        self.artworkId = try container.decodeIfPresent(ImageID.self, forKey: .artworkId)
         self.genre = try container.decodeIfPresent(String.self, forKey: .genre)
         self.releaseDate = try container.decodeIfPresent(Date.self, forKey: .releaseDate)
         self.title = try container.decode(String.self, forKey: .title)
@@ -60,6 +64,7 @@ struct SongEditorPayload: Decodable, Sendable {
         access: Access = .private,
         album: String? = nil,
         artist: String = "",
+        artworkId: ImageID? = nil,
         genre: String? = nil,
         notes: [String] = [],
         releaseDate: Date? = nil,
@@ -70,6 +75,7 @@ struct SongEditorPayload: Decodable, Sendable {
         self.access = access
         self.album = album
         self.artist = artist
+        self.artworkId = artworkId
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate
@@ -85,7 +91,7 @@ extension SongInput {
             access: payload.access,
             album: payload.album,
             artist: payload.artist,
-            artwork: nil,
+            artwork: payload.artworkId,
             genre: payload.genre,
             releaseDate: payload.releaseDate,
             resourceURLs: payload.resourceURLs,

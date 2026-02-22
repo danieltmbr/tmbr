@@ -5,31 +5,37 @@ import Fluent
 import AuthKit
 
 struct SongEditorViewModel: Encodable, Sendable {
-    
+
     private let id: Int?
-    
+
     private let pageTitle: String?
-    
+
     private let access: Access
-    
+
     private let album: String
-    
+
     private let artist: String
-    
+
+    private let artworkId: Int?
+
+    private let artworkURL: String?
+
+    private let artworkThumbnailURL: String?
+
     private let genre: String
-    
+
     private let notes: [String]
-    
+
     private let releaseDate: String
-    
+
     private let resourceURLs: [String]
-    
+
     private let submit: Form.Submit
-    
+
     private let title: String
-    
+
     let _csrf: String?
-    
+
     private let error: String?
 
     init(
@@ -38,6 +44,9 @@ struct SongEditorViewModel: Encodable, Sendable {
         access: Access = .private,
         album: String = "",
         artist: String = "",
+        artworkId: Int? = nil,
+        artworkURL: String? = nil,
+        artworkThumbnailURL: String? = nil,
         genre: String = "",
         notes: [String] = [],
         releaseDate: String = "",
@@ -52,6 +61,9 @@ struct SongEditorViewModel: Encodable, Sendable {
         self.access = access
         self.album = album
         self.artist = artist
+        self.artworkId = artworkId
+        self.artworkURL = artworkURL
+        self.artworkThumbnailURL = artworkThumbnailURL
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate
@@ -65,15 +77,29 @@ struct SongEditorViewModel: Encodable, Sendable {
     init(
         song: Song,
         notes: [Note],
+        baseURL: String,
         csrf: String?
     ) throws {
         let id = try song.requireID()
+        let artworkId = song.$artwork.id
+        let artworkURL: String?
+        let artworkThumbnailURL: String?
+        if let artwork = song.artwork {
+            artworkURL = "\(baseURL)/gallery/data/\(artwork.key)"
+            artworkThumbnailURL = "\(baseURL)/gallery/data/\(artwork.thumbnailKey)"
+        } else {
+            artworkURL = nil
+            artworkThumbnailURL = nil
+        }
         self.init(
             id: id,
             pageTitle: "Edit '\(song.title)'",
             access: song.access,
             album: song.album ?? "",
             artist: song.artist,
+            artworkId: artworkId,
+            artworkURL: artworkURL,
+            artworkThumbnailURL: artworkThumbnailURL,
             genre: song.genre ?? "",
             notes: notes.map(\.body),
             releaseDate: "",
@@ -83,6 +109,7 @@ struct SongEditorViewModel: Encodable, Sendable {
                 label: "Save"
             ),
             title: song.title,
+            csrf: csrf
         )
     }
 }
@@ -117,6 +144,7 @@ extension Page {
             return try await SongEditorViewModel(
                 song: song,
                 notes: notes,
+                baseURL: request.baseURL,
                 csrf: csrf
             )
         }
