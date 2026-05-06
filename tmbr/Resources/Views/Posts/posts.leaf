@@ -12,7 +12,7 @@
             <section alt="Articles">
                 <ul class="counted">
                 #for(post in posts):
-                    <a href="/post/#(post.id)"><li>
+                    <a href="/posts/#(post.id)"><li>
                         <span class="post-id">#(post.id).</span>
                         <span class="post-title">#(post.title)</span>
                         <span class="post-date published-date">#(post.publishDate)</span>

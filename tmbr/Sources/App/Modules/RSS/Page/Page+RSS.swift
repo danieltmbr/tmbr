@@ -21,7 +21,7 @@ extension Page {
                     guard let id = $0.id else { return nil }
                     return RSSViewModel.Post(
                         title: $0.title,
-                        url: "https://tmbr.me/post/\(id)",
+                        url: "https://tmbr.me/posts/\(id)",
                         publishDate: $0.createdAt.formatted(.rfc822)
                     )
                 }

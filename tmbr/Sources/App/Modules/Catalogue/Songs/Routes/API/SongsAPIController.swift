@@ -9,7 +9,7 @@ struct SongsAPIController: RouteCollection {
 
         let songsRoute = routes.grouped("api", "songs")
         
-        // GET /api/posts/:songID
+        // GET /api/songs/:songID
         songsRoute.get(":songID") { request async throws -> SongResponse in
             guard let songID = request.parameters.get("songID", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid Song ID")
