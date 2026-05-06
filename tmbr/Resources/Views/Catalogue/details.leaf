@@ -9,7 +9,7 @@
             #if(post):
             <section class="post">
                 <h3>Post</h3>
-                <a href="/post/#(post.id)">
+                <a href="/posts/#(post.id)">
                     <span class="post-id">#(post.id).</span>
                     <span class="post-title">#(post.title)</span>
                     <span class="post-date published-date">#(post.publishDate)</span>

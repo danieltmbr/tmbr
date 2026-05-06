@@ -27,7 +27,7 @@ struct SongsAPIController: RouteCollection {
             return SongLookupResponse(id: songID, title: song.title, artist: song.artist, detailURL: "/songs/\(songID)")
         }
 
-        // GET /api/posts/:songID
+        // GET /api/songs/:songID
         songsRoute.get(":songID") { request async throws -> SongResponse in
             guard let songID = request.parameters.get("songID", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid Song ID")

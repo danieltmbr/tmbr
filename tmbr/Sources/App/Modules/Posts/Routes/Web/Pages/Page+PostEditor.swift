@@ -51,7 +51,7 @@ struct PostEditorViewModel: Encodable, Sendable {
             body: post.content,
             state: post.state,
             submit: Form.Submit(
-                action: "/post/\(id)",
+                action: "/posts/\(id)",
                 label: "Save"
             ),
             csrf: csrf
@@ -68,7 +68,7 @@ extension Page {
         Page(template: .postEditor) { req in
             try await req.permissions.posts.create()
             let submit = Form.Submit(
-                action: "/post",
+                action: "/posts",
                 label: "Save"
             )
             let csrf = UUID().uuidString

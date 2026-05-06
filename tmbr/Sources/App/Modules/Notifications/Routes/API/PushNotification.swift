@@ -17,7 +17,7 @@ struct PushNotification: Encodable, Sendable {
     
     init(post: Post) throws {
         guard let id = post.id,
-              let url = URL(string: "\(Environment.webApp.startURL)/post/\(id)") else {
+              let url = URL(string: "\(Environment.webApp.startURL)/posts/\(id)") else {
             throw Abort(.internalServerError, reason: "Unidentified post")
         }
         self.init(
