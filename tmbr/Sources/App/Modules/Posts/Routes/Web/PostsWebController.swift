@@ -12,17 +12,17 @@ struct PostsWebController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
         routes.get(page: .posts)
-        routes.get("post", ":postID", page: .post)
+        routes.get("posts", ":postID", page: .post)
 
         routes.get("drafts", page: .drafts)
 
-        routes.get("post", "new", page: .createPost)
-        routes.post("post", use: createPost)
+        routes.get("posts", "new", page: .createPost)
+        routes.post("posts", use: createPost)
 
-        routes.get("post", ":postID", "edit", page: .editPost)
-        routes.post("post", ":postID", use: updatePost)
+        routes.get("posts", ":postID", "edit", page: .editPost)
+        routes.post("posts", ":postID", use: updatePost)
 
-        routes.post("post", "preview", page: .postPreview)
+        routes.post("posts", "preview", page: .postPreview)
     }
 
     @Sendable
@@ -51,7 +51,7 @@ struct PostsWebController: RouteCollection {
                 try await req.commands.posts.edit(payload.edit(id: postID))
             }
             req.session.data["csrf.editor"] = nil
-            return req.redirect(to: "/post/\(post.id!)")
+            return req.redirect(to: "/posts/\(post.id!)")
         } catch {
             // TODO: Clean this up a bit
             let submitted = (try? req.content.decode(PostPayload.self)) ?? PostPayload()
@@ -62,11 +62,11 @@ struct PostsWebController: RouteCollection {
             switch mode {
             case .create:
                 postID = nil
-                submit = Form.Submit(action: "/post", label: "Save")
+                submit = Form.Submit(action: "/posts", label: "Save")
                 pageTitle = "New post"
             case .update(let id):
                 postID = id
-                submit = Form.Submit(action: "/post/\(id)", label: "Save")
+                submit = Form.Submit(action: "/posts/\(id)", label: "Save")
                 pageTitle = "Edit '\(submitted.title)'"
             }
             
