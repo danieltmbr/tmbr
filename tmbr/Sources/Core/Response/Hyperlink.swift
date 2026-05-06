@@ -6,10 +6,11 @@ public struct Hyperlink: Codable, Sendable {
 
     public let url: URL
 
-    public var urlString: String { url.absoluteString }
+    public let urlString: String
 
     public init(label: String, url: URL) {
         self.label = label
         self.url = url
+        self.urlString = url.absoluteString
     }
 }

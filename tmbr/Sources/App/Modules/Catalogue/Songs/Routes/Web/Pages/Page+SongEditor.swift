@@ -105,7 +105,7 @@ struct SongEditorViewModel: Encodable, Sendable {
             artworkThumbnailURL: artworkThumbnailURL,
             genre: song.genre ?? "",
             notes: notes.map { NoteViewModel(body: $0.body, access: $0.access) },
-            releaseDate: "",
+            releaseDate: song.releaseDate?.formatted(.releaseDate) ?? "",
             resourceURLs: song.resourceURLs,
             submit: Form.Submit(
                 action: "/songs/\(id)",

@@ -57,7 +57,10 @@ struct SongViewModel: Encodable, Sendable {
             id: id,
             artist: artist,
             artwork: artwork,
-            info: [album, genre, releaseDate].compactMap(\.self).joined(separator: ", "),
+            info: {
+            let parts = [album, genre, releaseDate].compactMap(\.self).filter { !$0.isEmpty }
+            return parts.isEmpty ? nil : parts.joined(separator: ", ")
+        }(),
             notes: notes,
             post: post,
             resources: resources,
