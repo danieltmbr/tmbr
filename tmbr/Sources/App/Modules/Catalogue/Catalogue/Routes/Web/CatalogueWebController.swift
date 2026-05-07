@@ -4,5 +4,7 @@ struct CatalogueWebController: RouteCollection {
 
     init() {}
     
-    func boot(routes: RoutesBuilder) throws {}
+    func boot(routes: RoutesBuilder) throws {
+        routes.get("catalogue", page: .catalogue)
+    }
 }

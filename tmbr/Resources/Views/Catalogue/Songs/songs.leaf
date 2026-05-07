@@ -1,0 +1,15 @@
+#extend("Shared/page"):
+
+    #export("toolbar"):
+        <a id="new-item" class="icon" href="/songs/new">
+            #extend("Icons/pencil")
+        </a>
+    #endexport
+
+    #export("main"):
+        <section>
+            #extend("Previews/previews")
+        </section>
+    #endexport
+
+#endextend
