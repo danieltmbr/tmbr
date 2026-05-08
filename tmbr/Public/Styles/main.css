@@ -386,22 +386,26 @@ article hr {
     opacity: 0.2;
 }
 
-#new-items {
+.popup {
     display: none;
     position: absolute;
+}
+
+.popup.open {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+#new-items {
     top: 0;
     right: 0;
     margin: 1em;
     gap: 1rem;
 }
 
-#new-items.open {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;*/
-}
-
-#new-items .panel-header button {
+.panel-header button {
     padding: 0;
 }
 

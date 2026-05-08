@@ -1,5 +1,9 @@
 #extend("Shared/page"):
 
+    #export("styles"):
+        <link rel="stylesheet" href="/Styles/catalogue.css">
+    #endexport
+
     #export("toolbar"):
         <button id="new-item" class="icon" type="button">
             #extend("Icons/pencil")
@@ -10,38 +14,47 @@
         #extend("Shared/signature")
 
         <nav>
-            <a href="/catalogue" class="#if(allActive):active#endif">All</a>
-            #for(filter in filters):
-            <a href="#(filter.href)" class="#if(filter.active):active#endif">#(filter.label)</a>
-            #endfor
+            <button id="catalogue-search-open" class="icon" type="button" aria-label="Search">
+                #extend("Icons/search")
+            </button>
+            <form id="catalogue-search" action="/catalogue" method="get">
+                <input type="search" name="term" id="catalogue-search-input" value="#(term)" autocomplete="off" autofocus placeholder="Search…">
+            </form>
+            <button id="catalogue-filter-open" class="icon" type="button" aria-label="Filter">
+                #extend("Icons/filter")
+            </button>
+
+            <aside id="catalogue-filter-panel" class="panel popup">
+                <div class="panel-header">
+                    <button class="icon small" type="button" id="catalogue-filter-close" aria-label="Close">
+                        #extend("Icons/close")
+                    </button>
+                </div>
+                <ul class="system-info">
+                    #for(filter in filters):
+                    <li class="filter-item" data-type="#(filter.type)" data-active="#(filter.checkedInFilter)">
+                        #(filter.label)
+                        #extend("Icons/catalogueType")
+                    </li>
+                    #endfor
+                    <hr/>
+                    <li id="catalogue-filter-select-all">All</li>
+                    <li id="catalogue-filter-deselect-all">None</li>
+                    <li id="catalogue-filter-apply">Apply</li>
+                </ul>
+            </aside>
         </nav>
 
         <section>
             #extend("Previews/previews")
         </section>
 
-        <aside id="new-items" class="panel">
-            <div class="panel-header">
-                <button class="icon small" type="button" id="new-item-close" aria-label="Close">
-                    #extend("Icons/close")
-                </button>
-                <span class="system-info" style="display:none;">New</span>
-            </div>
-            <ul class="system-info">
-                <a href="post/new"><li>#extend("Icons/post") Post</li></a>
-                <hr/>
-                <a href="books/new"><li>#extend("Icons/book") Book</li></a>
-                <a href="movies/new"><li>#extend("Icons/movie") Movie</li></a>
-                <a href="podcasts/new"><li>#extend("Icons/podcast") Podcast</li></a>
-                <a href="songs/new"><li>#extend("Icons/song") Song</li></a>
-                <hr/>
-                <a href="catalogue/new"><li>#extend("Icons/clipboard") URL from clipboard</li></a>
-            </ul>
-        </aside>
+        #extend("Shared/compose")
     #endexport
 
     #export("scripts"):
         <script src="/Scripts/toolbar.js"></script>
+        <script src="/Scripts/catalogue.js"></script>
     #endexport
 
 #endextend

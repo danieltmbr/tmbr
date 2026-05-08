@@ -16,7 +16,7 @@ struct CatalogueQueryMapper: Sendable {
     }
     
     func toPreviewQuery(from payload: CatalogueQueryPayload) -> PreviewQueryInput {
-        PreviewQueryInput(types: filter(types: payload.types))
+        PreviewQueryInput(types: filter(types: payload.types), term: payload.term)
     }
     
     func toNotesQuery(from payload: CatalogueQueryPayload) -> NoteQueryPayload {

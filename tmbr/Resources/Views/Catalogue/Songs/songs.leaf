@@ -1,5 +1,9 @@
 #extend("Shared/page"):
 
+    #export("styles"):
+        <link rel="stylesheet" href="/Styles/catalogue.css">
+    #endexport
+
     #export("toolbar"):
         <a id="new-item" class="icon" href="/songs/new">
             #extend("Icons/pencil")
@@ -7,6 +11,8 @@
     #endexport
 
     #export("main"):
+        #extend("Shared/signature")
+
         <section>
             #extend("Previews/previews")
         </section>

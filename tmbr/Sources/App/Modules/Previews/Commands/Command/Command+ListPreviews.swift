@@ -7,6 +7,12 @@ import AuthKit
 
 struct PreviewQueryInput: Sendable {
     let types: Set<String>?
+    let term: String?
+
+    init(types: Set<String>? = nil, term: String? = nil) {
+        self.types = types
+        self.term = term
+    }
 }
 
 extension Command where Self == PlainCommand<PreviewQueryInput, [Preview]> {
@@ -21,6 +27,12 @@ extension Command where Self == PlainCommand<PreviewQueryInput, [Preview]> {
                 .filter(\.$parentType ~~? input.types)
                 .sort(\.$createdAt, .descending)
                 .with(\.$image)
+            if let term = input.term, !term.isEmpty {
+                query.group(.or) { group in
+                    group.filter(\.$primaryInfo, .custom("ILIKE"), "%\(term)%")
+                    group.filter(\.$secondaryInfo, .custom("ILIKE"), "%\(term)%")
+                }
+            }
             try await permission.grant(query)
             return try await query.all()
         }
