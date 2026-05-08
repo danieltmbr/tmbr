@@ -358,6 +358,17 @@ article hr {
 
 /*
  ------------------------------------------------
+ Preview
+ ------------------------------------------------
+ */
+
+main > section > ul > a > li > span.primary-info {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+}
+
+/*
+ ------------------------------------------------
  Panels
  ------------------------------------------------
  */
@@ -375,6 +386,21 @@ article hr {
     
     padding: 1em;
     overflow: hidden;
+}
+
+.panel ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+}
+
+.panel ul li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    cursor: pointer;
 }
 
 .panel ul li svg {
@@ -424,12 +450,69 @@ article hr {
     color: LinkText !important;
 }
 
-#new-items ul li {
+
+/*
+ ------------------------------------------------
+ Nav (list pages with search & filter)
+ ------------------------------------------------
+ */
+
+main > section > nav {
+    position: relative;
     display: flex;
-    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    margin-top: 2em;
+}
+
+main > section > nav > form {
+    display: none;
+    flex: 1;
+    margin: 0 0.5rem;
+}
+
+main > section > nav > form.open {
+    display: flex;
+}
+
+main > section > nav > button {
+    padding: 1px;
+}
+
+main > section > nav > form input[type="search"] {
+    flex: 1;
+    background: none;
+    border: none;
+    border-bottom: 1px solid currentColor;
+    font: inherit;
+    line-height: 1;
+    outline: none;
+    padding: 0;
+}
+
+nav > aside.popup {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 180px;
+    gap: 0.5rem;
+}
+
+nav > aside.popup.open {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-item label {
+    flex: 1;
+    display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    cursor: pointer;
+    gap: 0.5rem;
 }
 
 /*

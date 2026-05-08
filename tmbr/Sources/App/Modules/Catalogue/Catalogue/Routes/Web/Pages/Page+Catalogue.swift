@@ -1,26 +1,9 @@
 import Vapor
 import Core
 
-struct CatalogueFilterViewModel: Encodable, Sendable {
-
-    let active: Bool
-
-    let checkedInFilter: Bool
-
-    let href: String
-
-    let iconName: String
-
-    let label: String
-
-    let type: String
-}
-
 struct CatalogueViewModel: Encodable, Sendable {
 
-    let allActive: Bool
-
-    let filters: [CatalogueFilterViewModel]
+    let filterItems: [FilterItemViewModel]
 
     let previews: [PreviewViewModel]
 
@@ -41,7 +24,6 @@ extension Page {
             let input = mapper.toPreviewQuery(from: payload)
             let previews = try await req.commands.previews.list(input)
             let baseURL = req.baseURL
-            let isAllActive = selectedTypes == nil
             let typeFilterData: [(type: String, label: String, iconName: String)] = [
                 (Song.previewType, "Songs", "song"),
                 (Book.previewType, "Books", "book"),
@@ -49,18 +31,15 @@ extension Page {
                 (Podcast.previewType, "Podcasts", "podcast"),
             ]
             return CatalogueViewModel(
-                allActive: isAllActive,
-                filters: typeFilterData.map { filter in
-                    CatalogueFilterViewModel(
-                        active: selectedTypes?.count == 1 && (selectedTypes?.contains(filter.type) ?? false),
-                        checkedInFilter: selectedTypes?.contains(filter.type) ?? true,
-                        href: "/catalogue?types=\(filter.type)",
-                        iconName: filter.iconName,
+                filterItems: typeFilterData.map { filter in
+                    FilterItemViewModel(
                         label: filter.label,
-                        type: filter.type
+                        iconName: filter.iconName,
+                        value: filter.type,
+                        checked: selectedTypes?.contains(filter.type) ?? true
                     )
                 },
-                previews: previews.enumerated().map { (i, preview) in
+                previews: previews.map { preview in
                     PreviewViewModel(preview: preview, baseURL: baseURL)
                 },
                 term: term

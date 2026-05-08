@@ -11,41 +11,16 @@
     #endexport
 
     #export("main"):
-        #extend("Shared/signature")
-
-        <nav>
-            <button id="catalogue-search-open" class="icon" type="button" aria-label="Search">
-                #extend("Icons/search")
-            </button>
-            <form id="catalogue-search" action="/catalogue" method="get">
-                <input type="search" name="term" id="catalogue-search-input" value="#(term)" autocomplete="off" autofocus placeholder="Search…">
-            </form>
-            <button id="catalogue-filter-open" class="icon" type="button" aria-label="Filter">
-                #extend("Icons/filter")
-            </button>
-
-            <aside id="catalogue-filter-panel" class="panel popup">
-                <div class="panel-header">
-                    <button class="icon small" type="button" id="catalogue-filter-close" aria-label="Close">
-                        #extend("Icons/close")
-                    </button>
-                </div>
-                <ul class="system-info">
-                    #for(filter in filters):
-                    <li class="filter-item" data-type="#(filter.type)" data-active="#(filter.checkedInFilter)">
-                        #(filter.label)
-                        #extend("Icons/catalogueType")
-                    </li>
-                    #endfor
-                    <hr/>
-                    <li id="catalogue-filter-select-all">All</li>
-                    <li id="catalogue-filter-deselect-all">None</li>
-                    <li id="catalogue-filter-apply">Apply</li>
-                </ul>
-            </aside>
-        </nav>
-
+        <a href="/" alt="Home page">
+            #extend("Shared/signature")
+        </a>
+        
         <section>
+            <nav>
+                #extend("Shared/search")
+                #extend("Shared/filter-panel")
+            </nav>
+
             #extend("Previews/previews")
         </section>
 
@@ -54,7 +29,8 @@
 
     #export("scripts"):
         <script src="/Scripts/toolbar.js"></script>
-        <script src="/Scripts/catalogue.js"></script>
+        <script src="/Scripts/search.js"></script>
+        <script src="/Scripts/filter.js"></script>
     #endexport
 
 #endextend
