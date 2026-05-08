@@ -30,15 +30,30 @@ class SearchController {
 
     _open() {
         this.form.classList.add('open');
+        this.openButton.classList.add('active');
         this.input.focus();
     }
 
     _close() {
         this.form.classList.remove('open');
+        this.openButton.classList.remove('active');
+    }
+
+    _submit() {
+        const params = new URLSearchParams(window.location.search);
+        if (this.input.value) {
+            params.set('term', this.input.value);
+        } else {
+            params.delete('term');
+        }
+        window.location.href = window.location.pathname + '?' + params.toString();
     }
 
     _handleBlur() {
-        if (!this.input.value) {
+        const originalTerm = new URLSearchParams(window.location.search).get('term') ?? '';
+        if (this.input.value !== originalTerm) {
+            this._submit();
+        } else if (!this.input.value) {
             this._close();
         }
     }

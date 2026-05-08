@@ -20,9 +20,7 @@ extension Page {
             let payload = try req.query.decode(CatalogueQueryPayload.self)
             let term = payload.term
             let selectedTypes = payload.types
-            let mapper = CatalogueQueryMapper()
-            let input = mapper.toPreviewQuery(from: payload)
-            let previews = try await req.commands.previews.list(input)
+            let result = try await req.commands.catalogue.search(payload)
             let baseURL = req.baseURL
             let typeFilterData: [(type: String, label: String, iconName: String)] = [
                 (Song.previewType, "Songs", "song"),
@@ -39,9 +37,8 @@ extension Page {
                         checked: selectedTypes?.contains(filter.type) ?? true
                     )
                 },
-                previews: previews.map { preview in
-                    PreviewViewModel(preview: preview, baseURL: baseURL)
-                },
+                previews: result.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
+                    + result.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) },
                 term: term
             )
         }

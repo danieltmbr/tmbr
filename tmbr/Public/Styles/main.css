@@ -8,6 +8,7 @@
     --table-background-color: #F7F7F7;
     --table-header-background-color: #EFEFEF;
     --error-color: #8b0000;
+    --input-background-hover: color-mix(in srgb, CanvasText 5%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,6 +20,7 @@
         --table-background-color: #242424;
         --table-header-background-color: #2C2C2C;
         --error-color: #ff6b6b;
+        --input-background-hover: color-mix(in srgb, CanvasText 8%, transparent);
     }
 }
 
@@ -362,7 +364,7 @@ article hr {
  ------------------------------------------------
  */
 
-main > section > ul > a > li > span.primary-info {
+main > section > ul > a > li span.primary-info {
     text-decoration: underline;
     text-decoration-thickness: 1px;
 }
@@ -468,13 +470,16 @@ main > section > nav {
 }
 
 main > section > nav > form {
-    display: none;
+    display: flex;
     flex: 1;
     margin: 0 0.5rem;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 main > section > nav > form.open {
-    display: flex;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 main > section > nav > button {
@@ -483,13 +488,24 @@ main > section > nav > button {
 
 main > section > nav > form input[type="search"] {
     flex: 1;
-    background: none;
+    background: transparent;
     border: none;
-    border-bottom: 1px solid currentColor;
-    font: inherit;
-    line-height: 1;
     outline: none;
-    padding: 0;
+    font: inherit;
+    font-family: system-ui, -apple-system, Helvetica, sans-serif;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+
+main > section > nav > form input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+}
+
+main > section > nav > form input[type="search"]:hover,
+main > section > nav > form input[type="search"]:focus {
+    background: var(--input-background-hover);
 }
 
 nav > aside.popup {
@@ -656,8 +672,14 @@ button.icon.small > svg {
     max-height: 12px;
 }
 
+button.icon.active > svg,
 button.icon > svg:hover {
     opacity: 1;
+}
+
+.note-badge {
+    font-size: 1.2rem;
+    opacity: 0.65;
 }
 
 /*
