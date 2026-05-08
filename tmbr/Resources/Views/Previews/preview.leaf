@@ -1,9 +1,0 @@
-#if(preview.thumbnailURL):
-<img src="#(preview.thumbnailURL)" alt="#(preview.primaryInfo)" loading="lazy" />
-#endif
-<span class="info">
-#(preview.primaryInfo)
-#if(preview.secondaryInfo):
-<span class="secondary-info">#(preview.secondaryInfo)</span>
-#endif
-</span>
