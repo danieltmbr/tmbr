@@ -119,6 +119,7 @@ main section a span.post-date {
 #new-item {
     position: absolute;
     right: 0;
+    anchor-name: --compose-anchor;
 }
 
 /*
@@ -427,9 +428,10 @@ main > section > ul > a > li span.primary-info {
 }
 
 #new-items {
-    top: 0;
-    right: 0;
-    margin: 1em;
+    position-anchor: --compose-anchor;
+    top: anchor(bottom);
+    right: anchor(right);
+    margin-bottom: 0.5rem;
     gap: 1rem;
 }
 
@@ -508,18 +510,16 @@ main > section > nav > form input[type="search"]:focus {
     background: var(--input-background-hover);
 }
 
-nav > aside.popup {
-    display: none;
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    right: 0;
-    min-width: 180px;
-    gap: 0.5rem;
+#filter-open {
+    anchor-name: --filter-anchor;
 }
 
-nav > aside.popup.open {
-    display: flex;
-    flex-direction: column;
+#filter-panel {
+    position-anchor: --filter-anchor;
+    top: anchor(bottom);
+    right: anchor(right);
+    margin-bottom: 0.5rem;
+    min-width: 180px;
 }
 
 .filter-item label {
