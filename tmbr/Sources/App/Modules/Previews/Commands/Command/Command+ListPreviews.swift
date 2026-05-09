@@ -6,12 +6,17 @@ import Fluent
 import AuthKit
 
 struct PreviewQueryInput: Sendable {
-    let types: Set<String>?
+    
     let term: String?
+    
+    let types: Set<String>?
 
-    init(types: Set<String>? = nil, term: String? = nil) {
-        self.types = types
+    init(
+        term: String? = nil,
+        types: Set<String>? = nil
+    ) {
         self.term = term
+        self.types = types
     }
 }
 

@@ -10,6 +10,39 @@ struct CatalogueViewModel: Encodable, Sendable {
     let term: String?
 }
 
+extension FilterItemViewModel {
+    
+    static let book = FilterItemViewModel(
+        iconName: "book",
+        label: "Books",
+        value: Book.previewType
+    )
+    
+    static let movie = FilterItemViewModel(
+        iconName: "movie",
+        label: "Movies",
+        value: Movie.previewType
+    )
+    
+    static let podcast = FilterItemViewModel(
+        iconName: "podcast",
+        label: "Podcasts",
+        value: Podcast.previewType
+    )
+    
+    static let song = FilterItemViewModel(
+        iconName: "song",
+        label: "Songs",
+        value: Song.previewType
+    )
+}
+
+extension [FilterItemViewModel] {
+    static let catalogue: Self = [
+        .book, .movie, .podcast, .song,
+    ]
+}
+
 extension Template where Model == CatalogueViewModel {
     static let catalogue = Template(name: "Catalogue/catalogue")
 }
@@ -22,20 +55,9 @@ extension Page {
             let selectedTypes = payload.types
             let result = try await req.commands.catalogue.search(payload)
             let baseURL = req.baseURL
-            let typeFilterData: [(type: String, label: String, iconName: String)] = [
-                (Song.previewType, "Songs", "song"),
-                (Book.previewType, "Books", "book"),
-                (Movie.previewType, "Movies", "movie"),
-                (Podcast.previewType, "Podcasts", "podcast"),
-            ]
             return CatalogueViewModel(
-                filterItems: typeFilterData.map { filter in
-                    FilterItemViewModel(
-                        label: filter.label,
-                        iconName: filter.iconName,
-                        value: filter.type,
-                        checked: selectedTypes?.contains(filter.type) ?? true
-                    )
+                filterItems: .catalogue.map { filter in
+                    filter.check(selectedTypes?.contains(filter.value) ?? true)
                 },
                 previews: result.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
                     + result.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) },
