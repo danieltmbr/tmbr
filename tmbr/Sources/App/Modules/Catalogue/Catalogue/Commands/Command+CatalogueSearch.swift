@@ -2,17 +2,20 @@ import Foundation
 import Core
 
 struct CatalogueSearchResult: Sendable {
+    
     let previews: [Preview]
+    
     let noteMatches: [Preview]
 }
 
 extension Command where Self == PlainCommand<CatalogueQueryPayload, CatalogueSearchResult> {
+    
     static func searchCatalogue(
-        previewSearch: CommandResolver<PreviewQueryInput, [Preview]>,
-        noteSearch: CommandResolver<NoteQueryPayload, [Note]>
+        mapper: CatalogueQueryMapper = CatalogueQueryMapper(),
+        noteSearch: CommandResolver<NoteQueryPayload, [Note]>,
+        previewSearch: CommandResolver<PreviewQueryInput, [Preview]>
     ) -> Self {
-        let mapper = CatalogueQueryMapper()
-        return PlainCommand { payload in
+        PlainCommand { payload in
             let previewInput = mapper.toPreviewQuery(from: payload)
             let noteInput = mapper.toNotesQuery(from: payload)
 
@@ -34,11 +37,12 @@ extension Command where Self == PlainCommand<CatalogueQueryPayload, CatalogueSea
 }
 
 extension CommandFactory<CatalogueQueryPayload, CatalogueSearchResult> {
+    
     static var searchCatalogue: Self {
         CommandFactory { request in
             .searchCatalogue(
-                previewSearch: request.commands.previews.list,
-                noteSearch: request.commands.notes.search
+                noteSearch: request.commands.notes.search,
+                previewSearch: request.commands.previews.list
             )
         }
     }

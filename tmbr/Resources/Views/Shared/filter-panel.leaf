@@ -11,11 +11,7 @@
     <ul class="system-info">
         #for(filter in filterItems):
         <li class="filter-item">
-            #if(filter.checked):
-            <input type="checkbox" id="filter-#(filter.value)" value="#(filter.value)" checked>
-            #else:
-            <input type="checkbox" id="filter-#(filter.value)" value="#(filter.value)">
-            #endif
+            <input type="checkbox" id="filter-#(filter.value)" value="#(filter.value)"#if(filter.checked): checked#endif>
             <label for="filter-#(filter.value)">
                 #(filter.label)
                 #extend("Icons/catalogueType")
