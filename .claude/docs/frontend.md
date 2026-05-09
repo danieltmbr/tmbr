@@ -1,5 +1,16 @@
 # Frontend Development
 
+## Typography
+
+**Content = serif (default font). Functional UI = sans-serif.**
+
+- Page text, article content, catalogue item names, note body → default (serif) font
+- Inputs, labels, nav controls, badges, filter items, form elements, metadata → `system-ui, -apple-system, Helvetica, sans-serif` (same family as `.system-info`)
+
+Never apply sans-serif to reading content. Never apply serif to controls.
+
+---
+
 ## HTML & CSS
 
 No CSS frameworks. No older-browser polyfills. Modern CSS/HTML only.

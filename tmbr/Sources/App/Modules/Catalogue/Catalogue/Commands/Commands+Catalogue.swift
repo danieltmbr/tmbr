@@ -8,13 +8,17 @@ extension Commands {
 extension Commands {
     
     struct Catalogue: CommandCollection, Sendable {
-        
+
         let metadata: CommandFactory<URL, Metadata>
-        
+
+        let search: CommandFactory<CatalogueQueryPayload, CatalogueSearchResult>
+
         init(
-            metadata: CommandFactory<URL, Metadata> = .fetchMetadata
+            metadata: CommandFactory<URL, Metadata> = .fetchMetadata,
+            search: CommandFactory<CatalogueQueryPayload, CatalogueSearchResult> = .searchCatalogue
         ) {
             self.metadata = metadata
+            self.search = search
         }
     }
 }

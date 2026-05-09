@@ -1,0 +1,32 @@
+#extend("Shared/page"):
+
+    #export("toolbar"):
+        <button id="new-item" class="icon" type="button">
+            #extend("Icons/pencil")
+        </button>
+    #endexport
+
+    #export("main"):
+        <a href="/" alt="Home page">
+            #extend("Shared/signature")
+        </a>
+        
+        <section>
+            <nav>
+                #extend("Shared/search")
+                #extend("Shared/filter-panel")
+            </nav>
+
+            #extend("Previews/previews")
+        </section>
+
+        #extend("Shared/compose")
+    #endexport
+
+    #export("scripts"):
+        <script src="/Scripts/toolbar.js"></script>
+        <script src="/Scripts/search.js"></script>
+        <script src="/Scripts/filter.js"></script>
+    #endexport
+
+#endextend
