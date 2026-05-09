@@ -92,11 +92,15 @@ main > section > ul > a {
 
 main > section > ul > a > li {
     display: grid;
-    grid-template-columns: 1.4em 1fr auto;
+    grid-template-columns: 1fr auto;
     gap: 1rem;
     row-gap: 0;
     align-items: baseline;
     margin: 0.5em 0;
+}
+
+main > section > ul.counted > a > li {
+    grid-template-columns: 1.4em 1fr auto;
 }
 
 main > section > ul > a:hover > li {
@@ -693,22 +697,22 @@ button.icon > svg:hover {
         padding: calc(env(safe-area-inset-top) + 20px) 1.2em 20px 1.2em;
     }
     
-    main > section > ul > a > li {
+    main > section > ul.counted > a > li {
         grid-template-columns: 1.4em 1fr;
         grid-template-rows: auto auto;
     }
-    
-    main > section > ul > a > li > span.post-id {
+
+    main > section > ul.counted > a > li > span.post-id {
         grid-column: 1;
         grid-row: 1;
     }
 
-    main > section > ul > a > li > span.post-title {
+    main > section > ul.counted > a > li > span.post-title {
         grid-column: 2;
         grid-row: 1;
     }
 
-    main > section > ul > a > li > span.post-date {
+    main > section > ul.counted > a > li > span.post-date {
         grid-column: 2;
         grid-row: 2;
         text-align: left;

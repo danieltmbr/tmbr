@@ -10,7 +10,7 @@
         #extend("Shared/signature")
         #if(count(posts) > 0):
             <section alt="Articles">
-                <ul>
+                <ul class="counted">
                 #for(post in posts):
                     <a href="/post/#(post.id)"><li>
                         <span class="post-id">#(post.id).</span>

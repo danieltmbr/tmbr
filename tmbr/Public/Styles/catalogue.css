@@ -1,4 +1,0 @@
-/* 2-column grid for preview lists (no index column) */
-main > section > ul > a > li {
-    grid-template-columns: 1fr auto;
-}
