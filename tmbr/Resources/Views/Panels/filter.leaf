@@ -1,0 +1,20 @@
+<button id="filter-open" class="icon" type="button" aria-label="Filter">
+    #extend("Icons/filter")
+</button>
+
+<aside id="filter-panel" class="panel popup">
+    <ul class="system-info">
+        #for(item in filterItems):
+        <li class="filter-item">
+            <input type="checkbox" id="filter-#(item.value)" value="#(item.value)"#if(item.checked): checked#endif>
+            <label for="filter-#(item.value)">
+                #(item.label)
+                #extend("Icons/icons")
+            </label>
+        </li>
+        #endfor
+        <hr/>
+        <li id="filter-select-all">Select all</li>
+        <li id="filter-deselect-all">Deselect all</li>
+    </ul>
+</aside>

@@ -120,7 +120,7 @@ main section a span.post-date {
     text-align: right;
 }
 
-#new-item {
+#compose {
     position: absolute;
     right: 0;
     anchor-name: --compose-anchor;
@@ -431,7 +431,7 @@ main > section > ul > a > li span.primary-info {
     gap: 0.5rem;
 }
 
-#new-items {
+#compose-panel {
     position-anchor: --compose-anchor;
     top: anchor(bottom);
     right: anchor(right);
@@ -443,18 +443,18 @@ main > section > ul > a > li span.primary-info {
     padding: 0;
 }
 
-#new-items ul {
+#compose-panel ul {
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-#new-items ul a {
+#compose-panel ul a {
     text-decoration: none;
     color: inherit;
 }
 
-#new-items ul a:hover {
+#compose-panel ul a:hover {
     color: LinkText !important;
 }
 

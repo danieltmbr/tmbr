@@ -11,12 +11,12 @@ class ToolbarController {
 
     init() {
         this.newItemButton.addEventListener('click', this._onNewItemClick);
-        this.newItemCloseButton.addEventListener('click', this._onCloseClick);
+        this.newItemCloseButton?.addEventListener('click', this._onCloseClick);
     }
 
     destroy() {
         this.newItemButton.removeEventListener('click', this._onNewItemClick);
-        this.newItemCloseButton.removeEventListener('click', this._onCloseClick);
+        this.newItemCloseButton?.removeEventListener('click', this._onCloseClick);
         document.removeEventListener('click', this._onOutsideClick);
     }
 
@@ -41,9 +41,11 @@ class ToolbarController {
 
 document.addEventListener('DOMContentLoaded', () => {
     const toolbar = document.getElementById('toolbar');
-    const newItemButton = document.getElementById('new-item');
-    const newItemCloseButton = document.getElementById('new-item-close');
-    const newItemsPanel = document.getElementById('new-items');
+    const newItemButton = document.getElementById('compose');
+    const newItemCloseButton = document.getElementById('compose-close');
+    const newItemsPanel = document.getElementById('compose-panel');
+
+    if (!newItemButton || !newItemsPanel) return;
 
     const editor = new ToolbarController({
         toolbar,
@@ -53,4 +55,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     editor.init();
 });
-

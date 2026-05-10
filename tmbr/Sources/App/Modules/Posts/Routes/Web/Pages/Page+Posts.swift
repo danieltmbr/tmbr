@@ -26,11 +26,13 @@ struct PostItemViewModel: Content {
     }
 }
 
-struct PostsViewModel: Content {
-    
+struct PostsViewModel: Encodable, Sendable {
+
     private let posts: [PostItemViewModel]
-    
-    init(posts: [Post]) {
+
+    private let compose: ComposePopupViewModel?
+
+    init(posts: [Post], compose: ComposePopupViewModel?) {
         self.posts = posts.compactMap { post in
             guard let id = post.id else { return nil }
             return PostItemViewModel(
@@ -39,6 +41,7 @@ struct PostsViewModel: Content {
                 publishDate: post.createdAt.formatted(.publishDate)
             )
         }
+        self.compose = compose
     }
 }
 
@@ -50,10 +53,11 @@ extension Page {
     static var posts: Self {
         Page(template: .posts) { req in
             let posts = try await req.commands.posts.list()
-            return PostsViewModel(posts: posts)
+            let compose: ComposePopupViewModel? = req.auth.has(User.self) ? .standard : nil
+            return PostsViewModel(posts: posts, compose: compose)
         }
     }
-    
+
     static var drafts: Self {
         Page(template: .posts) { req in
             let user = try await req.permissions.posts.drafts()
@@ -62,7 +66,7 @@ extension Page {
                 .filter(\.$author.$id == user.userID)
                 .sort(\.$createdAt, .descending)
                 .all()
-            return PostsViewModel(posts: posts)
+            return PostsViewModel(posts: posts, compose: .standard)
         }
     }
 }

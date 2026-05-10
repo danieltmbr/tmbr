@@ -1,0 +1,10 @@
+<aside id="compose-panel" class="panel popup">
+    <ul class="system-info">
+        #for(section in compose.sections):
+            #for(item in section.items):
+                <a href="#(item.url)"><li>#(item.label) #extend("Icons/icons")</li></a>
+            #endfor
+            #if(section.hasSeparatorAfter):<hr/>#endif
+        #endfor
+    </ul>
+</aside>
