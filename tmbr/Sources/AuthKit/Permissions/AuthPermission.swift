@@ -56,3 +56,9 @@ public struct AuthPermission<Input>: Sendable {
         try self.grant((), on: request)
     }
 }
+
+extension AuthPermission where Input == Void {
+    public func isGranted(for request: Request) -> Bool {
+        (try? grant(on: request)) != nil
+    }
+}

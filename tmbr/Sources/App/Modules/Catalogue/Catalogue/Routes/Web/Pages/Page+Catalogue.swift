@@ -8,30 +8,32 @@ struct CatalogueViewModel: Encodable, Sendable {
     let previews: [PreviewViewModel]
 
     let term: String?
+
+    let compose: ComposePopupViewModel?
 }
 
 extension FilterItemViewModel {
     
     static let book = FilterItemViewModel(
-        iconName: "book",
+        icon: "book",
         label: "Books",
         value: Book.previewType
     )
     
     static let movie = FilterItemViewModel(
-        iconName: "movie",
+        icon: "movie",
         label: "Movies",
         value: Movie.previewType
     )
     
     static let podcast = FilterItemViewModel(
-        iconName: "podcast",
+        icon: "podcast",
         label: "Podcasts",
         value: Podcast.previewType
     )
     
     static let song = FilterItemViewModel(
-        iconName: "song",
+        icon: "song",
         label: "Songs",
         value: Song.previewType
     )
@@ -55,13 +57,15 @@ extension Page {
             let selectedTypes = payload.types
             let result = try await req.commands.catalogue.search(payload)
             let baseURL = req.baseURL
+            let compose = ComposePopupViewModel(req.permissions.compose(.standard))
             return CatalogueViewModel(
                 filterItems: .catalogue.map { filter in
                     filter.check(selectedTypes?.contains(filter.value) ?? true)
                 },
                 previews: result.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
                     + result.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) },
-                term: term
+                term: term,
+                compose: compose
             )
         }
     }

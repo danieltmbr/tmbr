@@ -1,11 +1,13 @@
 #extend("Shared/page"):
 
     #export("toolbar"):
-        <button id="new-item" class="icon" type="button">
-            #extend("Icons/pencil")
-        </button>
+        #if(compose):
+            <button id="compose" class="icon" type="button" aria-label="Compose">
+                #extend("Icons/pencil")
+            </button>
+        #endif
     #endexport
-    
+
     #export("main"):
         #extend("Shared/signature")
         #if(count(posts) > 0):
@@ -21,12 +23,14 @@
                 </ul>
             </section>
         #endif
-        
-        #extend("Shared/compose")
+
+        #if(compose):
+            #extend("Panels/compose")
+        #endif
     #endexport
-    
+
     #export("scripts"):
         <script src="/Scripts/toolbar.js"></script>
     #endexport
-    
+
 #endextend

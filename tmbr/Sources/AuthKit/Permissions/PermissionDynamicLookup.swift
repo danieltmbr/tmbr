@@ -12,6 +12,10 @@ public struct PermissionDynamicLookup<T>: Sendable {
         self.request = request
     }
     
+    public subscript <S: CompositionScope>(dynamicMember keyPath: KeyPath<T, S.Type>) -> PermissionCompositionResolver {
+        PermissionCompositionResolver(request: request)
+    }
+
     public subscript <S>(dynamicMember keyPath: KeyPath<T, S.Type>) -> PermissionDynamicLookup<S> {
         PermissionDynamicLookup<S>(request: request)
     }
