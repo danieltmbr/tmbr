@@ -12,20 +12,11 @@ struct ComposeDefinition: Sendable {
         sections.flatMap(\.entries)
     }
 
-    func viewModel(allowed: Set<ComposeAction>) -> ComposePopupViewModel? {
-        let filtered: [[ComposeAction]] = sections.compactMap { section in
-            let pass = section.entries.map(\.0).filter { allowed.contains($0) }
-            return pass.isEmpty ? nil : pass
-        }
-        guard !filtered.isEmpty else { return nil }
-        return ComposePopupViewModel(
-            sections: filtered.enumerated().map { idx, actions in
-                ComposeSectionViewModel(
-                    items: actions.map { ComposeItemViewModel(label: $0.label, icon: $0.icon, url: $0.url) },
-                    hasSeparatorAfter: idx < filtered.count - 1
-                )
-            }
-        )
+    func filtered(allowed: Set<ComposeAction>) -> ComposeDefinition {
+        ComposeDefinition(sections: sections.compactMap { section in
+            let entries = section.entries.filter { action, _ in allowed.contains(action) }
+            return entries.isEmpty ? nil : Section(entries: entries)
+        })
     }
 
     static let standard = ComposeDefinition(sections: [

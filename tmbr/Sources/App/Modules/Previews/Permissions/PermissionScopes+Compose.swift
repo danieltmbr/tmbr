@@ -5,3 +5,9 @@ extension PermissionScopes {
 }
 
 struct ComposePermissionScope: CompositionScope {}
+
+extension PermissionCompositionResolver {
+    func callAsFunction(_ definition: ComposeDefinition) -> ComposeDefinition {
+        definition.filtered(allowed: callAsFunction(definition.allEntries))
+    }
+}
