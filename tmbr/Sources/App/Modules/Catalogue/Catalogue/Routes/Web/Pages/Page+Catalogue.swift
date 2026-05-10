@@ -1,6 +1,5 @@
 import Vapor
 import Core
-import AuthKit
 
 struct CatalogueViewModel: Encodable, Sendable {
 
@@ -58,7 +57,9 @@ extension Page {
             let selectedTypes = payload.types
             let result = try await req.commands.catalogue.search(payload)
             let baseURL = req.baseURL
-            let compose: ComposePopupViewModel? = req.auth.has(User.self) ? .standard : nil
+            let definition = ComposeDefinition.standard
+            let allowed = req.permissions.compose(definition.allEntries)
+            let compose = definition.viewModel(allowed: allowed)
             return CatalogueViewModel(
                 filterItems: .catalogue.map { filter in
                     filter.check(selectedTypes?.contains(filter.value) ?? true)

@@ -53,7 +53,9 @@ extension Page {
     static var posts: Self {
         Page(template: .posts) { req in
             let posts = try await req.commands.posts.list()
-            let compose: ComposePopupViewModel? = req.auth.has(User.self) ? .standard : nil
+            let definition = ComposeDefinition.standard
+            let allowed = req.permissions.compose(definition.allEntries)
+            let compose = definition.viewModel(allowed: allowed)
             return PostsViewModel(posts: posts, compose: compose)
         }
     }
@@ -66,7 +68,10 @@ extension Page {
                 .filter(\.$author.$id == user.userID)
                 .sort(\.$createdAt, .descending)
                 .all()
-            return PostsViewModel(posts: posts, compose: .standard)
+            let definition = ComposeDefinition.standard
+            let allowed = req.permissions.compose(definition.allEntries)
+            let compose = definition.viewModel(allowed: allowed)
+            return PostsViewModel(posts: posts, compose: compose)
         }
     }
 }
