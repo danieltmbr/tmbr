@@ -17,13 +17,13 @@ struct SongsWebController: RouteCollection {
 
         songsRoute.get(":songID", page: .song)
 
-        songsRoute.get("new", page: .createSong)
-        songsRoute.post("new", use: createSong)
-
-        songsRoute.get("metadata", use: metadata)
-
-        songsRoute.get(":songID", "edit", page: .editSong)
-        songsRoute.post(":songID", use: updateSong)
+//        songsRoute.get("new", page: .createSong)
+//        songsRoute.post("new", use: createSong)
+//
+//        songsRoute.get("metadata", use: metadata)
+//
+//        songsRoute.get(":songID", "edit", page: .editSong)
+//        songsRoute.post(":songID", use: updateSong)
     }
 
     @Sendable
