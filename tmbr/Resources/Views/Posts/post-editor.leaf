@@ -85,6 +85,8 @@
     #endexport
     
     #export("scripts"):
+        <script src="/Scripts/persistence.js"></script>
+        <script src="/Scripts/gallery.js"></script>
         <script src="/Scripts/post-editor.js"></script>
     #endexport
 #endextend
