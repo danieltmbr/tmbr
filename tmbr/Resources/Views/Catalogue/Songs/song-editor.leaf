@@ -5,12 +5,10 @@
     #endexport
 
     #export("main"):
-    <button id="gallery-open" class="icon" type="button">
-        #extend("Icons/gallery")
-    </button>
-
     <form id="song-form" method="#(submit.method)" action="#(submit.action)">
         <input id="editor-song-id" type="hidden" name="id" value="#(id)" />
+        <input id="editor-artwork-id" type="hidden" name="artwork-id" value="#(artworkId)" />
+        <input id="editor-artwork-source-url" type="hidden" name="artwork-source-url" value="#(artworkSourceURL)" />
         #if(_csrf):
             <input type="hidden" name="_csrf" value="#(_csrf)" />
         #endif
@@ -25,7 +23,7 @@
             autocomplete="off"
             spellcheck="true"
         />
-        
+
         <section id="resources-section">
             <h3>Resources</h3>
             #for(url in resourceURLs):
@@ -48,119 +46,149 @@
             >
         </section>
 
-        <section>
+        <section id="details-section">
             <h3>Details</h3>
 
-            <input
-                id="editor-song-artist"
-                class="text-input"
-                name="artist"
-                type="text"
-                value="#(artist)"
-                placeholder="Artist"
-                autocomplete="off"
-                spellcheck="true"
-            />
+            <div class="details-content">
+                <div class="details-inputs">
+                    <input
+                        id="editor-song-artist"
+                        class="text-input"
+                        name="artist"
+                        type="text"
+                        value="#(artist)"
+                        placeholder="Artist"
+                        autocomplete="off"
+                        spellcheck="true"
+                    />
 
-            <input
-                id="editor-song-album"
-                class="text-input"
-                name="album"
-                type="text"
-                value="#(album)"
-                placeholder="Album"
-                autocomplete="off"
-                spellcheck="true"
-            />
+                    <input
+                        id="editor-song-album"
+                        class="text-input"
+                        name="album"
+                        type="text"
+                        value="#(album)"
+                        placeholder="Album"
+                        autocomplete="off"
+                        spellcheck="true"
+                    />
 
-            <input
-                id="editor-song-release-date"
-                class="text-input"
-                type="date"
-                value="#(releaseDate)"
-                placeholder="Release Date"
-                autocomplete="off"
-            />
-            <input
-                id="editor-song-release-date-iso"
-                name="release-date"
-                type="hidden"
-                value=""
-            />
+                    <input
+                        id="editor-song-release-date"
+                        class="text-input"
+                        type="text"
+                        value="#(releaseDate)"
+                        placeholder="Release date, e.g. 2024 or 2025-06-15"
+                        autocomplete="off"
+                    />
+                    <input
+                        id="editor-song-release-date-iso"
+                        name="release-date"
+                        type="hidden"
+                        value=""
+                    />
 
-            <input
-                id="editor-song-genre"
-                class="text-input"
-                name="genre"
-                type="text"
-                value="#(genre)"
-                placeholder="Genre"
-                autocomplete="off"
-                spellcheck="true"
-            />
+                    <input
+                        id="editor-song-genre"
+                        class="text-input"
+                        name="genre"
+                        type="text"
+                        value="#(genre)"
+                        placeholder="Genre"
+                        autocomplete="off"
+                        spellcheck="true"
+                    />
+                </div>
+
+                <figure id="artwork-placeholder" class="image-picker #if(!artworkThumbnailURL):empty#endif">
+                    <img id="artwork-image" src="#(artworkThumbnailURL)" alt="Album artwork" />
+                    <span>#extend("Icons/gallery")</span>
+                    <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
+                </figure>
+            </div>
         </section>
-                    
+
         #if(error):
             <p class="editor-error">#unsafeHTML(error)</p>
         #endif
 
-        <section id="notes-section">
-            <h3>Notes</h3>
+        <section id="notes-section" data-note-count="#(count(notes))">
+            <header>
+                <h3>Notes</h3>
+                <button id="notes-gallery-open" class="icon" type="button" data-gallery-mode="notes">
+                    #extend("Icons/gallery")
+                </button>
+            </header>
             #for(note in notes):
+                <div class="note-wrapper" data-index="#(index)">
+                    <textarea
+                        class="note-body"
+                        name="notes[#(index)][body]"
+                        placeholder="Write your thoughts..."
+                        autocapitalize="sentences"
+                        spellcheck="true"
+                    >#(note.body)</textarea>
+                    <input type="hidden" name="notes[#(index)][access]" value="private" class="note-access-fallback" />
+                    <label class="note-access">
+                        <input type="checkbox" name="notes[#(index)][access]" value="public"
+                            #if(note.access == "public"):checked#endif/>
+                        Public
+                    </label>
+                </div>
+            #endfor
+            <div class="note-wrapper" data-index="#(count(notes))">
                 <textarea
                     class="note-body"
-                    name="notes[]"
+                    name="notes[#(count(notes))][body]"
                     placeholder="Write your thoughts..."
                     autocapitalize="sentences"
                     spellcheck="true"
-                >#(note)</textarea>
-            #endfor
-            <textarea
-                class="note-body"
-                name="notes[]"
-                placeholder="Write your thoughts..."
-                autocapitalize="sentences"
-                spellcheck="true"
-            ></textarea>
+                ></textarea>
+                <input type="hidden" name="notes[#(count(notes))][access]" value="private" class="note-access-fallback" />
+                <label class="note-access">
+                    <input type="checkbox" name="notes[#(count(notes))][access]" value="public"/>
+                    Public
+                </label>
+            </div>
         </section>
 
         <p id="autofill-status" class="system-info" hidden></p>
-            
+
         <div class="editor-actions">
+            <button id="editor-song-preview" class="link" type="button">Preview</button>
             <div>
-                <label class="access">
-                    <select id="access" name="access">
-                        <option value="public" #if(access == "public"):selected#endif>Public</option>
-                        <option value="private" #if(access == "private"):selected#endif>Private</option>
-                    </select>
-                </label>
-                    
+                <input type="hidden" name="access" value="public" />
                 <button id="editor-post-save" class="primary" type="submit">#(submit.label)</button>
             </div>
         </div>
     </form>
 
-    <form id="preview-form" method="post" action="/post/preview" target="_blank" hidden>
-        #if(_csrf):
-            <input type="hidden" name="_csrf" value="#(_csrf)" />
-        #endif
+    <form id="preview-form" method="post" action="/songs/preview" target="_blank" hidden>
         <input type="hidden" name="title" id="preview-title" />
-        <input type="hidden" name="body" id="preview-body" />
+        <input type="hidden" name="artist" id="preview-artist" />
+        <input type="hidden" name="album" id="preview-album" />
+        <input type="hidden" name="genre" id="preview-genre" />
+        <input type="hidden" name="releaseDate" id="preview-release-date" />
+        <input type="hidden" name="artworkURL" id="preview-artwork-url" />
+        <input type="hidden" name="resourceURLs" id="preview-resource-urls" />
+        <input type="hidden" name="notes" id="preview-notes" />
     </form>
-    
+
     <aside id="gallery" hidden>
-        <div id="gallery-header" alt="Gallery Header">
+        <div id="gallery-header">
             <button class="icon small" type="button" id="gallery-close" aria-label="Close">
                 #extend("Icons/close")
             </button>
+            <h4 id="gallery-title">Gallery</h4>
             <span id="gallery-status" class="system-info"></span>
         </div>
-        <section alt="Gallery" id="gallery-section"></section>
+        <section id="gallery-section"></section>
     </aside>
     #endexport
-    
+
     #export("scripts"):
+        <script src="/Scripts/persistence.js"></script>
+        <script src="/Scripts/gallery.js"></script>
         <script src="/Scripts/song-editor.js"></script>
     #endexport
 #endextend
-

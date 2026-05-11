@@ -5,31 +5,42 @@ import Fluent
 import AuthKit
 
 struct SongEditorViewModel: Encodable, Sendable {
-    
+
+    struct NoteViewModel: Encodable, Sendable {
+        let body: String
+        let access: Access
+    }
+
     private let id: Int?
-    
+
     private let pageTitle: String?
-    
+
     private let access: Access
-    
+
     private let album: String
-    
+
     private let artist: String
-    
+
+    private let artworkId: Int?
+
+    private let artworkSourceURL: String?
+
+    private let artworkThumbnailURL: String?
+
     private let genre: String
-    
-    private let notes: [String]
-    
+
+    private let notes: [NoteViewModel]
+
     private let releaseDate: String
-    
+
     private let resourceURLs: [String]
-    
+
     private let submit: Form.Submit
-    
+
     private let title: String
-    
+
     let _csrf: String?
-    
+
     private let error: String?
 
     init(
@@ -38,8 +49,11 @@ struct SongEditorViewModel: Encodable, Sendable {
         access: Access = .private,
         album: String = "",
         artist: String = "",
+        artworkId: Int? = nil,
+        artworkSourceURL: String? = nil,
+        artworkThumbnailURL: String? = nil,
         genre: String = "",
-        notes: [String] = [],
+        notes: [NoteViewModel] = [],
         releaseDate: String = "",
         resourceURLs: [String] = [],
         submit: Form.Submit,
@@ -52,6 +66,9 @@ struct SongEditorViewModel: Encodable, Sendable {
         self.access = access
         self.album = album
         self.artist = artist
+        self.artworkId = artworkId
+        self.artworkSourceURL = artworkSourceURL
+        self.artworkThumbnailURL = artworkThumbnailURL
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate
@@ -61,28 +78,41 @@ struct SongEditorViewModel: Encodable, Sendable {
         self._csrf = csrf
         self.error = error
     }
-    
+
     init(
         song: Song,
         notes: [Note],
+        baseURL: String,
         csrf: String?
     ) throws {
         let id = try song.requireID()
+        let artworkId = song.$artwork.id
+        // artworkSourceURL is only for external URLs that need resolution - existing songs already have resolved artwork
+        let artworkThumbnailURL: String?
+        if let artwork = song.artwork {
+            artworkThumbnailURL = "\(baseURL)/gallery/data/\(artwork.thumbnailKey)"
+        } else {
+            artworkThumbnailURL = nil
+        }
         self.init(
             id: id,
             pageTitle: "Edit '\(song.title)'",
             access: song.access,
             album: song.album ?? "",
             artist: song.artist,
+            artworkId: artworkId,
+            artworkSourceURL: nil,
+            artworkThumbnailURL: artworkThumbnailURL,
             genre: song.genre ?? "",
-            notes: notes.map(\.body),
-            releaseDate: "",
+            notes: notes.map { NoteViewModel(body: $0.body, access: $0.access) },
+            releaseDate: song.releaseDate?.formatted(.releaseDate) ?? "",
             resourceURLs: song.resourceURLs,
             submit: Form.Submit(
                 action: "/songs/\(id)",
                 label: "Save"
             ),
             title: song.title,
+            csrf: csrf
         )
     }
 }
@@ -117,6 +147,7 @@ extension Page {
             return try await SongEditorViewModel(
                 song: song,
                 notes: notes,
+                baseURL: request.baseURL,
                 csrf: csrf
             )
         }
