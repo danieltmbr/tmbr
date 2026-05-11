@@ -16,14 +16,14 @@ extension Page {
     static var songs: Self {
         Page(template: .songs) { req in
             let term = try? req.query.get(String.self, at: "term")
-            let input = PreviewQueryInput(term: term, types: [Song.previewType])
             async let composeURL: String? = (try? await req.permissions.songs.create()) != nil ? "/songs/new" : nil
-            async let previewList = req.commands.previews.list(input)
+            async let result = req.commands.songs.search(term)
             let baseURL = req.baseURL
+            let resolved = try await result
             return SongsViewModel(
                 compose: await composeURL,
                 term: term,
-                previews: try await previewList.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
+                previews: (resolved.previews + resolved.noteMatches).map { PreviewViewModel(preview: $0, baseURL: baseURL) }
             )
         }
     }
