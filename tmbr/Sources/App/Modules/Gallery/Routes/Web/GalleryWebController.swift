@@ -18,6 +18,7 @@ struct GalleryWebController: RouteCollection {
         
         routes.grouped("gallery")
             .on(.POST, body: .collect(maxSize: "10mb"), use: upload)
+
     }
     
     @Sendable
@@ -100,7 +101,7 @@ struct GalleryWebController: RouteCollection {
         let alt = image.alt ?? image.key
         return Response(markdown: "![\(alt)](\(req.baseURL)/gallery/data/\(image.key))")
     }
-    
+
     @Sendable
     private func recoverEditor(
         error: Error,

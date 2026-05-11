@@ -57,16 +57,24 @@ actor DefaultImageService: ImageService {
     
     func store(image file: File) async throws -> ImageMetadata {
         let mediaType = try validateAndResolveMediaType(for: file)
+        let imageData = Data(buffer: file.data)
+        return try await store(data: imageData, contentType: mediaType)
+    }
+
+    func store(data imageData: Data, contentType mediaType: MediaContentType) async throws -> ImageMetadata {
+        guard allowedMediaTypes.contains(mediaType) else {
+            throw Abort(.unsupportedMediaType, reason: "Unsupported image content type")
+        }
+
         let uuid = UUID().uuidString
         let fileName = "\(uuid).\(mediaType.fileExtension)"
-        let imageData = Data(buffer: file.data)
-        
+
         try await storage.store(
             data: imageData,
             contentType: mediaType.contentType,
             name: fileName
         )
-        
+
         let thumbnailFileName: String
         if (mediaType == .jpeg || mediaType == .png), let thumbnailData = resizer.resize(imageData) {
             thumbnailFileName = "thumbnail-\(uuid).png"
@@ -78,7 +86,7 @@ actor DefaultImageService: ImageService {
         } else {
             thumbnailFileName = fileName
         }
-        
+
         return ImageMetadata(
             key: fileName,
             thumbnailKey: thumbnailFileName,

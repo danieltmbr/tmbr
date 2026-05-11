@@ -10,12 +10,14 @@ struct ImageMetadata: Sendable {
 }
 
 protocol ImageService: Sendable {
-    
+
     func contentType(for key: String) async throws -> MediaContentType
-    
+
     func delete(_ key: String) async throws
-    
+
     func image(for key: String) async throws -> Data
-    
+
     func store(image: File) async throws -> ImageMetadata
+
+    func store(data: Data, contentType: MediaContentType) async throws -> ImageMetadata
 }

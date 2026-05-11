@@ -27,6 +27,7 @@ struct Gallery: Module {
             region: Region(rawValue: Environment.gallery.region)
         )
 
+        app.migrations.add(AddSourceURLToImage())
         app.storage[ServiceKey.self] = DefaultImageService(storage: storage)
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)

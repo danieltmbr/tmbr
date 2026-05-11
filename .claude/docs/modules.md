@@ -86,6 +86,23 @@ The transaction sets `CommandContext.database` (a `@TaskLocal`) to the transacti
 
 Commands define their own `Input` types, not API payloads. The same command is reused by both API and Web controllers. The caller maps its endpoint-specific payload into the command's input type.
 
+### Gallery: Resolving External Artwork
+
+When an editor receives an external image URL (e.g. from metadata autofill), always
+look it up before fetching — `sourceURL` is recorded on every image for deduplication:
+
+```swift
+private func resolveArtwork(url: String, on req: Request) async throws -> ImageID? {
+    if let existing = try await req.commands.gallery.lookup(url) {
+        return try existing.requireID()
+    }
+    let image = try await req.commands.gallery.addFromURL(ImageURLPayload(url: url, alt: "..."))
+    return try image.requireID()
+}
+```
+
+This pattern must be replicated in every catalogue editor that supports external artwork.
+
 ### Adding Commands to a Module
 
 1. Define command structs with `Input` types
