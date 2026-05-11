@@ -655,29 +655,31 @@ p.published-date {
     width: 100%;
 }
 
-#toolbar button {
+#toolbar :is(button, a).icon {
     margin: 16px;
 }
 
-button.icon {
+:is(button, a).icon {
     border: none;
     background: none;
+    color: inherit;
     cursor: pointer;
+    text-decoration: none;
 }
 
-button.icon > svg {
+:is(button, a).icon > svg {
     width: 20px;
     max-height: 17px;
     opacity: 0.65;
 }
 
-button.icon.small > svg {
+:is(button, a).icon.small > svg {
     width: 14px;
     max-height: 12px;
 }
 
-button.icon.active > svg,
-button.icon > svg:hover {
+:is(button, a).icon.active > svg,
+:is(button, a).icon > svg:hover {
     opacity: 1;
 }
 

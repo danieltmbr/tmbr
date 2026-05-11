@@ -12,6 +12,8 @@ struct SongsWebController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
         let songsRoute = routes.grouped("songs")
+        
+        songsRoute.get (page: . songs)
 
         songsRoute.get(":songID", page: .song)
 
