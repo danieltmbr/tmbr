@@ -50,7 +50,10 @@ final class Image: Model, Content, @unchecked Sendable {
     
     @Timestamp(key: "uploaded_at", on: .create)
     private(set) var uploadedAt: Date?
-    
+
+    @OptionalField(key: "source_url")
+    var sourceURL: String?
+
     init() {}
 
     convenience init(
@@ -61,7 +64,8 @@ final class Image: Model, Content, @unchecked Sendable {
         width: Int,
         height: Int,
         ownerID: UserID,
-        uploadedAt: Date? = nil
+        uploadedAt: Date? = nil,
+        sourceURL: String? = nil
     ) {
         self.init(
             id: id,
@@ -69,10 +73,11 @@ final class Image: Model, Content, @unchecked Sendable {
             key: key,
             thumbnailKey: thumbnailKey,
             size: CGSize(width: width, height: height),
-            ownerID: ownerID
+            ownerID: ownerID,
+            sourceURL: sourceURL
         )
     }
-    
+
     init(
         id: Int? = nil,
         alt: String?,
@@ -80,7 +85,8 @@ final class Image: Model, Content, @unchecked Sendable {
         thumbnailKey: String,
         size: CGSize,
         ownerID: UserID,
-        uploadedAt: Date? = nil
+        uploadedAt: Date? = nil,
+        sourceURL: String? = nil
     ) {
         self.id = id
         self.alt = alt
@@ -89,5 +95,6 @@ final class Image: Model, Content, @unchecked Sendable {
         self.size = Size(width: Int(size.width), height: Int(size.height))
         self.$owner.id = ownerID
         self.uploadedAt = uploadedAt
+        self.sourceURL = sourceURL
     }
 }
