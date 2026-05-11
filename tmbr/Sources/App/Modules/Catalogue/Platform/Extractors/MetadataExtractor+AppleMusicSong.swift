@@ -24,10 +24,19 @@ extension MetadataExtractor where M == SongMetadata {
             with: fetcher
         )
 
+        // Transform og:image URL to get square artwork
+        // Original: .../1200x630bf-60.jpg -> Changed to: .../1000x1000.jpg
+        let artwork = song.data["og:image"].flatMap { urlString -> String? in
+            guard var url = URL(string: urlString) else { return nil }
+            url.deleteLastPathComponent()
+            url.appendPathComponent("1000x1000.jpg")
+            return url.absoluteString
+        }
+
         return SongMetadata(
             album: try? await album,
             artist: try? await artist,
-            artwork: nil,
+            artwork: artwork,
             externalID: song.data["apple:content_id"],
             releaseDate: song.data["music:release_date"],
             title: song.data["apple:title"]

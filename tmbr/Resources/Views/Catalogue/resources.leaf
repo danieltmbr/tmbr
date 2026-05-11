@@ -3,10 +3,10 @@
     #for(res in resources):
     <li>
         <a
-            href="#(res.url)"
+            href="#(res.urlString)"
             rel="noopener noreferrer"
             target="_blank"
-        >#(res.platform)</a>
+        >#(res.label)</a>
     </li>
     #endfor
 </ul>
