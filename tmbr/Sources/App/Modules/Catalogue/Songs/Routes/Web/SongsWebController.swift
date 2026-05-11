@@ -3,6 +3,13 @@ import Fluent
 import AuthKit
 import Core
 
+private struct ExistingSongPreview: Content, Sendable {
+    let id: Int
+    let title: String
+    let artist: String
+    let detailURL: String
+}
+
 struct SongsWebController: RouteCollection {
 
     private enum EditorMode {
@@ -21,6 +28,7 @@ struct SongsWebController: RouteCollection {
         songsRoute.post("new", use: createSong)
 
         songsRoute.get("metadata", use: metadata)
+        songsRoute.get("lookup", use: lookup)
 
         songsRoute.get(":songID", "edit", page: .editSong)
         songsRoute.post(":songID", use: updateSong)
@@ -32,6 +40,17 @@ struct SongsWebController: RouteCollection {
     private func metadata(_ request: Request) async throws -> SongMetadata {
         let url = try request.query.get(String.self, at: "url")
         return try await request.commands.songs.metadata(url)
+    }
+
+    @Sendable
+    private func lookup(_ request: Request) async throws -> ExistingSongPreview {
+        let url = try request.query.get(String.self, at: "url")
+        guard let song = try await request.commands.songs.lookup(url),
+              let songID = song.id
+        else {
+            throw Abort(.notFound)
+        }
+        return ExistingSongPreview(id: songID, title: song.title, artist: song.artist, detailURL: "/songs/\(songID)")
     }
 
     @Sendable

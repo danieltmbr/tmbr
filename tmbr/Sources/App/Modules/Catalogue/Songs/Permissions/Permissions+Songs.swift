@@ -18,4 +18,11 @@ extension PreviewablePermissionScope<Song> {
             )
         )
     }
+
+    var lookup: Permission<QueryBuilder<Song>> {
+        Permission { user, query in
+            guard let userID = user?.userID else { return }
+            query.filter(\.$owner.$id == userID)
+        }
+    }
 }

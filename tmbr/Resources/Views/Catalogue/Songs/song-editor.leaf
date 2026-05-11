@@ -116,6 +116,14 @@
         <input type="hidden" name="notes" id="preview-notes" />
     </form>
 
+    <dialog id="duplicate-alert">
+        <p>You already have <strong id="duplicate-song-name"></strong>.</p>
+        <div>
+            <button id="duplicate-dismiss" type="button">Continue editing</button>
+            <a id="duplicate-song-link" href="#">Go to song</a>
+        </div>
+    </dialog>
+
     <aside id="gallery" hidden>
         <div id="gallery-header">
             <button class="icon small" type="button" id="gallery-close" aria-label="Close">

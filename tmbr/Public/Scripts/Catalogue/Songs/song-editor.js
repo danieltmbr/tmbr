@@ -14,31 +14,80 @@ class MetadataController {
     }
 }
 
+class LookupController {
+    constructor({ endpoint = '/songs/lookup' } = {}) {
+        this.endpoint = endpoint;
+    }
+
+    async check(url) {
+        const encoded = encodeURIComponent(url);
+        const response = await window.fetch(`${this.endpoint}?url=${encoded}`);
+        if (!response.ok) return null;
+        return await response.json();
+    }
+}
+
+class DuplicateAlertController {
+    constructor({ dialogEl, nameEl, linkEl, dismissEl }, { onNavigate } = {}) {
+        this.dialogEl = dialogEl;
+        this.nameEl = nameEl;
+        this.linkEl = linkEl;
+        this.dismissEl = dismissEl;
+        this._onDismiss = () => this.dialogEl?.close();
+        this._onNavigate = () => { if (typeof onNavigate === 'function') onNavigate(); };
+    }
+
+    init() {
+        this.dismissEl?.addEventListener('click', this._onDismiss);
+        this.linkEl?.addEventListener('click', this._onNavigate);
+    }
+
+    destroy() {
+        this.dismissEl?.removeEventListener('click', this._onDismiss);
+        this.linkEl?.removeEventListener('click', this._onNavigate);
+    }
+
+    show({ title, artist, detailURL }) {
+        if (!this.dialogEl) return;
+        this.nameEl.textContent = `${title} by ${artist}`;
+        this.linkEl.href = detailURL;
+        this.dialogEl.showModal();
+    }
+}
+
 class AutofillController {
     constructor({
         titleInput,
         artistInput,
         albumInput,
         releaseDateInput,
-        statusEl
-    }, { metadata, artwork, onApply }) {
+        statusEl,
+        currentSongID
+    }, { metadata, artwork, onApply, lookup, onDuplicate }) {
         this.titleInput = titleInput;
         this.artistInput = artistInput;
         this.albumInput = albumInput;
         this.releaseDateInput = releaseDateInput;
         this.statusEl = statusEl;
+        this.currentSongID = currentSongID ?? null;
         this.metadata = metadata;
         this.artwork = artwork;
         this.onApply = onApply;
+        this.lookup = lookup;
+        this.onDuplicate = onDuplicate;
     }
 
     async fetchAndApply(url) {
         try {
-            const song = await this.metadata.fetch(url);
+            const lookupPromise = this.lookup
+                ? this.lookup.check(url).catch(() => null)
+                : Promise.resolve(null);
+            const [song, existing] = await Promise.all([this.metadata.fetch(url), lookupPromise]);
             this.applyMetadata(song);
             this.setStatus('');
-            if (typeof this.onApply === 'function') {
-                this.onApply();
+            if (typeof this.onApply === 'function') this.onApply();
+            if (existing && existing.id !== this.currentSongID && typeof this.onDuplicate === 'function') {
+                this.onDuplicate(existing);
             }
         } catch (error) {
             console.error(error);
@@ -550,16 +599,32 @@ document.addEventListener('DOMContentLoaded', () => {
     );
     resourceInputs.init();
 
+    const lookup = new LookupController();
+
+    const duplicateAlert = new DuplicateAlertController(
+        {
+            dialogEl: document.getElementById('duplicate-alert'),
+            nameEl: document.getElementById('duplicate-song-name'),
+            linkEl: document.getElementById('duplicate-song-link'),
+            dismissEl: document.getElementById('duplicate-dismiss'),
+        },
+        { onNavigate: () => persistence.clear(editor.getStorageKey()) }
+    );
+    duplicateAlert.init();
+
     const autofill = new AutofillController({
         titleInput,
         artistInput,
         albumInput,
         releaseDateInput,
-        statusEl
+        statusEl,
+        currentSongID: parseInt(idInput?.value) || null
     }, {
         metadata,
         artwork,
-        onApply: () => editor.saveDraft()
+        onApply: () => editor.saveDraft(),
+        lookup,
+        onDuplicate: (dup) => duplicateAlert.show(dup)
     });
 
     const editor = new EditorController({
