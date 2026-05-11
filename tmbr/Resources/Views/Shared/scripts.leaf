@@ -1,2 +1,3 @@
 <script src="/Scripts/notifications.js"></script>
+<script src="/Scripts/login-shortcut.js"></script>
 #import("scripts")
