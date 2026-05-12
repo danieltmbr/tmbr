@@ -683,6 +683,11 @@ p.published-date {
     opacity: 1;
 }
 
+:is(button, a).icon:hover {
+    background: none;
+    filter: none;
+}
+
 .note-badge {
     font-size: 1.2rem;
     opacity: 0.65;

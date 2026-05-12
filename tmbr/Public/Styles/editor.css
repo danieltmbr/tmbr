@@ -3,19 +3,17 @@
 
     --button-primary-background: #007aff;
     --button-primary-gradient: linear-gradient(to bottom, #3696ff, #007aff);
-    --button-primary-gradient-hover: linear-gradient(to bottom, #5eabff, #007aff);
-    --button-primary-gradient-active: linear-gradient(to bottom, #0572eb, #007aff);
 
     --button-destructive-background: #d60000;
     --button-destructive-gradient: linear-gradient(to bottom, #ff1c14, #d60000);
-    --button-destructive-gradient-hover: linear-gradient(to bottom, #ff3c36, #d60000);
-    --button-destructive-gradient-active: linear-gradient(to bottom, #b80600, #d60000);
 
     --button-neutral-background: color-mix(in srgb, CanvasText 10%, transparent);
     --button-neutral-background-hover: color-mix(in srgb, CanvasText 16%, transparent);
     --button-neutral-background-active: color-mix(in srgb, CanvasText 22%, transparent);
 
     --input-background-hover: color-mix(in srgb, CanvasText 5%, transparent);
+
+    --icon-button-overlay-background: rgba(255, 255, 255, 0.25);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +23,8 @@
         --button-neutral-background-active: color-mix(in srgb, CanvasText 34%, transparent);
 
         --input-background-hover: color-mix(in srgb, CanvasText 8%, transparent);
+
+        --icon-button-overlay-background: rgba(0, 0, 0, 0.25);
     }
 }
 
@@ -168,6 +168,104 @@ button.link {
 
 /*
  ------------------------------------------------
+ Section headers
+ ------------------------------------------------
+ */
+
+form section > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/*
+ ------------------------------------------------
+ Details section
+ ------------------------------------------------
+ */
+
+#details-section .details-content {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 16px;
+}
+
+#details-section .details-inputs {
+    min-width: 0;
+}
+
+/*
+ ------------------------------------------------
+ Image picker
+ ------------------------------------------------
+ */
+
+.image-picker {
+    position: relative;
+    width: 120px;
+    aspect-ratio: 1;
+    margin: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--input-background-hover);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.image-picker > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-picker.empty > img {
+    display: none;
+}
+
+.image-picker > span {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.4;
+}
+
+.image-picker > span > svg {
+    width: 32px;
+    height: 32px;
+}
+
+.image-picker.empty > span {
+    display: flex;
+}
+
+.image-picker > button {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--icon-button-overlay-background);
+    border-radius: 50%;
+}
+
+.image-picker > button > svg {
+    width: 16px;
+    height: 16px;
+}
+
+.image-picker.empty > button {
+    display: none;
+}
+
+/*
+ ------------------------------------------------
  Gallery
  ------------------------------------------------
  */
@@ -177,6 +275,17 @@ button.link {
     top: 16px;
     right: 16px;
     z-index: 1000;
+}
+
+#gallery-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#gallery-header h4 {
+    margin: 0;
+    flex: 1;
 }
 
 #gallery {
@@ -252,6 +361,53 @@ button.link {
 
 /*
  ------------------------------------------------
+ Note access
+ ------------------------------------------------
+ */
+
+.note-wrapper {
+    position: relative;
+}
+
+.note-wrapper textarea.note-body {
+    padding-right: 72px;
+}
+
+.note-access {
+    position: absolute;
+    top: 4px;
+    right: 0;
+    background: color-mix(in srgb, Canvas 90%, transparent);
+    padding: 2px 6px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 1.2rem;
+    font-family: system-ui, -apple-system, Helvetica, sans-serif;
+    cursor: pointer;
+}
+
+.note-access:has(input[disabled]) {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/*
+ ------------------------------------------------
+ Control labels (functional, not content)
+ ------------------------------------------------
+ */
+
+form label.access {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: system-ui, -apple-system, Helvetica, sans-serif;
+}
+
+/*
+ ------------------------------------------------
  Post editor
  ------------------------------------------------
  */
@@ -269,17 +425,12 @@ main > form .editor-actions > div {
     gap: 12px;
 }
 
-main > form label.published {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
 
 main > form#preview-form {
     display: none;
 }
 
-body.dragging-page::after {
+body.dragging-page:not(.dragging-target-details):not(.dragging-target-notes)::after {
     content: 'Drop images here';
     position: fixed;
     inset: 0;
@@ -296,6 +447,36 @@ body.dragging-page::after {
     z-index: 9999;
 }
 
+form > section {
+    position: relative;
+}
+
+body.dragging-target-details #details-section::after,
+body.dragging-target-notes #notes-section::after {
+    position: absolute;
+    inset: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--drop-area-background-color);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    font-weight: 600;
+    font-size: 1.6rem;
+    letter-spacing: 0.2px;
+    pointer-events: none;
+    border-radius: 10px;
+    z-index: 10;
+}
+
+body.dragging-target-details #details-section::after {
+    content: 'Set as artwork';
+}
+
+body.dragging-target-notes #notes-section::after {
+    content: 'Insert into note';
+}
+
 /*
  ------------------------------------------------
  Mobile adjustments
@@ -303,6 +484,16 @@ body.dragging-page::after {
  */
 
 @media screen and (max-width: 600px) {
+
+    #details-section .details-content {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 1em;
+    }
+
+    #details-section .details-content .image-picker {
+        align-self: center;
+    }
 
     #gallery {
         width: auto;

@@ -4,29 +4,59 @@ import AuthKit
 
 struct SongEditorPayload: Decodable, Sendable {
 
+    struct NoteEntry: Decodable, Sendable {
+        let body: String
+        let access: Access
+
+        init(body: String, access: Access = .private) {
+            self.body = body
+            self.access = access
+        }
+    }
+
     let _csrf: String?
-
+    
     let access: Access
-
+    
     let album: String?
-
+    
     let artist: String
-
+    
+    private let artworkIdRaw: String?
+    
+    private let artworkSourceURLRaw: String?
+    
     let genre: String?
-
-    let notes: [String]
-
+    
+    let notes: [NoteEntry]
+    
     let releaseDate: Date?
-
+    
     let resourceURLs: [String]
-
+    
     let title: String
+
+    var artworkId: ImageID? {
+        guard let raw = artworkIdRaw, !raw.isEmpty else { return nil }
+        return Int(raw)
+    }
+
+    var artworkSourceURL: String? {
+        guard let raw = artworkSourceURLRaw, !raw.isEmpty else { return nil }
+        return raw
+    }
+
+    var filteredResourceURLs: [String] {
+        resourceURLs.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+    }
 
     enum CodingKeys: String, CodingKey {
         case _csrf
         case access
         case album
         case artist
+        case artworkIdRaw = "artwork-id"
+        case artworkSourceURLRaw = "artwork-source-url"
         case genre
         case notes
         case releaseDate = "release-date"
@@ -34,34 +64,15 @@ struct SongEditorPayload: Decodable, Sendable {
         case title
     }
 
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self._csrf = try container.decodeIfPresent(String.self, forKey: ._csrf)
-        self.access = try container.decode(Access.self, forKey: .access)
-        self.album = try container.decodeIfPresent(String.self, forKey: .album)
-        self.artist = try container.decode(String.self, forKey: .artist)
-        self.genre = try container.decodeIfPresent(String.self, forKey: .genre)
-        self.releaseDate = try container.decodeIfPresent(Date.self, forKey: .releaseDate)
-        self.title = try container.decode(String.self, forKey: .title)
-
-        // Filter out empty notes
-        let rawNotes = try container.decodeIfPresent([String].self, forKey: .notes) ?? []
-        self.notes = rawNotes
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
-
-        // Filter out empty resource URLs
-        let urls = try container.decode([String].self, forKey: .resourceURLs)
-        self.resourceURLs = urls.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-    }
-
     init(
         _csrf: String? = nil,
         access: Access = .private,
         album: String? = nil,
         artist: String = "",
+        artworkIdRaw: String? = nil,
+        artworkSourceURLRaw: String? = nil,
         genre: String? = nil,
-        notes: [String] = [],
+        notes: [NoteEntry] = [],
         releaseDate: Date? = nil,
         resourceURLs: [String] = [],
         title: String = ""
@@ -70,6 +81,8 @@ struct SongEditorPayload: Decodable, Sendable {
         self.access = access
         self.album = album
         self.artist = artist
+        self.artworkIdRaw = artworkIdRaw
+        self.artworkSourceURLRaw = artworkSourceURLRaw
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate
@@ -80,15 +93,15 @@ struct SongEditorPayload: Decodable, Sendable {
 
 extension SongInput {
 
-    init(payload: SongEditorPayload) {
+    init(payload: SongEditorPayload, artworkId: ImageID? = nil) {
         self.init(
             access: payload.access,
             album: payload.album,
             artist: payload.artist,
-            artwork: nil,
+            artwork: artworkId ?? payload.artworkId,
             genre: payload.genre,
             releaseDate: payload.releaseDate,
-            resourceURLs: payload.resourceURLs,
+            resourceURLs: payload.filteredResourceURLs,
             title: payload.title
         )
     }

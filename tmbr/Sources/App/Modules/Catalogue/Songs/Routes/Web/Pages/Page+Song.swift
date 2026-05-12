@@ -51,14 +51,16 @@ struct SongViewModel: Encodable, Sendable {
         post: PostItemViewModel?,
         releaseDate: String?,
         resources: [Hyperlink],
-        title: String,
-        listFormatter: ListFormatter = .init()
+        title: String
     ) {
         self.init(
             id: id,
             artist: artist,
             artwork: artwork,
-            info: listFormatter.string(from: [album, genre, releaseDate].compactMap(\.self)),
+            info: {
+            let parts = [album, genre, releaseDate].compactMap(\.self).filter { !$0.isEmpty }
+            return parts.isEmpty ? nil : parts.joined(separator: ", ")
+        }(),
             notes: notes,
             post: post,
             resources: resources,
@@ -70,8 +72,7 @@ struct SongViewModel: Encodable, Sendable {
         song: Song,
         notes: [Note],
         baseURL: String,
-        platform: Platform<SongMetadata> = .song,
-        listFormatter: ListFormatter = .init()
+        platform: Platform<SongMetadata> = .song
     ) throws {
         self.init(
             id: try song.requireID(),
@@ -85,8 +86,7 @@ struct SongViewModel: Encodable, Sendable {
             post: try song.post.map(PostItemViewModel.init),
             releaseDate: song.releaseDate?.formatted(.releaseDate),
             resources: song.resourceURLs.compactMap(platform.hyperlink),
-            title: song.title,
-            listFormatter: listFormatter
+            title: song.title
         )
     }
 }
