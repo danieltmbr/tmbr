@@ -84,6 +84,20 @@ struct ImageViewModel: Encodable, Sendable {
         )
     }
     
+    init(previewURL: String) {
+        self.init(
+            id: 0,
+            key: "",
+            thumbnailKey: "",
+            alt: "",
+            url: previewURL,
+            thumbnailURL: previewURL,
+            width: 0,
+            height: 0,
+            uploadedAt: ""
+        )
+    }
+
     init?(image: Image, baseURL: String) {
         guard let imageID = image.id else { return nil }
         self.init(imageID: imageID, image: image, baseURL: baseURL)

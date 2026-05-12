@@ -12,7 +12,7 @@ struct CatalogueAPIController: RouteCollection {
     }
     
     func boot(routes: RoutesBuilder) throws {
-        let catalogue = routes.grouped("catalogue")
+        let catalogue = routes.grouped("api", "catalogue")
         catalogue.get(use: list)
         catalogue.get("search", use: search)
         // TODO: return domain object based on preview
