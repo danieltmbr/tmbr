@@ -1,0 +1,15 @@
+<dialog id="#(id)">
+    <p>#(message)</p>
+    <div>
+        #if(primaryAction.href):
+        <a id="#(primaryAction.id)" href="#(primaryAction.href)">#(primaryAction.label)</a>
+        #else:
+        <button id="#(primaryAction.id)" type="button">#(primaryAction.label)</button>
+        #endif
+        #if(secondaryAction.href):
+        <a id="#(secondaryAction.id)" href="#(secondaryAction.href)">#(secondaryAction.label)</a>
+        #else:
+        <button id="#(secondaryAction.id)" type="button">#(secondaryAction.label)</button>
+        #endif
+    </div>
+</dialog>

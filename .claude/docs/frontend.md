@@ -146,6 +146,15 @@ See `Public/Scripts/post-editor.js` for a complete working example.
 
 Templates live in `Resources/Views/` and compose from shared fragments.
 
+### Template Organisation
+
+- `Shared/` — Generic, reusable UI fragments with no domain knowledge: base layouts, shared components (e.g. `alert-dialog.leaf`). ViewModels for shared templates live in `Sources/Core/Web/`.
+- `Catalogue/<Type>/`, `Posts/`, `Gallery/`, etc. — Domain-specific templates. Generic-looking elements that carry domain-specific content (a title, a link to a song) still belong here.
+- `Icons/` — SVG icon fragments.
+- `Panels/` — Side-panel fragments loaded dynamically.
+
+**One concern per file.** Inline UI elements (dialogs, panels, modals) that could be reused belong in their own template files, not embedded in the page template that first uses them. A good rule of thumb: if removing the element and placing it in its own file would make the host template cleaner without losing context, do it.
+
 ### Base Layout
 
 `Shared/page.leaf` is the base layout with named slots: `main`, `toolbar`, `styles`, `scripts`.

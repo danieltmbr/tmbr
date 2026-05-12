@@ -15,43 +15,54 @@ class MetadataController {
 }
 
 class LookupController {
-    constructor({ endpoint = '/songs/lookup' } = {}) {
+    constructor({ endpoint = '/songs/lookup', excludeID = null } = {}) {
         this.endpoint = endpoint;
+        this.excludeID = excludeID;
     }
 
-    async check(url) {
-        const encoded = encodeURIComponent(url);
-        const response = await window.fetch(`${this.endpoint}?url=${encoded}`);
+    async fetch(url) {
+        const params = new URLSearchParams({ url });
+        if (this.excludeID) params.set('excludeID', String(this.excludeID));
+        const response = await window.fetch(`${this.endpoint}?${params}`, {
+            headers: { Accept: 'text/html' }
+        });
         if (!response.ok) return null;
-        return await response.json();
+        return await response.text();
     }
 }
 
 class DuplicateAlertController {
-    constructor({ dialogEl, nameEl, linkEl, dismissEl }, { onNavigate } = {}) {
-        this.dialogEl = dialogEl;
-        this.nameEl = nameEl;
-        this.linkEl = linkEl;
-        this.dismissEl = dismissEl;
-        this._onDismiss = () => this.dialogEl?.close();
+    constructor({ containerEl }, { onNavigate } = {}) {
+        this.containerEl = containerEl;
+        this.dialogEl = null;
+        this.dismissEl = null;
+        this.linkEl = null;
+        this._onDismiss = null;
         this._onNavigate = () => { if (typeof onNavigate === 'function') onNavigate(); };
     }
 
-    init() {
-        this.dismissEl?.addEventListener('click', this._onDismiss);
-        this.linkEl?.addEventListener('click', this._onNavigate);
-    }
+    init() {}
 
     destroy() {
+        this._detach();
+    }
+
+    _detach() {
         this.dismissEl?.removeEventListener('click', this._onDismiss);
         this.linkEl?.removeEventListener('click', this._onNavigate);
     }
 
-    show({ title, artist, detailURL }) {
-        if (!this.dialogEl) return;
-        this.nameEl.textContent = `${title} by ${artist}`;
-        this.linkEl.href = detailURL;
-        this.dialogEl.showModal();
+    show(html) {
+        if (!this.containerEl || !html) return;
+        this._detach();
+        this.containerEl.innerHTML = html;
+        this.dialogEl = this.containerEl.querySelector('dialog');
+        this.dismissEl = this.containerEl.querySelector('#duplicate-dismiss');
+        this.linkEl = this.containerEl.querySelector('#duplicate-song-link');
+        this._onDismiss = () => this.dialogEl?.close();
+        this.dismissEl?.addEventListener('click', this._onDismiss);
+        this.linkEl?.addEventListener('click', this._onNavigate);
+        this.dialogEl?.showModal();
     }
 }
 
@@ -61,15 +72,13 @@ class AutofillController {
         artistInput,
         albumInput,
         releaseDateInput,
-        statusEl,
-        currentSongID
+        statusEl
     }, { metadata, artwork, onApply, lookup, onDuplicate }) {
         this.titleInput = titleInput;
         this.artistInput = artistInput;
         this.albumInput = albumInput;
         this.releaseDateInput = releaseDateInput;
         this.statusEl = statusEl;
-        this.currentSongID = currentSongID ?? null;
         this.metadata = metadata;
         this.artwork = artwork;
         this.onApply = onApply;
@@ -80,14 +89,14 @@ class AutofillController {
     async fetchAndApply(url) {
         try {
             const lookupPromise = this.lookup
-                ? this.lookup.check(url).catch(() => null)
+                ? this.lookup.fetch(url).catch(() => null)
                 : Promise.resolve(null);
-            const [song, existing] = await Promise.all([this.metadata.fetch(url), lookupPromise]);
+            const [song, html] = await Promise.all([this.metadata.fetch(url), lookupPromise]);
             this.applyMetadata(song);
             this.setStatus('');
             if (typeof this.onApply === 'function') this.onApply();
-            if (existing && existing.id !== this.currentSongID && typeof this.onDuplicate === 'function') {
-                this.onDuplicate(existing);
+            if (html && typeof this.onDuplicate === 'function') {
+                this.onDuplicate(html);
             }
         } catch (error) {
             console.error(error);
@@ -599,15 +608,12 @@ document.addEventListener('DOMContentLoaded', () => {
     );
     resourceInputs.init();
 
-    const lookup = new LookupController();
+    const lookup = new LookupController({
+        excludeID: parseInt(idInput?.value) || null
+    });
 
     const duplicateAlert = new DuplicateAlertController(
-        {
-            dialogEl: document.getElementById('duplicate-alert'),
-            nameEl: document.getElementById('duplicate-song-name'),
-            linkEl: document.getElementById('duplicate-song-link'),
-            dismissEl: document.getElementById('duplicate-dismiss'),
-        },
+        { containerEl: document.getElementById('duplicate-container') },
         { onNavigate: () => persistence.clear(editor.getStorageKey()) }
     );
     duplicateAlert.init();
@@ -617,14 +623,13 @@ document.addEventListener('DOMContentLoaded', () => {
         artistInput,
         albumInput,
         releaseDateInput,
-        statusEl,
-        currentSongID: parseInt(idInput?.value) || null
+        statusEl
     }, {
         metadata,
         artwork,
         onApply: () => editor.saveDraft(),
         lookup,
-        onDuplicate: (dup) => duplicateAlert.show(dup)
+        onDuplicate: (html) => duplicateAlert.show(html)
     });
 
     const editor = new EditorController({
