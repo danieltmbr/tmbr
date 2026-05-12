@@ -479,13 +479,15 @@ main > section > nav > form {
     display: flex;
     flex: 1;
     margin: 0 0.5rem;
-    visibility: hidden;
-    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
 }
 
-main > section > nav > form.open {
-    visibility: visible;
-    pointer-events: auto;
+main > section > nav > form:hover,
+main > section > nav > form:focus-within,
+main > section > nav > form:has(input:not(:placeholder-shown)) {
+    opacity: 1;
+    transition: opacity 100ms ease;
 }
 
 main > section > nav > button {

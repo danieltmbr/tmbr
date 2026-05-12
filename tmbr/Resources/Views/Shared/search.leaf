@@ -2,5 +2,5 @@
     #extend("Icons/search")
 </button>
 <form id="search-form" method="get">
-    <input type="search" name="term" id="search-input" value="#(term)" autocomplete="off" autofocus placeholder="Search…">
+    <input type="search" name="term" id="search-input" value="#(term)" autocomplete="off" placeholder="Search…">
 </form>
