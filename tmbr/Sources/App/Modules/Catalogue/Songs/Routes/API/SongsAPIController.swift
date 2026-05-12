@@ -3,12 +3,30 @@ import AuthKit
 import Fluent
 import Core
 
+private struct SongLookupResponse: Content, Sendable {
+    let id: Int
+    let title: String
+    let artist: String
+    let detailURL: String
+}
+
 struct SongsAPIController: RouteCollection {
-    
+
     func boot(routes: RoutesBuilder) throws {
 
         let songsRoute = routes.grouped("api", "songs")
-        
+
+        // GET /api/songs/lookup?url=...
+        songsRoute.get("lookup") { request async throws -> SongLookupResponse in
+            let url = try request.query.get(String.self, at: "url")
+            guard let song = try await request.commands.songs.lookup(url),
+                  let songID = song.id
+            else {
+                throw Abort(.notFound)
+            }
+            return SongLookupResponse(id: songID, title: song.title, artist: song.artist, detailURL: "/songs/\(songID)")
+        }
+
         // GET /api/posts/:songID
         songsRoute.get(":songID") { request async throws -> SongResponse in
             guard let songID = request.parameters.get("songID", as: Int.self) else {

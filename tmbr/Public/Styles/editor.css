@@ -479,6 +479,51 @@ body.dragging-target-notes #notes-section::after {
 
 /*
  ------------------------------------------------
+ Dialog
+ ------------------------------------------------
+ */
+
+dialog {
+    border: none;
+    border-radius: 10px;
+    padding: 20px 24px;
+    max-width: 340px;
+    width: calc(100% - 48px);
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+dialog p {
+    margin: 0 0 16px;
+    font-size: 1.5rem;
+}
+
+dialog > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+dialog button,
+dialog a {
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+/*
+ ------------------------------------------------
  Mobile adjustments
  ------------------------------------------------
  */

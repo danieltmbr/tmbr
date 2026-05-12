@@ -21,6 +21,7 @@ struct SongsWebController: RouteCollection {
         songsRoute.post("new", use: createSong)
 
         songsRoute.get("metadata", use: metadata)
+        songsRoute.get("lookup", use: lookupDialog)
 
         songsRoute.get(":songID", "edit", page: .editSong)
         songsRoute.post(":songID", use: updateSong)
@@ -32,6 +33,26 @@ struct SongsWebController: RouteCollection {
     private func metadata(_ request: Request) async throws -> SongMetadata {
         let url = try request.query.get(String.self, at: "url")
         return try await request.commands.songs.metadata(url)
+    }
+
+    @Sendable
+    private func lookupDialog(_ request: Request) async throws -> Response {
+        let url = try request.query.get(String.self, at: "url")
+        let excludeID = try? request.query.get(Int.self, at: "excludeID")
+        guard let song = try await request.commands.songs.lookup(url),
+              let songID = song.id,
+              songID != excludeID
+        else {
+            return Response(status: .notFound)
+        }
+        let model = AlertDialog(
+            id: "duplicate-alert",
+            message: "You already have \(song.title) by \(song.artist).",
+            primaryAction: .init(id: "duplicate-dismiss", label: "Continue editing"),
+            secondaryAction: .init(id: "duplicate-song-link", label: "Go to song", href: "/songs/\(songID)")
+        )
+        let view = try await Template.alertDialog.render(model, with: request.view)
+        return try await view.encodeResponse(for: request)
     }
 
     @Sendable

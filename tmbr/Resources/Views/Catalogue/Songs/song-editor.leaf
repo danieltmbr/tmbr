@@ -116,6 +116,8 @@
         <input type="hidden" name="notes" id="preview-notes" />
     </form>
 
+    <div id="duplicate-container"></div>
+
     <aside id="gallery" hidden>
         <div id="gallery-header">
             <button class="icon small" type="button" id="gallery-close" aria-label="Close">

@@ -14,6 +14,58 @@ class MetadataController {
     }
 }
 
+class LookupController {
+    constructor({ endpoint = '/songs/lookup', excludeID = null } = {}) {
+        this.endpoint = endpoint;
+        this.excludeID = excludeID;
+    }
+
+    async fetch(url) {
+        const params = new URLSearchParams({ url });
+        if (this.excludeID) params.set('excludeID', String(this.excludeID));
+        const response = await window.fetch(`${this.endpoint}?${params}`, {
+            headers: { Accept: 'text/html' }
+        });
+        if (!response.ok) return null;
+        return await response.text();
+    }
+}
+
+class DuplicateAlertController {
+    constructor({ containerEl }, { onNavigate } = {}) {
+        this.containerEl = containerEl;
+        this.dialogEl = null;
+        this.dismissEl = null;
+        this.linkEl = null;
+        this._onDismiss = null;
+        this._onNavigate = () => { if (typeof onNavigate === 'function') onNavigate(); };
+    }
+
+    init() {}
+
+    destroy() {
+        this._detach();
+    }
+
+    _detach() {
+        this.dismissEl?.removeEventListener('click', this._onDismiss);
+        this.linkEl?.removeEventListener('click', this._onNavigate);
+    }
+
+    show(html) {
+        if (!this.containerEl || !html) return;
+        this._detach();
+        this.containerEl.innerHTML = html;
+        this.dialogEl = this.containerEl.querySelector('dialog');
+        this.dismissEl = this.containerEl.querySelector('#duplicate-dismiss');
+        this.linkEl = this.containerEl.querySelector('#duplicate-song-link');
+        this._onDismiss = () => this.dialogEl?.close();
+        this.dismissEl?.addEventListener('click', this._onDismiss);
+        this.linkEl?.addEventListener('click', this._onNavigate);
+        this.dialogEl?.showModal();
+    }
+}
+
 class AutofillController {
     constructor({
         titleInput,
@@ -21,7 +73,7 @@ class AutofillController {
         albumInput,
         releaseDateInput,
         statusEl
-    }, { metadata, artwork, onApply }) {
+    }, { metadata, artwork, onApply, lookup, onDuplicate }) {
         this.titleInput = titleInput;
         this.artistInput = artistInput;
         this.albumInput = albumInput;
@@ -30,15 +82,21 @@ class AutofillController {
         this.metadata = metadata;
         this.artwork = artwork;
         this.onApply = onApply;
+        this.lookup = lookup;
+        this.onDuplicate = onDuplicate;
     }
 
     async fetchAndApply(url) {
         try {
-            const song = await this.metadata.fetch(url);
+            const lookupPromise = this.lookup
+                ? this.lookup.fetch(url).catch(() => null)
+                : Promise.resolve(null);
+            const [song, html] = await Promise.all([this.metadata.fetch(url), lookupPromise]);
             this.applyMetadata(song);
             this.setStatus('');
-            if (typeof this.onApply === 'function') {
-                this.onApply();
+            if (typeof this.onApply === 'function') this.onApply();
+            if (html && typeof this.onDuplicate === 'function') {
+                this.onDuplicate(html);
             }
         } catch (error) {
             console.error(error);
@@ -550,6 +608,16 @@ document.addEventListener('DOMContentLoaded', () => {
     );
     resourceInputs.init();
 
+    const lookup = new LookupController({
+        excludeID: parseInt(idInput?.value) || null
+    });
+
+    const duplicateAlert = new DuplicateAlertController(
+        { containerEl: document.getElementById('duplicate-container') },
+        { onNavigate: () => persistence.clear(editor.getStorageKey()) }
+    );
+    duplicateAlert.init();
+
     const autofill = new AutofillController({
         titleInput,
         artistInput,
@@ -559,7 +627,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {
         metadata,
         artwork,
-        onApply: () => editor.saveDraft()
+        onApply: () => editor.saveDraft(),
+        lookup,
+        onDuplicate: (html) => duplicateAlert.show(html)
     });
 
     const editor = new EditorController({

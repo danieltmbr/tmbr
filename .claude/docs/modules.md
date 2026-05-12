@@ -34,6 +34,23 @@ Each module in `Sources/App/Modules/` follows this pattern:
 
 Response DTOs (e.g., `PostResponse`, `ImageResponse`) belong in `Routes/API/Responses/`, not in `Payloads/`. They are REST-specific objects — the API equivalent of Web Page view models.
 
+## Web vs API Controllers
+
+**Web controllers return HTML. API controllers return JSON. Never mix.**
+
+- `Routes/Web/` — All handlers return `View`, `Response` (with Leaf-rendered body), or a redirect. Never return `Content`/JSON. **Exception:** metadata autofill endpoints (e.g. `GET /songs/metadata`) return JSON because they purely pre-fill form fields client-side and have no HTML representation — they are thin pass-throughs to the command layer.
+- `Routes/API/` — All handlers return `Content`-conforming types (JSON). Never render Leaf templates.
+
+When a feature needs both (e.g., a duplicate-detection lookup), implement it twice: once in the API controller returning JSON for programmatic consumers, and once in the Web controller returning a rendered Leaf fragment for the browser.
+
+### Dynamic HTML Fragments
+
+Web controllers can serve Leaf fragments (partial HTML, no base layout) for endpoints that the browser fetches via `fetch()` and injects into the page. This is the standard pattern for dynamic panel loading (see gallery `?embedded=true`, song duplicate dialog). Fragment endpoints:
+
+- Live in the Web controller alongside full-page endpoints
+- Return `Response` (not throwing for expected "not found" states, to avoid `RecoverMiddleware` converting them to error pages)
+- Render a standalone template — not one that `#extend("Shared/page")`
+
 ## Adding a New Module
 
 1. Create module folder with standard structure (see above)
