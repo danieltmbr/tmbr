@@ -1,9 +1,5 @@
 #extend("Shared/page"):
 
-    #export("styles"):
-        <link rel="stylesheet" href="/Styles/catalogue.css">
-    #endexport
-
     #export("toolbar"):
         #if(compose):
             <a id="compose" class="icon" href="#(compose)" aria-label="Compose">
@@ -25,7 +21,7 @@
     #endexport
 
     #export("scripts"):
-        <script src="/Scripts/search.js"></script>
+        <script src="/Scripts/Shared/search.js"></script>
     #endexport
 
 #endextend

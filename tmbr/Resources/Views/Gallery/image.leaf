@@ -1,7 +1,7 @@
 #extend("Shared/page"):
 
     #export("styles"):
-    <link rel="stylesheet" href="/Styles/image.css">
+    <link rel="stylesheet" href="/Styles/Gallery/image.css">
     #endexport
 
     #export("main"):
@@ -22,6 +22,6 @@
     #endexport
     
     #export("scripts"):
-    <script src="/Scripts/edit-shortcut.js"></script>
+    <script src="/Scripts/Shortcuts/edit-shortcut.js"></script>
     #endexport
 #endextend

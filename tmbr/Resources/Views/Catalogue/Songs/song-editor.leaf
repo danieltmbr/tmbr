@@ -1,7 +1,7 @@
 #extend("Shared/page"):
 
     #export("styles"):
-    <link rel="stylesheet" href="/Styles/editor.css">
+    <link rel="stylesheet" href="/Styles/Shared/editor.css">
     #endexport
 
     #export("main"):
@@ -131,8 +131,8 @@
     #endexport
 
     #export("scripts"):
-        <script src="/Scripts/persistence.js"></script>
-        <script src="/Scripts/gallery.js"></script>
+        <script src="/Scripts/Shared/persistence.js"></script>
+        <script src="/Scripts/Gallery/gallery.js"></script>
         <script src="/Scripts/Catalogue/resources-editor.js"></script>
         <script src="/Scripts/Notes/notes-editor.js"></script>
         <script src="/Scripts/Catalogue/Songs/song-editor.js"></script>

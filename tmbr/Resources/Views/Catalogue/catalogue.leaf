@@ -28,9 +28,9 @@
     #endexport
 
     #export("scripts"):
-        <script src="/Scripts/toolbar.js"></script>
-        <script src="/Scripts/search.js"></script>
-        <script src="/Scripts/filter.js"></script>
+        <script src="/Scripts/Shared/toolbar.js"></script>
+        <script src="/Scripts/Shared/search.js"></script>
+        <script src="/Scripts/Shared/filter.js"></script>
     #endexport
 
 #endextend
