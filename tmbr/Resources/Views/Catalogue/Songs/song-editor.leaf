@@ -24,27 +24,7 @@
             spellcheck="true"
         />
 
-        <section id="resources-section">
-            <h3>Resources</h3>
-            #for(url in resourceURLs):
-                <input
-                    class="text-input resource-url"
-                    data-autofill-source="true"
-                    type="url"
-                    name="resourceURLs[]"
-                    value="#(url)"
-                    placeholder="https://…"
-                >
-            #endfor
-            <input
-                class="text-input resource-url"
-                data-autofill-source="true"
-                type="url"
-                name="resourceURLs[]"
-                value=""
-                placeholder="https://…"
-            >
-        </section>
+        #extend("Catalogue/resources-editor")
 
         <section id="details-section">
             <h3>Details</h3>
@@ -151,6 +131,7 @@
     #export("scripts"):
         <script src="/Scripts/persistence.js"></script>
         <script src="/Scripts/gallery.js"></script>
+        <script src="/Scripts/Catalogue/resources-editor.js"></script>
         <script src="/Scripts/Notes/notes-editor.js"></script>
         <script src="/Scripts/Catalogue/Songs/song-editor.js"></script>
     #endexport

@@ -1,0 +1,21 @@
+<section id="resources-section">
+    <h3>Resources</h3>
+    #for(url in resourceURLs):
+        <input
+            class="text-input resource-url"
+            data-autofill-source="true"
+            type="url"
+            name="resourceURLs[]"
+            value="#(url)"
+            placeholder="https://…"
+        >
+    #endfor
+    <input
+        class="text-input resource-url"
+        data-autofill-source="true"
+        type="url"
+        name="resourceURLs[]"
+        value=""
+        placeholder="https://…"
+    >
+</section>
