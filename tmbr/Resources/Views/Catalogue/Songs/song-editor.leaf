@@ -112,45 +112,7 @@
             <p class="editor-error">#unsafeHTML(error)</p>
         #endif
 
-        <section id="notes-section" data-note-count="#(count(notes))">
-            <header>
-                <h3>Notes</h3>
-                <button id="notes-gallery-open" class="icon" type="button" data-gallery-mode="notes">
-                    #extend("Icons/gallery")
-                </button>
-            </header>
-            #for(note in notes):
-                <div class="note-wrapper" data-index="#(index)">
-                    <textarea
-                        class="note-body"
-                        name="notes[#(index)][body]"
-                        placeholder="Write your thoughts..."
-                        autocapitalize="sentences"
-                        spellcheck="true"
-                    >#(note.body)</textarea>
-                    <input type="hidden" name="notes[#(index)][access]" value="private" class="note-access-fallback" />
-                    <label class="note-access">
-                        <input type="checkbox" name="notes[#(index)][access]" value="public"
-                            #if(note.access == "public"):checked#endif/>
-                        Public
-                    </label>
-                </div>
-            #endfor
-            <div class="note-wrapper" data-index="#(count(notes))">
-                <textarea
-                    class="note-body"
-                    name="notes[#(count(notes))][body]"
-                    placeholder="Write your thoughts..."
-                    autocapitalize="sentences"
-                    spellcheck="true"
-                ></textarea>
-                <input type="hidden" name="notes[#(count(notes))][access]" value="private" class="note-access-fallback" />
-                <label class="note-access">
-                    <input type="checkbox" name="notes[#(count(notes))][access]" value="public"/>
-                    Public
-                </label>
-            </div>
-        </section>
+        #extend("Notes/notes-editor")
 
         <p id="autofill-status" class="system-info" hidden></p>
 
@@ -189,6 +151,7 @@
     #export("scripts"):
         <script src="/Scripts/persistence.js"></script>
         <script src="/Scripts/gallery.js"></script>
-        <script src="/Scripts/song-editor.js"></script>
+        <script src="/Scripts/Notes/notes-editor.js"></script>
+        <script src="/Scripts/Catalogue/Songs/song-editor.js"></script>
     #endexport
 #endextend
