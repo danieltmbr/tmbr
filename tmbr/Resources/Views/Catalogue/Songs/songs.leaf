@@ -22,6 +22,7 @@
 
     #export("scripts"):
         <script src="/Scripts/Shared/search.js"></script>
+        <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
     #endexport
 
 #endextend

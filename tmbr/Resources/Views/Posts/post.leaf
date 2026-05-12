@@ -10,6 +10,6 @@
     #endexport
     
     #export("scripts"):
-    <script src="/Scripts/Shortcuts/edit-shortcut.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login, ShortcutsController.edit]).init());</script>
     #endexport
 #endextend

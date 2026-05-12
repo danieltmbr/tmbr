@@ -517,33 +517,6 @@ class EditorController {
     }
 }
 
-class ShortcutsController {
-    constructor({ onPreview }) {
-        this.onPreview = onPreview;
-        this._onKeyDown = this.onKeyDown.bind(this);
-    }
-
-    init() {
-        document.addEventListener('keydown', this._onKeyDown);
-    }
-
-    destroy() {
-        document.removeEventListener('keydown', this._onKeyDown);
-    }
-
-    onKeyDown(event) {
-        const isMac = navigator.platform.toUpperCase().includes('MAC');
-        const cmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
-        const alt = event.altKey;
-        const shift = event.shiftKey;
-        const isPKey = event.code === 'KeyP';
-
-        if (cmdOrCtrl && alt && !shift && isPKey && typeof this.onPreview === 'function') {
-            event.preventDefault();
-            this.onPreview();
-        }
-    }
-}
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('song-form');
@@ -667,9 +640,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { uploads, artwork, notes });
     dnd.init();
 
-    const shortcuts = new ShortcutsController({
-        onPreview: () => editor.preview()
-    });
+    const shortcuts = new ShortcutsController([
+        ShortcutsController.preview(() => editor.preview())
+    ]);
     shortcuts.init();
 
     const previewButton = document.getElementById('editor-song-preview');

@@ -33,4 +33,8 @@
         </article>
     #endexport
 
+    #export("scripts"):
+    <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login, ShortcutsController.edit]).init());</script>
+    #endexport
+
 #endextend

@@ -365,67 +365,7 @@ class GalleryController {
     }
 }
 
-class ShortcutsController {
-    constructor({ onPreview }, { onGallery }) {
-        this.onPreview = onPreview;
-        this.onGallery = onGallery;
-        this._onKeyDown = this.onKeyDown.bind(this);
-    }
 
-    init() {
-        document.addEventListener('keydown', this._onKeyDown);
-    }
-
-    destroy() {
-        document.removeEventListener('keydown', this._onKeyDown);
-    }
-
-    isInputLike(el) {
-        if (!el) return false;
-        const tag = el.tagName;
-        const editable = el.isContentEditable;
-        return editable || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-    }
-
-    onKeyDown(event) {
-        try {
-            this.preview();
-            this.gallery();
-        } catch (err) {
-            console.error(`Key down handler failed. ${err?.message || err}`)
-        }
-    }
-    
-    preview() {
-        const isMac = navigator.platform.toUpperCase().includes('MAC');
-        const cmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
-        const alt = event.altKey;
-        const shift = event.shiftKey;
-        const isPKey = event.code === 'KeyP';
-        if (cmdOrCtrl && alt && !shift && isPKey && typeof this.onPreview === 'function') {
-            event.preventDefault();
-            this.onPreview();
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    gallery() {
-        const isMac = navigator.platform.toUpperCase().includes('MAC');
-        const cmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
-        const alt = event.altKey;
-        const shift = event.shiftKey;
-        const isGKey = event.code === 'KeyG';
-        if (cmdOrCtrl && alt && !shift && isGKey && typeof this.onGallery === 'function') {
-            event.preventDefault();
-            this.onGallery();
-            return true;
-        } else {
-            return false;
-        }
-    }
-}
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('post-form');
@@ -467,10 +407,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     galleryController.init();
 
-    const shortcuts = new ShortcutsController(
-        { onPreview: () => editor.preview() },
-        { onGallery: () => galleryController.toggle() }
-    );
+    const shortcuts = new ShortcutsController([
+        ShortcutsController.preview(() => editor.preview()),
+        ShortcutsController.gallery(() => galleryController.toggle())
+    ]);
     shortcuts.init();
 
     form.addEventListener('submit', () => persistence.markPendingClear(editor.getStorageKey()));

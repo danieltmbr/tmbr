@@ -4,6 +4,10 @@
         Notifications
     #endexport
 
+    #export("scripts"):
+    <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
+    #endexport
+
     #export("main"):
         <article>
             <h1>Notifications</h1>
