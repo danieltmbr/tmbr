@@ -30,7 +30,8 @@
     #endexport
 
     #export("scripts"):
-        <script src="/Scripts/toolbar.js"></script>
+        <script src="/Scripts/Shared/toolbar.js"></script>
+        <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
     #endexport
 
 #endextend

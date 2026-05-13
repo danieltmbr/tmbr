@@ -1,7 +1,11 @@
 #extend("Shared/page"):
 
     #export("styles"):
-    <link rel="stylesheet" href="/Styles/gallery.css">
+    <link rel="stylesheet" href="/Styles/Gallery/gallery.css">
+    #endexport
+
+    #export("scripts"):
+    <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
     #endexport
     
     #export("main"):
