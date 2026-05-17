@@ -40,7 +40,13 @@ struct Notes: Module {
         try await app.commands.add(collection: quoteCommands)
     }
     
-    func boot(_ routes: any Vapor.RoutesBuilder) async throws {}
+    func boot(_ routes: any Vapor.RoutesBuilder) async throws {
+        try routes.register(collection: NotesAPIController())
+        try routes.register(collection: QuotesAPIController())
+        try routes
+            .grouped(RecoverMiddleware())
+            .register(collection: NotesWebController())
+    }
 }
 
 extension Module where Self == Notes {

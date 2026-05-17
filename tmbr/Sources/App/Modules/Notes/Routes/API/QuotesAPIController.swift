@@ -5,14 +5,15 @@ import AuthKit
 import PostgresKit
 import Core
 
-struct QuotesController: RouteCollection {
+struct QuotesAPIController: RouteCollection {
+
     func boot(routes: RoutesBuilder) throws {
-        let quotes = routes.grouped("quotes")
+        let quotes = routes.grouped("api", "quotes")
         quotes.get(use: list)
         quotes.get("random", use: random)
         quotes.get("search", use: search)
     }
-    
+
     @Sendable
     private func list(request: Request) async throws -> [QuoteResponse] {
         let payload = try request.query.decode(QuoteQueryPayload.self)
@@ -28,7 +29,7 @@ struct QuotesController: RouteCollection {
             )
         }
     }
-    
+
     @Sendable
     private func random(request: Request) async throws -> QuoteResponse {
         let payload = try request.query.decode(QuoteQueryPayload.self)
@@ -42,7 +43,7 @@ struct QuotesController: RouteCollection {
             )
         )
     }
-    
+
     @Sendable
     private func search(request: Request) async throws -> [QuoteResponse] {
         let payload = try request.query.decode(QuoteQueryPayload.self)

@@ -1,22 +1,23 @@
 import Foundation
+import Vapor
 import AuthKit
 
-struct NoteResponse: Encodable, Sendable {
-    
+struct NoteResponse: Encodable, Sendable, AsyncResponseEncodable {
+
     private let id: NoteID
-    
+
     private let access: Access
-    
+
     private let attachment: PreviewResponse
-    
+
     private let author: UserResponse
-    
+
     private let body: String
-    
+
     private let created: Date
-    
+
     private let quotes: [QuoteResponse]
-    
+
     init(
         id: NoteID,
         access: Access,
@@ -34,7 +35,7 @@ struct NoteResponse: Encodable, Sendable {
         self.created = created
         self.quotes = quotes
     }
-    
+
     init(note: Note, baseURL: String) {
         self.init(
             id: note.id!,
@@ -52,5 +53,4 @@ struct NoteResponse: Encodable, Sendable {
             }
         )
     }
-    
 }
