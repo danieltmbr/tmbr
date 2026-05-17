@@ -27,6 +27,8 @@ struct SongsWebController: RouteCollection {
         songsRoute.post(":songID", use: updateSong)
 
         songsRoute.post("preview", page: .songPreview)
+
+        songsRoute.post(":songID", "notes", use: createNote)
     }
 
     @Sendable
@@ -182,6 +184,30 @@ struct SongsWebController: RouteCollection {
         let response = try await view.encodeResponse(for: req)
         req.session.data["csrf.editor"] = csrf
         return response
+    }
+
+    @Sendable
+    private func createNote(_ request: Request) async throws -> Response {
+        guard let songID = request.parameters.get("songID", as: Int.self) else {
+            return Response(status: .badRequest)
+        }
+        guard let payload = try? request.content.decode(NotePayload.self) else {
+            return Response(status: .badRequest)
+        }
+        do {
+            let song = try await request.commands.songs.fetch(songID, for: .write)
+            let input = CreateNoteInput(
+                body: payload.body,
+                access: payload.access,
+                attachmentID: song.$preview.id
+            )
+            let note = try await request.commands.notes.create(input)
+            let model = try NoteViewModel(note: note, isEditable: true)
+            let view = try await Template.noteItem.render(model, with: request.view)
+            return try await view.encodeResponse(for: request)
+        } catch {
+            return Response(status: .unprocessableEntity)
+        }
     }
 
     private func editorErrorHTML(for error: Error, on req: Request) -> String {

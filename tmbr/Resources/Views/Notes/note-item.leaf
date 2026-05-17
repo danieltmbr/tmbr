@@ -1,0 +1,18 @@
+<article class="note #if(error):editing#endif" data-note-id="#(id)"#if(editDetails): data-raw-body="#(editDetails.rawBody)" data-access="#(editDetails.access)"#endif>
+    <p class="published-date">#(created)</p>
+    #if(error):
+    <p class="note-error system-info">#(error)</p>
+    <div class="note-edit-area">
+        <textarea autocapitalize="sentences" spellcheck="true">#(editDetails.rawBody)</textarea>
+        <input type="hidden" class="note-access-fallback" value="private" />
+        <label class="note-access">
+            <input type="checkbox" class="note-access-toggle" value="public"
+                   #if(editDetails.access == "public"):checked#endif/>
+            Public
+        </label>
+    </div>
+    #else:
+    <div class="note-body">#unsafeHTML(body)</div>
+    <button type="button" class="icon" aria-label="Edit note">#extend("Icons/pencil")</button>
+    #endif
+</article>

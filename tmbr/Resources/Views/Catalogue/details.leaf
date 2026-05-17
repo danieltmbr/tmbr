@@ -17,24 +17,31 @@
             </section>
             #endif
                     
-            #if(count(notes) > 0):
-            <section>
+            <section id="notes-section" data-song-id="#(id)">
                 <h3>Notes</h3>
+                #if(allowsNewNote):
+                <div class="note-new">
+                    <textarea placeholder="Write your thoughts..." autocapitalize="sentences" spellcheck="true"></textarea>
+                    <input type="hidden" class="note-access-fallback" value="private" />
+                    <label class="note-access">
+                        <input type="checkbox" class="note-access-toggle" value="public" />
+                        Public
+                    </label>
+                </div>
+                #endif
                 #for(n in notes):
-                <article class="note">
+                <article class="note" data-note-id="#(n.id)"#if(n.editDetails): data-raw-body="#(n.editDetails.rawBody)" data-access="#(n.editDetails.access)"#endif>
                     <p class="published-date">#(n.created)</p>
-                    #unsafeHTML(n.body)
+                    <div class="note-body">#unsafeHTML(n.body)</div>
+                    #if(n.editDetails):
+                    <button type="button" class="icon" aria-label="Edit note">#extend("Icons/pencil")</button>
+                    #endif
                 </article>
                 #endfor
             </section>
-            #endif
 
             <a href="/">#extend("Shared/signature")</a>
         </article>
-    #endexport
-
-    #export("scripts"):
-    <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login, ShortcutsController.edit]).init());</script>
     #endexport
 
 #endextend

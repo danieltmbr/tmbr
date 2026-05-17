@@ -331,6 +331,102 @@ article.note > p.published-date {
     margin: 0;
 }
 
+/*
+ ------------------------------------------------
+ Note detail (inline editing)
+ ------------------------------------------------
+ */
+
+.note-new,
+article.note[data-raw-body] {
+    position: relative;
+}
+
+.note-new {
+    margin-bottom: 2em;
+}
+
+.note-edit-area {
+    position: relative;
+    margin-top: 1em;
+}
+
+article.note[data-raw-body] > button {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    padding: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+article.note[data-raw-body]:hover > button {
+    opacity: 1;
+}
+
+article.note.editing > button {
+    display: none;
+}
+
+.note-new textarea,
+article.note.editing textarea {
+    width: calc(100% + 16px);
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    line-height: inherit;
+    color: inherit;
+    padding: 4px 72px 4px 8px;
+    margin: 0 -8px;
+    resize: none;
+    border-radius: 6px;
+    overflow: hidden;
+    display: block;
+}
+
+.note-new textarea:hover,
+article.note.editing textarea:hover,
+.note-new textarea:focus,
+article.note.editing textarea:focus {
+    background: var(--input-background-hover);
+    outline: none;
+}
+
+.note-new textarea::placeholder {
+    color: currentColor;
+    opacity: 0.35;
+}
+
+@keyframes note-saved-flash {
+    0%   { opacity: 1; }
+    40%  { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+
+article.note.note-saved {
+    animation: note-saved-flash 0.5s ease;
+}
+
+article.note.note-unsaved > p.published-date::after,
+.note-new.note-unsaved::before {
+    content: " · unsaved";
+    color: var(--error-color);
+    font-style: italic;
+    font-size: 1.3rem;
+}
+
+.note-new.note-unsaved::before {
+    content: "unsaved · ";
+    display: block;
+}
+
+article.note.note-error textarea,
+.note-new.note-error textarea {
+    outline: 1px solid var(--error-color);
+    border-radius: 6px;
+}
+
 ol.instructions {
   list-style-position: inside;
   padding-left: 0;

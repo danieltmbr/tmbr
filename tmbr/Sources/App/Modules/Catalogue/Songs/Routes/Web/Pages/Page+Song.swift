@@ -4,27 +4,30 @@ import AuthKit
 import Core
 
 struct SongViewModel: Encodable, Sendable {
-    
+
     private let id: SongID
-        
+
     private let artist: String
-    
+
     private let artwork: ImageViewModel?
-    
+
+    private let allowsNewNote: Bool
+
     private let info: String?
-        
+
     private let notes: [NoteViewModel]
-    
+
     private let post: PostItemViewModel?
-        
+
     private let resources: [Hyperlink]
-    
+
     private let title: String
-    
+
     init(
         id: SongID,
         artist: String,
         artwork: ImageViewModel?,
+        allowsNewNote: Bool,
         info: String?,
         notes: [NoteViewModel],
         post: PostItemViewModel?,
@@ -34,18 +37,20 @@ struct SongViewModel: Encodable, Sendable {
         self.id = id
         self.artist = artist
         self.artwork = artwork
+        self.allowsNewNote = allowsNewNote
         self.info = info
         self.notes = notes
         self.post = post
         self.resources = resources
         self.title = title
     }
-    
+
     init(
         id: SongID,
         album: String?,
         artist: String,
         artwork: ImageViewModel?,
+        allowsNewNote: Bool,
         genre: String?,
         notes: [NoteViewModel],
         post: PostItemViewModel?,
@@ -57,21 +62,23 @@ struct SongViewModel: Encodable, Sendable {
             id: id,
             artist: artist,
             artwork: artwork,
+            allowsNewNote: allowsNewNote,
             info: {
-            let parts = [album, genre, releaseDate].compactMap(\.self).filter { !$0.isEmpty }
-            return parts.isEmpty ? nil : parts.joined(separator: ", ")
-        }(),
+                let parts = [album, genre, releaseDate].compactMap(\.self).filter { !$0.isEmpty }
+                return parts.isEmpty ? nil : parts.joined(separator: ", ")
+            }(),
             notes: notes,
             post: post,
             resources: resources,
             title: title
         )
     }
-    
+
     init(
         song: Song,
         notes: [Note],
         baseURL: String,
+        allowsNewNote: Bool,
         platform: Platform<SongMetadata> = .song
     ) throws {
         self.init(
@@ -81,8 +88,9 @@ struct SongViewModel: Encodable, Sendable {
             artwork: song.artwork.flatMap {
                 ImageViewModel(image: $0, baseURL: baseURL)
             },
+            allowsNewNote: allowsNewNote,
             genre: song.genre,
-            notes: try notes.map(NoteViewModel.init),
+            notes: try notes.map { try NoteViewModel(note: $0, isEditable: allowsNewNote) },
             post: try song.post.map(PostItemViewModel.init),
             releaseDate: song.releaseDate?.formatted(.releaseDate),
             resources: song.resourceURLs.compactMap(platform.hyperlink),
@@ -103,10 +111,13 @@ extension Page {
             }
             async let song = request.commands.songs.fetch(songID, for: .read)
             async let notes = request.commands.notes.query(id: songID, of: Song.previewType)
+            let resolvedSong = try await song
+            let allowsNewNote = (try? await request.permissions.songs.edit.grant(resolvedSong)) != nil
             return try SongViewModel(
-                song: await song,
+                song: resolvedSong,
                 notes: await notes,
-                baseURL: request.baseURL
+                baseURL: request.baseURL,
+                allowsNewNote: allowsNewNote
             )
         }
     }
