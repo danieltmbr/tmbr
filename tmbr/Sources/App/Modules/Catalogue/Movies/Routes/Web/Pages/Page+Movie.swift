@@ -58,7 +58,7 @@ struct MovieViewModel: Encodable, Sendable {
             },
             director: movie.director,
             genre: movie.genre,
-            notes: try notes.map(NoteViewModel.init),
+            notes: try notes.map { try NoteViewModel(note: $0) },
             post: try movie.post.map(PostItemViewModel.init),
             releaseYear: movie.releaseDate.formatted(.year),
             resources: movie.resourceURLs.compactMap(platform.hyperlink),

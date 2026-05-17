@@ -67,7 +67,7 @@ struct PodcastViewModel: Encodable, Sendable {
             episodeNumber: podcast.episodeNumber,
             episodeTitle: podcast.episodeTitle,
             genre: podcast.genre,
-            notes: try notes.map(NoteViewModel.init),
+            notes: try notes.map { try NoteViewModel(note: $0) },
             post: try podcast.post.map(PostItemViewModel.init),
             releaseDate: podcast.releaseDate?.formatted(.releaseDate),
             resources: podcast.resourceURLs.compactMap(platform.hyperlink),

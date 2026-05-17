@@ -1,7 +1,13 @@
 import Foundation
 import Core
+import AuthKit
 
 struct NoteViewModel: Encodable, Sendable {
+
+    struct EditDetails: Encodable, Sendable {
+        let rawBody: String
+        let access: String
+    }
 
     private let id: NoteID
 
@@ -9,30 +15,44 @@ struct NoteViewModel: Encodable, Sendable {
 
     private let created: String
 
-    init(id: NoteID, body: String, created: String) {
+    private let editDetails: EditDetails?
+
+    private let error: String?
+
+    init(
+        id: NoteID,
+        body: String,
+        created: String,
+        editDetails: EditDetails? = nil,
+        error: String? = nil
+    ) {
         self.id = id
         self.body = body
         self.created = created
+        self.editDetails = editDetails
+        self.error = error
     }
-    
+
     init(
         note: Note,
-        markdownFormatter formatter: MarkdownFormatter
+        markdownFormatter formatter: MarkdownFormatter,
+        isEditable: Bool,
+        error: String? = nil
     ) throws {
         self.init(
             id: try note.requireID(),
             body: formatter.format(note.body),
-            created: (note.createdAt ?? .now).formatted(.publishDate)
+            created: (note.createdAt ?? .now).formatted(.publishDate),
+            editDetails: isEditable ? EditDetails(rawBody: note.body, access: note.access.rawValue) : nil,
+            error: error
         )
     }
 
-
-    init(
-        note: Note
-    ) throws {
-        try self.init(
-            note: note,
-            markdownFormatter: .html
-        )
+    init(note: Note, isEditable: Bool = false, error: String? = nil) throws {
+        try self.init(note: note, markdownFormatter: .html, isEditable: isEditable, error: error)
     }
+}
+
+extension Template where Model == NoteViewModel {
+    static let noteItem = Template(name: "Notes/note-item")
 }
