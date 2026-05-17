@@ -58,7 +58,7 @@ struct BookViewModel: Encodable, Sendable {
                 ImageViewModel(image: $0, baseURL: baseURL)
             },
             genre: book.genre,
-            notes: try notes.map(NoteViewModel.init),
+            notes: try notes.map { try NoteViewModel(note: $0) },
             post: try book.post.map(PostItemViewModel.init),
             releaseDate: book.releaseDate?.formatted(.releaseDate),
             resources: book.resourceURLs.compactMap(platform.hyperlink),

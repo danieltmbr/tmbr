@@ -12,7 +12,7 @@ private struct PostPreviewPayload: Content {
 extension Page {
     static var postPreview: Self {
         Page(template: .post) { req in
-            let user = try req.auth.require(User.self)
+            let user = try await req.permissions.posts.create.grant()
             let payload = try req.content.decode(PostPreviewPayload.self)
             let markdownFormatter = MarkdownFormatter.html
             let nameFormatter: NameFormatter = .author

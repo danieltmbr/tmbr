@@ -17,7 +17,7 @@ private struct SongPreviewPayload: Content {
 extension Page {
     static var songPreview: Self {
         Page(template: .song) { req in
-            try req.auth.require(User.self)
+            try await req.permissions.songs.create.grant()
             let payload = try req.content.decode(SongPreviewPayload.self)
             let formatter = MarkdownFormatter.html
             let notes: [NoteViewModel] = payload.notes.isEmpty ? [] : [
@@ -39,6 +39,7 @@ extension Page {
                 artwork: payload.artworkURL.flatMap { url in
                     url.isEmpty ? nil : ImageViewModel(previewURL: url)
                 },
+                allowsNewNote: false,
                 genre: payload.genre,
                 notes: notes,
                 post: nil,
