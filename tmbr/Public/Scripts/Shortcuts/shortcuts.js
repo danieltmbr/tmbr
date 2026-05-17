@@ -33,6 +33,8 @@ class ShortcutsController {
     }
 
     _handleKeyDown(event) {
+        const tag = event.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || event.target.isContentEditable) return;
         const h = this._handlers[event.key.toLowerCase()];
         if (!h) return;
         const isMac = navigator.platform.toUpperCase().includes('MAC');
