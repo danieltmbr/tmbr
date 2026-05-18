@@ -29,14 +29,8 @@
                     </label>
                 </div>
                 #endif
-                #for(n in notes):
-                <article class="note" data-note-id="#(n.id)"#if(n.editDetails): data-raw-body="#(n.editDetails.rawBody)" data-access="#(n.editDetails.access)"#endif>
-                    <p class="published-date">#(n.created)</p>
-                    <div class="note-body">#unsafeHTML(n.body)</div>
-                    #if(n.editDetails):
-                    <button type="button" class="icon" aria-label="Edit note">#extend("Icons/pencil")</button>
-                    #endif
-                </article>
+                #for(note in notes):
+                #extend("Notes/note-item")
                 #endfor
             </section>
 

@@ -12,8 +12,7 @@ class NoteDetailController {
     }
 
     init() {
-        // Only attach edit handlers to notes that have editDetails (owner viewing)
-        this.section.querySelectorAll('article.note[data-raw-body]').forEach(article => {
+        this.section.querySelectorAll('article.note:has(.note-edit-area)').forEach(article => {
             this._setupNote(article);
             this._restorePendingEdit(article);
         });
@@ -28,7 +27,7 @@ class NoteDetailController {
     }
 
     destroy() {
-        this.section.querySelectorAll('article.note[data-raw-body]').forEach(article => {
+        this.section.querySelectorAll('article.note:has(.note-edit-area)').forEach(article => {
             article.querySelector('button')?.removeEventListener('click', article._onEditClick);
             article.removeEventListener('focusout', article._onFocusOut);
         });
@@ -38,6 +37,9 @@ class NoteDetailController {
     // ── Setup ────────────────────────────────────────────────────────────────
 
     _setupNote(article) {
+        const textarea = article.querySelector('textarea');
+        const label = article.querySelector('label.note-access');
+
         const onEditClick = () => this._enterEditMode(article);
         article._onEditClick = onEditClick;
         article.querySelector('button')?.addEventListener('click', onEditClick);
@@ -45,41 +47,26 @@ class NoteDetailController {
         const onFocusOut = (e) => {
             if (!article.classList.contains('editing')) return;
             if (article.contains(e.relatedTarget)) return;
-            const textarea = article.querySelector('textarea');
+            const ta = article.querySelector('textarea');
             const toggle = article.querySelector('.note-access-toggle');
-            this._saveNote(article, textarea, toggle);
+            this._saveNote(article, ta, toggle);
         };
         article._onFocusOut = onFocusOut;
         article.addEventListener('focusout', onFocusOut);
+
+        textarea?.addEventListener('input', () => this._autosize(textarea));
+        label?.addEventListener('mousedown', (e) => e.preventDefault());
     }
 
     // ── Edit mode ────────────────────────────────────────────────────────────
 
     _enterEditMode(article, initialBody = null, initialAccess = null) {
         if (article.classList.contains('editing')) return;
-
-        const rawBody = initialBody ?? article.dataset.rawBody ?? '';
-        const access = initialAccess ?? article.dataset.access ?? 'private';
-        const noteBody = article.querySelector('.note-body');
-        if (!noteBody) return;
-
-        const textarea = document.createElement('textarea');
-        textarea.value = rawBody;
-        textarea.autocapitalize = 'sentences';
-        textarea.spellcheck = true;
-        textarea.addEventListener('input', () => this._autosize(textarea));
-
-        const { hidden, label } = this._createAccessToggle(access === 'public');
-        label.addEventListener('mousedown', (e) => e.preventDefault());
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'note-edit-area';
-        wrapper.appendChild(textarea);
-        wrapper.appendChild(hidden);
-        wrapper.appendChild(label);
-
-        article.dataset.htmlBody = noteBody.innerHTML;
-        noteBody.replaceWith(wrapper);
+        const textarea = article.querySelector('textarea');
+        const toggle = article.querySelector('.note-access-toggle');
+        if (!textarea) return;
+        if (initialBody !== null) textarea.value = initialBody;
+        if (initialAccess !== null && toggle) toggle.checked = initialAccess === 'public';
         article.classList.add('editing');
         this._autosize(textarea);
         textarea.focus();
@@ -116,15 +103,8 @@ class NoteDetailController {
         this._setupNote(newArticle);
 
         if (!res.ok) {
-            // Server returned edit mode with error — re-autosize, focus, wire mousedown
             const ta = newArticle.querySelector('textarea');
-            if (ta) {
-                this._autosize(ta);
-                ta.focus();
-                ta.addEventListener('input', () => this._autosize(ta));
-            }
-            newArticle.querySelector('label.note-access')
-                ?.addEventListener('mousedown', (e) => e.preventDefault());
+            if (ta) { this._autosize(ta); ta.focus(); }
         } else {
             this._showSaved(newArticle);
         }
@@ -204,27 +184,6 @@ class NoteDetailController {
         const temp = document.createElement('div');
         temp.innerHTML = html;
         return temp.firstElementChild ?? null;
-    }
-
-    _createAccessToggle(isPublic) {
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.className = 'note-access-fallback';
-        hidden.value = 'private';
-
-        const label = document.createElement('label');
-        label.className = 'note-access';
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'note-access-toggle';
-        checkbox.value = 'public';
-        checkbox.checked = isPublic;
-
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(' Public'));
-
-        return { hidden, label };
     }
 
     _autosize(textarea) {

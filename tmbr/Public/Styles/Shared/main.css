@@ -338,7 +338,7 @@ article.note > p.published-date {
  */
 
 .note-new,
-article.note[data-raw-body] {
+article.note:has(.note-edit-area) {
     position: relative;
 }
 
@@ -349,9 +349,10 @@ article.note[data-raw-body] {
 .note-edit-area {
     position: relative;
     margin-top: 1em;
+    display: none;
 }
 
-article.note[data-raw-body] > button {
+article.note:has(.note-edit-area) > button {
     position: absolute;
     top: -2px;
     right: -4px;
@@ -360,12 +361,20 @@ article.note[data-raw-body] > button {
     transition: opacity 0.15s;
 }
 
-article.note[data-raw-body]:hover > button {
+article.note:has(.note-edit-area):hover > button {
     opacity: 1;
 }
 
 article.note.editing > button {
     display: none;
+}
+
+article.note.editing .note-body {
+    display: none;
+}
+
+article.note.editing .note-edit-area {
+    display: block;
 }
 
 .note-new textarea,

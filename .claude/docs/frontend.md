@@ -177,6 +177,15 @@ Page templates extend via:
 }
 ```
 
+### Leaf is the sole source of truth for HTML structure
+
+Never construct or inject HTML elements from JavaScript. If an element needs to appear or disappear conditionally:
+
+- **Preferred:** pre-render it in Leaf, use a CSS class toggle to show/hide (e.g., `article.editing .note-edit-area`)
+- **Acceptable:** fetch a rendered HTML fragment from the server and replace the element
+
+Do not use `document.createElement`, `innerHTML` assignments, or template literals to build structural HTML in JS. JavaScript controls *behaviour* and *state*, not *structure*.
+
 ### Template<Model> Pattern
 
 `Template<Model>` binds a Leaf template name to a ViewModel type for compile-time safety.

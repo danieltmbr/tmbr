@@ -203,7 +203,7 @@ struct SongsWebController: RouteCollection {
             )
             let note = try await request.commands.notes.create(input)
             let model = try NoteViewModel(note: note, isEditable: true)
-            let view = try await Template.noteItem.render(model, with: request.view)
+            let view = try await Template.noteItem.render(NoteItemContext(note: model), with: request.view)
             return try await view.encodeResponse(for: request)
         } catch {
             return Response(status: .unprocessableEntity)
