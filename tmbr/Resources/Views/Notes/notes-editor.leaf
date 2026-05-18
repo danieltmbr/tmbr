@@ -6,7 +6,8 @@
         </button>
     </header>
     #for(note in notes):
-        <div class="note-wrapper" data-index="#(index)">
+        <div class="note-wrapper" data-index="#(index)" data-note-id="#(note.id)">
+            <input type="hidden" name="notes[#(index)][id]" value="#(note.id)" />
             <textarea
                 class="note-body"
                 name="notes[#(index)][body]"
@@ -20,6 +21,7 @@
                     #if(note.access == "public"):checked#endif/>
                 Public
             </label>
+            <button type="button" class="note-delete icon" aria-label="Delete note">#extend("Icons/trash")</button>
         </div>
     #endfor
     <div class="note-wrapper" data-index="#(count(notes))">

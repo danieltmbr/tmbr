@@ -7,26 +7,29 @@ extension Commands {
 
 extension Commands {
     struct Notes: CommandCollection, Sendable {
-        
+
         let batchCreate: CommandFactory<BatchCreateNoteInput, [Note]>
-        
+
         let create: CommandFactory<CreateNoteInput, Note>
-        
+
         let delete: CommandFactory<NoteID, Void>
-                
+
         let edit: CommandFactory<EditNoteInput, Note>
-        
+
         let query: CommandFactory<QueryNotesInput, [Note]>
-        
+
         let search: CommandFactory<NoteQueryPayload, [Note]>
-        
+
+        let sync: CommandFactory<SyncNotesInput, [Note]>
+
         init(
             batchCreate: CommandFactory<BatchCreateNoteInput, [Note]> = .createNotes,
             create: CommandFactory<CreateNoteInput, Note> = .createNote,
             delete: CommandFactory<NoteID, Void> = .deleteNote,
             edit: CommandFactory<EditNoteInput, Note> = .editNote,
             query: CommandFactory<QueryNotesInput, [Note]> = .queryNotes,
-            search: CommandFactory<NoteQueryPayload, [Note]> = .searchNote
+            search: CommandFactory<NoteQueryPayload, [Note]> = .searchNote,
+            sync: CommandFactory<SyncNotesInput, [Note]> = .syncNotes
         ) {
             self.batchCreate = batchCreate
             self.create = create
@@ -34,6 +37,7 @@ extension Commands {
             self.edit = edit
             self.query = query
             self.search = search
+            self.sync = sync
         }
     }
 }

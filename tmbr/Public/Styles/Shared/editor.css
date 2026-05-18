@@ -393,6 +393,49 @@ form section > header {
     pointer-events: none;
 }
 
+.note-delete {
+    position: absolute;
+    bottom: 4px;
+    right: 0;
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.note-wrapper:hover .note-delete,
+.note-wrapper:focus-within .note-delete {
+    opacity: 0.4;
+}
+
+.note-wrapper:hover .note-delete:hover {
+    opacity: 1;
+}
+
+.note-wrapper.deleted {
+    opacity: 0.4;
+}
+
+.note-wrapper.deleted textarea {
+    pointer-events: none;
+    text-decoration: line-through;
+}
+
+.note-wrapper.deleted .note-access {
+    display: none;
+}
+
+.note-undo {
+    font-family: system-ui, -apple-system, Helvetica, sans-serif;
+    font-size: 1.2rem;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid currentColor;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
 
 /*
  ------------------------------------------------
