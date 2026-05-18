@@ -53,6 +53,10 @@ struct NoteViewModel: Encodable, Sendable {
     }
 }
 
-extension Template where Model == NoteViewModel {
+struct NoteItemContext: Encodable, Sendable {
+    let note: NoteViewModel
+}
+
+extension Template where Model == NoteItemContext {
     static let noteItem = Template(name: "Notes/note-item")
 }

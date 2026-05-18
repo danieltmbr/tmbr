@@ -21,7 +21,7 @@ struct NotesWebController: RouteCollection {
         do {
             let note = try await request.commands.notes.edit(noteID, with: payload)
             let model = try NoteViewModel(note: note, isEditable: true)
-            let view = try await Template.noteItem.render(model, with: request.view)
+            let view = try await Template.noteItem.render(NoteItemContext(note: model), with: request.view)
             return try await view.encodeResponse(for: request)
         } catch {
             let errorMessage = noteErrorMessage(for: error, on: request)
@@ -35,7 +35,7 @@ struct NotesWebController: RouteCollection {
                 ),
                 error: errorMessage
             )
-            let view = try await Template.noteItem.render(model, with: request.view)
+            let view = try await Template.noteItem.render(NoteItemContext(note: model), with: request.view)
             var response = try await view.encodeResponse(for: request)
             response.status = .unprocessableEntity
             return response

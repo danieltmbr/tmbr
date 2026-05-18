@@ -86,5 +86,23 @@ struct SongsAPIController: RouteCollection {
             try await req.commands.songs.delete(songID)
             return .noContent
         }
+
+        // POST /api/songs/:songID/notes
+        songsRoute.post(":songID", "notes") { request async throws -> NoteResponse in
+            guard let songID = request.parameters.get("songID", as: Int.self) else {
+                throw Abort(.badRequest, reason: "Invalid Song ID")
+            }
+            let payload = try request.content.decode(NotePayload.self)
+            let song = try await request.commands.songs.fetch(songID, for: .write)
+            let input = CreateNoteInput(
+                body: payload.body,
+                access: payload.access,
+                attachmentID: song.$preview.id
+            )
+            let note = try await request.commands.notes.create(input)
+            try await note.$attachment.load(on: request.commandDB)
+            try await note.$author.load(on: request.commandDB)
+            return NoteResponse(note: note, baseURL: request.baseURL)
+        }
     }
 }
