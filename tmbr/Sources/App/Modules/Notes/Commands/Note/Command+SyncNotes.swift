@@ -24,34 +24,32 @@ struct SyncNotesCommand: Command {
 
     typealias Output = [Note]
 
-    private let attachPermission: AuthPermissionResolver<AttachNotePermissionInput>
+    private let create: CommandResolver<CreateNoteInput, Note>
 
-    private let createPermission: AuthPermissionResolver<Void>
+    private let edit: CommandResolver<EditNoteInput, Note>
 
-    private let editPermission: AuthPermissionResolver<Note>
-
-    private let deletePermission: AuthPermissionResolver<Note>
+    private let delete: CommandResolver<NoteID, Void>
 
     private let database: Database
 
     init(
-        attachPermission: AuthPermissionResolver<AttachNotePermissionInput>,
-        createPermission: AuthPermissionResolver<Void>,
-        editPermission: AuthPermissionResolver<Note>,
-        deletePermission: AuthPermissionResolver<Note>,
+        create: CommandResolver<CreateNoteInput, Note>,
+        edit: CommandResolver<EditNoteInput, Note>,
+        delete: CommandResolver<NoteID, Void>,
         database: Database
     ) {
-        self.attachPermission = attachPermission
-        self.createPermission = createPermission
-        self.editPermission = editPermission
-        self.deletePermission = deletePermission
+        self.create = create
+        self.edit = edit
+        self.delete = delete
         self.database = database
     }
 
     func execute(_ input: SyncNotesInput) async throws -> [Note] {
         let attachmentID = try input.attachment.requireID()
 
-        // Load all existing notes for this attachment and index by ID
+        // Load all existing notes for this attachment and index by ID.
+        // This membership check is the only guard against a payload that references
+        // note IDs from a different attachment the user also owns.
         let existing = try await Note.query(on: database)
             .filter(\.$attachment.$id == attachmentID)
             .all()
@@ -64,34 +62,23 @@ struct SyncNotesCommand: Command {
 
         for entry in input.entries {
             if let noteID = entry.id {
-                // Only act on notes that belong to this attachment — prevents cross-attachment mutations
                 guard let note = existingByID[noteID] else { continue }
 
                 if entry.deleted {
-                    try await deletePermission.grant(note)
-                    try await note.delete(on: database)
+                    try await delete(noteID)
                 } else {
                     let effectiveAccess = entry.access && input.parentAccess
                     if note.body != entry.body || note.access != effectiveAccess {
-                        try await editPermission.grant(note)
-                        note.body = entry.body
-                        note.access = effectiveAccess
-                        try await note.save(on: database)
+                        let updated = try await edit(EditNoteInput(id: noteID, access: entry.access, body: entry.body))
+                        results.append(updated)
+                    } else {
+                        results.append(note)
                     }
-                    results.append(note)
                 }
             } else if !entry.deleted {
                 let body = entry.body.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !body.isEmpty else { continue }
-                let user = try await createPermission.grant()
-                let note = Note(
-                    attachmentID: attachmentID,
-                    authorID: user.userID,
-                    access: input.parentAccess && entry.access,
-                    body: body
-                )
-                try await attachPermission(note, to: input.attachment)
-                try await note.save(on: database)
+                let note = try await create(CreateNoteInput(body: body, access: entry.access, attachmentID: attachmentID))
                 results.append(note)
             }
         }
@@ -105,10 +92,9 @@ extension CommandFactory<SyncNotesInput, [Note]> {
     static var syncNotes: Self {
         CommandFactory { request in
             SyncNotesCommand(
-                attachPermission: request.permissions.notes.attach,
-                createPermission: request.permissions.notes.create,
-                editPermission: request.permissions.notes.edit,
-                deletePermission: request.permissions.notes.delete,
+                create: request.commands.notes.create,
+                edit: request.commands.notes.edit,
+                delete: request.commands.notes.delete,
                 database: request.commandDB
             )
             .logged(logger: request.logger)

@@ -100,7 +100,7 @@ struct SongsWebController: RouteCollection {
                         SyncNoteEntry(
                             id: entry.noteID,
                             body: entry.body,
-                            access: entry.access && payload.access,
+                            access: entry.access,
                             deleted: entry.deleted ?? false
                         )
                     }
