@@ -2,7 +2,7 @@ class NoteDetailController {
 
     constructor({ section }, { persistence }) {
         this.section = section;
-        this.songID = section.dataset.songId;
+        this.notesEndpoint = section.dataset.notesEndpoint;
         this.newWrapper = section.querySelector('.note-new');
         this.newTextarea = this.newWrapper?.querySelector('textarea');
         this.newToggle = this.newWrapper?.querySelector('.note-access-toggle');
@@ -132,12 +132,12 @@ class NoteDetailController {
 
     async _createNote(body, isPublic) {
         const access = isPublic ? 'public' : 'private';
-        const key = `detail:song:${this.songID}:note:new`;
+        const key = `detail:${this.notesEndpoint}:note:new`;
 
         const params = new URLSearchParams({ body, access });
         let res;
         try {
-            res = await fetch(`/songs/${this.songID}/notes`, {
+            res = await fetch(this.notesEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: params
@@ -169,7 +169,7 @@ class NoteDetailController {
     }
 
     _restorePendingNew() {
-        const key = `detail:song:${this.songID}:note:new`;
+        const key = `detail:${this.notesEndpoint}:note:new`;
         const pending = this.persistence.load(key);
         if (!pending) return;
         this.newTextarea.value = pending.body;
