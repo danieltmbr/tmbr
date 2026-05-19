@@ -3,7 +3,7 @@ import Foundation
 import AuthKit
 import Core
 
-struct BookResponse: Encodable, Sendable {
+struct BookResponse: Encodable, Sendable, AsyncResponseEncodable {
     
     private let id: Int
     

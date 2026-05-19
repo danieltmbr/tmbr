@@ -1,0 +1,108 @@
+import Vapor
+import AuthKit
+import Fluent
+import Core
+
+private struct BookLookupResponse: Content, Sendable {
+    let id: Int
+    let title: String
+    let author: String
+    let detailURL: String
+}
+
+struct BooksAPIController: RouteCollection {
+
+    func boot(routes: RoutesBuilder) throws {
+
+        let booksRoute = routes.grouped("api", "books")
+
+        // GET /api/books/lookup?url=
+        booksRoute.get("lookup") { request async throws -> BookLookupResponse in
+            let url = try request.query.get(String.self, at: "url")
+            guard let book = try await request.commands.books.lookup(url),
+                  let bookID = book.id
+            else {
+                throw Abort(.notFound)
+            }
+            return BookLookupResponse(id: bookID, title: book.title, author: book.author, detailURL: "/books/\(bookID)")
+        }
+
+        // GET /api/books/:bookID
+        booksRoute.get(":bookID") { request async throws -> BookResponse in
+            guard let bookID = request.parameters.get("bookID", as: Int.self) else {
+                throw Abort(.badRequest, reason: "Invalid Book ID")
+            }
+            async let book = request.commands.books.fetch(bookID, for: .read)
+            async let notes = request.commands.notes.query(id: bookID, of: Book.previewType)
+            return BookResponse(
+                book: try await book,
+                baseURL: request.baseURL,
+                notes: try await notes
+            )
+        }
+
+        // POST /api/books
+        booksRoute.post(use: { request async throws -> BookResponse in
+            let payload = try request.content.decode(BookPayload.self)
+            return try await request.commands.transaction { commands in
+                let bookInput = BookInput(payload: payload)
+                let book = try await commands.books.create(bookInput)
+                let notesInput = payload.notes.map { entries in
+                    BatchCreateNoteInput(
+                        attachment: book.preview,
+                        notes: entries.map(NoteInput.init)
+                    )
+                }
+                let notes = try await notesInput.map(commands.notes.batchCreate)
+                return BookResponse(
+                    book: book,
+                    baseURL: request.baseURL,
+                    notes: notes ?? []
+                )
+            }
+        })
+
+        // PUT /api/books/:bookID
+        booksRoute.put(":bookID") { request async throws -> BookResponse in
+            guard let bookID = request.parameters.get("bookID", as: Int.self) else {
+                throw Abort(.badRequest, reason: "Invalid Book ID")
+            }
+            let payload = try request.content.decode(BookPayload.self)
+            let input = BookInput(payload: payload)
+            async let book = request.commands.books.edit(input.edit(id: bookID))
+            async let notes = request.commands.notes.query(id: bookID, of: Book.previewType)
+            return BookResponse(
+                book: try await book,
+                baseURL: request.baseURL,
+                notes: try await notes
+            )
+        }
+
+        // DELETE /api/books/:bookID
+        booksRoute.delete(":bookID") { req async throws -> HTTPStatus in
+            guard let bookID = req.parameters.get("bookID", as: Int.self) else {
+                throw Abort(.badRequest, reason: "Invalid Book ID")
+            }
+            try await req.commands.books.delete(bookID)
+            return .noContent
+        }
+
+        // POST /api/books/:bookID/notes
+        booksRoute.post(":bookID", "notes") { request async throws -> NoteResponse in
+            guard let bookID = request.parameters.get("bookID", as: Int.self) else {
+                throw Abort(.badRequest, reason: "Invalid Book ID")
+            }
+            let payload = try request.content.decode(NotePayload.self)
+            let book = try await request.commands.books.fetch(bookID, for: .write)
+            let input = CreateNoteInput(
+                body: payload.body,
+                access: payload.access,
+                attachmentID: book.$preview.id
+            )
+            let note = try await request.commands.notes.create(input)
+            try await note.$attachment.load(on: request.commandDB)
+            try await note.$author.load(on: request.commandDB)
+            return NoteResponse(note: note, baseURL: request.baseURL)
+        }
+    }
+}
