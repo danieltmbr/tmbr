@@ -18,4 +18,11 @@ extension PreviewablePermissionScope<Book> {
             )
         )
     }
+
+    var lookup: Permission<QueryBuilder<Book>> {
+        Permission { user, query in
+            guard let userID = user?.userID else { return }
+            query.filter(\.$owner.$id == userID)
+        }
+    }
 }
