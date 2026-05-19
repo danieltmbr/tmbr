@@ -23,7 +23,8 @@ extension Page {
             return SongsViewModel(
                 compose: await composeURL,
                 term: term,
-                previews: (resolved.previews + resolved.noteMatches).map { PreviewViewModel(preview: $0, baseURL: baseURL) }
+                previews: resolved.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
+                    + resolved.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) }
             )
         }
     }

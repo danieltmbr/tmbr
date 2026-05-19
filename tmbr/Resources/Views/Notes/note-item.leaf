@@ -8,11 +8,13 @@
     <div class="note-edit-area">
         <textarea autocapitalize="sentences" spellcheck="true">#(note.editDetails.rawBody)</textarea>
         <input type="hidden" class="note-access-fallback" value="private" />
-        <label class="note-access">
-            <input type="checkbox" class="note-access-toggle" value="public"
-                   #if(note.editDetails.access == "public"):checked#endif/>
-            Public
-        </label>
+        <div class="note-controls">
+            <label class="note-access">
+                <input type="checkbox" class="note-access-toggle" value="public"
+                       #if(note.editDetails.access == "public"):checked#endif/>
+                Public
+            </label>
+        </div>
     </div>
     <button type="button" class="icon" aria-label="Edit note">#extend("Icons/pencil")</button>
     #endif

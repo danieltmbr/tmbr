@@ -88,17 +88,25 @@ struct SongsWebController: RouteCollection {
                 switch mode {
                 case .create:
                     song = try await commands.songs.create(songInput)
-                case .update(let songID):
-                    song = try await commands.songs.edit(songInput.edit(id: songID))
-                }
-
-                // Create notes if provided (only for create mode)
-                if case .create = mode {
                     let preview = try await commands.previews.fetch(song.$preview.id, for: .write)
                     let noteInputs = payload.notes.map { entry in
                         NoteInput(body: entry.body, access: entry.access && payload.access)
                     }
                     _ = try await commands.notes.batchCreate(noteInputs, for: preview)
+                case .update(let songID):
+                    song = try await commands.songs.edit(songInput.edit(id: songID))
+                    let preview = try await commands.previews.fetch(song.$preview.id, for: .write)
+                    let syncEntries = payload.notes.map { entry in
+                        SyncNoteEntry(
+                            id: entry.noteID,
+                            body: entry.body,
+                            access: entry.access,
+                            deleted: entry.deleted ?? false
+                        )
+                    }
+                    _ = try await commands.notes.sync(
+                        SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
+                    )
                 }
 
                 return song
@@ -157,7 +165,7 @@ struct SongsWebController: RouteCollection {
         }
 
         let noteViewModels = submitted.notes.map {
-            SongEditorViewModel.NoteViewModel(body: $0.body, access: $0.access)
+            SongEditorViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access)
         }
 
         let csrf = UUID().uuidString

@@ -6,7 +6,8 @@
         </button>
     </header>
     #for(note in notes):
-        <div class="note-wrapper" data-index="#(index)">
+        <div class="note-wrapper" data-index="#(index)" data-note-id="#(note.id)">
+            <input type="hidden" name="notes[#(index)][id]" value="#(note.id)" />
             <textarea
                 class="note-body"
                 name="notes[#(index)][body]"
@@ -15,25 +16,35 @@
                 spellcheck="true"
             >#(note.body)</textarea>
             <input type="hidden" name="notes[#(index)][access]" value="private" class="note-access-fallback" />
-            <label class="note-access">
-                <input type="checkbox" name="notes[#(index)][access]" value="public"
-                    #if(note.access == "public"):checked#endif/>
-                Public
-            </label>
+            <div class="note-controls">
+                <label class="note-access">
+                    <input type="checkbox" name="notes[#(index)][access]" value="public"
+                        #if(note.access == "public"):checked#endif/>
+                    Public
+                </label>
+                <button type="button" class="note-toggle icon" aria-label="Delete note">
+                    #extend("Icons/trash")
+                    #extend("Icons/recycle")
+                </button>
+            </div>
         </div>
     #endfor
-    <div class="note-wrapper" data-index="#(count(notes))">
-        <textarea
-            class="note-body"
-            name="notes[#(count(notes))][body]"
-            placeholder="Write your thoughts..."
-            autocapitalize="sentences"
-            spellcheck="true"
-        ></textarea>
-        <input type="hidden" name="notes[#(count(notes))][access]" value="private" class="note-access-fallback" />
-        <label class="note-access">
-            <input type="checkbox" name="notes[#(count(notes))][access]" value="public"/>
-            Public
-        </label>
-    </div>
+    <template id="note-wrapper-template">
+        <div class="note-wrapper" data-index="0">
+            <textarea
+                class="note-body"
+                name="notes[0][body]"
+                placeholder="Write your thoughts..."
+                autocapitalize="sentences"
+                spellcheck="true"
+            ></textarea>
+            <input type="hidden" name="notes[0][access]" value="private" class="note-access-fallback" />
+            <div class="note-controls">
+                <label class="note-access">
+                    <input type="checkbox" name="notes[0][access]" value="public" />
+                    Public
+                </label>
+            </div>
+        </div>
+    </template>
 </section>

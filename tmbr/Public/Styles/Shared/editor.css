@@ -370,13 +370,23 @@ form section > header {
 }
 
 .note-wrapper textarea.note-body {
-    padding-right: 72px;
+    padding-right: 108px;
 }
 
-.note-access {
+.note-wrapper:hover textarea.note-body {
+    background: var(--input-background-hover);
+}
+
+.note-controls {
     position: absolute;
     top: 4px;
     right: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.note-access {
     background: color-mix(in srgb, Canvas 90%, transparent);
     padding: 2px 6px;
     border-radius: 6px;
@@ -389,6 +399,32 @@ form section > header {
 }
 
 .note-access:has(input[disabled]) {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.note-toggle {
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+}
+
+/* recycle hidden by default; trash hidden when deleted */
+.note-toggle > svg:last-of-type { display: none; }
+.note-wrapper.deleted .note-toggle > svg:first-of-type { display: none; }
+.note-wrapper.deleted .note-toggle > svg:last-of-type { display: block; }
+
+.note-wrapper.deleted textarea {
+    opacity: 0.4;
+    pointer-events: none;
+    text-decoration: line-through;
+}
+
+.note-wrapper.deleted .note-access {
     opacity: 0.4;
     pointer-events: none;
 }

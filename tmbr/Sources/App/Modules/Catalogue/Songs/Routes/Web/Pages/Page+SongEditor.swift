@@ -7,6 +7,7 @@ import AuthKit
 struct SongEditorViewModel: Encodable, Sendable {
 
     struct NoteViewModel: Encodable, Sendable {
+        let id: String?
         let body: String
         let access: Access
     }
@@ -104,7 +105,7 @@ struct SongEditorViewModel: Encodable, Sendable {
             artworkSourceURL: nil,
             artworkThumbnailURL: artworkThumbnailURL,
             genre: song.genre ?? "",
-            notes: notes.map { NoteViewModel(body: $0.body, access: $0.access) },
+            notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access) },
             releaseDate: song.releaseDate?.formatted(.releaseDate) ?? "",
             resourceURLs: song.resourceURLs,
             submit: Form.Submit(
