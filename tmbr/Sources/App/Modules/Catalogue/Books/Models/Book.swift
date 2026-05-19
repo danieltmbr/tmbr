@@ -17,7 +17,7 @@ final class Book: Model, Previewable, @unchecked Sendable {
     @Enum(key: "access")
     var access: Access
     
-    @Field(key: "artist")
+    @Field(key: "author")
     var author: String
     
     @OptionalParent(key: "cover_id")
