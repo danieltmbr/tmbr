@@ -17,7 +17,7 @@
             </section>
             #endif
                     
-            <section id="notes-section" data-song-id="#(id)">
+            <section id="notes-section" data-notes-endpoint="#(notesEndpoint)">
                 <h3>Notes</h3>
                 #if(allowsNewNote):
                 <div class="note-new">

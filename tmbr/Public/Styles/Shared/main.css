@@ -617,7 +617,8 @@ main > section > nav > form input[type="search"]::-webkit-search-cancel-button {
 }
 
 main > section > nav > form input[type="search"]:hover,
-main > section > nav > form input[type="search"]:focus {
+main > section > nav > form input[type="search"]:focus,
+main > section > nav > form input[type="search"]:not(:placeholder-shown) {
     background: var(--input-background-hover);
 }
 
