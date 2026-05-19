@@ -42,6 +42,7 @@ extension Page {
                 allowsNewNote: false,
                 genre: payload.genre,
                 notes: notes,
+                notesEndpoint: "",
                 post: nil,
                 releaseDate: payload.releaseDate,
                 resources: resources,
