@@ -318,23 +318,9 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        const dateValue = releaseDateInput.value.trim();
-        if (dateValue) {
-            let normalized = dateValue;
-            if (/^\d{4}$/.test(dateValue)) {
-                normalized = `${dateValue}-01-01`;
-            } else {
-                const dmy = dateValue.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-                if (dmy) {
-                    normalized = `${dmy[3]}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
-                }
-            }
-            const date = new Date(normalized);
-            if (!isNaN(date.getTime())) {
-                releaseDateISOInput.value = date.toISOString();
-            } else {
-                releaseDateISOInput.disabled = true;
-            }
+        const date = parseReleaseDate(releaseDateInput.value.trim());
+        if (date) {
+            releaseDateISOInput.value = date.toISOString();
         } else {
             releaseDateISOInput.disabled = true;
         }
