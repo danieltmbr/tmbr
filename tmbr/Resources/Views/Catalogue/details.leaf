@@ -23,10 +23,12 @@
                 <div class="note-new">
                     <textarea placeholder="Write your thoughts..." autocapitalize="sentences" spellcheck="true"></textarea>
                     <input type="hidden" class="note-access-fallback" value="private" />
-                    <label class="note-access">
-                        <input type="checkbox" class="note-access-toggle" value="public" />
-                        Public
-                    </label>
+                    <div class="note-controls">
+                        <label class="note-access">
+                            <input type="checkbox" class="note-access-toggle" value="public" />
+                            Public
+                        </label>
+                    </div>
                 </div>
                 #endif
                 #for(note in notes):

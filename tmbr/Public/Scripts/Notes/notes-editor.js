@@ -10,12 +10,17 @@ class NotesController {
         this._onEditorActionsMousedown = this.onEditorActionsMousedown.bind(this);
         this.wrapperListeners = [];
         this.lastFocusedTextarea = null;
-        this.nextIndex = parseInt(this.section.dataset.noteCount || '0', 10) + 1;
+        this.nextIndex = parseInt(this.section.dataset.noteCount || '0', 10);
         this.suppressBlur = false;
     }
 
     init() {
         this.getWrappers().forEach((wrapper) => this.attachListener(wrapper));
+        if (!this.getWrappers().some(w => !w.querySelector('textarea.note-body')?.value.trim())) {
+            const empty = this.createWrapper(true);
+            this.section.appendChild(empty);
+            this.attachListener(empty);
+        }
         this.autosizeAll();
 
         const editorActions = document.querySelector('.editor-actions');
@@ -24,53 +29,26 @@ class NotesController {
         }
     }
 
-    isDeleted(wrapper) {
-        return wrapper.classList.contains('deleted');
-    }
-
-    markDeleted(wrapper) {
-        const index = wrapper.dataset.index;
-        wrapper.classList.add('deleted');
-
-        const textarea = wrapper.querySelector('textarea.note-body');
-        if (textarea) textarea.disabled = true;
-
-        const deletedInput = document.createElement('input');
-        deletedInput.type = 'hidden';
-        deletedInput.name = `notes[${index}][deleted]`;
-        deletedInput.value = '1';
-        deletedInput.className = 'note-deleted-flag';
-        wrapper.appendChild(deletedInput);
-
-        const deleteBtn = wrapper.querySelector('.note-delete');
-        if (deleteBtn) deleteBtn.hidden = true;
-
-        const undoBtn = document.createElement('button');
-        undoBtn.type = 'button';
-        undoBtn.className = 'note-undo';
-        undoBtn.textContent = 'Undo';
-        undoBtn.addEventListener('click', () => this.markUndoDelete(wrapper));
-        wrapper.appendChild(undoBtn);
-    }
-
-    markUndoDelete(wrapper) {
-        wrapper.classList.remove('deleted');
-
-        const textarea = wrapper.querySelector('textarea.note-body');
-        if (textarea) textarea.disabled = false;
-
-        const deletedInput = wrapper.querySelector('.note-deleted-flag');
-        if (deletedInput) deletedInput.remove();
-
-        const undoBtn = wrapper.querySelector('.note-undo');
-        if (undoBtn) undoBtn.remove();
-
-        const deleteBtn = wrapper.querySelector('.note-delete');
-        if (deleteBtn) deleteBtn.hidden = false;
+    toggleDeleted(wrapper) {
+        if (wrapper.classList.contains('deleted')) {
+            wrapper.classList.remove('deleted');
+            wrapper.querySelector('.note-deleted-flag')?.remove();
+            wrapper.querySelector('.note-toggle')?.setAttribute('aria-label', 'Delete note');
+        } else {
+            const index = wrapper.dataset.index;
+            wrapper.classList.add('deleted');
+            const flag = document.createElement('input');
+            flag.type = 'hidden';
+            flag.name = `notes[${index}][deleted]`;
+            flag.value = '1';
+            flag.className = 'note-deleted-flag';
+            wrapper.appendChild(flag);
+            wrapper.querySelector('.note-toggle')?.setAttribute('aria-label', 'Restore note');
+        }
     }
 
     destroy() {
-        this.wrapperListeners.forEach(({ textarea, accessCheckbox, deleteBtn, onDelete }) => {
+        this.wrapperListeners.forEach(({ textarea, accessCheckbox, toggleBtn, onToggle }) => {
             if (textarea) {
                 textarea.removeEventListener('input', this._onInput);
                 textarea.removeEventListener('blur', this._onBlur);
@@ -79,8 +57,8 @@ class NotesController {
             if (accessCheckbox) {
                 accessCheckbox.removeEventListener('change', this._onAccessChange);
             }
-            if (deleteBtn && onDelete) {
-                deleteBtn.removeEventListener('click', onDelete);
+            if (toggleBtn && onToggle) {
+                toggleBtn.removeEventListener('click', onToggle);
             }
         });
         this.wrapperListeners = [];
@@ -185,8 +163,8 @@ class NotesController {
     attachListener(wrapper) {
         const textarea = wrapper.querySelector('textarea.note-body');
         const accessCheckbox = wrapper.querySelector('.note-access input[type="checkbox"]');
-        const deleteBtn = wrapper.querySelector('.note-delete');
-        const onDelete = deleteBtn ? () => this.markDeleted(wrapper) : null;
+        const toggleBtn = wrapper.querySelector('.note-toggle');
+        const onToggle = toggleBtn ? () => this.toggleDeleted(wrapper) : null;
 
         if (textarea) {
             textarea.addEventListener('input', this._onInput);
@@ -196,10 +174,10 @@ class NotesController {
         if (accessCheckbox) {
             accessCheckbox.addEventListener('change', this._onAccessChange);
         }
-        if (deleteBtn && onDelete) {
-            deleteBtn.addEventListener('click', onDelete);
+        if (toggleBtn && onToggle) {
+            toggleBtn.addEventListener('click', onToggle);
         }
-        this.wrapperListeners.push({ wrapper, textarea, accessCheckbox, deleteBtn, onDelete });
+        this.wrapperListeners.push({ wrapper, textarea, accessCheckbox, toggleBtn, onToggle });
     }
 
     detachListener(wrapper) {
@@ -213,8 +191,8 @@ class NotesController {
             if (entry.accessCheckbox) {
                 entry.accessCheckbox.removeEventListener('change', this._onAccessChange);
             }
-            if (entry.deleteBtn && entry.onDelete) {
-                entry.deleteBtn.removeEventListener('click', entry.onDelete);
+            if (entry.toggleBtn && entry.onToggle) {
+                entry.toggleBtn.removeEventListener('click', entry.onToggle);
             }
         }
         this.wrapperListeners = this.wrapperListeners.filter(e => e.wrapper !== wrapper);
@@ -222,38 +200,16 @@ class NotesController {
 
     createWrapper(isPublic) {
         const index = this.nextIndex++;
-        const wrapper = document.createElement('div');
-        wrapper.className = 'note-wrapper';
+        const template = this.section.querySelector('#note-wrapper-template');
+        const wrapper = template.content.cloneNode(true).firstElementChild;
+
         wrapper.dataset.index = index;
+        wrapper.querySelectorAll('[name]').forEach(el => {
+            el.name = el.name.replace('notes[0]', `notes[${index}]`);
+        });
 
-        const textarea = document.createElement('textarea');
-        textarea.className = 'note-body';
-        textarea.name = `notes[${index}][body]`;
-        textarea.placeholder = 'Write your thoughts...';
-        textarea.autocapitalize = 'sentences';
-        textarea.spellcheck = true;
-
-        const fallback = document.createElement('input');
-        fallback.type = 'hidden';
-        fallback.name = `notes[${index}][access]`;
-        fallback.value = 'private';
-        fallback.className = 'note-access-fallback';
-
-        const label = document.createElement('label');
-        label.className = 'note-access';
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.name = `notes[${index}][access]`;
-        checkbox.value = 'public';
-        checkbox.disabled = !isPublic;
-
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(' Public'));
-
-        wrapper.appendChild(textarea);
-        wrapper.appendChild(fallback);
-        wrapper.appendChild(label);
+        const checkbox = wrapper.querySelector('.note-access input[type="checkbox"]');
+        if (checkbox) checkbox.disabled = !isPublic;
 
         return wrapper;
     }
@@ -304,7 +260,7 @@ class NotesController {
     }
 
     manageWrappers(textarea, wrapper) {
-        const wrappers = this.getWrappers().filter(w => !this.isDeleted(w));
+        const wrappers = this.getWrappers().filter(w => !w.classList.contains('deleted'));
         const emptyWrappers = wrappers.filter(w => {
             const ta = w.querySelector('textarea.note-body');
             return ta && !ta.value.trim();

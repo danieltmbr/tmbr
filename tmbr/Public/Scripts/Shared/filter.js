@@ -13,7 +13,7 @@ class FilterController {
 
     init() {
         this.openButton.addEventListener('click', this._onOpenClick);
-        this.closeButton.addEventListener('click', this._onCloseClick);
+        this.closeButton?.addEventListener('click', this._onCloseClick);
 
         document.getElementById('filter-select-all')
             ?.addEventListener('click', this._onSelectAll);
@@ -23,7 +23,7 @@ class FilterController {
 
     destroy() {
         this.openButton.removeEventListener('click', this._onOpenClick);
-        this.closeButton.removeEventListener('click', this._onCloseClick);
+        this.closeButton?.removeEventListener('click', this._onCloseClick);
         document.removeEventListener('click', this._onOutsideClick);
     }
 

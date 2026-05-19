@@ -370,13 +370,23 @@ form section > header {
 }
 
 .note-wrapper textarea.note-body {
-    padding-right: 72px;
+    padding-right: 108px;
 }
 
-.note-access {
+.note-wrapper:hover textarea.note-body {
+    background: var(--input-background-hover);
+}
+
+.note-controls {
     position: absolute;
     top: 4px;
     right: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.note-access {
     background: color-mix(in srgb, Canvas 90%, transparent);
     padding: 2px 6px;
     border-radius: 6px;
@@ -393,47 +403,30 @@ form section > header {
     pointer-events: none;
 }
 
-.note-delete {
-    position: absolute;
-    bottom: 4px;
-    right: 0;
+.note-toggle {
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 28px;
     height: 28px;
     padding: 4px;
-    opacity: 0;
-    transition: opacity 0.15s;
 }
 
-.note-wrapper:hover .note-delete,
-.note-wrapper:focus-within .note-delete {
-    opacity: 0.4;
-}
-
-.note-wrapper:hover .note-delete:hover {
-    opacity: 1;
-}
-
-.note-wrapper.deleted {
-    opacity: 0.4;
-}
+/* recycle hidden by default; trash hidden when deleted */
+.note-toggle > svg:last-of-type { display: none; }
+.note-wrapper.deleted .note-toggle > svg:first-of-type { display: none; }
+.note-wrapper.deleted .note-toggle > svg:last-of-type { display: block; }
 
 .note-wrapper.deleted textarea {
+    opacity: 0.4;
     pointer-events: none;
     text-decoration: line-through;
 }
 
 .note-wrapper.deleted .note-access {
-    display: none;
-}
-
-.note-undo {
-    font-family: system-ui, -apple-system, Helvetica, sans-serif;
-    font-size: 1.2rem;
-    padding: 2px 8px;
-    border-radius: 6px;
-    border: 1px solid currentColor;
-    cursor: pointer;
-    margin-top: 4px;
+    opacity: 0.4;
+    pointer-events: none;
 }
 
 
