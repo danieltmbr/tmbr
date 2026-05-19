@@ -206,6 +206,37 @@ The list page already uses the shared catalogue page (`/catalogue`). Type-specif
 
 `Template` name: `"Catalogue/Books/books"` etc.
 
+#### Detail view model (`Page+X.swift`)
+
+**Every detail view model must include `notesEndpoint: String`.** This is injected into `details.leaf` as `data-notes-endpoint` and used by `NoteDetailController` to POST new notes. Set it to `"/Xs/\(id)/notes"` (compute the ID before calling `self.init`):
+
+```swift
+init(book: Book, ...) throws {
+    let bookID = try book.requireID()
+    self.init(
+        id: bookID,
+        ...
+        notesEndpoint: "/books/\(bookID)/notes",
+        ...
+    )
+}
+```
+
+For preview pages (no real notes endpoint), pass `notesEndpoint: ""`.
+
+**The `info: String?` field** (displayed below the title in the detail header) must be computed from the type's secondary display fields using the join pattern — never build it as separate fields with a hardcoded separator in the template:
+
+```swift
+info: {
+    let parts = [genre, releaseDate].compactMap(\.self).filter { !$0.isEmpty }
+    return parts.isEmpty ? nil : parts.joined(separator: ", ")
+}()
+```
+
+The template then uses `#if(info): <p>#(info)</p> #endif` — the element is absent entirely when `info` is nil.
+
+Include a secondary `init` that takes `genre`/`releaseDate` as separate params and computes `info`, so preview pages can call it directly (see `BookViewModel` and `SongViewModel` for reference).
+
 #### Editor view model (`Page+BookEditor.swift` etc.)
 
 Contains `XEditorViewModel: Encodable, Sendable` with:
@@ -292,6 +323,12 @@ Match whatever session/auth middleware Songs uses.
 
 Extends `Shared/page`. Body mirrors `songs.leaf`: search input, preview grid using shared preview card fragments. The only difference is the page title and the create-new link (`/books/new`).
 
+#### Detail template (`book.leaf` / `movie.leaf` / `podcast.leaf`)
+
+**Every detail template must export `editor.css` in its styles block and load `persistence.js` + `note-detail.js` in its scripts block.** Without this, the access checkbox overflows the textarea (`.note-controls` requires absolute positioning from `editor.css`) and the edit button does nothing. Copy the exact snippet from `song.leaf` — see `frontend.md` for the full block.
+
+Use `#if(info): <p>#(info)</p> #endif` to display the secondary info string. Never hardcode separator characters (commas) in the template.
+
 #### Editor template (`book-editor.leaf` / `movie-editor.leaf` / `podcast-editor.leaf`)
 
 Extends `Shared/page`. Closely mirrors `song-editor.leaf`. Include:
@@ -313,6 +350,8 @@ Podcast editor fields: episode title, show title, season number, episode number,
 All three editors include the artwork picker and resource URLs editor — same as Songs.
 
 Use `<input type="number" min="1">` for season/episode number fields in the podcast editor.
+
+**Artwork picker aspect ratio:** Book and movie covers are rectangular — use `class="image-picker book-cover"` (`aspect-ratio: 2/3` in `editor.css`). Songs and podcasts use the default square `image-picker`.
 
 ### 9. Editor JavaScript
 
@@ -376,3 +415,6 @@ Use the same localStorage draft key convention as Songs: `"editor:book:{id}"` / 
 - `NoteInput` `access` must be AND-ed with the parent item's access (`entry.access && payload.access`) on create, to avoid a private item having a public note.
 - For `sync` (edit path), pass `SyncNotesInput` with the parent's access — the sync command handles AND-ing access internally.
 - `Movie.swift` line 65 has `self.id = id` in the memberwise init — `id` is not a parameter there. Remove this line when touching the Movie model for the `releaseDate` migration.
+- **Detail templates must load `editor.css`, `persistence.js`, and `note-detail.js`** — see Layer 8 and `frontend.md`. Forgetting these breaks the access checkbox positioning and the note edit button.
+- **`notesEndpoint` is required on every detail view model.** `details.leaf` injects it into `data-notes-endpoint`; `NoteDetailController` reads it from there. Passing `""` is acceptable for preview-only pages.
+- Never hardcode separator characters (commas, dashes) between info fields in Leaf templates. Compute `info: String?` in the view model and use `#if(info):` in the template.
