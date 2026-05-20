@@ -346,7 +346,9 @@ Book: `title` ← `metadata.title`, `author` ← `metadata.author`, `releaseDate
 Movie: `title` ← `metadata.title`, `director` ← `metadata.director`, `releaseDate` ← `metadata.releaseDate`, `artworkSourceURL` ← `metadata.cover`  
 Podcast: `episodeTitle` ← `metadata.episodeTitle`, `title` (show) ← `metadata.showTitle`, `seasonNumber` ← `metadata.seasonNumber`, `episodeNumber` ← `metadata.episodeNumber`, `releaseDate` ← `metadata.releaseDate`, `artworkSourceURL` ← `metadata.artwork`
 
-Use the same localStorage draft key convention as Songs: `"draft:book:{id}"` / `"draft:book:new"`.
+Use the same localStorage draft key convention as Songs: `"editor:book:{id}"` / `"editor:book:new"` (prefix is `editor:`, not `draft:`).
+
+**Date normalization:** The release date input accepts free-form text. Use the shared `parseReleaseDate(str)` function from `Public/Scripts/Shared/date-parser.js` — load it in the editor template before the type-specific script. It handles `YYYY`, `dd-mm-yyyy` / `dd/mm/yyyy`, and ISO strings, returning a `Date` or `null`.
 
 ---
 
