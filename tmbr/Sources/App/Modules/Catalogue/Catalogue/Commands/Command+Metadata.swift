@@ -36,8 +36,13 @@ struct FetchMetadataCommand: Command {
     
     func execute(_ url: URL) async throws -> Metadata {
         try await permission.grant()
-        
-        let response = try await client.get(URI(string: url.absoluteString))
+
+        var headers = HTTPHeaders()
+        headers.add(name: .userAgent, value: "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)")
+        headers.add(name: .accept, value: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+        headers.add(name: .acceptLanguage, value: "en-US,en;q=0.9")
+
+        let response = try await client.get(URI(string: url.absoluteString), headers: headers)
         
         guard (200..<300).contains(response.status.code) else {
             throw Abort(.badGateway, reason: "Metadata fetch failed. Upstream returned \(response.status.code)")
