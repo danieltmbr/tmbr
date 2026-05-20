@@ -1,14 +1,12 @@
 class AutofillController {
     constructor({
         titleInput,
-        artistInput,
-        albumInput,
+        authorInput,
         releaseDateInput,
         statusEl
     }, { metadata, artwork, onApply, lookup, onDuplicate }) {
         this.titleInput = titleInput;
-        this.artistInput = artistInput;
-        this.albumInput = albumInput;
+        this.authorInput = authorInput;
         this.releaseDateInput = releaseDateInput;
         this.statusEl = statusEl;
         this.metadata = metadata;
@@ -23,8 +21,8 @@ class AutofillController {
             const lookupPromise = this.lookup
                 ? this.lookup.fetch(url).catch(() => null)
                 : Promise.resolve(null);
-            const [song, html] = await Promise.all([this.metadata.fetch(url), lookupPromise]);
-            this.applyMetadata(song);
+            const [book, html] = await Promise.all([this.metadata.fetch(url), lookupPromise]);
+            this.applyMetadata(book);
             this.setStatus('');
             if (typeof this.onApply === 'function') this.onApply();
             if (html && typeof this.onDuplicate === 'function') {
@@ -36,21 +34,18 @@ class AutofillController {
         }
     }
 
-    applyMetadata(song) {
-        if (!this.titleInput.value && song.title) {
-            this.titleInput.value = song.title;
+    applyMetadata(book) {
+        if (!this.titleInput.value && book.title) {
+            this.titleInput.value = book.title;
         }
-        if (!this.artistInput.value && song.artist) {
-            this.artistInput.value = song.artist;
+        if (!this.authorInput.value && book.author) {
+            this.authorInput.value = book.author;
         }
-        if (!this.albumInput.value && song.album) {
-            this.albumInput.value = song.album;
+        if (book.releaseDate) {
+            this.releaseDateInput.value = book.releaseDate.substring(0, 10);
         }
-        if (song.releaseDate) {
-            this.releaseDateInput.value = song.releaseDate.substring(0, 10);
-        }
-        if (song.artwork && this.artwork.isEmpty()) {
-            this.artwork.setExternalURL(song.artwork);
+        if (book.cover && this.artwork.isEmpty()) {
+            this.artwork.setExternalURL(book.cover);
         }
     }
 
@@ -67,16 +62,14 @@ class EditorController {
         form,
         idInput,
         titleInput,
-        artistInput,
-        albumInput,
+        authorInput,
         genreInput,
         releaseDateInput
     }, { persistence, resourceInputs, notes, artwork }) {
         this.form = form;
         this.idInput = idInput;
         this.titleInput = titleInput;
-        this.artistInput = artistInput;
-        this.albumInput = albumInput;
+        this.authorInput = authorInput;
         this.genreInput = genreInput;
         this.releaseDateInput = releaseDateInput;
         this.persistence = persistence;
@@ -84,26 +77,23 @@ class EditorController {
         this.notes = notes;
         this.artwork = artwork;
 
-        this.songID = this.idInput ? this.idInput.value : '';
-        this.storageKey = this.songID ? `editor:song:${this.songID}` : 'editor:song:new';
+        this.bookID = this.idInput ? this.idInput.value : '';
+        this.storageKey = this.bookID ? `editor:book:${this.bookID}` : 'editor:book:new';
 
         this._onSaveDraft = this.saveDraft.bind(this);
     }
 
     init() {
         this.loadDraft();
-
         this.titleInput.addEventListener('input', this._onSaveDraft);
-        this.artistInput.addEventListener('input', this._onSaveDraft);
-        this.albumInput.addEventListener('input', this._onSaveDraft);
+        this.authorInput.addEventListener('input', this._onSaveDraft);
         this.genreInput.addEventListener('input', this._onSaveDraft);
         this.releaseDateInput.addEventListener('input', this._onSaveDraft);
     }
 
     destroy() {
         this.titleInput.removeEventListener('input', this._onSaveDraft);
-        this.artistInput.removeEventListener('input', this._onSaveDraft);
-        this.albumInput.removeEventListener('input', this._onSaveDraft);
+        this.authorInput.removeEventListener('input', this._onSaveDraft);
         this.genreInput.removeEventListener('input', this._onSaveDraft);
         this.releaseDateInput.removeEventListener('input', this._onSaveDraft);
     }
@@ -120,11 +110,10 @@ class EditorController {
             if (el) el.value = value || '';
         };
         set('preview-title', this.titleInput.value);
-        set('preview-artist', this.artistInput.value);
-        set('preview-album', this.albumInput.value);
+        set('preview-author', this.authorInput.value);
         set('preview-genre', this.genreInput.value);
         set('preview-release-date', this.releaseDateInput.value);
-        set('preview-artwork-url', this.artwork.getThumbnailUrl());
+        set('preview-cover-url', this.artwork.getThumbnailUrl());
         set('preview-resource-urls', this.resourceInputs.getValues().join('\n'));
         set('preview-notes', this.notes.getValues().join('\n\n'));
         previewForm.submit();
@@ -133,8 +122,7 @@ class EditorController {
     getState() {
         return {
             title: this.titleInput.value || '',
-            artist: this.artistInput.value || '',
-            album: this.albumInput.value || '',
+            author: this.authorInput.value || '',
             genre: this.genreInput.value || '',
             releaseDate: this.releaseDateInput.value || '',
             notes: this.notes.getNotes(),
@@ -150,11 +138,8 @@ class EditorController {
         if (typeof state.title === 'string' && !this.titleInput.value) {
             this.titleInput.value = state.title;
         }
-        if (typeof state.artist === 'string' && !this.artistInput.value) {
-            this.artistInput.value = state.artist;
-        }
-        if (typeof state.album === 'string' && !this.albumInput.value) {
-            this.albumInput.value = state.album;
+        if (typeof state.author === 'string' && !this.authorInput.value) {
+            this.authorInput.value = state.author;
         }
         if (typeof state.genre === 'string' && !this.genreInput.value) {
             this.genreInput.value = state.genre;
@@ -182,9 +167,7 @@ class EditorController {
     }
 
     loadDraft() {
-        if (this.persistence.clearIfPending(this.storageKey)) {
-            return;
-        }
+        if (this.persistence.clearIfPending(this.storageKey)) return;
         const saved = this.persistence.load(this.storageKey);
         if (saved) this.setState(saved);
     }
@@ -192,27 +175,26 @@ class EditorController {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('song-form');
+    const form = document.getElementById('book-form');
     if (!form) return;
 
     const persistence = new PersistenceController();
     const uploads = new UploadsController();
-    const metadata = new MetadataController({ endpoint: '/songs/metadata' });
+    const metadata = new MetadataController({ endpoint: '/books/metadata' });
 
-    const idInput = document.getElementById('editor-song-id');
-    const titleInput = document.getElementById('editor-song-title');
-    const artistInput = document.getElementById('editor-song-artist');
-    const albumInput = document.getElementById('editor-song-album');
-    const genreInput = document.getElementById('editor-song-genre');
-    const releaseDateInput = document.getElementById('editor-song-release-date');
-    const releaseDateISOInput = document.getElementById('editor-song-release-date-iso');
+    const idInput = document.getElementById('editor-book-id');
+    const titleInput = document.getElementById('editor-book-title');
+    const authorInput = document.getElementById('editor-book-author');
+    const genreInput = document.getElementById('editor-book-genre');
+    const releaseDateInput = document.getElementById('editor-book-release-date');
+    const releaseDateISOInput = document.getElementById('editor-book-release-date-iso');
     const resourcesSection = document.getElementById('resources-section');
     const detailsSection = document.getElementById('details-section');
     const notesSection = document.getElementById('notes-section');
     const statusEl = document.getElementById('autofill-status');
 
-    const artworkIdInput = document.getElementById('editor-artwork-id');
-    const artworkSourceUrlInput = document.getElementById('editor-artwork-source-url');
+    const coverIdInput = document.getElementById('editor-cover-id');
+    const coverSourceUrlInput = document.getElementById('editor-cover-source-url');
     const artworkPlaceholder = document.getElementById('artwork-placeholder');
     const artworkImage = document.getElementById('artwork-image');
     const artworkClear = document.getElementById('artwork-clear');
@@ -225,8 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const galleryClose = document.getElementById('gallery-close');
 
     const artwork = new ArtworkController({
-        hiddenInput: artworkIdInput,
-        externalUrlInput: artworkSourceUrlInput,
+        hiddenInput: coverIdInput,
+        externalUrlInput: coverSourceUrlInput,
         placeholder: artworkPlaceholder,
         imageEl: artworkImage,
         clearButton: artworkClear
@@ -255,20 +237,19 @@ document.addEventListener('DOMContentLoaded', () => {
     resourceInputs.init();
 
     const lookup = new LookupController({
-        endpoint: '/songs/lookup',
+        endpoint: '/books/lookup',
         excludeID: parseInt(idInput?.value) || null
     });
 
     const duplicateAlert = new DuplicateAlertController(
-        { containerEl: document.getElementById('duplicate-container'), linkSelector: '#duplicate-song-link' },
+        { containerEl: document.getElementById('duplicate-container'), linkSelector: '#duplicate-book-link' },
         { onNavigate: () => persistence.clear(editor.getStorageKey()) }
     );
     duplicateAlert.init();
 
     const autofill = new AutofillController({
         titleInput,
-        artistInput,
-        albumInput,
+        authorInput,
         releaseDateInput,
         statusEl
     }, {
@@ -283,8 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
         form,
         idInput,
         titleInput,
-        artistInput,
-        albumInput,
+        authorInput,
         genreInput,
         releaseDateInput
     }, { persistence, resourceInputs, notes, artwork });
@@ -304,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
         onInsertMarkdown: (md) => {
             notes.insertMarkdown(md);
         },
-        imageTitle: 'Select album artwork'
+        imageTitle: 'Select book cover'
     });
     imagePicker.init();
 
@@ -320,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ]);
     shortcuts.init();
 
-    const previewButton = document.getElementById('editor-song-preview');
+    const previewButton = document.getElementById('editor-book-preview');
     if (previewButton) {
         previewButton.addEventListener('click', () => editor.preview());
     }
@@ -340,7 +320,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const dateValue = releaseDateInput.value.trim();
         if (dateValue) {
-            const normalized = /^\d{4}$/.test(dateValue) ? `${dateValue}-01-01` : dateValue.replace(/[\s\-]/g, '/');
+            let normalized = dateValue;
+            if (/^\d{4}$/.test(dateValue)) {
+                normalized = `${dateValue}-01-01`;
+            } else {
+                const dmy = dateValue.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+                if (dmy) {
+                    normalized = `${dmy[3]}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
+                }
+            }
             const date = new Date(normalized);
             if (!isNaN(date.getTime())) {
                 releaseDateISOInput.value = date.toISOString();

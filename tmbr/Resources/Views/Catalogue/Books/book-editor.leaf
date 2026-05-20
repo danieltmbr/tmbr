@@ -120,9 +120,10 @@
 
     #export("scripts"):
         <script src="/Scripts/Shared/persistence.js"></script>
-        <script src="/Scripts/Gallery/gallery.js"></script>
+        <script src="/Scripts/Media/media.js"></script>
         <script src="/Scripts/Catalogue/resources-editor.js"></script>
         <script src="/Scripts/Notes/notes-editor.js"></script>
+        <script src="/Scripts/Catalogue/catalogue-editor.js"></script>
         <script src="/Scripts/Catalogue/Books/book-editor.js"></script>
     #endexport
 #endextend
