@@ -19,6 +19,7 @@ struct Books: Module {
     
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(CreateBook())
+        app.migrations.add(AddGenreToBook())
         app.databases.middleware.use(PreviewModelMiddleware.book, on: .psql)
         
         try await app.permissions.add(scope: permissions)
@@ -26,7 +27,10 @@ struct Books: Module {
     }
     
     func boot(_ routes: any Vapor.RoutesBuilder) async throws {
-
+        try routes.register(collection: BooksAPIController())
+        try routes
+            .grouped(RecoverMiddleware())
+            .register(collection: BooksWebController())
     }
 }
 
