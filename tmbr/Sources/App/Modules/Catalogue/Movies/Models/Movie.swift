@@ -36,7 +36,7 @@ final class Movie: Model, Previewable, @unchecked Sendable {
     fileprivate(set) var preview: Preview
     
     @Field(key: "release_date")
-    var releaseDate: Date
+    var releaseDate: Date?
     
     @Field(key: "resource_urls")
     var resourceURLs: [String]
@@ -62,7 +62,6 @@ final class Movie: Model, Previewable, @unchecked Sendable {
         resourceURLs: [String],
         title: String
     ) {
-        self.id = id
         self.access = access
         self.$cover.id = cover
         self.director = director
@@ -83,7 +82,11 @@ extension PreviewModelMiddleware where M == Movie {
             },
             configure: { preview, movie in
                 preview.primaryInfo = movie.title
-                preview.secondaryInfo = movie.releaseDate.formatted()
+                preview.secondaryInfo = {
+                    let year = movie.releaseDate.map { $0.formatted(.year) }
+                    let parts = [year, movie.director].compactMap { $0 }.filter { !$0.isEmpty }
+                    return parts.isEmpty ? nil : parts.joined(separator: ", ")
+                }()
                 preview.$image.id = movie.cover?.id
                 preview.externalLinks = movie.resourceURLs
             },
