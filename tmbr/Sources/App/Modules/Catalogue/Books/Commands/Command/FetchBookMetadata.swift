@@ -1,0 +1,40 @@
+import Foundation
+import Vapor
+import Core
+import Logging
+import Fluent
+import AuthKit
+
+struct FetchBookMetadataCommand: Command {
+
+    private let fetch: CommandResolver<URL, Metadata>
+
+    private let platform: Platform<BookMetadata>
+
+    init(
+        fetch: CommandResolver<URL, Metadata>,
+        platform: Platform<BookMetadata> = .book
+    ) {
+        self.fetch = fetch
+        self.platform = platform
+    }
+
+    func execute(_ url: URL) async throws -> BookMetadata {
+        guard let metadata = try await platform.metadata(for: url, fetcher: fetch.callAsFunction) else {
+            throw Abort(.badRequest, reason: "Could not extract metadata from URL.")
+        }
+        return metadata
+    }
+}
+
+extension CommandFactory<URL, BookMetadata> {
+
+    static var fetchBookMetadata: Self {
+        CommandFactory { request in
+            FetchBookMetadataCommand(
+                fetch: request.commands.catalogue.metadata
+            )
+            .logged(logger: request.logger)
+        }
+    }
+}

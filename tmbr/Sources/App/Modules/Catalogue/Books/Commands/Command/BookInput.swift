@@ -76,3 +76,10 @@ extension Validator where Input == BookInput {
         }
     }
 }
+
+extension BookInput {
+
+    func edit(id: BookID) -> EditBookInput {
+        EditBookInput(id: id, parameters: self)
+    }
+}
