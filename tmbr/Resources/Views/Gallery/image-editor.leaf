@@ -58,6 +58,6 @@
     #endexport
     
     #export("scripts"):
-        <script src="/Scripts/Gallery/image-editor.js"></script>
+        <script src="/Scripts/Media/image-editor.js"></script>
     #endexport
 #endextend
