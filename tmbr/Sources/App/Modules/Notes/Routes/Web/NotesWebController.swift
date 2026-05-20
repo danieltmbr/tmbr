@@ -36,7 +36,7 @@ struct NotesWebController: RouteCollection {
                 error: errorMessage
             )
             let view = try await Template.noteItem.render(NoteItemContext(note: model), with: request.view)
-            var response = try await view.encodeResponse(for: request)
+            let response = try await view.encodeResponse(for: request)
             response.status = .unprocessableEntity
             return response
         }
