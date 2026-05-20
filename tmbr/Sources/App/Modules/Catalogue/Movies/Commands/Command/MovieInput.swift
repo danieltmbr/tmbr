@@ -66,13 +66,19 @@ extension ModelConfiguration where Model == Movie, Parameters == MovieInput {
 }
 
 extension Validator where Input == MovieInput {
-    
+
     static var movie: Self {
         Validator { movie in
             guard !movie.title.trimmed.isEmpty else {
-                throw Abort(.badRequest, reason: "The movie author or title is missing")
+                throw Abort(.badRequest, reason: "Title is required.")
             }
-
         }
+    }
+}
+
+extension MovieInput {
+
+    func edit(id: MovieID) -> EditMovieInput {
+        EditMovieInput(id: id, parameters: self)
     }
 }
