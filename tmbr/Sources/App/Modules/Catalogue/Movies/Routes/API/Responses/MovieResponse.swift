@@ -3,7 +3,7 @@ import Foundation
 import AuthKit
 import Core
 
-struct MovieResponse: Encodable, Sendable {
+struct MovieResponse: Encodable, Sendable, AsyncResponseEncodable {
     
     private let id: Int
     
