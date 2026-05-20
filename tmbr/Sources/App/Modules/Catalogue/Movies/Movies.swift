@@ -27,6 +27,10 @@ struct Movies: Module {
     }
     
     func boot(_ routes: any Vapor.RoutesBuilder) async throws {
+        try routes.register(collection: MoviesAPIController())
+        try routes
+            .grouped(RecoverMiddleware())
+            .register(collection: MoviesWebController())
     }
 }
 
