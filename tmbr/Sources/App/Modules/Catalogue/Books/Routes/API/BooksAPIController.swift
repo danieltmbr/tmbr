@@ -69,13 +69,20 @@ struct BooksAPIController: RouteCollection {
             }
             let payload = try request.content.decode(BookPayload.self)
             let input = BookInput(payload: payload)
-            async let book = request.commands.books.edit(input.edit(id: bookID))
-            async let notes = request.commands.notes.query(id: bookID, of: Book.previewType)
-            return BookResponse(
-                book: try await book,
-                baseURL: request.baseURL,
-                notes: try await notes
-            )
+            return try await request.commands.transaction { commands in
+                let book = try await commands.books.edit(input.edit(id: bookID))
+                if let entries = payload.notes {
+                    let preview = try await commands.previews.fetch(book.$preview.id, for: .write)
+                    let syncEntries = entries.map { entry in
+                        SyncNoteEntry(id: entry.noteID, body: entry.body, access: entry.access, deleted: entry.deleted ?? false)
+                    }
+                    _ = try await commands.notes.sync(
+                        SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
+                    )
+                }
+                let notes = try await commands.notes.query(id: bookID, of: Book.previewType)
+                return BookResponse(book: book, baseURL: request.baseURL, notes: notes)
+            }
         }
 
         // DELETE /api/books/:bookID

@@ -69,13 +69,20 @@ struct SongsAPIController: RouteCollection {
             }
             let payload = try request.content.decode(SongPayload.self)
             let input = SongInput(payload: payload)
-            async let song = request.commands.songs.edit(songID, with: input)
-            async let notes = request.commands.notes.query(id: songID, of: Song.previewType)
-            return SongResponse(
-                song: try await song,
-                notes: try await notes,
-                baseURL: request.baseURL
-            )
+            return try await request.commands.transaction { commands in
+                let song = try await commands.songs.edit(songID, with: input)
+                if let entries = payload.notes {
+                    let preview = try await commands.previews.fetch(song.$preview.id, for: .write)
+                    let syncEntries = entries.map { entry in
+                        SyncNoteEntry(id: entry.noteID, body: entry.body, access: entry.access, deleted: entry.deleted ?? false)
+                    }
+                    _ = try await commands.notes.sync(
+                        SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
+                    )
+                }
+                let notes = try await commands.notes.query(id: songID, of: Song.previewType)
+                return SongResponse(song: song, notes: notes, baseURL: request.baseURL)
+            }
         }
         
         // DELETE /api/songs/:songID
