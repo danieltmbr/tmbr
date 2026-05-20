@@ -210,6 +210,35 @@ page.recover { error, request in
 routes.grouped(RecoverMiddleware()).register(collection: PostsWebController())
 ```
 
+## Note Editing on Detail Pages
+
+Any catalogue detail page (song, book, movie, podcast) that supports inline note editing **MUST** export `editor.css` in its `styles` block and load `persistence.js` + `note-detail.js` in its `scripts` block:
+
+```leaf
+#export("styles"):
+<link rel="stylesheet" href="/Styles/Shared/editor.css">
+#endexport
+
+#export("scripts"):
+<script src="/Scripts/Shared/persistence.js"></script>
+<script src="/Scripts/Notes/note-detail.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    new ShortcutsController([ShortcutsController.login, ShortcutsController.edit]).init();
+    const notesSection = document.getElementById('notes-section');
+    if (notesSection) {
+        const persistence = new PersistenceController();
+        new NoteDetailController({ section: notesSection }, { persistence }).init();
+    }
+});
+</script>
+#endexport
+```
+
+Without `editor.css`, the `.note-controls` / `.note-access` elements are not positioned absolutely — they overflow the textarea and appear out of bounds. Without `note-detail.js`, the note edit button does nothing.
+
+The `NoteDetailController` reads `data-notes-endpoint` from the `#notes-section` element. This is populated via `#(notesEndpoint)` in `details.leaf`. Every detail-page view model must include a `notesEndpoint: String` property set to e.g. `"/books/\(id)/notes"`.
+
 ## Static Assets
 
 - `Public/Styles/` — CSS files
