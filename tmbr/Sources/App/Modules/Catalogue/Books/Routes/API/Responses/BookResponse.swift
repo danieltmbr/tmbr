@@ -61,7 +61,7 @@ struct BookResponse: Encodable, Sendable {
         book: Book,
         baseURL: String,
         notes: [Note],
-        platform: Platform<Void> = .book
+        platform: Platform<BookMetadata> = .book
     ) {
         self.init(
             id: book.id!,
