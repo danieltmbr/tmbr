@@ -213,7 +213,7 @@ form section > header {
     flex-shrink: 0;
 }
 
-.image-picker.book-cover {
+.image-picker.portrait {
     aspect-ratio: 2 / 3;
     width: 90px;
 }

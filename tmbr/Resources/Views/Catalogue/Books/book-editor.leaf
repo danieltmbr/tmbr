@@ -69,7 +69,7 @@
                     />
                 </div>
 
-                <figure id="artwork-placeholder" class="image-picker book-cover #if(!coverThumbnailURL):empty#endif">
+                <figure id="artwork-placeholder" class="image-picker portrait #if(!coverThumbnailURL):empty#endif">
                     <img id="artwork-image" src="#(coverThumbnailURL)" alt="Book cover" />
                     <span>#extend("Icons/gallery")</span>
                     <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
