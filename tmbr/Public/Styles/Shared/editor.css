@@ -213,6 +213,11 @@ form section > header {
     flex-shrink: 0;
 }
 
+.image-picker.portrait {
+    aspect-ratio: 2 / 3;
+    width: 90px;
+}
+
 .image-picker > img {
     width: 100%;
     height: 100%;
