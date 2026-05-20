@@ -69,7 +69,7 @@ struct PodcastResponse: Encodable, Sendable {
         podcast: Podcast,
         baseURL: String,
         notes: [Note],
-        platform: Platform<Void> = .podcast
+        platform: Platform<PodcastMetadata> = .podcast
     ) {
         self.init(
             id: podcast.id!,
