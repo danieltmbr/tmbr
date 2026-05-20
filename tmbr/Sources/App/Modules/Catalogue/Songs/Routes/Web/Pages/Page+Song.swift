@@ -17,6 +17,8 @@ struct SongViewModel: Encodable, Sendable {
 
     private let notes: [NoteViewModel]
 
+    private let notesEndpoint: String
+
     private let post: PostItemViewModel?
 
     private let resources: [Hyperlink]
@@ -30,6 +32,7 @@ struct SongViewModel: Encodable, Sendable {
         allowsNewNote: Bool,
         info: String?,
         notes: [NoteViewModel],
+        notesEndpoint: String,
         post: PostItemViewModel?,
         resources: [Hyperlink],
         title: String
@@ -40,6 +43,7 @@ struct SongViewModel: Encodable, Sendable {
         self.allowsNewNote = allowsNewNote
         self.info = info
         self.notes = notes
+        self.notesEndpoint = notesEndpoint
         self.post = post
         self.resources = resources
         self.title = title
@@ -53,6 +57,7 @@ struct SongViewModel: Encodable, Sendable {
         allowsNewNote: Bool,
         genre: String?,
         notes: [NoteViewModel],
+        notesEndpoint: String,
         post: PostItemViewModel?,
         releaseDate: String?,
         resources: [Hyperlink],
@@ -68,6 +73,7 @@ struct SongViewModel: Encodable, Sendable {
                 return parts.isEmpty ? nil : parts.joined(separator: ", ")
             }(),
             notes: notes,
+            notesEndpoint: notesEndpoint,
             post: post,
             resources: resources,
             title: title
@@ -81,8 +87,9 @@ struct SongViewModel: Encodable, Sendable {
         allowsNewNote: Bool,
         platform: Platform<SongMetadata> = .song
     ) throws {
+        let songID = try song.requireID()
         self.init(
-            id: try song.requireID(),
+            id: songID,
             album: song.album,
             artist: song.artist,
             artwork: song.artwork.flatMap {
@@ -91,6 +98,7 @@ struct SongViewModel: Encodable, Sendable {
             allowsNewNote: allowsNewNote,
             genre: song.genre,
             notes: try notes.map { try NoteViewModel(note: $0, isEditable: allowsNewNote) },
+            notesEndpoint: "/songs/\(songID)/notes",
             post: try song.post.map(PostItemViewModel.init),
             releaseDate: song.releaseDate?.formatted(.releaseDate),
             resources: song.resourceURLs.compactMap(platform.hyperlink),
