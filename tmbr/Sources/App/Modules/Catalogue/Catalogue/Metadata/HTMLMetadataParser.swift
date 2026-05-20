@@ -2,13 +2,14 @@ import Foundation
 
 struct HTMLMetadataParser {
 
-    func parse(html: String) -> [String: String] {
+    func parse(html: String) -> (tags: [String: String], json: [String: Any]) {
         let head = head(from: html) ?? html
-        return match(in: head, key: "property")
+        let tags = match(in: head, key: "property")
             .merging(
                 match(in: head, key: "name"),
                 uniquingKeysWith: { current, _ in current }
             )
+        return (tags, parseJSONLD(from: html))
     }
 
     // MARK: - Helpers
@@ -104,6 +105,20 @@ struct HTMLMetadataParser {
         let g = m.range(at: group)
         guard g.location != NSNotFound, let r = Range(g, in: text) else { return nil }
         return String(text[r])
+    }
+
+    // Extracts fields from the first <script type="application/ld+json"> block in the full HTML.
+    // Top-level string values are stored as "ld:<key>"; nested author objects are flattened to "ld:author".
+    private func parseJSONLD(from html: String) -> [String: Any] {
+        let pattern = #"<script[^>]+type=["']application/ld\+json["'][^>]*>([\s\S]*?)</script>"#
+        guard let re = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
+              let m = re.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
+              let range = Range(m.range(at: 1), in: html),
+              let data = html[range].data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return [:]
+        }
+        return json
     }
 
     // Minimal HTML entity decoding for common cases

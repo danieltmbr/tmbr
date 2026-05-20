@@ -5,10 +5,12 @@ import Logging
 import Fluent
 import AuthKit
 
-struct Metadata: Sendable {
-    
-    let data: [String: String]
-    
+struct Metadata: @unchecked Sendable {
+
+    let json: [String: Any]
+
+    let tags: [String: String]
+
     let type: String
 
     let url: URL
@@ -46,14 +48,15 @@ struct FetchMetadataCommand: Command {
             throw Abort(.badGateway, reason: "Metadata fetch failed. Response HTML is invalid or missing")
         }
         
-        let metadata = parser.parse(html: html)
-        
-        guard let type = metadata["og:type"] else {
+        let (tags, json) = parser.parse(html: html)
+
+        guard let type = tags["og:type"] else {
             throw Abort(.badGateway, reason: "Metadata fetch failed. Unidentified media type.")
         }
-        
+
         return Metadata(
-            data: metadata,
+            json: json,
+            tags: tags,
             type: type,
             url: url
         )

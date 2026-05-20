@@ -26,7 +26,7 @@ struct MetadataExtractor<M>: Sendable {
     ) async throws -> String? {
         let metadata = try await fetcher(url)
         guard metadata.type == type else { return nil }
-        return metadata.data[key]
+        return metadata.tags[key]
     }
     
     static func extract(

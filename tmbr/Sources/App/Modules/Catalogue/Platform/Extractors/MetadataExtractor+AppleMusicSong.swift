@@ -8,7 +8,7 @@ extension MetadataExtractor where M == SongMetadata {
             throw MetadataExtractionError.invalidType(expected: "music.song", actual: song.type)
         }
 
-        var albumURLComponents = song.data["music:album"].flatMap(URLComponents.init)
+        var albumURLComponents = song.tags["music:album"].flatMap(URLComponents.init)
         albumURLComponents?.queryItems = nil
         async let album = extract(
             key: "apple:title",
@@ -19,14 +19,14 @@ extension MetadataExtractor where M == SongMetadata {
 
         async let artist = extract(
             key: "apple:title",
-            from: song.data["music:musician"],
+            from: song.tags["music:musician"],
             of: "music.musician",
             with: fetcher
         )
 
         // Transform og:image URL to get square artwork
         // Original: .../1200x630bf-60.jpg -> Changed to: .../1000x1000.jpg
-        let artwork = song.data["og:image"].flatMap { urlString -> String? in
+        let artwork = song.tags["og:image"].flatMap { urlString -> String? in
             guard var url = URL(string: urlString) else { return nil }
             url.deleteLastPathComponent()
             url.appendPathComponent("1000x1000.jpg")
@@ -37,9 +37,9 @@ extension MetadataExtractor where M == SongMetadata {
             album: try? await album,
             artist: try? await artist,
             artwork: artwork,
-            externalID: song.data["apple:content_id"],
-            releaseDate: song.data["music:release_date"],
-            title: song.data["apple:title"]
+            externalID: song.tags["apple:content_id"],
+            releaseDate: song.tags["music:release_date"],
+            title: song.tags["apple:title"]
         )
     }
 }
