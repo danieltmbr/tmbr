@@ -26,6 +26,10 @@ struct Podcasts: Module {
     }
     
     func boot(_ routes: any Vapor.RoutesBuilder) async throws {
+        try routes.register(collection: PodcastsAPIController())
+        try routes
+            .grouped(RecoverMiddleware())
+            .register(collection: PodcastsWebController())
     }
 }
 
