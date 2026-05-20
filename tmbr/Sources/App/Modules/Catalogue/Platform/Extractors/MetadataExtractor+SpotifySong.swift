@@ -10,7 +10,7 @@ extension MetadataExtractor where M == SongMetadata {
 
         let album = try? await extract(
             key: "og:title",
-            from: song.data["music:album"],
+            from: song.tags["music:album"],
             of: "music.album",
             with: fetcher
         )
@@ -21,11 +21,11 @@ extension MetadataExtractor where M == SongMetadata {
         
         return SongMetadata(
             album: album,
-            artist: song.data["music:musician_description"],
-            artwork: song.data["og:image"],
+            artist: song.tags["music:musician_description"],
+            artwork: song.tags["og:image"],
             externalID: songID,
-            releaseDate: song.data["music:release_date"],
-            title: song.data["og:title"]
+            releaseDate: song.tags["music:release_date"],
+            title: song.tags["og:title"]
         )
     }
 }

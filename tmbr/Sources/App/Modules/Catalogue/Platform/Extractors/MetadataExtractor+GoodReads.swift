@@ -8,20 +8,15 @@ extension MetadataExtractor where M == BookMetadata {
             throw MetadataExtractionError.invalidType(expected: "books.book", actual: book.type)
         }
 
-        // Follow the author page URL to get the author's name via og:title
-        let author = try? await extract(
-            key: "og:title",
-            from: book.data["books:author"],
-            of: "books.author",
-            with: fetcher
-        )
+        let authors = book.json["author"] as? [[String: Any]]
+        let author = authors?.first?["name"] as? String
 
         return BookMetadata(
             author: author,
-            cover: book.data["og:image"],
-            externalID: book.data["books:isbn"],
-            releaseDate: book.data["books:release_date"],
-            title: book.data["og:title"]
+            cover: book.tags["og:image"],
+            externalID: book.tags["books:isbn"] ?? book.json["isbn"] as? String,
+            releaseDate: book.tags["books:release_date"] ?? book.json["datePublished"] as? String,
+            title: book.tags["og:title"] ?? book.json["name"] as? String
         )
     }
 }
