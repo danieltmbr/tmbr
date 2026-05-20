@@ -19,6 +19,7 @@ struct Movies: Module {
 
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(CreateMovie())
+        app.migrations.add(AlterMovieReleaseDate())
         app.databases.middleware.use(PreviewModelMiddleware.movie, on: .psql)
         
         try await app.permissions.add(scope: permissions)

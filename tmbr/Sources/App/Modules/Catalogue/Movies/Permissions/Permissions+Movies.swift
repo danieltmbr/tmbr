@@ -18,4 +18,11 @@ extension PreviewablePermissionScope<Movie> {
             )
         )
     }
+
+    var lookup: Permission<QueryBuilder<Movie>> {
+        Permission { user, query in
+            guard let userID = user?.userID else { return }
+            query.filter(\.$owner.$id == userID)
+        }
+    }
 }
