@@ -24,6 +24,7 @@ struct AlbumsWebController: RouteCollection {
 
         albumsRoute.get("metadata", use: metadata)
         albumsRoute.get("lookup", use: lookupDialog)
+        recoveringRoute.post("preview", page: .albumPreview)
 
         recoveringRoute.get(":albumID", "edit", page: .editAlbum)
         recoveringRoute.post(":albumID", use: updateAlbum)

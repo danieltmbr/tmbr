@@ -145,6 +145,23 @@ class EditorController {
         }
     }
 
+    preview() {
+        const previewForm = document.getElementById('preview-form');
+        if (!previewForm) { alert('Preview form is missing from the template.'); return; }
+        const set = (id, value) => {
+            const el = previewForm.querySelector(`#${id}`);
+            if (el) el.value = value || '';
+        };
+        set('preview-title', this.titleInput.value);
+        set('preview-artist', this.artistInput.value);
+        set('preview-genre', this.genreInput.value);
+        set('preview-release-date', this.releaseDateInput.value);
+        set('preview-artwork-url', this.artwork.getThumbnailUrl());
+        set('preview-resource-urls', this.resourceInputs.getValues().join('\n'));
+        set('preview-notes', this.notes.getValues().join('\n\n'));
+        previewForm.submit();
+    }
+
     saveDraft() {
         this.persistence.save(this.storageKey, this.getState());
     }
@@ -278,7 +295,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { uploads, artwork, notes });
     dnd.init();
 
-    new ShortcutsController([ShortcutsController.login]).init();
+    new ShortcutsController([ShortcutsController.login, ShortcutsController.preview(() => editor.preview())]).init();
+
+    const previewButton = document.getElementById('editor-album-preview');
+    if (previewButton) {
+        previewButton.addEventListener('click', () => editor.preview());
+    }
 
     form.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;

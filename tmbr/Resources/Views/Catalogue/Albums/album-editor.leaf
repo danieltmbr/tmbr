@@ -86,11 +86,22 @@
         <p id="autofill-status" class="system-info" hidden></p>
 
         <div class="editor-actions">
+            <button id="editor-album-preview" class="link" type="button">Preview</button>
             <div>
                 <input type="hidden" name="access" value="public" />
                 <button id="editor-post-save" class="primary" type="submit">#(submit.label)</button>
             </div>
         </div>
+    </form>
+
+    <form id="preview-form" method="post" action="/albums/preview" target="_blank" hidden>
+        <input type="hidden" name="title" id="preview-title" />
+        <input type="hidden" name="artist" id="preview-artist" />
+        <input type="hidden" name="genre" id="preview-genre" />
+        <input type="hidden" name="releaseDate" id="preview-release-date" />
+        <input type="hidden" name="artworkURL" id="preview-artwork-url" />
+        <input type="hidden" name="resourceURLs" id="preview-resource-urls" />
+        <input type="hidden" name="notes" id="preview-notes" />
     </form>
 
     <div id="duplicate-container"></div>
