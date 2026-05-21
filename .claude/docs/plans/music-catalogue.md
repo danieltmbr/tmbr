@@ -4,6 +4,41 @@
 
 ---
 
+## Implementation Progress
+
+| Stage | Description | Status |
+|-------|-------------|--------|
+| 1 | Album — model + migration + basic CRUD | 🔄 In progress |
+| 2 | Album — AlbumTrack model + tracklist display | ⬜ |
+| 3 | Album — lazy track promotion (`?track=` param) | ⬜ |
+| 4 | Album — Apple Music metadata fetch + tracklist import | ⬜ |
+| 5 | Playlist — model + PlaylistEntry + basic CRUD | ⬜ |
+| 6 | Playlist — Apple Music metadata fetch | ⬜ |
+| 7 | Unified Music list page and API (`/music`) | ⬜ |
+| 8 | Unified "New Music" editor (`/music/new`) | ⬜ |
+| 9 | "Music" catalogue filter (virtual chip) | ⬜ |
+
+### Stage 1 checklist
+- [ ] `Album.swift` model (`previewType = "album"`)
+- [ ] `CreateAlbum.swift` migration
+- [ ] `AlbumInput.swift` — input + `ModelConfiguration` + `Validator`
+- [ ] `CreateAlbumCommand.swift`, `EditAlbumCommand.swift`, `FetchAlbumCommand.swift`
+- [ ] `Command+AlbumSearch.swift` — joins Preview + Album, searches title/artist/genre
+- [ ] `Command+LookupAlbum.swift` — duplicate detection by URL
+- [ ] `Commands+Albums.swift` — command collection
+- [ ] `AlbumPayload.swift` — API payload
+- [ ] `Permissions+Albums.swift`
+- [ ] `AlbumResponse.swift`, `AlbumsAPIController.swift`
+- [ ] `AlbumEditorPayload.swift`, `AlbumsWebController.swift`
+- [ ] `Page+Album.swift`, `Page+Albums.swift`, `Page+AlbumEditor.swift`
+- [ ] `Albums.swift` — module entry
+- [ ] `albums.leaf`, `album.leaf`, `album-editor.leaf`
+- [ ] `album-editor.js` — manual form only (no metadata autofill until Stage 4)
+- [ ] Register `.albums` in `Catalogue.swift`
+- [ ] Add `Album.previewType` to `CatalogueQueryMapper.catalogueTypes`
+
+---
+
 ## Background & Problem Statement
 
 The Song editor feature is near-complete. Before shipping it, we needed to ensure the data model scales to Albums and Playlists without requiring a Song migration later.
@@ -62,7 +97,7 @@ songs:
   post_id        FK → posts (setNull)
 ```
 
-The `album` string field on Song is intentional. It stores album metadata from the song's perspective (exactly as Spotify/Apple Music returns it). It does NOT become a FK to the `albums` table. A Song doesn't need to know about an Album model — the relationship is owned by the join model (`AlbumTrack`).
+The `album` string field on Song is intentional. It stores album metadata from the song's perspective (exactly as Apple Music returns it). It does NOT become a FK to the `albums` table. A Song doesn't need to know about an Album model — the relationship is owned by the join model (`AlbumTrack`).
 
 ### Album (new)
 ```
@@ -118,7 +153,7 @@ playlist_entries:
 
 ## The Lazy Track Promotion Pattern
 
-**Core idea**: When a user imports an Album or Playlist (e.g. from Spotify), the tracks are stored as lightweight string metadata (`AlbumTrack.name` / `PlaylistEntry.name`). No Song entities are created. A track becomes a proper Song catalogue entry only when the user actively engages with it.
+**Core idea**: When a user imports an Album or Playlist (e.g. from Apple Music), the tracks are stored as lightweight string metadata (`AlbumTrack.name` / `PlaylistEntry.name`). No Song entities are created. A track becomes a proper Song catalogue entry only when the user actively engages with it.
 
 ### Promotion flow
 
@@ -145,7 +180,7 @@ From the user's perspective, Song/Album/Playlist is an implementation detail. Th
 
 The filter UI shows a single **"Music"** chip, not three separate Song/Album/Playlist options.
 
-Internally, selecting "Music" maps to `parentType IN ('song', 'album', 'playlist')` in the Preview query. The `CatalogueQueryPayload` gets a `music` case that the backend expands.
+Internally, selecting "Music" maps to `parentType IN ('song', 'album', 'playlist')` in the Preview query. The `CatalogueQueryMapper.filter()` expands a virtual `"music"` type string to all three concrete types before intersecting with allowed types.
 
 ### Unified "New Music" Entry Point
 
@@ -153,7 +188,7 @@ The compose UI has a single **"New Music"** action, not three separate buttons. 
 
 **Type detection flow**:
 1. User lands on the music editor — sees a URL input field (same UX as the current song editor's resource URL field)
-2. User pastes a URL (Spotify song / Spotify album URL / Apple Music album / etc.)
+2. User pastes a URL (Apple Music song / Apple Music album / etc.)
 3. The JS controller calls the metadata detection endpoint
 4. Backend returns metadata + a resolved `musicType: "song" | "album" | "playlist"` field
 5. The form morphs to display the appropriate fields for the detected type
@@ -175,18 +210,20 @@ Sources/App/Modules/Catalogue/
 │   ├── Albums.swift                         # Module entry: migrations, middleware, routes
 │   ├── Models/
 │   │   ├── Album.swift                      # Previewable
-│   │   ├── AlbumTrack.swift                 # Child model (NOT Previewable)
+│   │   ├── AlbumTrack.swift                 # Child model (NOT Previewable) — Stage 2
 │   │   └── Migrations/
 │   │       ├── CreateAlbum.swift
-│   │       └── CreateAlbumTrack.swift
+│   │       └── CreateAlbumTrack.swift       # Stage 2
 │   ├── Commands/
 │   │   ├── Commands+Albums.swift
 │   │   └── Command/
 │   │       ├── AlbumInput.swift
-│   │       ├── CreateAlbumCommand.swift     # Creates Album + AlbumTrack rows
+│   │       ├── CreateAlbumCommand.swift
 │   │       ├── EditAlbumCommand.swift
-│   │       ├── FetchAlbumCommand.swift      # Eager-loads tracks + linked songs
-│   │       └── FetchAlbumMetadataCommand.swift  # Spotify/Apple Music tracklist
+│   │       ├── FetchAlbumCommand.swift
+│   │       ├── Command+AlbumSearch.swift
+│   │       ├── Command+LookupAlbum.swift
+│   │       └── FetchAlbumMetadataCommand.swift  # Stage 4
 │   ├── Payloads/
 │   │   └── AlbumPayload.swift
 │   ├── Permissions/
@@ -194,52 +231,63 @@ Sources/App/Modules/Catalogue/
 │   └── Routes/
 │       ├── API/
 │       │   ├── AlbumsAPIController.swift
-│       │   └── Responses/AlbumResponse.swift   # Includes tracks: [TrackResponse]
+│       │   └── Responses/AlbumResponse.swift
 │       └── Web/
 │           ├── AlbumsWebController.swift
-│           └── Pages/Page+Album.swift
+│           ├── AlbumEditorPayload.swift
+│           └── Pages/
+│               ├── Page+Album.swift
+│               ├── Page+AlbumEditor.swift
+│               └── Page+Albums.swift
 │
-├── Playlists/                               # Same structure, no metadata fetch command
+├── Playlists/                               # Stage 5 — same structure, no metadata fetch command
 │   └── ...
 │
-├── Music/                                   # Unified entry point (new)
+├── Music/                                   # Stage 8 — unified entry point
 │   └── Routes/Web/
 │       └── MusicWebController.swift         # GET /music/new → unified editor
 │
 └── Catalogue/
     └── Commands/
-        └── Command+CatalogueSearch.swift    # Update to handle "music" filter type
+        └── Command+CatalogueSearch.swift    # Stage 9 — expand "music" virtual type
 ```
 
 **New Leaf templates**:
 ```
 Resources/Views/Catalogue/Albums/album.leaf
 Resources/Views/Catalogue/Albums/album-editor.leaf
-Resources/Views/Catalogue/Playlists/playlist.leaf
-Resources/Views/Catalogue/Playlists/playlist-editor.leaf
-Resources/Views/Catalogue/Music/music-editor.leaf   # Unified morphing editor
+Resources/Views/Catalogue/Albums/albums.leaf
+Resources/Views/Catalogue/Playlists/playlist.leaf       # Stage 5
+Resources/Views/Catalogue/Playlists/playlist-editor.leaf # Stage 5
+Resources/Views/Catalogue/Playlists/playlists.leaf       # Stage 5
+Resources/Views/Catalogue/Music/music-editor.leaf        # Stage 8
 ```
 
 **Modified files**:
-- `Sources/App/Modules/Catalogue/Catalogue.swift` — register Album, Playlist, Music modules
-- `Sources/App/Modules/Catalogue/Songs/Routes/Web/SongsWebController.swift` — handle `?track=` context
-- `Sources/App/Modules/Catalogue/Catalogue/Commands/Command+CatalogueSearch.swift` — `music` filter expansion
-- Catalogue filter UI template — "Music" chip replaces any Song-specific filter
+- `Sources/App/Modules/Catalogue/Catalogue.swift` — register Album (Stage 1), Playlist (Stage 5), Music (Stage 8)
+- `Sources/App/Modules/Catalogue/Catalogue/Routes/CatalogueQueryMapper.swift` — add Album+Playlist types (Stage 1+5); expand "music" virtual type (Stage 9)
+- `Sources/App/Modules/Catalogue/Songs/Routes/Web/SongsWebController.swift` — handle `?track=` context (Stage 3)
 
 ---
 
-## Metadata Fetching for Albums
+## Metadata Fetching for Albums (Stage 4)
 
-When a user pastes a Spotify/Apple Music album URL into the unified music editor:
-- `FetchAlbumMetadataCommand` calls the platform API
-- Returns `AlbumMetadata(title, artist, releaseDate, artwork, tracks: [TrackMetadata])`
-- `CreateAlbumCommand` creates the Album + `AlbumTrack` rows (all with `song_id = nil`)
+Platform focus: **Apple Music** (primary). Spotify secondary if needed.
 
-The Spotify/Apple Music checkers and extractors in `Platform/` will need album-specific implementations alongside the existing song-specific ones.
+Apple Music URL patterns:
+- Song: `https://music.apple.com/us/album/name/id?i=trackID` — `og:type = "music.song"`
+- Album: `https://music.apple.com/us/album/name/id` — `og:type = "music.album"`
+
+The Apple Music checker (`PlatformChecker.appleMusic`) already matches both. The extractor gates on `og:type`:
+- Existing `MetadataExtractor.appleMusicSong` gates on `"music.song"`
+- New `MetadataExtractor.appleMusicAlbum` will gate on `"music.album"` and extract track list from `music:song` array tags
+
+`FetchAlbumMetadataCommand` returns `AlbumMetadata(title, artist, releaseDate, artwork, tracks: [TrackMetadata])`.
+`CreateAlbumCommand` creates the Album + `AlbumTrack` rows (all with `song_id = nil`).
 
 ---
 
-## Open Decision: Track-to-Song Linking Implementation
+## Open Decision: Track-to-Song Linking Implementation (Stage 3)
 
 When `GET /songs/new?track=42` is hit, two options for handling the link-back on save:
 
@@ -251,18 +299,8 @@ Option A is simpler and reuses the existing song editor. Option B is cleaner sep
 
 ---
 
-## Implementation Stages
+## UI Notes
 
-This feature set is large. Suggested order:
-
-1. **Album model + migration + basic CRUD** (no tracklist yet)
-2. **AlbumTrack model + tracklist display** (static, no promotion)
-3. **Lazy track promotion** (Song editor `?track=` param + link-back)
-4. **Album metadata fetch** (Spotify/Apple Music tracklist import)
-5. **Playlist model + PlaylistEntry** 
-6. **Playlist metadata fetch** (Spotify/Apple Music tracklist import)
-7. **Unified "Music" list page and API** (`/music` replacing the songs page and songs API endpoint)
-8. **Unified "New Music" editor** (`/music/new` + URL type detection + morphing form)
-9. **"Music" catalogue filter** (map to all three parentTypes)
-
-Song model: no changes needed at any stage.
+- Album detail info line: `genre · release year` (no parent "album" field — Album is the top-level entity)
+- Song detail info line unchanged: `album name · genre · release year`
+- Album editor: title, artist, genre, release date, artwork, resource URLs, notes (no metadata autofill until Stage 4)
