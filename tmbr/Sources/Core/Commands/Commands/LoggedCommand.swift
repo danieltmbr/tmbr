@@ -37,7 +37,7 @@ where Input: Sendable, Output: Sendable {
             logger.trace("\(name) produced output: \(String(describing: output))")
             return output
         } catch {
-            logger.error("\(name) produced error: \(error)")
+            logger.error("\(name) produced error: \(String(reflecting: error))")
             throw error
         }
     }

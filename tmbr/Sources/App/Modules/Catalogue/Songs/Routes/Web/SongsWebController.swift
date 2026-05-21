@@ -12,21 +12,23 @@ struct SongsWebController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
         let songsRoute = routes.grouped("songs")
-        
-        songsRoute.get (page: . songs)
+        let recoveringRoute = routes.grouped("songs")
+            .grouped(RecoverMiddleware())
 
-        songsRoute.get(":songID", page: .song)
+        recoveringRoute.get(page: .songs)
 
-        songsRoute.get("new", page: .createSong)
-        songsRoute.post("new", use: createSong)
+        recoveringRoute.get(":songID", page: .song)
+
+        recoveringRoute.get("new", page: .createSong)
+        recoveringRoute.post("new", use: createSong)
 
         songsRoute.get("metadata", use: metadata)
         songsRoute.get("lookup", use: lookupDialog)
 
-        songsRoute.get(":songID", "edit", page: .editSong)
-        songsRoute.post(":songID", use: updateSong)
+        recoveringRoute.get(":songID", "edit", page: .editSong)
+        recoveringRoute.post(":songID", use: updateSong)
 
-        songsRoute.post("preview", page: .songPreview)
+        recoveringRoute.post("preview", page: .songPreview)
 
         songsRoute.post(":songID", "notes", use: createNote)
     }

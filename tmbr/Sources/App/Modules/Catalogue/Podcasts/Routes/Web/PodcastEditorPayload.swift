@@ -14,7 +14,7 @@ struct PodcastEditorPayload: Decodable, Sendable {
 
     private let artworkSourceURLRaw: String?
 
-    let episodeNumber: Int?
+    private let episodeNumberRaw: String?
 
     let genre: String?
 
@@ -24,7 +24,11 @@ struct PodcastEditorPayload: Decodable, Sendable {
 
     let resourceURLs: [String]
 
-    let seasonNumber: Int?
+    private let seasonNumberRaw: String?
+
+    var episodeNumber: Int? { episodeNumberRaw.flatMap(Int.init) }
+
+    var seasonNumber: Int? { seasonNumberRaw.flatMap(Int.init) }
 
     let title: String
 
@@ -47,13 +51,13 @@ struct PodcastEditorPayload: Decodable, Sendable {
         case access
         case artworkIdRaw = "artwork-id"
         case artworkSourceURLRaw = "artwork-source-url"
-        case episodeNumber = "episode-number"
+        case episodeNumberRaw = "episode-number"
         case episodeTitle
         case genre
         case notes
         case releaseDate = "release-date"
         case resourceURLs
-        case seasonNumber = "season-number"
+        case seasonNumberRaw = "season-number"
         case title
     }
 
@@ -75,13 +79,13 @@ struct PodcastEditorPayload: Decodable, Sendable {
         self.access = access
         self.artworkIdRaw = artworkIdRaw
         self.artworkSourceURLRaw = artworkSourceURLRaw
-        self.episodeNumber = episodeNumber
+        self.episodeNumberRaw = episodeNumber.map(String.init)
         self.episodeTitle = episodeTitle
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate
         self.resourceURLs = resourceURLs
-        self.seasonNumber = seasonNumber
+        self.seasonNumberRaw = seasonNumber.map(String.init)
         self.title = title
     }
 }

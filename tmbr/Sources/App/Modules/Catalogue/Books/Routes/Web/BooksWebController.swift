@@ -12,21 +12,23 @@ struct BooksWebController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
         let booksRoute = routes.grouped("books")
+        let recoveringRoute = routes.grouped("books")
+            .grouped(RecoverMiddleware())
 
-        booksRoute.get(page: .books)
+        recoveringRoute.get(page: .books)
 
-        booksRoute.get(":bookID", page: .book)
+        recoveringRoute.get(":bookID", page: .book)
 
-        booksRoute.get("new", page: .createBook)
-        booksRoute.post("new", use: createBook)
+        recoveringRoute.get("new", page: .createBook)
+        recoveringRoute.post("new", use: createBook)
 
         booksRoute.get("metadata", use: metadata)
         booksRoute.get("lookup", use: lookupDialog)
 
-        booksRoute.get(":bookID", "edit", page: .editBook)
-        booksRoute.post(":bookID", use: updateBook)
+        recoveringRoute.get(":bookID", "edit", page: .editBook)
+        recoveringRoute.post(":bookID", use: updateBook)
 
-        booksRoute.post("preview", page: .bookPreview)
+        recoveringRoute.post("preview", page: .bookPreview)
 
         booksRoute.post(":bookID", "notes", use: createNote)
     }

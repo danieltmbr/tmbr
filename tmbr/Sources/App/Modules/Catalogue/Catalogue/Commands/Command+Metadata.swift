@@ -39,7 +39,7 @@ struct FetchMetadataCommand: Command {
         
         let response = try await client.get(URI(string: url.absoluteString))
         
-        guard response.status == .ok else {
+        guard (200..<300).contains(response.status.code) else {
             throw Abort(.badGateway, reason: "Metadata fetch failed. Upstream returned \(response.status.code)")
         }
         guard let body = response.body,
