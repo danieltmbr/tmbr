@@ -19,6 +19,8 @@ extension Commands {
 
         let lookup: CommandFactory<String, Album?>
 
+        let metadata: CommandFactory<URL, AlbumMetadata>
+
         let search: CommandFactory<String?, AlbumSearchResult>
 
         init(
@@ -27,6 +29,7 @@ extension Commands {
             edit: CommandFactory<EditAlbumInput, Album> = .editAlbum,
             fetch: CommandFactory<FetchParameters<AlbumID>, Album> = .fetchAlbum,
             lookup: CommandFactory<String, Album?> = .lookupAlbum,
+            metadata: CommandFactory<URL, AlbumMetadata> = .fetchMetadata,
             search: CommandFactory<String?, AlbumSearchResult> = .searchAlbums
         ) {
             self.create = create
@@ -34,6 +37,7 @@ extension Commands {
             self.edit = edit
             self.fetch = fetch
             self.lookup = lookup
+            self.metadata = metadata
             self.search = search
         }
     }

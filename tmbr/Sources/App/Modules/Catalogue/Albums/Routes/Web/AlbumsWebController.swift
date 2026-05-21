@@ -22,12 +22,19 @@ struct AlbumsWebController: RouteCollection {
         recoveringRoute.get("new", page: .createAlbum)
         recoveringRoute.post("new", use: createAlbum)
 
+        albumsRoute.get("metadata", use: metadata)
         albumsRoute.get("lookup", use: lookupDialog)
 
         recoveringRoute.get(":albumID", "edit", page: .editAlbum)
         recoveringRoute.post(":albumID", use: updateAlbum)
 
         recoveringRoute.post(":albumID", "notes", use: createNote)
+    }
+
+    @Sendable
+    private func metadata(_ request: Request) async throws -> AlbumMetadata {
+        let url = try request.query.get(String.self, at: "url")
+        return try await request.commands.albums.metadata(url)
     }
 
     @Sendable

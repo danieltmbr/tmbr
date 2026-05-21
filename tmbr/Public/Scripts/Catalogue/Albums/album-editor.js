@@ -1,3 +1,62 @@
+class AutofillController {
+    constructor({
+        titleInput,
+        artistInput,
+        releaseDateInput,
+        statusEl
+    }, { metadata, artwork, onApply, lookup, onDuplicate }) {
+        this.titleInput = titleInput;
+        this.artistInput = artistInput;
+        this.releaseDateInput = releaseDateInput;
+        this.statusEl = statusEl;
+        this.metadata = metadata;
+        this.artwork = artwork;
+        this.onApply = onApply;
+        this.lookup = lookup;
+        this.onDuplicate = onDuplicate;
+    }
+
+    async fetchAndApply(url) {
+        this.setStatus('Fetching metadata…');
+        try {
+            const lookupPromise = this.lookup
+                ? this.lookup.fetch(url).catch(() => null)
+                : Promise.resolve(null);
+            const [album, html] = await Promise.all([this.metadata.fetch(url), lookupPromise]);
+            this.applyMetadata(album);
+            this.setStatus('');
+            if (typeof this.onApply === 'function') this.onApply();
+            if (html && typeof this.onDuplicate === 'function') {
+                this.onDuplicate(html);
+            }
+        } catch (error) {
+            console.error(error);
+            this.setStatus('');
+        }
+    }
+
+    applyMetadata(album) {
+        if (!this.titleInput.value && album.title) {
+            this.titleInput.value = album.title;
+        }
+        if (!this.artistInput.value && album.artist) {
+            this.artistInput.value = album.artist;
+        }
+        if (album.releaseDate) {
+            this.releaseDateInput.value = album.releaseDate.substring(0, 10);
+        }
+        if (album.artwork && this.artwork.isEmpty()) {
+            this.artwork.setExternalURL(album.artwork);
+        }
+    }
+
+    setStatus(msg) {
+        if (!this.statusEl) return;
+        this.statusEl.textContent = msg;
+        this.statusEl.hidden = msg.length === 0;
+    }
+}
+
 class EditorController {
     constructor({
         form,
@@ -104,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const persistence = new PersistenceController();
     const uploads = new UploadsController();
+    const metadata = new MetadataController({ endpoint: '/albums/metadata' });
 
     const idInput = document.getElementById('editor-album-id');
     const titleInput = document.getElementById('editor-album-title');
@@ -114,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resourcesSection = document.getElementById('resources-section');
     const detailsSection = document.getElementById('details-section');
     const notesSection = document.getElementById('notes-section');
+    const statusEl = document.getElementById('autofill-status');
 
     const artworkIdInput = document.getElementById('editor-artwork-id');
     const artworkSourceUrlInput = document.getElementById('editor-artwork-source-url');
@@ -160,14 +221,23 @@ document.addEventListener('DOMContentLoaded', () => {
     );
     duplicateAlert.init();
 
+    const autofill = new AutofillController({
+        titleInput,
+        artistInput,
+        releaseDateInput,
+        statusEl
+    }, {
+        metadata,
+        artwork,
+        onApply: () => editor.saveDraft(),
+        lookup,
+        onDuplicate: (html) => duplicateAlert.show(html)
+    });
+
     const resourceInputs = new ResourceInputsController(
         { section: resourcesSection },
         {
-            onUrlChange: async (url) => {
-                const html = await lookup.fetch(url).catch(() => null);
-                if (html) duplicateAlert.show(html);
-                editor.saveDraft();
-            },
+            onUrlChange: (url) => autofill.fetchAndApply(url),
             onInput: () => editor.saveDraft()
         }
     );
