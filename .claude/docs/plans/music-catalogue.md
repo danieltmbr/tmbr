@@ -8,7 +8,7 @@
 
 | Stage | Description | Status |
 |-------|-------------|--------|
-| 1 | Album — model + migration + basic CRUD | 🔄 In progress |
+| 1 | Album — model + migration + basic CRUD + metadata autofill | ✅ |
 | 2 | Album — AlbumTrack model + tracklist display | ⬜ |
 | 3 | Album — lazy track promotion (`?track=` param) | ⬜ |
 | 4 | Album — Apple Music metadata fetch + tracklist import | ⬜ |
@@ -18,24 +18,25 @@
 | 8 | Unified "New Music" editor (`/music/new`) | ⬜ |
 | 9 | "Music" catalogue filter (virtual chip) | ⬜ |
 
-### Stage 1 checklist
-- [ ] `Album.swift` model (`previewType = "album"`)
-- [ ] `CreateAlbum.swift` migration
-- [ ] `AlbumInput.swift` — input + `ModelConfiguration` + `Validator`
-- [ ] `CreateAlbumCommand.swift`, `EditAlbumCommand.swift`, `FetchAlbumCommand.swift`
-- [ ] `Command+AlbumSearch.swift` — joins Preview + Album, searches title/artist/genre
-- [ ] `Command+LookupAlbum.swift` — duplicate detection by URL
-- [ ] `Commands+Albums.swift` — command collection
-- [ ] `AlbumPayload.swift` — API payload
-- [ ] `Permissions+Albums.swift`
-- [ ] `AlbumResponse.swift`, `AlbumsAPIController.swift`
-- [ ] `AlbumEditorPayload.swift`, `AlbumsWebController.swift`
-- [ ] `Page+Album.swift`, `Page+Albums.swift`, `Page+AlbumEditor.swift`
-- [ ] `Albums.swift` — module entry
-- [ ] `albums.leaf`, `album.leaf`, `album-editor.leaf`
-- [ ] `album-editor.js` — manual form only (no metadata autofill until Stage 4)
-- [ ] Register `.albums` in `Catalogue.swift`
-- [ ] Add `Album.previewType` to `CatalogueQueryMapper.catalogueTypes`
+### Stage 1 checklist (✅ complete)
+- [x] `Album.swift` model (`previewType = "album"`)
+- [x] `CreateAlbum.swift` migration
+- [x] `AlbumInput.swift` — input + `ModelConfiguration` + `Validator`
+- [x] `CreateAlbumCommand.swift`, `EditAlbumCommand.swift`, `FetchAlbumCommand.swift`
+- [x] `Command+AlbumSearch.swift` — joins Preview + Album, searches title/artist/genre
+- [x] `Command+LookupAlbum.swift` — duplicate detection by URL
+- [x] `Commands+Albums.swift` — command collection
+- [x] `AlbumPayload.swift` — API payload
+- [x] `Permissions+Albums.swift`
+- [x] `AlbumResponse.swift`, `AlbumsAPIController.swift`
+- [x] `AlbumEditorPayload.swift`, `AlbumsWebController.swift`
+- [x] `Page+Album.swift`, `Page+Albums.swift`, `Page+AlbumEditor.swift`
+- [x] `Albums.swift` — module entry
+- [x] `albums.leaf`, `album.leaf`, `album-editor.leaf`
+- [x] `album-editor.js` — metadata autofill added (fetches `/albums/metadata` on URL insert)
+- [x] `FetchAlbumMetadataCommand.swift` + `MetadataExtractor+AppleMusicAlbum.swift` + `Platform+AlbumMetadata.swift`
+- [x] Register `.albums` in `Catalogue.swift`
+- [x] Add `Album.previewType` to `CatalogueQueryMapper.catalogueTypes`
 
 ---
 
@@ -223,7 +224,7 @@ Sources/App/Modules/Catalogue/
 │   │       ├── FetchAlbumCommand.swift
 │   │       ├── Command+AlbumSearch.swift
 │   │       ├── Command+LookupAlbum.swift
-│   │       └── FetchAlbumMetadataCommand.swift  # Stage 4
+│   │       └── FetchAlbumMetadataCommand.swift  # ✅ Stage 1
 │   ├── Payloads/
 │   │   └── AlbumPayload.swift
 │   ├── Permissions/
@@ -280,7 +281,29 @@ Apple Music URL patterns:
 
 The Apple Music checker (`PlatformChecker.appleMusic`) already matches both. The extractor gates on `og:type`:
 - Existing `MetadataExtractor.appleMusicSong` gates on `"music.song"`
-- New `MetadataExtractor.appleMusicAlbum` will gate on `"music.album"` and extract track list from `music:song` array tags
+- `MetadataExtractor.appleMusicAlbum` (already implemented for basic fields) gates on `"music.album"`
+
+**Tracklist source (confirmed)**: The Apple Music album page embeds a `<script id="schema:music-album" type="application/ld+json">` block. A single page fetch is sufficient — no extra API or per-track requests needed.
+
+JSON-LD schema (`Metadata.json["schema:music-album"]`):
+```json
+{
+  "@type": "MusicAlbum",
+  "name": "...",
+  "byArtist": [{ "@type": "MusicGroup", "name": "gyuris" }],
+  "datePublished": "2026-05-14",
+  "genre": ["Hip-Hop/Rap", "Music"],
+  "tracks": [
+    { "@type": "MusicRecording", "name": "intro", "duration": "PT3M6S", "url": "https://music.apple.com/gb/song/intro/6768228102" },
+    ...
+  ]
+}
+```
+
+Stage 4 work:
+- Add `TrackMetadata` type + `tracks: [TrackMetadata]?` to `AlbumMetadata`
+- Update `MetadataExtractor.appleMusicAlbum` to parse `Metadata.json["schema:music-album"]` for `tracks[]` + use `byArtist[0].name` as fallback artist (avoids extra `music:musician` fetch)
+- Update `CreateAlbumCommand` to insert `AlbumTrack` rows (all `song_id = nil`)
 
 `FetchAlbumMetadataCommand` returns `AlbumMetadata(title, artist, releaseDate, artwork, tracks: [TrackMetadata])`.
 `CreateAlbumCommand` creates the Album + `AlbumTrack` rows (all with `song_id = nil`).
