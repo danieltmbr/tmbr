@@ -12,21 +12,23 @@ struct PodcastsWebController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
         let podcastsRoute = routes.grouped("podcasts")
+        let recoveringRoute = routes.grouped("podcasts")
+            .grouped(RecoverMiddleware())
 
-        podcastsRoute.get(page: .podcasts)
+        recoveringRoute.get(page: .podcasts)
 
-        podcastsRoute.get(":podcastID", page: .podcast)
+        recoveringRoute.get(":podcastID", page: .podcast)
 
-        podcastsRoute.get("new", page: .createPodcast)
-        podcastsRoute.post("new", use: createPodcast)
+        recoveringRoute.get("new", page: .createPodcast)
+        recoveringRoute.post("new", use: createPodcast)
 
         podcastsRoute.get("metadata", use: metadata)
         podcastsRoute.get("lookup", use: lookupDialog)
 
-        podcastsRoute.get(":podcastID", "edit", page: .editPodcast)
-        podcastsRoute.post(":podcastID", use: updatePodcast)
+        recoveringRoute.get(":podcastID", "edit", page: .editPodcast)
+        recoveringRoute.post(":podcastID", use: updatePodcast)
 
-        podcastsRoute.post("preview", page: .podcastPreview)
+        recoveringRoute.post("preview", page: .podcastPreview)
 
         podcastsRoute.post(":podcastID", "notes", use: createNote)
     }
