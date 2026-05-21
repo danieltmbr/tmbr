@@ -12,21 +12,23 @@ struct MoviesWebController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
         let moviesRoute = routes.grouped("movies")
+        let recoveringRoute = routes.grouped("movies")
+            .grouped(RecoverMiddleware())
 
-        moviesRoute.get(page: .movies)
+        recoveringRoute.get(page: .movies)
 
-        moviesRoute.get(":movieID", page: .movie)
+        recoveringRoute.get(":movieID", page: .movie)
 
-        moviesRoute.get("new", page: .createMovie)
-        moviesRoute.post("new", use: createMovie)
+        recoveringRoute.get("new", page: .createMovie)
+        recoveringRoute.post("new", use: createMovie)
 
         moviesRoute.get("metadata", use: metadata)
         moviesRoute.get("lookup", use: lookupDialog)
 
-        moviesRoute.get(":movieID", "edit", page: .editMovie)
-        moviesRoute.post(":movieID", use: updateMovie)
+        recoveringRoute.get(":movieID", "edit", page: .editMovie)
+        recoveringRoute.post(":movieID", use: updateMovie)
 
-        moviesRoute.post("preview", page: .moviePreview)
+        recoveringRoute.post("preview", page: .moviePreview)
 
         moviesRoute.post(":movieID", "notes", use: createNote)
     }

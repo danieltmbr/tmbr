@@ -15,7 +15,7 @@
 
         <input
             id="editor-movie-title"
-            class="text-input"
+            class="text-input title"
             name="title"
             type="text"
             value="#(title)"
