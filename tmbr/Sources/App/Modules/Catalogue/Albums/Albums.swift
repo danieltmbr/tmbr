@@ -19,6 +19,7 @@ struct Albums: Module {
 
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(CreateAlbum())
+        app.migrations.add(DeferAlbumPreviewForeignKey())
         app.databases.middleware.use(PreviewModelMiddleware.album, on: .psql)
 
         try await app.permissions.add(scope: permissions)
