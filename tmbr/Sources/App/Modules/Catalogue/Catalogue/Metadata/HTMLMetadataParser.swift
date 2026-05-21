@@ -26,9 +26,9 @@ struct HTMLMetadataParser {
         // content="value" property="value" OR content='value' property='value'
         "<meta\\b[^>]*\\bcontent=(?:\"([^\"]*)\"|'([^']*)')[^>]*\\b\(key)=(?:\"([^\"]+)\"|'([^']+)')[^>]*>"
     }
-    
+
     private let options: NSRegularExpression.Options = [.caseInsensitive, .dotMatchesLineSeparators]
-    
+
     private func head(from text: String) -> String? {
         guard let headOpen = text.range(of: "<head", options: .caseInsensitive),
               let gt = text[headOpen.lowerBound...].firstIndex(of: ">"),
@@ -37,7 +37,7 @@ struct HTMLMetadataParser {
         }
         return String(text[headOpen.lowerBound..<headClose.upperBound])
     }
-    
+
     private func regex(pattern: String) -> NSRegularExpression {
         // Patterns are compile-time constants — failure is a programming error
         try! NSRegularExpression(pattern: pattern, options: options)
@@ -51,9 +51,9 @@ struct HTMLMetadataParser {
         let regex2 = regex(pattern: metaPatternContentFirst(key: key))
         var results: [String: String] = [:]
         // metaPattern: groups 1,2 are key (double/single quoted), groups 3,4 are value
-        collectMatches(in: text, regex: regex1, keyIndices: [1, 2], valueIndices: [3, 4], into: &results)
+        results.merge(collectMatches(in: text, regex: regex1, keyIndices: [1, 2], valueIndices: [3, 4])) { current, _ in current }
         // metaPatternContentFirst: groups 1,2 are value, groups 3,4 are key
-        collectMatches(in: text, regex: regex2, keyIndices: [3, 4], valueIndices: [1, 2], into: &results)
+        results.merge(collectMatches(in: text, regex: regex2, keyIndices: [3, 4], valueIndices: [1, 2])) { current, _ in current }
         return results
     }
 
@@ -61,9 +61,9 @@ struct HTMLMetadataParser {
         in text: String,
         regex: NSRegularExpression,
         keyIndices: [Int],
-        valueIndices: [Int],
-        into results: inout [String: String]
-    ) {
+        valueIndices: [Int]
+    ) -> [String: String] {
+        var results: [String: String] = [:]
         let nsRange = NSRange(text.startIndex..<text.endIndex, in: text)
         regex.enumerateMatches(in: text, options: [], range: nsRange) { m, _, _ in
             guard let m = m else { return }
@@ -94,6 +94,7 @@ struct HTMLMetadataParser {
             let decodedValue = decodeEntities(value.trimmingCharacters(in: .whitespacesAndNewlines))
             results[key] = decodedValue
         }
+        return results
     }
 
     private func firstMatch(
