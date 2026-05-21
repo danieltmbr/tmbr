@@ -78,7 +78,7 @@ extension ModelConfiguration where Model == Podcast, Parameters == PodcastInput 
 }
 
 extension Validator where Input == PodcastInput {
-    
+
     static var podcast: Self {
         Validator { podcast in
             guard !podcast.title.trimmed.isEmpty,
@@ -86,5 +86,12 @@ extension Validator where Input == PodcastInput {
                 throw Abort(.badRequest, reason: "The podcast title or episode title is missing")
             }
         }
+    }
+}
+
+extension PodcastInput {
+
+    func edit(id: PodcastID) -> EditPodcastInput {
+        EditPodcastInput(id: id, parameters: self)
     }
 }
