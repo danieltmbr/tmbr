@@ -17,7 +17,7 @@
 
         <input
             id="editor-post-title"
-            class="text-input"
+            class="text-input title"
             name="title"
             type="text"
             value="#(title)"
@@ -78,6 +78,7 @@
             <button class="icon small" type="button" id="gallery-close" aria-label="Close">
                 #extend("Icons/close")
             </button>
+            <h4>Gallery</h4>
             <span id="gallery-status" class="system-info"></span>
         </div>
         <section alt="Gallery" id="gallery-section"></section>

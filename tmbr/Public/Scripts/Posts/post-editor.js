@@ -312,11 +312,13 @@ class GalleryController {
         try {
             const content = this.gallerySection.innerHTML;
             const res = await fetch('/gallery?embedded=true', { headers: { 'Accept': 'text/html' }});
+            if (!res.ok) {
+                this.galleryStatus.innerHTML = 'Failed to load gallery.';
+                console.error(`Gallery fetch failed: ${res.status} ${res.statusText}`);
+                return;
+            }
             const html = await res.text();
             if (content != html) {
-                console.log("html and content are not identical");
-                console.log(content);
-                console.log(html);
                 this.gallerySection.innerHTML = html;
                 this.attachListenersToGallery();
             }
