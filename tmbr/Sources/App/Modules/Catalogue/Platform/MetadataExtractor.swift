@@ -35,7 +35,7 @@ struct MetadataExtractor<M>: Sendable {
         of type: String,
         with fetcher: Fetcher
     ) async throws -> String? {
-        guard let url = urlString.flatMap({ URL(string: $0) }) else { return nil }
+        guard let url = urlString.flatMap(URL.init) else { return nil }
         return try await extract(key: key, from: url, of: type, with: fetcher)
     }
 }
