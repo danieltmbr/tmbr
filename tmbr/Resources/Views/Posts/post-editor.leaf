@@ -65,7 +65,7 @@
         
     </form>
 
-    <form id="preview-form" method="post" action="/post/preview" target="_blank" hidden>
+    <form id="preview-form" method="post" action="/posts/preview" target="_blank" hidden>
         #if(_csrf):
             <input type="hidden" name="_csrf" value="#(_csrf)" />
         #endif
