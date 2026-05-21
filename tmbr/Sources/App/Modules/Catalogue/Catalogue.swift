@@ -35,6 +35,7 @@ extension Module where Self == Catalogue {
             media: ModuleRegistry(
                 configurations: [],
                 modules: [
+                    .albums,
                     .books,
                     .movies,
                     .podcasts,
