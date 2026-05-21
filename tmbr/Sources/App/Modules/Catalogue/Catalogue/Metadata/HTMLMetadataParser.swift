@@ -39,7 +39,8 @@ struct HTMLMetadataParser {
     }
     
     private func regex(pattern: String) -> NSRegularExpression {
-        (try? NSRegularExpression(pattern: pattern, options: options)) ?? NSRegularExpression()
+        // Patterns are compile-time constants — failure is a programming error
+        try! NSRegularExpression(pattern: pattern, options: options)
     }
 
     private func match(
