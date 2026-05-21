@@ -3,7 +3,7 @@ import Foundation
 import AuthKit
 import Core
 
-struct PodcastResponse: Encodable, Sendable {
+struct PodcastResponse: Encodable, Sendable, AsyncResponseEncodable {
     
     private let id: PodcastID
     
