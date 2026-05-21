@@ -8,23 +8,23 @@ Implementation guide for Books, Movies, and Podcasts — based on the completed 
 |---|---|---|---|---|
 | Model + migration | ✅ | ✅ | ✅ | ✅ |
 | Commands (CRUD) | ✅ | ✅ | ✅ | ✅ |
-| Commands (lookup, search, metadata) | ✅ | ❌ | ❌ | ❌ |
+| Commands (lookup, search, metadata) | ✅ | ✅ | ✅ | ✅ |
 | Permissions | ✅ | ✅ | ✅ | ✅ |
 | API payload | ✅ | ✅ | ✅ | ✅ |
 | API response DTO | ✅ | ✅ | ✅ | ✅ |
-| API controller | ✅ | ❌ | ❌ | ❌ |
-| Editor payload (web) | ✅ | ❌ | ❌ | ❌ |
-| Web controller | ✅ | ❌ | ❌ | ❌ |
-| Page: list view model | ✅ | ❌ | ❌ | ❌ |
+| API controller | ✅ | ✅ | ✅ | ✅ |
+| Editor payload (web) | ✅ | ✅ | ✅ | ✅ |
+| Web controller | ✅ | ✅ | ✅ | ✅ |
+| Page: list view model | ✅ | ✅ | ✅ | ✅ |
 | Page: detail view model | ✅ | ✅ | ✅ | ✅ |
-| Page: editor view model | ✅ | ❌ | ❌ | ❌ |
-| Page: preview view model | ✅ | ❌ | ❌ | ❌ |
-| Module boot (routes registered) | ✅ | ❌ | ❌ | ❌ |
-| Leaf: list template | ✅ | ❌ | ❌ | ❌ |
-| Leaf: editor template | ✅ | ❌ | ❌ | ❌ |
-| Platform metadata struct | ✅ | ❌ | ❌ | ❌ |
-| Platform extractors | ✅ | ❌ | ❌ | ❌ |
-| Editor JS | ✅ | ❌ | ❌ | ❌ |
+| Page: editor view model | ✅ | ✅ | ✅ | ✅ |
+| Page: preview view model | ✅ | ✅ | ✅ | ✅ |
+| Module boot (routes registered) | ✅ | ✅ | ✅ | ✅ |
+| Leaf: list template | ✅ | ✅ | ✅ | ✅ |
+| Leaf: editor template | ✅ | ✅ | ✅ | ✅ |
+| Platform metadata struct | ✅ | ✅ | ✅ | ✅ |
+| Platform extractors | ✅ | ✅ | ✅ | ✅ |
+| Editor JS | ✅ | ✅ | ✅ | ✅ |
 
 ---
 
