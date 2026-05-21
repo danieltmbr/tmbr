@@ -1,0 +1,129 @@
+#extend("Shared/page"):
+
+    #export("styles"):
+    <link rel="stylesheet" href="/Styles/Shared/editor.css">
+    #endexport
+
+    #export("main"):
+    <form id="movie-form" method="#(submit.method)" action="#(submit.action)">
+        <input id="editor-movie-id" type="hidden" name="id" value="#(id)" />
+        <input id="editor-cover-id" type="hidden" name="cover-id" value="#(coverId)" />
+        <input id="editor-cover-source-url" type="hidden" name="cover-source-url" value="#(coverSourceURL)" />
+        #if(_csrf):
+            <input type="hidden" name="_csrf" value="#(_csrf)" />
+        #endif
+
+        <input
+            id="editor-movie-title"
+            class="text-input"
+            name="title"
+            type="text"
+            value="#(title)"
+            placeholder="Title"
+            autocomplete="off"
+            spellcheck="true"
+        />
+
+        #extend("Catalogue/resources-editor")
+
+        <section id="details-section">
+            <h3>Details</h3>
+
+            <div class="details-content">
+                <div class="details-inputs">
+                    <input
+                        id="editor-movie-director"
+                        class="text-input"
+                        name="director"
+                        type="text"
+                        value="#(director)"
+                        placeholder="Director"
+                        autocomplete="off"
+                        spellcheck="true"
+                    />
+
+                    <input
+                        id="editor-movie-release-date"
+                        class="text-input"
+                        type="text"
+                        value="#(releaseDate)"
+                        placeholder="Release date, e.g. 2024 or 2025-06-15"
+                        autocomplete="off"
+                    />
+                    <input
+                        id="editor-movie-release-date-iso"
+                        name="release-date"
+                        type="hidden"
+                        value=""
+                    />
+
+                    <input
+                        id="editor-movie-genre"
+                        class="text-input"
+                        name="genre"
+                        type="text"
+                        value="#(genre)"
+                        placeholder="Genre"
+                        autocomplete="off"
+                        spellcheck="true"
+                    />
+                </div>
+
+                <figure id="artwork-placeholder" class="image-picker portrait #if(!coverThumbnailURL):empty#endif">
+                    <img id="artwork-image" src="#(coverThumbnailURL)" alt="Movie cover" />
+                    <span>#extend("Icons/gallery")</span>
+                    <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
+                </figure>
+            </div>
+        </section>
+
+        #if(error):
+            <p class="editor-error">#unsafeHTML(error)</p>
+        #endif
+
+        #extend("Notes/notes-editor")
+
+        <p id="autofill-status" class="system-info" hidden></p>
+
+        <div class="editor-actions">
+            <button id="editor-movie-preview" class="link" type="button">Preview</button>
+            <div>
+                <input type="hidden" name="access" value="public" />
+                <button id="editor-post-save" class="primary" type="submit">#(submit.label)</button>
+            </div>
+        </div>
+    </form>
+
+    <form id="preview-form" method="post" action="/movies/preview" target="_blank" hidden>
+        <input type="hidden" name="title" id="preview-title" />
+        <input type="hidden" name="director" id="preview-director" />
+        <input type="hidden" name="genre" id="preview-genre" />
+        <input type="hidden" name="releaseDate" id="preview-release-date" />
+        <input type="hidden" name="coverURL" id="preview-cover-url" />
+        <input type="hidden" name="resourceURLs" id="preview-resource-urls" />
+        <input type="hidden" name="notes" id="preview-notes" />
+    </form>
+
+    <div id="duplicate-container"></div>
+
+    <aside id="gallery" hidden>
+        <div id="gallery-header">
+            <button class="icon small" type="button" id="gallery-close" aria-label="Close">
+                #extend("Icons/close")
+            </button>
+            <h4 id="gallery-title">Gallery</h4>
+            <span id="gallery-status" class="system-info"></span>
+        </div>
+        <section id="gallery-section"></section>
+    </aside>
+    #endexport
+
+    #export("scripts"):
+        <script src="/Scripts/Shared/persistence.js"></script>
+        <script src="/Scripts/Shared/date-parser.js"></script>
+        <script src="/Scripts/Media/media.js"></script>
+        <script src="/Scripts/Notes/notes-editor.js"></script>
+        <script src="/Scripts/Catalogue/catalogue-editor.js"></script>
+        <script src="/Scripts/Catalogue/Movies/movie-editor.js"></script>
+    #endexport
+#endextend
