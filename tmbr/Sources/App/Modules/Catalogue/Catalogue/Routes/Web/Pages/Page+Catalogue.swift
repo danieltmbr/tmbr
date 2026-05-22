@@ -13,19 +13,37 @@ struct CatalogueViewModel: Encodable, Sendable {
 }
 
 extension FilterItemViewModel {
-    
+
+    static let album = FilterItemViewModel(
+        icon: "album",
+        label: "Albums",
+        value: Album.previewType
+    )
+
     static let book = FilterItemViewModel(
         icon: "book",
         label: "Books",
         value: Book.previewType
     )
-    
+
     static let movie = FilterItemViewModel(
         icon: "movie",
         label: "Movies",
         value: Movie.previewType
     )
-    
+
+    static let music = FilterItemViewModel(
+        icon: "music",
+        label: "Music",
+        value: "music"
+    )
+
+    static let playlist = FilterItemViewModel(
+        icon: "playlist",
+        label: "Playlists",
+        value: Playlist.previewType
+    )
+
     static let podcast = FilterItemViewModel(
         icon: "podcast",
         label: "Podcasts",
@@ -37,23 +55,11 @@ extension FilterItemViewModel {
         label: "Songs",
         value: Song.previewType
     )
-    
-    static let album = FilterItemViewModel(
-        icon: "album",
-        label: "Albums",
-        value: Album.previewType
-    )
-    
-    static let playlist = FilterItemViewModel(
-        icon: "playlist",
-        label: "Playlists",
-        value: Playlist.previewType
-    )
 }
 
 extension [FilterItemViewModel] {
     static let catalogue: Self = [
-        .book, .movie, .podcast, .song
+        .book, .movie, .music, .podcast,
     ]
     
     static let music: Self = [
