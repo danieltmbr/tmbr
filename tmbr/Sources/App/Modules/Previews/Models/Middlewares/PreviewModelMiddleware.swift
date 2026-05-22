@@ -14,24 +14,24 @@ protocol Previewable: Model where IDValue == Int {
 
 final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
 
-    private let readPreviewID: @Sendable (M) -> PreviewID?
-
     private let attach: @Sendable (PreviewID, M) throws -> Void
 
     private let configure: @Sendable (inout Preview, M) throws -> Void
 
     private let fetch: @Sendable (M, Database) async throws -> Preview
 
+    private let previewID: @Sendable (M) -> PreviewID?
+
     init(
-        readPreviewID: @escaping @Sendable (M) -> PreviewID? = { _ in nil },
         attach: @escaping @Sendable (PreviewID, M) throws -> Void,
         configure: @escaping @Sendable (inout Preview, M) throws -> Void,
-        fetch: @escaping @Sendable (M, Database) async throws -> Preview
+        fetch: @escaping @Sendable (M, Database) async throws -> Preview,
+        previewID: @escaping @Sendable (M) -> PreviewID? = { _ in nil }
     ) {
-        self.readPreviewID = readPreviewID
         self.attach = attach
         self.configure = configure
         self.fetch = fetch
+        self.previewID = previewID
     }
 
     func create(
@@ -39,7 +39,8 @@ final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
         on db: any Database,
         next: any AnyAsyncModelResponder
     ) async throws {
-        if let adoptingID = readPreviewID(model) {
+        if let adoptingID = previewID(model) {
+            try attach(adoptingID, model)
             try await next.create(model, on: db)
             guard var preview = try await Preview.find(adoptingID, on: db) else {
                 throw Abort(.notFound, reason: "Orphan preview not found for adoption")
@@ -53,11 +54,11 @@ final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
             try configure(&preview, model)
             try await preview.save(on: db)
         } else {
-            let previewID = UUID()
-            try attach(previewID, model)
+            let newID = UUID()
+            try attach(newID, model)
             try await next.create(model, on: db)
             var preview = Preview(
-                id: previewID,
+                id: newID,
                 parentID: try model.requireID(),
                 parentAccess: model.access,
                 parentOwner: model.ownerID,

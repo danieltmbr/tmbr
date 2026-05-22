@@ -85,7 +85,6 @@ extension PreviewModelMiddleware where M == Song {
 
     static var song: Self {
         Self(
-            readPreviewID: { $0.adoptingPreviewID },
             attach: { previewID, song in
                 song.$preview.id = previewID
             },
@@ -98,7 +97,8 @@ extension PreviewModelMiddleware where M == Song {
             fetch: { song, database in
                 try await song.$preview.load(on: database)
                 return song.preview
-            }
+            },
+            previewID: { $0.adoptingPreviewID }
         )
     }
 }
