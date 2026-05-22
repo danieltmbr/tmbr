@@ -93,6 +93,17 @@ struct AlbumsWebController: RouteCollection {
                         NoteInput(body: entry.body, access: entry.access && payload.access)
                     }
                     _ = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    if let tracks = albumInput.tracks, !tracks.isEmpty {
+                        try await commands.previews.importTracks(
+                            ImportAlbumTracksInput(
+                                albumID: try album.requireID(),
+                                access: payload.access,
+                                artist: payload.artist,
+                                ownerID: preview.$parentOwner.id,
+                                tracks: tracks
+                            )
+                        )
+                    }
                 case .update(let albumID):
                     album = try await commands.albums.edit(albumInput.edit(id: albumID))
                     let preview = try await commands.previews.fetch(album.$preview.id, for: .write)

@@ -109,18 +109,40 @@ struct HTMLMetadataParser {
         return String(text[r])
     }
 
-    // Extracts fields from the first <script type="application/ld+json"> block in the full HTML.
-    // Top-level string values are stored as "ld:<key>"; nested author objects are flattened to "ld:author".
+    // Extracts all <script type="application/ld+json"> blocks from the HTML.
+    // Named scripts (with an `id` attribute) are keyed by their id in the result dict.
+    // The first unnamed script's top-level keys are merged into the root for backward compat.
     private func parseJSONLD(from html: String) -> [String: Any] {
-        let pattern = #"<script[^>]+type=["']application/ld\+json["'][^>]*>([\s\S]*?)</script>"#
-        guard let re = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]),
-              let m = re.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
-              let range = Range(m.range(at: 1), in: html),
-              let data = html[range].data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return [:]
+        let scriptPattern = #"<script\b([^>]*)\btype=["']application/ld\+json["']([^>]*)>([\s\S]*?)</script>"#
+        let idPattern = #"\bid=["']([^"']+)["']"#
+        guard let scriptRE = try? NSRegularExpression(pattern: scriptPattern, options: [.caseInsensitive]),
+              let idRE = try? NSRegularExpression(pattern: idPattern, options: [.caseInsensitive]) else { return [:] }
+
+        var result: [String: Any] = [:]
+        var foundDefault = false
+        let nsRange = NSRange(html.startIndex..., in: html)
+
+        scriptRE.enumerateMatches(in: html, range: nsRange) { match, _, _ in
+            guard let match,
+                  let contentRange = Range(match.range(at: 3), in: html),
+                  let data = html[contentRange].data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
+
+            let attrsBefore = Range(match.range(at: 1), in: html).map { String(html[$0]) } ?? ""
+            let attrsAfter = Range(match.range(at: 2), in: html).map { String(html[$0]) } ?? ""
+            let attrs = attrsBefore + attrsAfter
+            let nsAttrs = NSRange(attrs.startIndex..., in: attrs)
+
+            if let idMatch = idRE.firstMatch(in: attrs, range: nsAttrs),
+               let idRange = Range(idMatch.range(at: 1), in: attrs) {
+                result[String(attrs[idRange])] = json
+            } else if !foundDefault {
+                json.forEach { result[$0] = $1 }
+                foundDefault = true
+            }
         }
-        return json
+
+        return result
     }
 
     // Minimal HTML entity decoding for common cases

@@ -1,6 +1,11 @@
 import Foundation
 import Vapor
 
+struct TrackMetadata: Codable, Sendable {
+    let name: String
+    let url: String?
+}
+
 struct AlbumMetadata: Encodable, AsyncResponseEncodable, Sendable {
 
     let artist: String?
@@ -12,4 +17,6 @@ struct AlbumMetadata: Encodable, AsyncResponseEncodable, Sendable {
     let releaseDate: String?
 
     let title: String?
+
+    let tracks: [TrackMetadata]?
 }
