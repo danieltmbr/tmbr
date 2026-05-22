@@ -12,6 +12,8 @@ struct PodcastEditorViewModel: Encodable, Sendable {
         let access: Access
     }
 
+    private let artworkAspect: String = ""
+
     private let id: Int?
 
     private let pageTitle: String?
@@ -120,7 +122,7 @@ struct PodcastEditorViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == PodcastEditorViewModel {
-    static let podcastEditor = Template(name: "Catalogue/Podcasts/podcast-editor")
+    static let podcastEditor = Template(name: "Catalogue/editor")
 }
 
 extension Page {

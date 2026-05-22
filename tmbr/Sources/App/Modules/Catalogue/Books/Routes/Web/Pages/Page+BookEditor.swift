@@ -18,13 +18,15 @@ struct BookEditorViewModel: Encodable, Sendable {
 
     private let access: Access
 
+    private let artworkAspect: String = "portrait"
+
     private let author: String
 
-    private let coverId: Int?
+    private let artworkId: Int?
 
-    private let coverSourceURL: String?
+    private let artworkSourceURL: String?
 
-    private let coverThumbnailURL: String?
+    private let artworkThumbnailURL: String?
 
     private let genre: String
 
@@ -47,9 +49,9 @@ struct BookEditorViewModel: Encodable, Sendable {
         pageTitle: String? = nil,
         access: Access = .private,
         author: String = "",
-        coverId: Int? = nil,
-        coverSourceURL: String? = nil,
-        coverThumbnailURL: String? = nil,
+        artworkId: Int? = nil,
+        artworkSourceURL: String? = nil,
+        artworkThumbnailURL: String? = nil,
         genre: String = "",
         notes: [NoteViewModel] = [],
         releaseDate: String = "",
@@ -63,9 +65,9 @@ struct BookEditorViewModel: Encodable, Sendable {
         self.pageTitle = pageTitle
         self.access = access
         self.author = author
-        self.coverId = coverId
-        self.coverSourceURL = coverSourceURL
-        self.coverThumbnailURL = coverThumbnailURL
+        self.artworkId = artworkId
+        self.artworkSourceURL = artworkSourceURL
+        self.artworkThumbnailURL = artworkThumbnailURL
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate
@@ -83,21 +85,21 @@ struct BookEditorViewModel: Encodable, Sendable {
         csrf: String?
     ) throws {
         let id = try book.requireID()
-        let coverId = book.$cover.id
-        let coverThumbnailURL: String?
+        let artworkId = book.$cover.id
+        let artworkThumbnailURL: String?
         if let cover = book.cover {
-            coverThumbnailURL = "\(baseURL)/gallery/data/\(cover.thumbnailKey)"
+            artworkThumbnailURL = "\(baseURL)/gallery/data/\(cover.thumbnailKey)"
         } else {
-            coverThumbnailURL = nil
+            artworkThumbnailURL = nil
         }
         self.init(
             id: id,
             pageTitle: "Edit '\(book.title)'",
             access: book.access,
             author: book.author,
-            coverId: coverId,
-            coverSourceURL: nil,
-            coverThumbnailURL: coverThumbnailURL,
+            artworkId: artworkId,
+            artworkSourceURL: nil,
+            artworkThumbnailURL: artworkThumbnailURL,
             genre: book.genre ?? "",
             notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access) },
             releaseDate: book.releaseDate?.formatted(.releaseDate) ?? "",
@@ -113,7 +115,7 @@ struct BookEditorViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == BookEditorViewModel {
-    static let bookEditor = Template(name: "Catalogue/Books/book-editor")
+    static let bookEditor = Template(name: "Catalogue/editor")
 }
 
 extension Page {
@@ -154,7 +156,7 @@ private struct BookPreviewPayload: Content {
     let author: String
     let genre: String?
     let releaseDate: String?
-    let coverURL: String?
+    let artworkURL: String?
     let resourceURLs: String?
     let notes: String
 }
@@ -181,7 +183,7 @@ extension Page {
                 id: 0,
                 author: payload.author,
                 allowsNewNote: false,
-                cover: payload.coverURL.flatMap { url in
+                cover: payload.artworkURL.flatMap { url in
                     url.isEmpty ? nil : ImageViewModel(previewURL: url)
                 },
                 genre: payload.genre,

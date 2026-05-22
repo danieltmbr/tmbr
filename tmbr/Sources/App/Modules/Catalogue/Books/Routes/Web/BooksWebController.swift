@@ -80,10 +80,10 @@ struct BooksWebController: RouteCollection {
                 throw Abort(.forbidden, reason: "Invalid form token. Please reload the editor and try again.")
             }
 
-            let coverId = try await resolveCover(payload: payload, on: req)
+            let artworkId = try await resolveArtwork(payload: payload, on: req)
 
             let book = try await req.commands.transaction { commands in
-                let bookInput = BookInput(payload: payload, coverId: coverId)
+                let bookInput = BookInput(payload: payload, artworkId: artworkId)
                 let book: Book
 
                 switch mode {
@@ -120,19 +120,19 @@ struct BooksWebController: RouteCollection {
         }
     }
 
-    private func resolveCover(payload: BookEditorPayload, on req: Request) async throws -> ImageID? {
-        if let coverId = payload.coverId {
-            return coverId
+    private func resolveArtwork(payload: BookEditorPayload, on req: Request) async throws -> ImageID? {
+        if let artworkId = payload.artworkId {
+            return artworkId
         }
-        guard let coverURL = payload.coverSourceURL else {
+        guard let artworkURL = payload.artworkSourceURL else {
             return nil
         }
-        if let existingImage = try await req.commands.gallery.lookup(coverURL) {
+        if let existingImage = try await req.commands.gallery.lookup(artworkURL) {
             return try existingImage.requireID()
         }
         let alt = payload.title.isEmpty ? "Book cover" : payload.title
         let newImage = try await req.commands.gallery.addFromURL(
-            ImageURLPayload(url: coverURL, alt: alt)
+            ImageURLPayload(url: artworkURL, alt: alt)
         )
         return try newImage.requireID()
     }
@@ -168,9 +168,9 @@ struct BooksWebController: RouteCollection {
             pageTitle: pageTitle,
             access: submitted.access,
             author: submitted.author,
-            coverId: submitted.coverId,
-            coverSourceURL: submitted.coverSourceURL,
-            coverThumbnailURL: submitted.coverSourceURL,
+            artworkId: submitted.artworkId,
+            artworkSourceURL: submitted.artworkSourceURL,
+            artworkThumbnailURL: submitted.artworkSourceURL,
             genre: submitted.genre ?? "",
             notes: noteViewModels,
             releaseDate: submitted.releaseDate?.formatted(.iso8601.year().month().day()) ?? "",

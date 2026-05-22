@@ -10,9 +10,9 @@ struct BookEditorPayload: Decodable, Sendable {
 
     let author: String
 
-    private let coverIdRaw: String?
+    private let artworkIdRaw: String?
 
-    private let coverSourceURLRaw: String?
+    private let artworkSourceURLRaw: String?
 
     let genre: String?
 
@@ -24,13 +24,13 @@ struct BookEditorPayload: Decodable, Sendable {
 
     let title: String
 
-    var coverId: ImageID? {
-        guard let raw = coverIdRaw, !raw.isEmpty else { return nil }
+    var artworkId: ImageID? {
+        guard let raw = artworkIdRaw, !raw.isEmpty else { return nil }
         return Int(raw)
     }
 
-    var coverSourceURL: String? {
-        guard let raw = coverSourceURLRaw, !raw.isEmpty else { return nil }
+    var artworkSourceURL: String? {
+        guard let raw = artworkSourceURLRaw, !raw.isEmpty else { return nil }
         return raw
     }
 
@@ -42,8 +42,8 @@ struct BookEditorPayload: Decodable, Sendable {
         case _csrf
         case access
         case author
-        case coverIdRaw = "cover-id"
-        case coverSourceURLRaw = "cover-source-url"
+        case artworkIdRaw = "artwork-id"
+        case artworkSourceURLRaw = "artwork-source-url"
         case genre
         case notes
         case releaseDate = "release-date"
@@ -55,8 +55,8 @@ struct BookEditorPayload: Decodable, Sendable {
         _csrf: String? = nil,
         access: Access = .private,
         author: String = "",
-        coverIdRaw: String? = nil,
-        coverSourceURLRaw: String? = nil,
+        artworkIdRaw: String? = nil,
+        artworkSourceURLRaw: String? = nil,
         genre: String? = nil,
         notes: [NotePayload] = [],
         releaseDate: Date? = nil,
@@ -66,8 +66,8 @@ struct BookEditorPayload: Decodable, Sendable {
         self._csrf = _csrf
         self.access = access
         self.author = author
-        self.coverIdRaw = coverIdRaw
-        self.coverSourceURLRaw = coverSourceURLRaw
+        self.artworkIdRaw = artworkIdRaw
+        self.artworkSourceURLRaw = artworkSourceURLRaw
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate
@@ -78,11 +78,11 @@ struct BookEditorPayload: Decodable, Sendable {
 
 extension BookInput {
 
-    init(payload: BookEditorPayload, coverId: ImageID? = nil) {
+    init(payload: BookEditorPayload, artworkId: ImageID? = nil) {
         self.init(
             access: payload.access,
             author: payload.author,
-            cover: coverId ?? payload.coverId,
+            cover: artworkId ?? payload.artworkId,
             genre: payload.genre,
             releaseDate: payload.releaseDate,
             resourceURLs: payload.filteredResourceURLs,

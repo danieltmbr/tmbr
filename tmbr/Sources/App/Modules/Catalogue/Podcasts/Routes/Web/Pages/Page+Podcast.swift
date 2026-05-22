@@ -17,7 +17,7 @@ struct PodcastViewModel: Encodable, Sendable {
 
     private let notesEndpoint: String
 
-    private let episodeTitle: String
+    private let subtitle: String?
 
     private let post: PostItemViewModel?
 
@@ -43,10 +43,10 @@ struct PodcastViewModel: Encodable, Sendable {
         self.info = info
         self.notes = notes
         self.notesEndpoint = notesEndpoint
-        self.episodeTitle = episodeTitle
+        self.title = episodeTitle
+        self.subtitle = "from \(title)"
         self.post = post
         self.resources = resources
-        self.title = title
     }
 
     init(
@@ -116,7 +116,7 @@ struct PodcastViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == PodcastViewModel {
-    static let podcast = Template(name: "Catalogue/Podcasts/podcast")
+    static let podcast = Template(name: "Catalogue/details")
 }
 
 extension Page {

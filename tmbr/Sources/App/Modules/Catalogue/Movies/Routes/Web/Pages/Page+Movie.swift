@@ -7,7 +7,9 @@ struct MovieViewModel: Encodable, Sendable {
 
     private let id: MovieID
 
-    private let cover: ImageViewModel?
+    private let subtitle: String? = nil
+
+    private let artwork: ImageViewModel?
 
     private let allowsNewNote: Bool
 
@@ -35,7 +37,7 @@ struct MovieViewModel: Encodable, Sendable {
         title: String
     ) {
         self.id = id
-        self.cover = cover
+        self.artwork = cover
         self.allowsNewNote = allowsNewNote
         self.info = info
         self.notes = notes
@@ -99,7 +101,7 @@ struct MovieViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == MovieViewModel {
-    static let movie = Template(name: "Catalogue/Movies/movie")
+    static let movie = Template(name: "Catalogue/details")
 }
 
 extension Page {
