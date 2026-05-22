@@ -82,9 +82,10 @@ final class Song: Model, Previewable, @unchecked Sendable {
 }
 
 extension PreviewModelMiddleware where M == Song {
-    
+
     static var song: Self {
         Self(
+            readPreviewID: { $0.adoptingPreviewID },
             attach: { previewID, song in
                 song.$preview.id = previewID
             },
