@@ -3,23 +3,7 @@
     #export("main"):
         <article>
             <header>
-                <div class="details">
-                    <h1>#(title)</h1>
-                    #if(subtitle):
-                    <h3>#(subtitle)</h3>
-                    #endif
-
-                    #if(info):
-                    <p>#(info)</p>
-                    #endif
-
-                    #extend("Catalogue/resources")
-                </div>
-                #if(artwork):
-                <div class="artwork">
-                    <img src="#(artwork.url)" alt="Artwork image of #(title)">
-                </div>
-                #endif
+                #import("detail-header")
             </header>
 
             #if(post):
@@ -32,6 +16,9 @@
                 </a>
             </section>
             #endif
+
+            #import("detail-body")
+
 
             <section id="notes-section" data-notes-endpoint="#(notesEndpoint)">
                 <h3>Notes</h3>

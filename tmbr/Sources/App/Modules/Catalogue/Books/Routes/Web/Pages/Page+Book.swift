@@ -108,7 +108,7 @@ struct BookViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == BookViewModel {
-    static let book = Template(name: "Catalogue/details")
+    static let book = Template(name: "Catalogue/Books/book")
 }
 
 extension Page {
