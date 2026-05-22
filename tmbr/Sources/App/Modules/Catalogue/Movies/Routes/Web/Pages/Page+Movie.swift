@@ -101,7 +101,7 @@ struct MovieViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == MovieViewModel {
-    static let movie = Template(name: "Catalogue/details")
+    static let movie = Template(name: "Catalogue/Movies/movie")
 }
 
 extension Page {

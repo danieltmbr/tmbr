@@ -116,7 +116,7 @@ struct PodcastViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == PodcastViewModel {
-    static let podcast = Template(name: "Catalogue/details")
+    static let podcast = Template(name: "Catalogue/Podcasts/podcast")
 }
 
 extension Page {

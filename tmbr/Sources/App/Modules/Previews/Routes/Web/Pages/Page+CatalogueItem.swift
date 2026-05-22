@@ -40,7 +40,7 @@ struct CatalogueItemViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == CatalogueItemViewModel {
-    static let catalogueItem = Template(name: "Catalogue/details")
+    static let catalogueItem = Template(name: "Catalogue/item")
 }
 
 extension Page {
