@@ -6,6 +6,7 @@ struct CatalogueQueryMapper: Sendable {
         Album.previewType,
         Book.previewType,
         Movie.previewType,
+        Playlist.previewType,
         Podcast.previewType,
         Song.previewType,
     ]
