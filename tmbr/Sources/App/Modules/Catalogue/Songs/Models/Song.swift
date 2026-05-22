@@ -48,7 +48,9 @@ final class Song: Model, Previewable, @unchecked Sendable {
     var title: String
     
     var ownerID: UserID { $owner.id }
-    
+
+    var adoptingPreviewID: UUID?
+
     init() {}
     
     init(owner: UserID) {

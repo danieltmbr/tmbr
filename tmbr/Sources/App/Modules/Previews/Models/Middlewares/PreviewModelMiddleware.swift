@@ -4,12 +4,18 @@ import Foundation
 import AuthKit
 
 protocol Previewable: Model where IDValue == Int {
-    
+
     static var previewType: String { get }
-    
+
     var access: Access { get }
-    
+
     var ownerID: UserID { get }
+
+    var adoptingPreviewID: UUID? { get }
+}
+
+extension Previewable {
+    var adoptingPreviewID: UUID? { nil }
 }
 
 final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
@@ -35,19 +41,34 @@ final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
         on db: any Database,
         next: any AnyAsyncModelResponder
     ) async throws {
-        let previewID = UUID()
-        try attach(previewID, model)
-        try await next.create(model, on: db)
-
-        var preview = Preview(
-            id: previewID,
-            parentID: try model.requireID(),
-            parentAccess: model.access,
-            parentOwner: model.ownerID,
-            parentType: M.previewType
-        )
-        try configure(&preview, model)
-        try await preview.save(on: db)
+        if let adoptingID = model.adoptingPreviewID {
+            try attach(adoptingID, model)
+            try await next.create(model, on: db)
+            guard var preview = try await Preview.find(adoptingID, on: db) else {
+                throw Abort(.notFound, reason: "Orphan preview not found for adoption")
+            }
+            preview.adopt(
+                parentID: try model.requireID(),
+                parentType: M.previewType,
+                parentAccess: model.access,
+                parentOwner: model.ownerID
+            )
+            try configure(&preview, model)
+            try await preview.save(on: db)
+        } else {
+            let previewID = UUID()
+            try attach(previewID, model)
+            try await next.create(model, on: db)
+            var preview = Preview(
+                id: previewID,
+                parentID: try model.requireID(),
+                parentAccess: model.access,
+                parentOwner: model.ownerID,
+                parentType: M.previewType
+            )
+            try configure(&preview, model)
+            try await preview.save(on: db)
+        }
     }
 
     func update(
