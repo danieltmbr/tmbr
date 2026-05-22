@@ -9,7 +9,7 @@ struct MovieViewModel: Encodable, Sendable {
 
     private let subtitle: String? = nil
 
-    private let artwork: ImageViewModel?
+    private let cover: ImageViewModel?
 
     private let allowsNewNote: Bool
 
@@ -37,7 +37,7 @@ struct MovieViewModel: Encodable, Sendable {
         title: String
     ) {
         self.id = id
-        self.artwork = cover
+        self.cover = cover
         self.allowsNewNote = allowsNewNote
         self.info = info
         self.notes = notes
