@@ -18,7 +18,11 @@ struct PreviewViewModel: Encodable, Sendable {
         primaryInfo = preview.primaryInfo
         secondaryInfo = preview.secondaryInfo
         thumbnailURL = preview.image.map { "\(baseURL)/gallery/data/\($0.thumbnailKey)" }
-        href = "/\(preview.parentType)s/\(preview.parentID)"
+        if let parentID = preview.parentID {
+            href = "/\(preview.parentType)s/\(parentID)"
+        } else {
+            href = "/catalogue/item/\(preview.id!)"
+        }
         created = (preview.createdAt ?? .now).formatted(.publishDate)
         self.isNoteMatch = isNoteMatch
     }

@@ -4,24 +4,27 @@ import AuthKit
 import Core
 
 struct SongInput {
-    
+
     fileprivate let access: Access
-    
+
+    fileprivate let adoptingPreviewID: UUID?
+
     fileprivate let album: String?
-    
+
     fileprivate let artist: String
-        
+
     fileprivate let artwork: ImageID?
-    
+
     fileprivate let genre: String?
-        
+
     fileprivate let releaseDate: Date?
-    
+
     fileprivate let resourceURLs: [String]
-    
+
     fileprivate let title: String
-    
+
     init(
+        adoptingPreviewID: UUID? = nil,
         access: Access,
         album: String?,
         artist: String,
@@ -31,6 +34,7 @@ struct SongInput {
         resourceURLs: [String],
         title: String
     ) {
+        self.adoptingPreviewID = adoptingPreviewID
         self.access = access
         self.album = album
         self.artist = artist
@@ -40,7 +44,7 @@ struct SongInput {
         self.resourceURLs = resourceURLs
         self.title = title
     }
-    
+
     init(payload: SongPayload) {
         self.init(
             access: payload.access,
@@ -56,9 +60,10 @@ struct SongInput {
 }
 
 extension ModelConfiguration where Model == Song, Parameters == SongInput {
-    
+
     static var song: Self {
         ModelConfiguration { song, input in
+            song.adoptingPreviewID = input.adoptingPreviewID
             song.access = input.access
             song.album = input.album
             song.artist = input.artist

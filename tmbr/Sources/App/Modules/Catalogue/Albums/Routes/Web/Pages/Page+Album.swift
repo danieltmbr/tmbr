@@ -3,6 +3,22 @@ import Foundation
 import AuthKit
 import Core
 
+struct TrackViewModel: Encodable, Sendable {
+    let position: Int
+    let title: String
+    let href: String?
+
+    init(entry: ContainerEntry) {
+        position = entry.position
+        title = entry.preview.primaryInfo
+        if let parentID = entry.preview.parentID {
+            href = "/\(entry.preview.parentType)s/\(parentID)"
+        } else {
+            href = nil
+        }
+    }
+}
+
 struct AlbumViewModel: Encodable, Sendable {
 
     private let id: AlbumID
@@ -25,6 +41,8 @@ struct AlbumViewModel: Encodable, Sendable {
 
     private let title: String
 
+    private let tracks: [TrackViewModel]
+
     init(
         id: AlbumID,
         artist: String,
@@ -35,7 +53,8 @@ struct AlbumViewModel: Encodable, Sendable {
         notesEndpoint: String,
         post: PostItemViewModel?,
         resources: [Hyperlink],
-        title: String
+        title: String,
+        tracks: [TrackViewModel] = []
     ) {
         self.id = id
         self.subtitle = "by \(artist)"
@@ -47,6 +66,7 @@ struct AlbumViewModel: Encodable, Sendable {
         self.post = post
         self.resources = resources
         self.title = title
+        self.tracks = tracks
     }
 
     init(
@@ -60,7 +80,8 @@ struct AlbumViewModel: Encodable, Sendable {
         post: PostItemViewModel?,
         releaseDate: String?,
         resources: [Hyperlink],
-        title: String
+        title: String,
+        tracks: [TrackViewModel] = []
     ) {
         self.init(
             id: id,
@@ -75,13 +96,15 @@ struct AlbumViewModel: Encodable, Sendable {
             notesEndpoint: notesEndpoint,
             post: post,
             resources: resources,
-            title: title
+            title: title,
+            tracks: tracks
         )
     }
 
     init(
         album: Album,
         notes: [Note],
+        tracks: [TrackViewModel],
         baseURL: String,
         allowsNewNote: Bool,
         platform: Platform<AlbumMetadata> = .album
@@ -100,7 +123,8 @@ struct AlbumViewModel: Encodable, Sendable {
             post: try album.post.map(PostItemViewModel.init),
             releaseDate: album.releaseDate?.formatted(.releaseDate),
             resources: album.resourceURLs.compactMap(platform.hyperlink),
-            title: album.title
+            title: album.title,
+            tracks: tracks
         )
     }
 }
@@ -117,11 +141,16 @@ extension Page {
             }
             async let album = request.commands.albums.fetch(albumID, for: .read)
             async let notes = request.commands.notes.query(id: albumID, of: Album.previewType)
+            async let entries = request.commands.previews.listEntries(
+                ContainerEntriesInput(containerType: "album", containerID: albumID)
+            )
             let resolvedAlbum = try await album
             let allowsNewNote = (try? await request.permissions.albums.edit.grant(resolvedAlbum)) != nil
+            let tracks = try await entries.map(TrackViewModel.init)
             return try AlbumViewModel(
                 album: resolvedAlbum,
                 notes: await notes,
+                tracks: tracks,
                 baseURL: request.baseURL,
                 allowsNewNote: allowsNewNote
             )

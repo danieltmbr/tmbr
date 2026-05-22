@@ -29,6 +29,7 @@ struct SongsWebController: RouteCollection {
         recoveringRoute.post(":songID", use: updateSong)
 
         recoveringRoute.post("preview", page: .songPreview)
+        recoveringRoute.post("promote", use: promote)
 
         songsRoute.post(":songID", "notes", use: createNote)
     }
@@ -218,6 +219,38 @@ struct SongsWebController: RouteCollection {
         } catch {
             return Response(status: .unprocessableEntity)
         }
+    }
+
+    @Sendable
+    private func promote(_ request: Request) async throws -> Response {
+        struct PromotePayload: Content {
+            let previewID: UUID
+        }
+        let payload = try request.content.decode(PromotePayload.self)
+        let preview = try await request.commands.previews.fetch(payload.previewID, for: .read)
+
+        guard let entry = try await ContainerEntry.query(on: request.commandDB)
+            .filter(\.$preview.$id == payload.previewID)
+            .filter(\.$containerType == "album")
+            .first()
+        else {
+            throw Abort(.notFound, reason: "No album container entry found for this track")
+        }
+
+        let album = try await request.commands.albums.fetch(entry.containerID, for: .read)
+        let input = SongInput(
+            adoptingPreviewID: payload.previewID,
+            access: preview.parentAccess,
+            album: album.title,
+            artist: album.artist,
+            artwork: album.$artwork.id,
+            genre: album.genre,
+            releaseDate: nil,
+            resourceURLs: preview.externalLinks,
+            title: preview.primaryInfo
+        )
+        let song = try await request.commands.songs.create(input)
+        return request.redirect(to: "/songs/\(song.id!)")
     }
 
     private func editorErrorHTML(for error: Error, on req: Request) -> String {

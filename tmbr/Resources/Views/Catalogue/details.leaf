@@ -33,6 +33,23 @@
             </section>
             #endif
 
+            #if(tracks):
+            <section id="tracks-section">
+                <h3>Tracklist</h3>
+                <ol class="tracklist">
+                    #for(track in tracks):
+                    <li>
+                        #if(track.href):
+                        <a href="#(track.href)">#(track.title)</a>
+                        #else:
+                        <span>#(track.title)</span>
+                        #endif
+                    </li>
+                    #endfor
+                </ol>
+            </section>
+            #endif
+
             <section id="notes-section" data-notes-endpoint="#(notesEndpoint)">
                 <h3>Notes</h3>
                 #if(allowsNewNote):

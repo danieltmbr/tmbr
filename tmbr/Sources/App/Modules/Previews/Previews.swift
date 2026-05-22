@@ -20,12 +20,16 @@ struct Previews: Module {
     func configure(_ app: Application) async throws {
         app.migrations.add(CreatePreview())
         app.migrations.add(AddPreviewParentAccessAndOwner())
+        app.migrations.add(ExtendPreview())
+        app.migrations.add(CreateContainerEntries())
 
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)
     }
-    
-    func boot(_ routes: any Vapor.RoutesBuilder) async throws {}
+
+    func boot(_ routes: any Vapor.RoutesBuilder) async throws {
+        try routes.register(collection: PreviewsWebController())
+    }
 }
 
 extension Module where Self == Previews {
