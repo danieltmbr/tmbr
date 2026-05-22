@@ -3,6 +3,7 @@ import Foundation
 struct CatalogueQueryMapper: Sendable {
     
     private static let catalogueTypes: Set<String> = [
+        Album.previewType,
         Book.previewType,
         Movie.previewType,
         Podcast.previewType,
