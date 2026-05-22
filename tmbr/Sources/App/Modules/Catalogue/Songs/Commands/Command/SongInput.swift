@@ -7,7 +7,7 @@ struct SongInput {
 
     fileprivate let access: Access
 
-    fileprivate let adoptingPreviewID: UUID?
+    fileprivate let previewID: UUID?
 
     fileprivate let album: String?
 
@@ -24,7 +24,7 @@ struct SongInput {
     fileprivate let title: String
 
     init(
-        adoptingPreviewID: UUID? = nil,
+        previewID: UUID? = nil,
         access: Access,
         album: String?,
         artist: String,
@@ -34,7 +34,7 @@ struct SongInput {
         resourceURLs: [String],
         title: String
     ) {
-        self.adoptingPreviewID = adoptingPreviewID
+        self.previewID = previewID
         self.access = access
         self.album = album
         self.artist = artist
@@ -63,7 +63,7 @@ extension ModelConfiguration where Model == Song, Parameters == SongInput {
 
     static var song: Self {
         ModelConfiguration { song, input in
-            song.adoptingPreviewID = input.adoptingPreviewID
+            song.adoptingPreviewID = input.previewID
             song.access = input.access
             song.album = input.album
             song.artist = input.artist

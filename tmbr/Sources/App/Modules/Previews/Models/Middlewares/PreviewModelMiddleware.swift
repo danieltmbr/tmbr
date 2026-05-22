@@ -10,39 +10,36 @@ protocol Previewable: Model where IDValue == Int {
     var access: Access { get }
 
     var ownerID: UserID { get }
-
-    var adoptingPreviewID: UUID? { get }
-}
-
-extension Previewable {
-    var adoptingPreviewID: UUID? { nil }
 }
 
 final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
-    
+
+    private let readPreviewID: @Sendable (M) -> PreviewID?
+
     private let attach: @Sendable (PreviewID, M) throws -> Void
-    
+
     private let configure: @Sendable (inout Preview, M) throws -> Void
-    
+
     private let fetch: @Sendable (M, Database) async throws -> Preview
-    
+
     init(
+        readPreviewID: @escaping @Sendable (M) -> PreviewID? = { _ in nil },
         attach: @escaping @Sendable (PreviewID, M) throws -> Void,
         configure: @escaping @Sendable (inout Preview, M) throws -> Void,
         fetch: @escaping @Sendable (M, Database) async throws -> Preview
     ) {
+        self.readPreviewID = readPreviewID
         self.attach = attach
         self.configure = configure
         self.fetch = fetch
     }
-    
+
     func create(
         model: M,
         on db: any Database,
         next: any AnyAsyncModelResponder
     ) async throws {
-        if let adoptingID = model.adoptingPreviewID {
-            try attach(adoptingID, model)
+        if let adoptingID = readPreviewID(model) {
             try await next.create(model, on: db)
             guard var preview = try await Preview.find(adoptingID, on: db) else {
                 throw Abort(.notFound, reason: "Orphan preview not found for adoption")

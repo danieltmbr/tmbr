@@ -239,7 +239,7 @@ struct SongsWebController: RouteCollection {
 
         let album = try await request.commands.albums.fetch(entry.containerID, for: .read)
         let input = SongInput(
-            adoptingPreviewID: payload.previewID,
+            previewID: payload.previewID,
             access: preview.parentAccess,
             album: album.title,
             artist: album.artist,
