@@ -11,9 +11,9 @@
         #endif
         #extend("Catalogue/resources")
     </div>
-    #if(artwork):
+    #if(cover):
     <div class="artwork">
-        <img src="#(artwork.url)" alt="Cover of #(title)">
+        <img src="#(cover.url)" alt="Cover of #(title)">
     </div>
     #endif
     #endexport
