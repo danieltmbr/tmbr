@@ -1,0 +1,25 @@
+#extend("Shared/page"):
+    #export("styles"):
+    <link rel="stylesheet" href="/Styles/Shared/editor.css">
+    #endexport
+
+    #export("main"):
+    <form id="music-editor-form" method="post" action="#(composeAction)">
+        <input id="music-editor-url" class="text-input title" type="url" placeholder="Paste an Apple Music link…" autocomplete="off" />
+
+        <div id="music-type-selector" hidden>
+            <label><input type="radio" name="music-type" value="song" /> Song</label>
+            <label><input type="radio" name="music-type" value="album" /> Album</label>
+            <label><input type="radio" name="music-type" value="playlist" /> Playlist</label>
+        </div>
+
+        <div id="music-editor-fields" hidden>
+            <p id="music-autofill-status" class="system-info" hidden></p>
+        </div>
+    </form>
+    #endexport
+
+    #export("scripts"):
+        <script src="/Scripts/Catalogue/Music/music-editor.js"></script>
+    #endexport
+#endextend
