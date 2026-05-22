@@ -7,7 +7,7 @@ struct AlbumViewModel: Encodable, Sendable {
 
     private let id: AlbumID
 
-    private let artist: String
+    private let subtitle: String
 
     private let artwork: ImageViewModel?
 
@@ -38,7 +38,7 @@ struct AlbumViewModel: Encodable, Sendable {
         title: String
     ) {
         self.id = id
-        self.artist = artist
+        self.subtitle = "by \(artist)"
         self.artwork = artwork
         self.allowsNewNote = allowsNewNote
         self.info = info
@@ -106,7 +106,7 @@ struct AlbumViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == AlbumViewModel {
-    static let album = Template(name: "Catalogue/Albums/album")
+    static let album = Template(name: "Catalogue/details")
 }
 
 extension Page {

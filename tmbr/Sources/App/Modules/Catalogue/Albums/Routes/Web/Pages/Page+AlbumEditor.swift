@@ -12,6 +12,8 @@ struct AlbumEditorViewModel: Encodable, Sendable {
         let access: Access
     }
 
+    private let artworkAspect: String = ""
+
     private let id: Int?
 
     private let pageTitle: String?
@@ -113,7 +115,7 @@ struct AlbumEditorViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == AlbumEditorViewModel {
-    static let albumEditor = Template(name: "Catalogue/Albums/album-editor")
+    static let albumEditor = Template(name: "Catalogue/editor")
 }
 
 extension Page {

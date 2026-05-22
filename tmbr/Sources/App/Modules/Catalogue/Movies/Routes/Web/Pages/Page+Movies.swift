@@ -2,14 +2,8 @@ import Vapor
 import Core
 import Foundation
 
-struct MoviesViewModel: Encodable, Sendable {
-    let compose: String?
-    let term: String?
-    let previews: [PreviewViewModel]
-}
-
-extension Template where Model == MoviesViewModel {
-    static let movies = Template(name: "Catalogue/Movies/movies")
+extension Template where Model == CatalogueListViewModel {
+    static let movies = Template(name: "Catalogue/list")
 }
 
 extension Page {
@@ -20,7 +14,7 @@ extension Page {
             async let result = req.commands.movies.search(term)
             let baseURL = req.baseURL
             let resolved = try await result
-            return MoviesViewModel(
+            return CatalogueListViewModel(
                 compose: await composeURL,
                 term: term,
                 previews: resolved.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }

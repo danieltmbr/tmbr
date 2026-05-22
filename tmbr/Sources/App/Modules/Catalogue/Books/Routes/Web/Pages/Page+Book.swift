@@ -7,11 +7,11 @@ struct BookViewModel: Encodable, Sendable {
 
     private let id: BookID
 
-    private let author: String?
+    private let subtitle: String?
 
     private let allowsNewNote: Bool
 
-    private let cover: ImageViewModel?
+    private let artwork: ImageViewModel?
 
     private let info: String?
 
@@ -38,9 +38,9 @@ struct BookViewModel: Encodable, Sendable {
         title: String
     ) {
         self.id = id
-        self.author = author
+        self.subtitle = author.map { "by \($0)" }
         self.allowsNewNote = allowsNewNote
-        self.cover = cover
+        self.artwork = cover
         self.info = info
         self.notes = notes
         self.notesEndpoint = notesEndpoint
@@ -108,7 +108,7 @@ struct BookViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == BookViewModel {
-    static let book = Template(name: "Catalogue/Books/book")
+    static let book = Template(name: "Catalogue/details")
 }
 
 extension Page {

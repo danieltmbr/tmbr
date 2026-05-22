@@ -18,13 +18,15 @@ struct MovieEditorViewModel: Encodable, Sendable {
 
     private let access: Access
 
+    private let artworkAspect: String = "portrait"
+
     private let director: String
 
-    private let coverId: Int?
+    private let artworkId: Int?
 
-    private let coverSourceURL: String?
+    private let artworkSourceURL: String?
 
-    private let coverThumbnailURL: String?
+    private let artworkThumbnailURL: String?
 
     private let genre: String
 
@@ -47,9 +49,9 @@ struct MovieEditorViewModel: Encodable, Sendable {
         pageTitle: String? = nil,
         access: Access = .private,
         director: String = "",
-        coverId: Int? = nil,
-        coverSourceURL: String? = nil,
-        coverThumbnailURL: String? = nil,
+        artworkId: Int? = nil,
+        artworkSourceURL: String? = nil,
+        artworkThumbnailURL: String? = nil,
         genre: String = "",
         notes: [NoteViewModel] = [],
         releaseDate: String = "",
@@ -63,9 +65,9 @@ struct MovieEditorViewModel: Encodable, Sendable {
         self.pageTitle = pageTitle
         self.access = access
         self.director = director
-        self.coverId = coverId
-        self.coverSourceURL = coverSourceURL
-        self.coverThumbnailURL = coverThumbnailURL
+        self.artworkId = artworkId
+        self.artworkSourceURL = artworkSourceURL
+        self.artworkThumbnailURL = artworkThumbnailURL
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate
@@ -83,21 +85,21 @@ struct MovieEditorViewModel: Encodable, Sendable {
         csrf: String?
     ) throws {
         let id = try movie.requireID()
-        let coverId = movie.$cover.id
-        let coverThumbnailURL: String?
+        let artworkId = movie.$cover.id
+        let artworkThumbnailURL: String?
         if let cover = movie.cover {
-            coverThumbnailURL = "\(baseURL)/gallery/data/\(cover.thumbnailKey)"
+            artworkThumbnailURL = "\(baseURL)/gallery/data/\(cover.thumbnailKey)"
         } else {
-            coverThumbnailURL = nil
+            artworkThumbnailURL = nil
         }
         self.init(
             id: id,
             pageTitle: "Edit '\(movie.title)'",
             access: movie.access,
             director: movie.director ?? "",
-            coverId: coverId,
-            coverSourceURL: nil,
-            coverThumbnailURL: coverThumbnailURL,
+            artworkId: artworkId,
+            artworkSourceURL: nil,
+            artworkThumbnailURL: artworkThumbnailURL,
             genre: movie.genre ?? "",
             notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access) },
             releaseDate: movie.releaseDate?.formatted(.releaseDate) ?? "",
@@ -113,7 +115,7 @@ struct MovieEditorViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == MovieEditorViewModel {
-    static let movieEditor = Template(name: "Catalogue/Movies/movie-editor")
+    static let movieEditor = Template(name: "Catalogue/editor")
 }
 
 extension Page {
@@ -154,7 +156,7 @@ private struct MoviePreviewPayload: Content {
     let director: String?
     let genre: String?
     let releaseDate: String?
-    let coverURL: String?
+    let artworkURL: String?
     let resourceURLs: String?
     let notes: String
 }
@@ -180,7 +182,7 @@ extension Page {
             return MovieViewModel(
                 id: 0,
                 allowsNewNote: false,
-                cover: payload.coverURL.flatMap { url in
+                cover: payload.artworkURL.flatMap { url in
                     url.isEmpty ? nil : ImageViewModel(previewURL: url)
                 },
                 director: payload.director,
