@@ -17,6 +17,8 @@ extension Commands {
 
         let fetch: CommandFactory<FetchParameters<PlaylistID>, Playlist>
 
+        let metadata: CommandFactory<URL, PlaylistMetadata>
+
         let search: CommandFactory<String?, PlaylistSearchResult>
 
         init(
@@ -24,12 +26,14 @@ extension Commands {
             delete: CommandFactory<PlaylistID, Void> = .delete(\.playlists),
             edit: CommandFactory<EditPlaylistInput, Playlist> = .editPlaylist,
             fetch: CommandFactory<FetchParameters<PlaylistID>, Playlist> = .fetchPlaylist,
+            metadata: CommandFactory<URL, PlaylistMetadata> = .fetchPlaylistMetadata,
             search: CommandFactory<String?, PlaylistSearchResult> = .searchPlaylists
         ) {
             self.create = create
             self.delete = delete
             self.edit = edit
             self.fetch = fetch
+            self.metadata = metadata
             self.search = search
         }
     }

@@ -16,6 +16,25 @@
     #endexport
 
     #export("detail-body"):
+    #if(tracks):
+    <section id="tracks-section">
+        <h3>Tracklist</h3>
+        <ol class="tracklist">
+            #for(track in tracks):
+            <li>
+                #if(track.href):
+                <a href="#(track.href)">#(track.title)</a>
+                #else:
+                <form method="post" action="/songs/promote">
+                    <input type="hidden" name="previewID" value="#(track.previewID)" />
+                    <button type="submit" class="link">#(track.title)</button>
+                </form>
+                #endif
+            </li>
+            #endfor
+        </ol>
+    </section>
+    #endif
     #endexport
 
 #endextend

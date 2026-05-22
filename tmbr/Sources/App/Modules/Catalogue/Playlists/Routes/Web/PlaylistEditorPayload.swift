@@ -16,6 +16,8 @@ struct PlaylistEditorPayload: Decodable, Sendable {
 
     let notes: [NotePayload]
 
+    private let tracklistJSONRaw: String?
+
     let resourceURLs: [String]
 
     let title: String
@@ -34,6 +36,12 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         resourceURLs.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
     }
 
+    var tracks: [TrackMetadata]? {
+        guard let raw = tracklistJSONRaw, !raw.isEmpty,
+              let data = raw.data(using: .utf8) else { return nil }
+        return try? JSONDecoder().decode([TrackMetadata].self, from: data)
+    }
+
     enum CodingKeys: String, CodingKey {
         case _csrf
         case access
@@ -41,6 +49,7 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         case artworkSourceURLRaw = "artwork-source-url"
         case description
         case notes
+        case tracklistJSONRaw = "tracklist-json"
         case resourceURLs
         case title
     }
@@ -52,6 +61,7 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         artworkSourceURLRaw: String? = nil,
         description: String? = nil,
         notes: [NotePayload] = [],
+        tracklistJSONRaw: String? = nil,
         resourceURLs: [String] = [],
         title: String = ""
     ) {
@@ -61,6 +71,7 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         self.artworkSourceURLRaw = artworkSourceURLRaw
         self.description = description
         self.notes = notes
+        self.tracklistJSONRaw = tracklistJSONRaw
         self.resourceURLs = resourceURLs
         self.title = title
     }
@@ -74,7 +85,8 @@ extension PlaylistInput {
             artwork: artworkId ?? payload.artworkId,
             description: payload.description,
             resourceURLs: payload.filteredResourceURLs,
-            title: payload.title
+            title: payload.title,
+            tracks: payload.tracks
         )
     }
 }

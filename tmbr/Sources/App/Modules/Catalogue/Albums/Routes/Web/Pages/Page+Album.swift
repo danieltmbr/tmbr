@@ -7,14 +7,17 @@ struct TrackViewModel: Encodable, Sendable {
     let position: Int
     let title: String
     let href: String?
+    let previewID: String?
 
     init(entry: ContainerEntry) {
         position = entry.position
         title = entry.preview.primaryInfo
         if let parentID = entry.preview.parentID {
             href = "/\(entry.preview.parentType)s/\(parentID)"
+            previewID = nil
         } else {
             href = nil
+            previewID = entry.preview.id?.uuidString
         }
     }
 }

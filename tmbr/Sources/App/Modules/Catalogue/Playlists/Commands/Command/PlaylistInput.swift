@@ -15,18 +15,22 @@ struct PlaylistInput {
 
     fileprivate let title: String
 
+    let tracks: [TrackMetadata]?
+
     init(
         access: Access,
         artwork: ImageID?,
         description: String?,
         resourceURLs: [String],
-        title: String
+        title: String,
+        tracks: [TrackMetadata]? = nil
     ) {
         self.access = access
         self.artwork = artwork
         self.description = description
         self.resourceURLs = resourceURLs
         self.title = title
+        self.tracks = tracks
     }
 
     init(payload: PlaylistPayload) {

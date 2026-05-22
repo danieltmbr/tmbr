@@ -11,6 +11,7 @@ struct PlaylistsWebController: RouteCollection {
     }
 
     func boot(routes: RoutesBuilder) throws {
+        let playlistsRoute = routes.grouped("playlists")
         let recoveringRoute = routes.grouped("playlists")
             .grouped(RecoverMiddleware())
 
@@ -21,12 +22,19 @@ struct PlaylistsWebController: RouteCollection {
         recoveringRoute.get("new", page: .createPlaylist)
         recoveringRoute.post("new", use: createPlaylist)
 
+        playlistsRoute.get("metadata", use: metadata)
         recoveringRoute.post("preview", page: .playlistPreview)
 
         recoveringRoute.get(":playlistID", "edit", page: .editPlaylist)
         recoveringRoute.post(":playlistID", use: updatePlaylist)
 
         recoveringRoute.post(":playlistID", "notes", use: createNote)
+    }
+
+    @Sendable
+    private func metadata(_ request: Request) async throws -> PlaylistMetadata {
+        let url = try request.query.get(String.self, at: "url")
+        return try await request.commands.playlists.metadata(url)
     }
 
     @Sendable
@@ -64,6 +72,18 @@ struct PlaylistsWebController: RouteCollection {
                         NoteInput(body: entry.body, access: entry.access && payload.access)
                     }
                     _ = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    if let tracks = playlistInput.tracks, !tracks.isEmpty {
+                        try await commands.previews.importTracks(
+                            ImportAlbumTracksInput(
+                                albumID: try playlist.requireID(),
+                                access: payload.access,
+                                artist: nil,
+                                ownerID: preview.$parentOwner.id,
+                                tracks: tracks,
+                                containerType: "playlist"
+                            )
+                        )
+                    }
                 case .update(let playlistID):
                     playlist = try await commands.playlists.edit(playlistInput.edit(id: playlistID))
                     let preview = try await commands.previews.fetch(playlist.$preview.id, for: .write)
