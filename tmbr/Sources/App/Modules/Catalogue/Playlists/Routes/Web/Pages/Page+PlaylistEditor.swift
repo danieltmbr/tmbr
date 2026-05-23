@@ -105,7 +105,7 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == PlaylistEditorViewModel {
-    static let playlistEditor = Template(name: "Catalogue/editor")
+    static let playlistEditor = Template(name: "Catalogue/Playlists/playlist-editor")
 }
 
 extension Page {
