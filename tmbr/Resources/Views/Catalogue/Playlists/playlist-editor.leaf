@@ -28,6 +28,14 @@
     <input id="editor-tracklist-json" type="hidden" name="tracklist-json" value="" />
     #endexport
 
+    #export("editor-image-picker"):
+    <figure id="artwork-placeholder" class="image-picker #if(!artworkThumbnailURL):empty#endif">
+        <img id="artwork-image" src="#(artworkThumbnailURL)" alt="Artwork" />
+        <span>#extend("Icons/gallery")</span>
+        <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
+    </figure>
+    #endexport
+
     #export("editor-preview-form"):
     <form id="preview-form" method="post" action="/playlists/preview" target="_blank" hidden>
         <input type="hidden" name="title" id="preview-title" />
