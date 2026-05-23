@@ -18,8 +18,6 @@ struct MovieEditorViewModel: Encodable, Sendable {
 
     private let access: Access
 
-    private let artworkAspect: String = "portrait"
-
     private let director: String
 
     private let coverId: Int?
@@ -156,7 +154,7 @@ private struct MoviePreviewPayload: Content {
     let director: String?
     let genre: String?
     let releaseDate: String?
-    let artworkURL: String?
+    let coverURL: String?
     let resourceURLs: String?
     let notes: String
 }
@@ -182,7 +180,7 @@ extension Page {
             return MovieViewModel(
                 id: 0,
                 allowsNewNote: false,
-                cover: payload.artworkURL.flatMap { url in
+                cover: payload.coverURL.flatMap { url in
                     url.isEmpty ? nil : ImageViewModel(previewURL: url)
                 },
                 director: payload.director,

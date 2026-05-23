@@ -18,8 +18,6 @@ struct BookEditorViewModel: Encodable, Sendable {
 
     private let access: Access
 
-    private let artworkAspect: String = "portrait"
-
     private let author: String
 
     private let coverId: Int?
@@ -156,7 +154,7 @@ private struct BookPreviewPayload: Content {
     let author: String
     let genre: String?
     let releaseDate: String?
-    let artworkURL: String?
+    let coverURL: String?
     let resourceURLs: String?
     let notes: String
 }
@@ -183,7 +181,7 @@ extension Page {
                 id: 0,
                 author: payload.author,
                 allowsNewNote: false,
-                cover: payload.artworkURL.flatMap { url in
+                cover: payload.coverURL.flatMap { url in
                     url.isEmpty ? nil : ImageViewModel(previewURL: url)
                 },
                 genre: payload.genre,

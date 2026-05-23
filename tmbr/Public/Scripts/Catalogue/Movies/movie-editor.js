@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemID     = idInput?.value || '';
     const storageKey = itemID ? `editor:movie:${itemID}` : 'editor:movie:new';
 
-    const artwork = new ArtworkController({
+    const cover = new ArtworkController({
         hiddenInput:      document.getElementById('editor-cover-id'),
         externalUrlInput: document.getElementById('editor-cover-source-url'),
         placeholder:      document.getElementById('cover-placeholder'),
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         onChange:      () => saveDraft(),
         onOpenGallery: () => imagePicker.open('image'),
     });
-    artwork.init();
+    cover.init();
 
     const notes = new NotesController(
         { section: notesSection },
@@ -67,9 +67,9 @@ document.addEventListener('DOMContentLoaded', () => {
             releaseDate:        releaseDateInput?.value || '',
             notes:              notes.getNotes(),
             resourceURLs:       resourceInputs.getValues(),
-            artworkId:          artwork.getArtworkId(),
-            artworkThumbnailUrl: artwork.getThumbnailUrl(),
-            artworkExternalURL: artwork.getExternalURL(),
+            coverId:          cover.getArtworkId(),
+            coverThumbnailUrl: cover.getThumbnailUrl(),
+            coverExternalURL: cover.getExternalURL(),
         };
     }
 
@@ -81,9 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof state.releaseDate === 'string' && !releaseDateInput.value) releaseDateInput.value = state.releaseDate;
         if (Array.isArray(state.notes)) notes.setNotes(state.notes, true);
         if (Array.isArray(state.resourceURLs)) resourceInputs.setValues(state.resourceURLs);
-        if (artwork.isEmpty()) {
-            if (state.artworkId) artwork.setArtwork(state.artworkId, state.artworkThumbnailUrl);
-            else if (state.artworkExternalURL) artwork.setExternalURL(state.artworkExternalURL);
+        if (cover.isEmpty()) {
+            if (state.coverId) cover.setArtwork(state.coverId, state.coverThumbnailUrl);
+            else if (state.coverExternalURL) cover.setExternalURL(state.coverExternalURL);
         }
     }
 
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!genreInput.value && data.genre) genreInput.value = data.genre;
         if (data.releaseDate) releaseDateInput.value = data.releaseDate.substring(0, 10);
         // Movies API returns 'cover', not 'artwork'
-        if (data.cover && artwork.isEmpty()) artwork.setExternalURL(data.cover);
+        if (data.cover && cover.isEmpty()) cover.setExternalURL(data.cover);
     }
 
     function fillPreview() {
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         set('preview-director',     directorInput?.value || '');
         set('preview-genre',        genreInput?.value || '');
         set('preview-release-date', releaseDateInput?.value || '');
-        set('preview-artwork-url',  artwork.getThumbnailUrl());
+        set('preview-cover-url',  cover.getThumbnailUrl());
         set('preview-resource-urls', resourceInputs.getValues().join('\n'));
         set('preview-notes',        notes.getValues().join('\n\n'));
         pf.submit();
@@ -142,11 +142,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const imagePicker = new ImagePickerController(
         { gallery, gallerySection, galleryStatus, galleryTitle, notesOpenButton: notesGalleryOpen, galleryCloseButton: galleryClose },
-        { onSelectImage: (id, url) => artwork.setArtwork(id, url), onInsertMarkdown: (md) => notes.insertMarkdown(md), imageTitle: 'Select movie poster' }
+        { onSelectImage: (id, url) => cover.setArtwork(id, url), onInsertMarkdown: (md) => notes.insertMarkdown(md), imageTitle: 'Select movie poster' }
     );
     imagePicker.init();
 
-    new DragAndDropController({ resourcesSection, detailsSection, notesSection }, { uploads, artwork, notes }).init();
+    new DragAndDropController({ resourcesSection, detailsSection, notesSection }, { uploads, artwork: cover, notes }).init();
     new ShortcutsController([ShortcutsController.login, ShortcutsController.preview(() => fillPreview())]).init();
 
     document.getElementById('editor-preview')?.addEventListener('click', () => fillPreview());
