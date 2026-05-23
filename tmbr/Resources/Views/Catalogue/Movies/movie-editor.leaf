@@ -54,6 +54,14 @@
     />
     #endexport
 
+    #export("editor-image-picker"):
+    <figure id="cover-placeholder" class="image-picker portrait #if(!coverThumbnailURL):empty#endif">
+        <img id="cover-image" src="#(coverThumbnailURL)" alt="Artwork" />
+        <span>#extend("Icons/gallery")</span>
+        <button id="cover-clear" type="button" class="icon">#extend("Icons/trash")</button>
+    </figure>
+    #endexport
+
     #export("editor-preview-form"):
     <form id="preview-form" method="post" action="/movies/preview" target="_blank" hidden>
         <input type="hidden" name="title" id="preview-title" />

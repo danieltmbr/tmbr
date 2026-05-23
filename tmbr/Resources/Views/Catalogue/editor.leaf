@@ -23,11 +23,7 @@
                     #import("editor-fields")
                 </div>
 
-                <figure id="cover-placeholder" class="image-picker #(artworkAspect) #if(!artworkThumbnailURL):empty#endif">
-                    <img id="cover-image" src="#(artworkThumbnailURL)" alt="Artwork" />
-                    <span>#extend("Icons/gallery")</span>
-                    <button id="cover-clear" type="button" class="icon">#extend("Icons/trash")</button>
-                </figure>
+                #import("editor-image-picker")
             </div>
         </section>
 

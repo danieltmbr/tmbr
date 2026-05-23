@@ -170,7 +170,7 @@ struct BooksWebController: RouteCollection {
             author: submitted.author,
             coverId: submitted.coverId,
             coverSourceURL: submitted.coverSourceURL,
-            artworkThumbnailURL: submitted.coverSourceURL,
+            coverThumbnailURL: submitted.coverSourceURL,
             genre: submitted.genre ?? "",
             notes: noteViewModels,
             releaseDate: submitted.releaseDate?.formatted(.iso8601.year().month().day()) ?? "",

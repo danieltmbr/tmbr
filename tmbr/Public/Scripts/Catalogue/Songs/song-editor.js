@@ -31,9 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const artwork = new ArtworkController({
         hiddenInput:      document.getElementById('editor-artwork-id'),
         externalUrlInput: document.getElementById('editor-artwork-source-url'),
-        placeholder:      document.getElementById('cover-placeholder'),
-        imageEl:          document.getElementById('cover-image'),
-        clearButton:      document.getElementById('cover-clear'),
+        placeholder:      document.getElementById('artwork-placeholder'),
+        imageEl:          document.getElementById('artwork-image'),
+        clearButton:      document.getElementById('artwork-clear'),
     }, {
         onChange:      () => saveDraft(),
         onOpenGallery: () => imagePicker.open('image'),

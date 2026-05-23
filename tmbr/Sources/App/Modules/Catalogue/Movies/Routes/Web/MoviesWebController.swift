@@ -171,7 +171,7 @@ struct MoviesWebController: RouteCollection {
             director: submitted.director ?? "",
             coverId: submitted.coverId,
             coverSourceURL: submitted.coverSourceURL,
-            artworkThumbnailURL: submitted.coverSourceURL,
+            coverThumbnailURL: submitted.coverSourceURL,
             genre: submitted.genre ?? "",
             notes: noteViewModels,
             releaseDate: submitted.releaseDate?.formatted(.iso8601.year().month().day()) ?? "",

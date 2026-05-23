@@ -26,7 +26,7 @@ struct BookEditorViewModel: Encodable, Sendable {
 
     private let coverSourceURL: String?
 
-    private let artworkThumbnailURL: String?
+    private let coverThumbnailURL: String?
 
     private let genre: String
 
@@ -51,7 +51,7 @@ struct BookEditorViewModel: Encodable, Sendable {
         author: String = "",
         coverId: Int? = nil,
         coverSourceURL: String? = nil,
-        artworkThumbnailURL: String? = nil,
+        coverThumbnailURL: String? = nil,
         genre: String = "",
         notes: [NoteViewModel] = [],
         releaseDate: String = "",
@@ -67,7 +67,7 @@ struct BookEditorViewModel: Encodable, Sendable {
         self.author = author
         self.coverId = coverId
         self.coverSourceURL = coverSourceURL
-        self.artworkThumbnailURL = artworkThumbnailURL
+        self.coverThumbnailURL = coverThumbnailURL
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate
@@ -86,11 +86,11 @@ struct BookEditorViewModel: Encodable, Sendable {
     ) throws {
         let id = try book.requireID()
         let coverId = book.$cover.id
-        let artworkThumbnailURL: String?
+        let coverThumbnailURL: String?
         if let cover = book.cover {
-            artworkThumbnailURL = "\(baseURL)/gallery/data/\(cover.thumbnailKey)"
+            coverThumbnailURL = "\(baseURL)/gallery/data/\(cover.thumbnailKey)"
         } else {
-            artworkThumbnailURL = nil
+            coverThumbnailURL = nil
         }
         self.init(
             id: id,
@@ -99,7 +99,7 @@ struct BookEditorViewModel: Encodable, Sendable {
             author: book.author,
             coverId: coverId,
             coverSourceURL: nil,
-            artworkThumbnailURL: artworkThumbnailURL,
+            coverThumbnailURL: coverThumbnailURL,
             genre: book.genre ?? "",
             notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access) },
             releaseDate: book.releaseDate?.formatted(.releaseDate) ?? "",
