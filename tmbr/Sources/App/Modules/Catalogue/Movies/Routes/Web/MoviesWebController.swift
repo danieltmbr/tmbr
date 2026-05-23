@@ -81,10 +81,10 @@ struct MoviesWebController: RouteCollection {
                 throw Abort(.forbidden, reason: "Invalid form token. Please reload the editor and try again.")
             }
 
-            let artworkId = try await resolveArtwork(payload: payload, on: req)
+            let coverId = try await resolveArtwork(payload: payload, on: req)
 
             let movie = try await req.commands.transaction { commands in
-                let movieInput = MovieInput(payload: payload, artworkId: artworkId)
+                let movieInput = MovieInput(payload: payload, coverId: coverId)
                 let movie: Movie
 
                 switch mode {
@@ -122,10 +122,10 @@ struct MoviesWebController: RouteCollection {
     }
 
     private func resolveArtwork(payload: MovieEditorPayload, on req: Request) async throws -> ImageID? {
-        if let artworkId = payload.artworkId {
-            return artworkId
+        if let coverId = payload.coverId {
+            return coverId
         }
-        guard let artworkURL = payload.artworkSourceURL else {
+        guard let artworkURL = payload.coverSourceURL else {
             return nil
         }
         if let existingImage = try await req.commands.gallery.lookup(artworkURL) {
@@ -169,9 +169,9 @@ struct MoviesWebController: RouteCollection {
             pageTitle: pageTitle,
             access: submitted.access,
             director: submitted.director ?? "",
-            artworkId: submitted.artworkId,
-            artworkSourceURL: submitted.artworkSourceURL,
-            artworkThumbnailURL: submitted.artworkSourceURL,
+            coverId: submitted.coverId,
+            coverSourceURL: submitted.coverSourceURL,
+            artworkThumbnailURL: submitted.coverSourceURL,
             genre: submitted.genre ?? "",
             notes: noteViewModels,
             releaseDate: submitted.releaseDate?.formatted(.iso8601.year().month().day()) ?? "",

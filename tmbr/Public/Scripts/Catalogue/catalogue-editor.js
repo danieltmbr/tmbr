@@ -9,6 +9,11 @@ class MetadataController {
         }
         const encoded = encodeURIComponent(url);
         const response = await window.fetch(`${this.endpoint}?url=${encoded}`);
+        if (response.status === 401) {
+            const err = new Error('Unauthorized');
+            err.status = 401;
+            throw err;
+        }
         if (!response.ok) throw new Error(`Metadata fetch failed (${response.status})`);
         return await response.json();
     }
@@ -441,248 +446,30 @@ class ResourceInputsController {
     }
 }
 
-class CatalogueEditorController {
-    // config: {
-    //   type, metadataEndpoint, lookupEndpoint, duplicateLinkSelector, imageTitle,
-    //   titleMetadataKey?,   // default 'title'
-    //   artworkMetadataKey?, // default 'artwork'
-    //   extraFields?: [{ inputId, stateKey, metadataKey?, isDate?, isNumber? }],
-    //   previewMappings?: [{ sourceId, outputId }],
-    // }
-    static init(config) {
-        const form = document.getElementById('editor-form');
-        if (!form) return;
-
-        const persistence = new PersistenceController();
-        const uploads = new UploadsController();
-        const metadata = new MetadataController({ endpoint: config.metadataEndpoint });
-
-        const idInput = document.getElementById('editor-id');
-        const titleInput = document.getElementById('editor-title');
-        const genreInput = document.getElementById('editor-genre');
-        const releaseDateInput = document.getElementById('editor-release-date');
-        const releaseDateISOInput = document.getElementById('editor-release-date-iso');
-        const resourcesSection = document.getElementById('resources-section');
-        const detailsSection = document.getElementById('details-section');
-        const notesSection = document.getElementById('notes-section');
-        const statusEl = document.getElementById('autofill-status');
-
-        const artworkIdInput = document.getElementById('editor-artwork-id');
-        const artworkSourceUrlInput = document.getElementById('editor-artwork-source-url');
-        const artworkPlaceholder = document.getElementById('artwork-placeholder');
-        const artworkImage = document.getElementById('artwork-image');
-        const artworkClear = document.getElementById('artwork-clear');
-
-        const gallery = document.getElementById('gallery');
-        const gallerySection = document.getElementById('gallery-section');
-        const galleryStatus = document.getElementById('gallery-status');
-        const galleryTitle = document.getElementById('gallery-title');
-        const notesGalleryOpen = document.getElementById('notes-gallery-open');
-        const galleryClose = document.getElementById('gallery-close');
-
-        const extraInputs = (config.extraFields || []).map(f => ({
-            ...f,
-            el: document.getElementById(f.inputId)
-        }));
-
-        const itemID = idInput ? idInput.value : '';
-        const storageKey = itemID ? `editor:${config.type}:${itemID}` : `editor:${config.type}:new`;
-
-        const artwork = new ArtworkController({
-            hiddenInput: artworkIdInput,
-            externalUrlInput: artworkSourceUrlInput,
-            placeholder: artworkPlaceholder,
-            imageEl: artworkImage,
-            clearButton: artworkClear
-        }, {
-            onChange: () => saveDraft(),
-            onOpenGallery: () => imagePicker.open('image')
-        });
-        artwork.init();
-
-        const notes = new NotesController(
-            { section: notesSection },
-            {
-                onInput: () => saveDraft(),
-                onAccessChange: () => saveDraft()
-            }
-        );
-        notes.init();
-
-        const lookup = new LookupController({
-            endpoint: config.lookupEndpoint,
-            excludeID: parseInt(idInput?.value) || null
-        });
-
-        const duplicateAlert = new DuplicateAlertController(
-            { containerEl: document.getElementById('duplicate-container'), linkSelector: config.duplicateLinkSelector },
-            { onNavigate: () => persistence.clear(storageKey) }
-        );
-        duplicateAlert.init();
-
-        function getState() {
-            const state = {
-                title: titleInput.value || '',
-                genre: genreInput?.value || '',
-                releaseDate: releaseDateInput?.value || '',
-                notes: notes.getNotes(),
-                resourceURLs: resourceInputs.getValues(),
-                artworkId: artwork.getArtworkId(),
-                artworkThumbnailUrl: artwork.getThumbnailUrl(),
-                artworkExternalURL: artwork.getExternalURL()
-            };
-            extraInputs.forEach(f => {
-                if (f.el) state[f.stateKey] = f.el.value || '';
-            });
-            return state;
+function handleAutofillError(err, url, statusEl) {
+    if (err.status === 401) {
+        if (statusEl) {
+            statusEl.textContent = '';
+            statusEl.append(
+                'Session expired. ',
+                Object.assign(document.createElement('a'), {
+                    href: '/signin?redirectReturn=' + encodeURIComponent(window.location.href),
+                    textContent: 'Log in'
+                }),
+                ' to fetch metadata.'
+            );
+            statusEl.hidden = false;
         }
+        sessionStorage.setItem('pendingMetadataURL', url);
+    } else {
+        if (statusEl) { statusEl.textContent = 'Failed to fetch metadata.'; statusEl.hidden = false; }
+    }
+}
 
-        function setState(state) {
-            if (!state || typeof state !== 'object') return;
-            if (typeof state.title === 'string' && !titleInput.value) titleInput.value = state.title;
-            if (genreInput && typeof state.genre === 'string' && !genreInput.value) genreInput.value = state.genre;
-            if (releaseDateInput && typeof state.releaseDate === 'string' && !releaseDateInput.value) releaseDateInput.value = state.releaseDate;
-            extraInputs.forEach(f => {
-                if (f.el && typeof state[f.stateKey] === 'string' && !f.el.value) f.el.value = state[f.stateKey];
-            });
-            if (Array.isArray(state.notes)) notes.setNotes(state.notes, true);
-            if (Array.isArray(state.resourceURLs)) resourceInputs.setValues(state.resourceURLs);
-            if (artwork.isEmpty()) {
-                if (state.artworkId) artwork.setArtwork(state.artworkId, state.artworkThumbnailUrl);
-                else if (state.artworkExternalURL) artwork.setExternalURL(state.artworkExternalURL);
-            }
-        }
-
-        function saveDraft() {
-            persistence.save(storageKey, getState());
-        }
-
-        function loadDraft() {
-            if (persistence.clearIfPending(storageKey)) return;
-            const saved = persistence.load(storageKey);
-            if (saved) setState(saved);
-        }
-
-        function applyMetadata(data) {
-            const titleKey = config.titleMetadataKey || 'title';
-            if (!titleInput.value && data[titleKey]) titleInput.value = data[titleKey];
-            if (data.releaseDate && releaseDateInput) {
-                releaseDateInput.value = data.releaseDate.substring(0, 10);
-            }
-            extraInputs.forEach(f => {
-                if (!f.metadataKey || !f.el) return;
-                const val = data[f.metadataKey];
-                if (val == null) return;
-                if (f.isDate) {
-                    f.el.value = typeof val === 'string' ? val.substring(0, 10) : String(val);
-                } else if (f.isNumber) {
-                    if (!f.el.value) f.el.value = val;
-                } else {
-                    if (!f.el.value) f.el.value = val;
-                }
-            });
-            const artworkKey = config.artworkMetadataKey || 'artwork';
-            if (data[artworkKey] && artwork.isEmpty()) artwork.setExternalURL(data[artworkKey]);
-        }
-
-        function preview() {
-            const previewForm = document.getElementById('preview-form');
-            if (!previewForm) { alert('Preview form is missing from the template.'); return; }
-            const set = (id, value) => {
-                const el = previewForm.querySelector(`#${id}`);
-                if (el) el.value = value || '';
-            };
-            set('preview-title', titleInput.value);
-            set('preview-genre', genreInput?.value || '');
-            set('preview-release-date', releaseDateInput?.value || '');
-            set('preview-artwork-url', artwork.getThumbnailUrl());
-            set('preview-resource-urls', resourceInputs.getValues().join('\n'));
-            set('preview-notes', notes.getValues().join('\n\n'));
-            (config.previewMappings || []).forEach(({ sourceId, outputId }) => {
-                const el = document.getElementById(sourceId);
-                set(outputId, el?.value || '');
-            });
-            previewForm.submit();
-        }
-
-        const resourceInputs = new ResourceInputsController(
-            { section: resourcesSection },
-            {
-                onUrlChange: (url) => autofill.fetchAndApply(url),
-                onInput: () => saveDraft()
-            }
-        );
-        resourceInputs.init();
-
-        const autofill = {
-            async fetchAndApply(url) {
-                try {
-                    const lookupPromise = lookup ? lookup.fetch(url).catch(() => null) : Promise.resolve(null);
-                    const [data, html] = await Promise.all([metadata.fetch(url), lookupPromise]);
-                    applyMetadata(data);
-                    if (statusEl) { statusEl.textContent = ''; statusEl.hidden = true; }
-                    saveDraft();
-                    if (html) duplicateAlert.show(html);
-                } catch (err) {
-                    console.error(err);
-                    if (statusEl) { statusEl.textContent = 'Failed to fetch metadata.'; statusEl.hidden = false; }
-                }
-            }
-        };
-
-        loadDraft();
-
-        titleInput.addEventListener('input', saveDraft);
-        genreInput?.addEventListener('input', saveDraft);
-        releaseDateInput?.addEventListener('input', saveDraft);
-        extraInputs.forEach(f => f.el?.addEventListener('input', saveDraft));
-
-        const imagePicker = new ImagePickerController({
-            gallery,
-            gallerySection,
-            galleryStatus,
-            galleryTitle,
-            notesOpenButton: notesGalleryOpen,
-            galleryCloseButton: galleryClose
-        }, {
-            onSelectImage: (id, thumbnailUrl) => artwork.setArtwork(id, thumbnailUrl),
-            onInsertMarkdown: (md) => notes.insertMarkdown(md),
-            imageTitle: config.imageTitle
-        });
-        imagePicker.init();
-
-        const dnd = new DragAndDropController(
-            { resourcesSection, detailsSection, notesSection },
-            { uploads, artwork, notes }
-        );
-        dnd.init();
-
-        new ShortcutsController([
-            ShortcutsController.login,
-            ShortcutsController.preview(() => preview())
-        ]).init();
-
-        const previewButton = document.getElementById('editor-preview');
-        if (previewButton) previewButton.addEventListener('click', () => preview());
-
-        form.addEventListener('keydown', (e) => {
-            if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
-            e.preventDefault();
-            const focusable = Array.from(form.querySelectorAll('input:not([type="hidden"]), textarea')).filter(el => !el.disabled);
-            const idx = focusable.indexOf(e.target);
-            if (idx !== -1 && idx < focusable.length - 1) focusable[idx + 1].focus();
-        });
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const date = parseReleaseDate(releaseDateInput.value.trim());
-            if (date) {
-                releaseDateISOInput.value = date.toISOString();
-            } else {
-                releaseDateISOInput.disabled = true;
-            }
-            persistence.markPendingClear(storageKey);
-            form.submit();
-        });
+function retryPendingMetadata(autofill) {
+    const url = sessionStorage.getItem('pendingMetadataURL');
+    if (url) {
+        sessionStorage.removeItem('pendingMetadataURL');
+        autofill.fetchAndApply(url);
     }
 }

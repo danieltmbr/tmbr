@@ -80,10 +80,10 @@ struct BooksWebController: RouteCollection {
                 throw Abort(.forbidden, reason: "Invalid form token. Please reload the editor and try again.")
             }
 
-            let artworkId = try await resolveArtwork(payload: payload, on: req)
+            let coverId = try await resolveArtwork(payload: payload, on: req)
 
             let book = try await req.commands.transaction { commands in
-                let bookInput = BookInput(payload: payload, artworkId: artworkId)
+                let bookInput = BookInput(payload: payload, coverId: coverId)
                 let book: Book
 
                 switch mode {
@@ -121,10 +121,10 @@ struct BooksWebController: RouteCollection {
     }
 
     private func resolveArtwork(payload: BookEditorPayload, on req: Request) async throws -> ImageID? {
-        if let artworkId = payload.artworkId {
-            return artworkId
+        if let coverId = payload.coverId {
+            return coverId
         }
-        guard let artworkURL = payload.artworkSourceURL else {
+        guard let artworkURL = payload.coverSourceURL else {
             return nil
         }
         if let existingImage = try await req.commands.gallery.lookup(artworkURL) {
@@ -168,9 +168,9 @@ struct BooksWebController: RouteCollection {
             pageTitle: pageTitle,
             access: submitted.access,
             author: submitted.author,
-            artworkId: submitted.artworkId,
-            artworkSourceURL: submitted.artworkSourceURL,
-            artworkThumbnailURL: submitted.artworkSourceURL,
+            coverId: submitted.coverId,
+            coverSourceURL: submitted.coverSourceURL,
+            artworkThumbnailURL: submitted.coverSourceURL,
             genre: submitted.genre ?? "",
             notes: noteViewModels,
             releaseDate: submitted.releaseDate?.formatted(.iso8601.year().month().day()) ?? "",

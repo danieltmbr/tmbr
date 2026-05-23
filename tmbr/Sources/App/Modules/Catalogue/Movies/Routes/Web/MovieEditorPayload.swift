@@ -8,9 +8,9 @@ struct MovieEditorPayload: Decodable, Sendable {
 
     let access: Access
 
-    private let artworkIdRaw: String?
+    private let coverIdRaw: String?
 
-    private let artworkSourceURLRaw: String?
+    private let coverSourceURLRaw: String?
 
     let director: String?
 
@@ -24,13 +24,13 @@ struct MovieEditorPayload: Decodable, Sendable {
 
     let title: String
 
-    var artworkId: ImageID? {
-        guard let raw = artworkIdRaw, !raw.isEmpty else { return nil }
+    var coverId: ImageID? {
+        guard let raw = coverIdRaw, !raw.isEmpty else { return nil }
         return Int(raw)
     }
 
-    var artworkSourceURL: String? {
-        guard let raw = artworkSourceURLRaw, !raw.isEmpty else { return nil }
+    var coverSourceURL: String? {
+        guard let raw = coverSourceURLRaw, !raw.isEmpty else { return nil }
         return raw
     }
 
@@ -41,8 +41,8 @@ struct MovieEditorPayload: Decodable, Sendable {
     enum CodingKeys: String, CodingKey {
         case _csrf
         case access
-        case artworkIdRaw = "artwork-id"
-        case artworkSourceURLRaw = "artwork-source-url"
+        case coverIdRaw = "cover-id"
+        case coverSourceURLRaw = "cover-source-url"
         case director
         case genre
         case notes
@@ -54,8 +54,8 @@ struct MovieEditorPayload: Decodable, Sendable {
     init(
         _csrf: String? = nil,
         access: Access = .private,
-        artworkIdRaw: String? = nil,
-        artworkSourceURLRaw: String? = nil,
+        coverIdRaw: String? = nil,
+        coverSourceURLRaw: String? = nil,
         director: String? = nil,
         genre: String? = nil,
         notes: [NotePayload] = [],
@@ -65,8 +65,8 @@ struct MovieEditorPayload: Decodable, Sendable {
     ) {
         self._csrf = _csrf
         self.access = access
-        self.artworkIdRaw = artworkIdRaw
-        self.artworkSourceURLRaw = artworkSourceURLRaw
+        self.coverIdRaw = coverIdRaw
+        self.coverSourceURLRaw = coverSourceURLRaw
         self.director = director
         self.genre = genre
         self.notes = notes
@@ -78,10 +78,10 @@ struct MovieEditorPayload: Decodable, Sendable {
 
 extension MovieInput {
 
-    init(payload: MovieEditorPayload, artworkId: ImageID? = nil) {
+    init(payload: MovieEditorPayload, coverId: ImageID? = nil) {
         self.init(
             access: payload.access,
-            cover: artworkId ?? payload.artworkId,
+            cover: coverId ?? payload.coverId,
             director: payload.director,
             genre: payload.genre,
             releaseDate: payload.releaseDate,

@@ -14,6 +14,8 @@
     #endexport
 
     #export("editor-fields"):
+    <input id="editor-artwork-id" type="hidden" name="artwork-id" value="#(artworkId)" />
+    <input id="editor-artwork-source-url" type="hidden" name="artwork-source-url" value="#(artworkSourceURL)" />
     <input
         id="editor-artist"
         class="text-input"

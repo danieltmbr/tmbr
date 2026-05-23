@@ -7,8 +7,6 @@
     #export("main"):
     <form id="editor-form" method="#(submit.method)" action="#(submit.action)">
         <input id="editor-id" type="hidden" name="id" value="#(id)" />
-        <input id="editor-artwork-id" type="hidden" name="artwork-id" value="#(artworkId)" />
-        <input id="editor-artwork-source-url" type="hidden" name="artwork-source-url" value="#(artworkSourceURL)" />
         #if(_csrf):
             <input type="hidden" name="_csrf" value="#(_csrf)" />
         #endif

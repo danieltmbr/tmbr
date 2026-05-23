@@ -22,9 +22,9 @@ struct MovieEditorViewModel: Encodable, Sendable {
 
     private let director: String
 
-    private let artworkId: Int?
+    private let coverId: Int?
 
-    private let artworkSourceURL: String?
+    private let coverSourceURL: String?
 
     private let artworkThumbnailURL: String?
 
@@ -49,8 +49,8 @@ struct MovieEditorViewModel: Encodable, Sendable {
         pageTitle: String? = nil,
         access: Access = .private,
         director: String = "",
-        artworkId: Int? = nil,
-        artworkSourceURL: String? = nil,
+        coverId: Int? = nil,
+        coverSourceURL: String? = nil,
         artworkThumbnailURL: String? = nil,
         genre: String = "",
         notes: [NoteViewModel] = [],
@@ -65,8 +65,8 @@ struct MovieEditorViewModel: Encodable, Sendable {
         self.pageTitle = pageTitle
         self.access = access
         self.director = director
-        self.artworkId = artworkId
-        self.artworkSourceURL = artworkSourceURL
+        self.coverId = coverId
+        self.coverSourceURL = coverSourceURL
         self.artworkThumbnailURL = artworkThumbnailURL
         self.genre = genre
         self.notes = notes
@@ -85,7 +85,7 @@ struct MovieEditorViewModel: Encodable, Sendable {
         csrf: String?
     ) throws {
         let id = try movie.requireID()
-        let artworkId = movie.$cover.id
+        let coverId = movie.$cover.id
         let artworkThumbnailURL: String?
         if let cover = movie.cover {
             artworkThumbnailURL = "\(baseURL)/gallery/data/\(cover.thumbnailKey)"
@@ -97,8 +97,8 @@ struct MovieEditorViewModel: Encodable, Sendable {
             pageTitle: "Edit '\(movie.title)'",
             access: movie.access,
             director: movie.director ?? "",
-            artworkId: artworkId,
-            artworkSourceURL: nil,
+            coverId: coverId,
+            coverSourceURL: nil,
             artworkThumbnailURL: artworkThumbnailURL,
             genre: movie.genre ?? "",
             notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access) },
@@ -115,7 +115,7 @@ struct MovieEditorViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == MovieEditorViewModel {
-    static let movieEditor = Template(name: "Catalogue/editor")
+    static let movieEditor = Template(name: "Catalogue/Movies/movie-editor")
 }
 
 extension Page {

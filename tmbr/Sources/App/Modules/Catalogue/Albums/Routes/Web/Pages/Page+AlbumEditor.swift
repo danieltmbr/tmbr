@@ -115,7 +115,7 @@ struct AlbumEditorViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == AlbumEditorViewModel {
-    static let albumEditor = Template(name: "Catalogue/editor")
+    static let albumEditor = Template(name: "Catalogue/Albums/album-editor")
 }
 
 extension Page {

@@ -122,7 +122,7 @@ struct PodcastEditorViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == PodcastEditorViewModel {
-    static let podcastEditor = Template(name: "Catalogue/editor")
+    static let podcastEditor = Template(name: "Catalogue/Podcasts/podcast-editor")
 }
 
 extension Page {

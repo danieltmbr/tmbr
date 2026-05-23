@@ -22,9 +22,9 @@ struct BookEditorViewModel: Encodable, Sendable {
 
     private let author: String
 
-    private let artworkId: Int?
+    private let coverId: Int?
 
-    private let artworkSourceURL: String?
+    private let coverSourceURL: String?
 
     private let artworkThumbnailURL: String?
 
@@ -49,8 +49,8 @@ struct BookEditorViewModel: Encodable, Sendable {
         pageTitle: String? = nil,
         access: Access = .private,
         author: String = "",
-        artworkId: Int? = nil,
-        artworkSourceURL: String? = nil,
+        coverId: Int? = nil,
+        coverSourceURL: String? = nil,
         artworkThumbnailURL: String? = nil,
         genre: String = "",
         notes: [NoteViewModel] = [],
@@ -65,8 +65,8 @@ struct BookEditorViewModel: Encodable, Sendable {
         self.pageTitle = pageTitle
         self.access = access
         self.author = author
-        self.artworkId = artworkId
-        self.artworkSourceURL = artworkSourceURL
+        self.coverId = coverId
+        self.coverSourceURL = coverSourceURL
         self.artworkThumbnailURL = artworkThumbnailURL
         self.genre = genre
         self.notes = notes
@@ -85,7 +85,7 @@ struct BookEditorViewModel: Encodable, Sendable {
         csrf: String?
     ) throws {
         let id = try book.requireID()
-        let artworkId = book.$cover.id
+        let coverId = book.$cover.id
         let artworkThumbnailURL: String?
         if let cover = book.cover {
             artworkThumbnailURL = "\(baseURL)/gallery/data/\(cover.thumbnailKey)"
@@ -97,8 +97,8 @@ struct BookEditorViewModel: Encodable, Sendable {
             pageTitle: "Edit '\(book.title)'",
             access: book.access,
             author: book.author,
-            artworkId: artworkId,
-            artworkSourceURL: nil,
+            coverId: coverId,
+            coverSourceURL: nil,
             artworkThumbnailURL: artworkThumbnailURL,
             genre: book.genre ?? "",
             notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access) },
@@ -115,7 +115,7 @@ struct BookEditorViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == BookEditorViewModel {
-    static let bookEditor = Template(name: "Catalogue/editor")
+    static let bookEditor = Template(name: "Catalogue/Books/book-editor")
 }
 
 extension Page {
