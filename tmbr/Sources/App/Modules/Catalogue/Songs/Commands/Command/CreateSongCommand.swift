@@ -40,7 +40,7 @@ struct CreateSongCommand: Command {
 }
 
 extension CommandFactory<SongInput, Song> {
-    
+
     static var createSong: Self {
         CommandFactory { request in
             CreateSongCommand(
@@ -48,6 +48,18 @@ extension CommandFactory<SongInput, Song> {
                 database: request.commandDB,
                 permission: request.permissions.songs.create,
                 validate: .song
+            )
+            .logged(logger: request.logger)
+        }
+    }
+
+    static var promoteCreate: Self {
+        CommandFactory { request in
+            CreateSongCommand(
+                configure: .song,
+                database: request.commandDB,
+                permission: request.permissions.songs.create,
+                validate: .songPromotion
             )
             .logged(logger: request.logger)
         }

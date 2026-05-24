@@ -18,7 +18,7 @@ extension MetadataExtractor where M == PlaylistMetadata {
         // Apple Music playlists embed JSON-LD in a block tagged id="schema:music-playlist"
         let playlistJSON = metadata.json["schema:music-playlist"] as? [String: Any]
 
-        let tracks: [TrackMetadata]? = (playlistJSON?["tracks"] as? [[String: Any]])?.compactMap { track in
+        let tracks: [TrackMetadata]? = (playlistJSON?["track"] as? [[String: Any]])?.compactMap { track in
             guard let name = track["name"] as? String else { return nil }
             return TrackMetadata(name: name, url: track["url"] as? String)
         }

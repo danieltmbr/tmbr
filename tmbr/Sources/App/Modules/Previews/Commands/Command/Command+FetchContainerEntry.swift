@@ -5,18 +5,24 @@ import Fluent
 
 struct ContainerEntryInput: Sendable {
     let previewID: UUID
-    let containerType: String
+    let containerType: String?
+
+    init(previewID: UUID, containerType: String? = nil) {
+        self.previewID = previewID
+        self.containerType = containerType
+    }
 }
 
 extension Command where Self == PlainCommand<ContainerEntryInput, ContainerEntry> {
     static func fetchContainerEntry(database: Database) -> Self {
         PlainCommand { input in
-            guard let entry = try await ContainerEntry.query(on: database)
+            var query = ContainerEntry.query(on: database)
                 .filter(\.$preview.$id == input.previewID)
-                .filter(\.$containerType == input.containerType)
-                .first()
-            else {
-                throw Abort(.notFound, reason: "No \(input.containerType) container entry found for this preview")
+            if let type = input.containerType {
+                query = query.filter(\.$containerType == type)
+            }
+            guard let entry = try await query.first() else {
+                throw Abort(.notFound, reason: "No container entry found for this preview")
             }
             return entry
         }
