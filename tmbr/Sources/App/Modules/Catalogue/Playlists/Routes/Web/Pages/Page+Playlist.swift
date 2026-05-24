@@ -87,7 +87,7 @@ extension Page {
             }
             async let playlist = request.commands.playlists.fetch(playlistID, for: .read)
             async let notes = request.commands.notes.query(id: playlistID, of: Playlist.previewType)
-            async let entries = request.commands.previews.listEntries(
+            async let entries = request.commands.previews.listContainerEntries(
                 ContainerEntriesInput(containerType: "playlist", containerID: playlistID)
             )
             let resolvedPlaylist = try await playlist
