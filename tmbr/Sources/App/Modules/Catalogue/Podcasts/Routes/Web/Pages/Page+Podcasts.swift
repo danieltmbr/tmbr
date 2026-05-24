@@ -2,14 +2,8 @@ import Vapor
 import Core
 import Foundation
 
-struct PodcastsViewModel: Encodable, Sendable {
-    let compose: String?
-    let term: String?
-    let previews: [PreviewViewModel]
-}
-
-extension Template where Model == PodcastsViewModel {
-    static let podcasts = Template(name: "Catalogue/Podcasts/podcasts")
+extension Template where Model == CatalogueListViewModel {
+    static let podcasts = Template(name: "Catalogue/list")
 }
 
 extension Page {
@@ -20,7 +14,7 @@ extension Page {
             async let result = req.commands.podcasts.search(term)
             let baseURL = req.baseURL
             let resolved = try await result
-            return PodcastsViewModel(
+            return CatalogueListViewModel(
                 compose: await composeURL,
                 term: term,
                 previews: resolved.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }

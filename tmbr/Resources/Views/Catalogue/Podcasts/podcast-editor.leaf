@@ -1,121 +1,90 @@
-#extend("Shared/page"):
+#extend("Catalogue/editor"):
 
-    #export("styles"):
-    <link rel="stylesheet" href="/Styles/Shared/editor.css">
+    #export("editor-title-input"):
+    <input
+        id="editor-title"
+        class="text-input title"
+        name="episodeTitle"
+        type="text"
+        value="#(episodeTitle)"
+        placeholder="Episode title"
+        autocomplete="off"
+        spellcheck="true"
+    />
     #endexport
 
-    #export("main"):
-    <form id="podcast-form" method="#(submit.method)" action="#(submit.action)">
-        <input id="editor-podcast-id" type="hidden" name="id" value="#(id)" />
-        <input id="editor-artwork-id" type="hidden" name="artwork-id" value="#(artworkId)" />
-        <input id="editor-artwork-source-url" type="hidden" name="artwork-source-url" value="#(artworkSourceURL)" />
-        #if(_csrf):
-            <input type="hidden" name="_csrf" value="#(_csrf)" />
-        #endif
+    #export("editor-fields"):
+    <input id="editor-artwork-id" type="hidden" name="artwork-id" value="#(artworkId)" />
+    <input id="editor-artwork-source-url" type="hidden" name="artwork-source-url" value="#(artworkSourceURL)" />
+    <input
+        id="editor-show-title"
+        class="text-input"
+        name="title"
+        type="text"
+        value="#(title)"
+        placeholder="Show title"
+        autocomplete="off"
+        spellcheck="true"
+    />
 
-        <input
-            id="editor-podcast-episode-title"
-            class="text-input title"
-            name="episodeTitle"
-            type="text"
-            value="#(episodeTitle)"
-            placeholder="Episode title"
-            autocomplete="off"
-            spellcheck="true"
-        />
+    <input
+        id="editor-release-date"
+        class="text-input"
+        type="text"
+        value="#(releaseDate)"
+        placeholder="Release date, e.g. 2024 or 2025-06-15"
+        autocomplete="off"
+    />
+    <input
+        id="editor-release-date-iso"
+        name="release-date"
+        type="hidden"
+        value=""
+    />
 
-        #extend("Catalogue/resources-editor")
+    <input
+        id="editor-genre"
+        class="text-input"
+        name="genre"
+        type="text"
+        value="#(genre)"
+        placeholder="Genre"
+        autocomplete="off"
+        spellcheck="true"
+    />
 
-        <section id="details-section">
-            <h3>Details</h3>
+    <input
+        id="editor-season-number"
+        class="text-input"
+        name="season-number"
+        type="number"
+        min="1"
+        value="#(seasonNumber)"
+        placeholder="Season"
+        autocomplete="off"
+    />
 
-            <div class="details-content">
-                <div class="details-inputs">
-                    <input
-                        id="editor-podcast-title"
-                        class="text-input"
-                        name="title"
-                        type="text"
-                        value="#(title)"
-                        placeholder="Show title"
-                        autocomplete="off"
-                        spellcheck="true"
-                    />
+    <input
+        id="editor-episode-number"
+        class="text-input"
+        name="episode-number"
+        type="number"
+        min="1"
+        value="#(episodeNumber)"
+        placeholder="Episode"
+        autocomplete="off"
+    />
+    #endexport
 
-                    <input
-                        id="editor-podcast-release-date"
-                        class="text-input"
-                        type="text"
-                        value="#(releaseDate)"
-                        placeholder="Release date, e.g. 2024 or 2025-06-15"
-                        autocomplete="off"
-                    />
-                    <input
-                        id="editor-podcast-release-date-iso"
-                        name="release-date"
-                        type="hidden"
-                        value=""
-                    />
+    #export("editor-image-picker"):
+    <figure id="artwork-placeholder" class="image-picker #if(!artworkThumbnailURL):empty#endif">
+        <img id="artwork-image" src="#(artworkThumbnailURL)" alt="Artwork" />
+        <span>#extend("Icons/gallery")</span>
+        <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
+    </figure>
+    #endexport
 
-                    <input
-                        id="editor-podcast-genre"
-                        class="text-input"
-                        name="genre"
-                        type="text"
-                        value="#(genre)"
-                        placeholder="Genre"
-                        autocomplete="off"
-                        spellcheck="true"
-                    />
-
-                    <input
-                        id="editor-podcast-season-number"
-                        class="text-input"
-                        name="season-number"
-                        type="number"
-                        min="1"
-                        value="#(seasonNumber)"
-                        placeholder="Season"
-                        autocomplete="off"
-                    />
-
-                    <input
-                        id="editor-podcast-episode-number"
-                        class="text-input"
-                        name="episode-number"
-                        type="number"
-                        min="1"
-                        value="#(episodeNumber)"
-                        placeholder="Episode"
-                        autocomplete="off"
-                    />
-                </div>
-
-                <figure id="artwork-placeholder" class="image-picker #if(!artworkThumbnailURL):empty#endif">
-                    <img id="artwork-image" src="#(artworkThumbnailURL)" alt="Podcast artwork" />
-                    <span>#extend("Icons/gallery")</span>
-                    <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
-                </figure>
-            </div>
-        </section>
-
-        #if(error):
-            <p class="editor-error">#unsafeHTML(error)</p>
-        #endif
-
-        #extend("Notes/notes-editor")
-
-        <p id="autofill-status" class="system-info" hidden></p>
-
-        <div class="editor-actions">
-            <button id="editor-podcast-preview" class="link" type="button">Preview</button>
-            <div>
-                <input type="hidden" name="access" value="public" />
-                <button id="editor-post-save" class="primary" type="submit">#(submit.label)</button>
-            </div>
-        </div>
-    </form>
-
+    #export("editor-preview-form"):
     <form id="preview-form" method="post" action="/podcasts/preview" target="_blank" hidden>
         <input type="hidden" name="episodeTitle" id="preview-episode-title" />
         <input type="hidden" name="title" id="preview-title" />
@@ -127,27 +96,10 @@
         <input type="hidden" name="seasonNumber" id="preview-season-number" />
         <input type="hidden" name="episodeNumber" id="preview-episode-number" />
     </form>
-
-    <div id="duplicate-container"></div>
-
-    <aside id="gallery" hidden>
-        <div id="gallery-header">
-            <button class="icon small" type="button" id="gallery-close" aria-label="Close">
-                #extend("Icons/close")
-            </button>
-            <h4 id="gallery-title">Gallery</h4>
-            <span id="gallery-status" class="system-info"></span>
-        </div>
-        <section id="gallery-section"></section>
-    </aside>
     #endexport
 
-    #export("scripts"):
-        <script src="/Scripts/Shared/persistence.js"></script>
-        <script src="/Scripts/Shared/date-parser.js"></script>
-        <script src="/Scripts/Media/media.js"></script>
-        <script src="/Scripts/Notes/notes-editor.js"></script>
-        <script src="/Scripts/Catalogue/catalogue-editor.js"></script>
-        <script src="/Scripts/Catalogue/Podcasts/podcast-editor.js"></script>
+    #export("editor-type-script"):
+    <script src="/Scripts/Catalogue/Podcasts/podcast-editor.js"></script>
     #endexport
+
 #endextend

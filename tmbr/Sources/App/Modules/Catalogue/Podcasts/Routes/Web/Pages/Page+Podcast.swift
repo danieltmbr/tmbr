@@ -44,9 +44,9 @@ struct PodcastViewModel: Encodable, Sendable {
         self.notes = notes
         self.notesEndpoint = notesEndpoint
         self.episodeTitle = episodeTitle
+        self.title = title
         self.post = post
         self.resources = resources
-        self.title = title
     }
 
     init(

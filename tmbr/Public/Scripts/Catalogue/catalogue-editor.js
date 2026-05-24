@@ -9,6 +9,11 @@ class MetadataController {
         }
         const encoded = encodeURIComponent(url);
         const response = await window.fetch(`${this.endpoint}?url=${encoded}`);
+        if (response.status === 401) {
+            const err = new Error('Unauthorized');
+            err.status = 401;
+            throw err;
+        }
         if (!response.ok) throw new Error(`Metadata fetch failed (${response.status})`);
         return await response.json();
     }
@@ -438,5 +443,33 @@ class ResourceInputsController {
                 this.onUrlChange(url);
             }
         }, 0);
+    }
+}
+
+function handleAutofillError(err, url, statusEl) {
+    if (err.status === 401) {
+        if (statusEl) {
+            statusEl.textContent = '';
+            statusEl.append(
+                'Session expired. ',
+                Object.assign(document.createElement('a'), {
+                    href: '/signin?redirectReturn=' + encodeURIComponent(window.location.href),
+                    textContent: 'Log in'
+                }),
+                ' to fetch metadata.'
+            );
+            statusEl.hidden = false;
+        }
+        sessionStorage.setItem('pendingMetadataURL', url);
+    } else {
+        if (statusEl) { statusEl.textContent = 'Failed to fetch metadata.'; statusEl.hidden = false; }
+    }
+}
+
+function retryPendingMetadata(autofill) {
+    const url = sessionStorage.getItem('pendingMetadataURL');
+    if (url) {
+        sessionStorage.removeItem('pendingMetadataURL');
+        autofill.fetchAndApply(url);
     }
 }

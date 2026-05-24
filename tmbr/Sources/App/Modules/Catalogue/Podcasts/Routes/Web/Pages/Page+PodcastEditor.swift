@@ -12,6 +12,8 @@ struct PodcastEditorViewModel: Encodable, Sendable {
         let access: Access
     }
 
+    private let artworkAspect: String = ""
+
     private let id: Int?
 
     private let pageTitle: String?
