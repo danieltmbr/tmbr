@@ -1,0 +1,53 @@
+#extend("Catalogue/editor"):
+
+    #export("editor-title-input"):
+    <input
+        id="editor-title"
+        class="text-input title"
+        name="title"
+        type="text"
+        value="#(title)"
+        placeholder="Playlist title"
+        autocomplete="off"
+        spellcheck="true"
+    />
+    #endexport
+
+    #export("editor-fields"):
+    <input id="editor-artwork-id" type="hidden" name="artwork-id" value="#(artworkId)" />
+    <input id="editor-artwork-source-url" type="hidden" name="artwork-source-url" value="#(artworkSourceURL)" />
+    <textarea
+        id="editor-description"
+        class="text-input"
+        name="description"
+        placeholder="Description"
+        autocomplete="off"
+        spellcheck="true"
+        rows="3"
+    >#(description)</textarea>
+    <input id="editor-tracklist-json" type="hidden" name="tracklist-json" value="" />
+    #endexport
+
+    #export("editor-image-picker"):
+    <figure id="artwork-placeholder" class="image-picker #if(!artworkThumbnailURL):empty#endif">
+        <img id="artwork-image" src="#(artworkThumbnailURL)" alt="Artwork" />
+        <span>#extend("Icons/gallery")</span>
+        <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
+    </figure>
+    #endexport
+
+    #export("editor-preview-form"):
+    <form id="preview-form" method="post" action="/playlists/preview" target="_blank" hidden>
+        <input type="hidden" name="title" id="preview-title" />
+        <input type="hidden" name="description" id="preview-description" />
+        <input type="hidden" name="artworkURL" id="preview-artwork-url" />
+        <input type="hidden" name="resourceURLs" id="preview-resource-urls" />
+        <input type="hidden" name="notes" id="preview-notes" />
+    </form>
+    #endexport
+
+    #export("editor-type-script"):
+    <script src="/Scripts/Catalogue/Playlists/playlist-editor.js"></script>
+    #endexport
+
+#endextend

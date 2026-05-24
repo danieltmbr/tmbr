@@ -16,7 +16,7 @@ extension Command where Self == PlainCommand<ImportAlbumTracksInput, Void> {
     static func importAlbumTracks(database: Database) -> Self {
         PlainCommand { input in
             for (index, track) in input.tracks.enumerated() {
-                var preview = Preview(
+                let preview = Preview(
                     id: UUID(),
                     parentID: nil,
                     parentAccess: input.access,
