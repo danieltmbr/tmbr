@@ -21,6 +21,8 @@ extension Commands {
 
         let metadata: CommandFactory<URL, SongMetadata>
 
+        let promote: CommandFactory<UUID, Song>
+
         let search: CommandFactory<String?, SongSearchResult>
 
         init(
@@ -30,6 +32,7 @@ extension Commands {
             fetch: CommandFactory<FetchParameters<SongID>, Song> = .fetchSong,
             lookup: CommandFactory<String, Song?> = .lookupSong,
             metadata: CommandFactory<URL, SongMetadata> = .fetchMetadata,
+            promote: CommandFactory<UUID, Song> = .promoteSong,
             search: CommandFactory<String?, SongSearchResult> = .searchSongs
         ) {
             self.create = create
@@ -38,6 +41,7 @@ extension Commands {
             self.fetch = fetch
             self.lookup = lookup
             self.metadata = metadata
+            self.promote = promote
             self.search = search
         }
     }

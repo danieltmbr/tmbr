@@ -11,8 +11,8 @@ final class Preview: Model, @unchecked Sendable {
     @ID(custom: "id", generatedBy: .user)
     var id: UUID?
     
-    @Field(key: "parent_id")
-    private(set) var parentID: Int
+    @OptionalField(key: "parent_id")
+    private(set) var parentID: Int?
     
     @Enum(key: "parent_access")
     private(set) var parentAccess: Access
@@ -43,9 +43,16 @@ final class Preview: Model, @unchecked Sendable {
 
     init() {}
 
+    func adopt(parentID: Int, parentType: String, parentAccess: Access, parentOwner: UserID) {
+        self.parentID = parentID
+        self.parentType = parentType
+        self.parentAccess = parentAccess
+        self.$parentOwner.id = parentOwner
+    }
+
     init(
         id: UUID,
-        parentID: Int,
+        parentID: Int?,
         parentAccess: Access,
         parentOwner: UserID,
         parentType: String

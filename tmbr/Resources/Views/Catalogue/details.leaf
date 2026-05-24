@@ -19,7 +19,6 @@
 
             #import("detail-body")
 
-
             <section id="notes-section" data-notes-endpoint="#(notesEndpoint)">
                 <h3>Notes</h3>
                 #if(allowsNewNote):

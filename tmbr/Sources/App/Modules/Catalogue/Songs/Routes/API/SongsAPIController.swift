@@ -94,6 +94,17 @@ struct SongsAPIController: RouteCollection {
             return .noContent
         }
 
+        // POST /api/songs/promote
+        songsRoute.post("promote") { request async throws -> SongResponse in
+            struct PromotePayload: Content {
+                let previewID: UUID
+            }
+            let payload = try request.content.decode(PromotePayload.self)
+            let song = try await request.commands.songs.promote(payload.previewID)
+            let notes = try await request.commands.notes.query(id: song.id!, of: Song.previewType)
+            return SongResponse(song: song, notes: notes, baseURL: request.baseURL)
+        }
+
         // POST /api/songs/:songID/notes
         songsRoute.post(":songID", "notes") { request async throws -> NoteResponse in
             guard let songID = request.parameters.get("songID", as: Int.self) else {

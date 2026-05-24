@@ -5,11 +5,11 @@ import Foundation
 struct PreviewResponse: Content, Sendable {
 
     struct Source: Content, Sendable {
-        private let id: Int
+        private let id: Int?
 
         private let type: String
-        
-        init(id: Int, type: String) {
+
+        init(id: Int?, type: String) {
             self.id = id
             self.type = type
         }

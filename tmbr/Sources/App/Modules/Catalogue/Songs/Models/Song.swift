@@ -48,7 +48,9 @@ final class Song: Model, Previewable, @unchecked Sendable {
     var title: String
     
     var ownerID: UserID { $owner.id }
-    
+
+    var adoptingPreviewID: UUID?
+
     init() {}
     
     init(owner: UserID) {
@@ -80,7 +82,7 @@ final class Song: Model, Previewable, @unchecked Sendable {
 }
 
 extension PreviewModelMiddleware where M == Song {
-    
+
     static var song: Self {
         Self(
             attach: { previewID, song in
@@ -95,7 +97,8 @@ extension PreviewModelMiddleware where M == Song {
             fetch: { song, database in
                 try await song.$preview.load(on: database)
                 return song.preview
-            }
+            },
+            previewID: { $0.adoptingPreviewID }
         )
     }
 }

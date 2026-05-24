@@ -29,6 +29,7 @@ struct SongsWebController: RouteCollection {
         recoveringRoute.post(":songID", use: updateSong)
 
         recoveringRoute.post("preview", page: .songPreview)
+        recoveringRoute.post("promote", use: promote)
 
         songsRoute.post(":songID", "notes", use: createNote)
     }
@@ -218,6 +219,16 @@ struct SongsWebController: RouteCollection {
         } catch {
             return Response(status: .unprocessableEntity)
         }
+    }
+
+    @Sendable
+    private func promote(_ request: Request) async throws -> Response {
+        struct PromotePayload: Content {
+            let previewID: UUID
+        }
+        let payload = try request.content.decode(PromotePayload.self)
+        let song = try await request.commands.songs.promote(payload.previewID)
+        return request.redirect(to: "/songs/\(song.id!)")
     }
 
     private func editorErrorHTML(for error: Error, on req: Request) -> String {
