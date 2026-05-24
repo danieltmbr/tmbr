@@ -17,13 +17,13 @@ struct Metadata: @unchecked Sendable {
 }
 
 struct FetchMetadataCommand: Command {
-    
+
     private let client: Client
-    
+
     private let parser: HTMLMetadataParser
-    
+
     private let permission: AuthPermissionResolver<Void>
-    
+
     init(
         client: Client,
         parser: HTMLMetadataParser = .init(),
@@ -33,26 +33,31 @@ struct FetchMetadataCommand: Command {
         self.parser = parser
         self.permission = permission
     }
-    
+
     func execute(_ url: URL) async throws -> Metadata {
         try await permission.grant()
 
         var headers = HTTPHeaders()
         headers.add(name: .userAgent, value: "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)")
         headers.add(name: .accept, value: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+        headers.add(name: .acceptEncoding, value: "identity")
         headers.add(name: .acceptLanguage, value: "en-US,en;q=0.9")
 
         let response = try await client.get(URI(string: url.absoluteString), headers: headers)
-        
+
         guard (200..<300).contains(response.status.code) else {
             throw Abort(.badGateway, reason: "Metadata fetch failed. Upstream returned \(response.status.code)")
         }
-        guard let body = response.body,
-              let data = body.getData(at: 0, length: body.readableBytes),
-              let html = String(data: data, encoding: .utf8) else {
+        guard let body = response.body else {
             throw Abort(.badGateway, reason: "Metadata fetch failed. Response HTML is invalid or missing")
         }
-        
+        guard let data = body.getData(at: 0, length: body.readableBytes) else {
+            throw Abort(.badGateway, reason: "Metadata fetch failed. Response HTML is invalid or missing")
+        }
+        guard let html = String(data: data, encoding: .utf8) else {
+            throw Abort(.badGateway, reason: "Metadata fetch failed. Response HTML is invalid or missing")
+        }
+
         let (tags, json) = parser.parse(html: html)
 
         guard let type = tags["og:type"] else {
@@ -69,7 +74,7 @@ struct FetchMetadataCommand: Command {
 }
 
 extension CommandFactory<URL, Metadata> {
-    
+
     static var fetchMetadata: Self {
         CommandFactory { request in
             FetchMetadataCommand(

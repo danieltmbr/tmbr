@@ -116,7 +116,9 @@ struct HTMLMetadataParser {
         let scriptPattern = #"<script\b([^>]*)\btype=["']?application/ld\+json["']?([^>]*)>([\s\S]*?)</script>"#
         let idPattern = #"\bid=["']?([^"'\s>]+)["']?"#
         guard let scriptRE = try? NSRegularExpression(pattern: scriptPattern, options: [.caseInsensitive]),
-              let idRE = try? NSRegularExpression(pattern: idPattern, options: [.caseInsensitive]) else { return [:] }
+              let idRE = try? NSRegularExpression(pattern: idPattern, options: [.caseInsensitive]) else {
+            return [:]
+        }
 
         var result: [String: Any] = [:]
         var foundDefault = false
@@ -124,8 +126,9 @@ struct HTMLMetadataParser {
 
         scriptRE.enumerateMatches(in: html, range: nsRange) { match, _, _ in
             guard let match,
-                  let contentRange = Range(match.range(at: 3), in: html),
-                  let data = html[contentRange].data(using: .utf8),
+                  let contentRange = Range(match.range(at: 3), in: html) else { return }
+            let content = html[contentRange]
+            guard let data = content.data(using: .utf8),
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
 
             let attrsBefore = Range(match.range(at: 1), in: html).map { String(html[$0]) } ?? ""

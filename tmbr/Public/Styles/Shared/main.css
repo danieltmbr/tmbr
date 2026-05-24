@@ -236,7 +236,7 @@ main article > header {
     align-items: start;
     gap: 16px;
     width: 100%;
-    margin: 1em 0 2em 0;
+    margin: 1em 0 1em 0;
 }
 
 main article > header .details {
@@ -277,6 +277,24 @@ main article > header ul > li + li::before {
 
 main article > header ul > li > a:hover {
     color: LinkText !important;
+}
+
+main article > header #tracks-section {
+    margin-top: 1em;
+}
+
+main article > header #tracks-section h4 {
+    margin: 0 0 0.3em 0;
+}
+
+main article > header .tracklist {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.6;
+}
+
+main article > header .tracklist li {
+    padding: 0;
 }
 
 main article > header .artwork {

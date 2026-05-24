@@ -8,8 +8,6 @@ extension MetadataExtractor where M == AlbumMetadata {
             throw MetadataExtractionError.invalidType(expected: "music.album", actual: metadata.type)
         }
 
-        // Transform og:image URL to get square artwork
-        // Original: .../1200x630bf-60.jpg -> Changed to: .../1000x1000.jpg
         let artwork = metadata.tags["og:image"].flatMap { urlString -> String? in
             guard var url = URL(string: urlString) else { return nil }
             url.deleteLastPathComponent()
@@ -17,11 +15,9 @@ extension MetadataExtractor where M == AlbumMetadata {
             return url.absoluteString
         }
 
-        // Apple Music album JSON-LD is in the script tagged id="schema:music-album".
-        // Some bot user-agents receive the JSON-LD without the id attribute, in which case
-        // parseJSONLD merges its keys to root level — detect via @type fallback.
-        let albumJSON: [String: Any]? = (metadata.json["schema:music-album"] as? [String: Any])
-            ?? (metadata.json["@type"] as? String == "MusicAlbum" ? metadata.json : nil)
+        let namedBlock = metadata.json["schema:music-album"] as? [String: Any]
+        let atTypeFallback = metadata.json["@type"] as? String == "MusicAlbum" ? metadata.json : nil
+        let albumJSON: [String: Any]? = namedBlock ?? atTypeFallback
 
         let artist = (albumJSON?["byArtist"] as? [[String: Any]])?.first?["name"] as? String
             ?? (albumJSON?["byArtist"] as? [String: Any])?["name"] as? String
