@@ -17,16 +17,17 @@ extension MetadataExtractor where M == AlbumMetadata {
             return url.absoluteString
         }
 
-        // Apple Music album JSON-LD is in the script tagged id="schema:music-album"
-        let albumJSON = metadata.json["schema:music-album"] as? [String: Any]
+        // Apple Music album JSON-LD is in the script tagged id="schema:music-album".
+        // Some bot user-agents receive the JSON-LD without the id attribute, in which case
+        // parseJSONLD merges its keys to root level — detect via @type fallback.
+        let albumJSON: [String: Any]? = (metadata.json["schema:music-album"] as? [String: Any])
+            ?? (metadata.json["@type"] as? String == "MusicAlbum" ? metadata.json : nil)
 
-        // Use byArtist from JSON-LD as primary source — avoids an extra network request
-        let artistFromJSON = (albumJSON?["byArtist"] as? [[String: Any]])?.first?["name"] as? String
+        let artist = (albumJSON?["byArtist"] as? [[String: Any]])?.first?["name"] as? String
             ?? (albumJSON?["byArtist"] as? [String: Any])?["name"] as? String
-        let artist = artistFromJSON ?? metadata.tags["apple:title"].flatMap { _ in
-            // Fall back to fetching the musician page only if JSON-LD has no artist
-            nil as String?
-        }
+
+        let genre = (albumJSON?["genre"] as? [String])?.first
+            ?? albumJSON?["genre"] as? String
 
         let tracks: [TrackMetadata]? = (albumJSON?["tracks"] as? [[String: Any]])?.compactMap { track in
             guard let name = track["name"] as? String else { return nil }
@@ -37,6 +38,7 @@ extension MetadataExtractor where M == AlbumMetadata {
             artist: artist,
             artwork: artwork,
             externalID: metadata.tags["apple:content_id"],
+            genre: genre,
             releaseDate: albumJSON?["datePublished"] as? String ?? metadata.tags["music:release_date"],
             title: metadata.tags["apple:title"],
             tracks: tracks?.isEmpty == false ? tracks : nil

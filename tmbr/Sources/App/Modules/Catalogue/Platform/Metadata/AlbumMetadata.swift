@@ -14,6 +14,8 @@ struct AlbumMetadata: Encodable, AsyncResponseEncodable, Sendable {
 
     let externalID: String?
 
+    let genre: String?
+
     let releaseDate: String?
 
     let title: String?
