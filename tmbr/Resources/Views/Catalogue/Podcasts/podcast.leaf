@@ -2,10 +2,8 @@
 
     #export("detail-header"):
     <div class="details">
-        <h1>#(title)</h1>
-        #if(subtitle):
-        <h3>#(subtitle)</h3>
-        #endif
+        <h1>#(episodeTitle)</h1>
+        <h3>from #(title)</h3>
         #if(info):
         <p>#(info)</p>
         #endif

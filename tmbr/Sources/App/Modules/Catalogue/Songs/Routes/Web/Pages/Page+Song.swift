@@ -7,7 +7,7 @@ struct SongViewModel: Encodable, Sendable {
 
     private let id: SongID
 
-    private let subtitle: String
+    private let artist: String
 
     private let artwork: ImageViewModel?
 
@@ -38,7 +38,7 @@ struct SongViewModel: Encodable, Sendable {
         title: String
     ) {
         self.id = id
-        self.subtitle = "by \(artist)"
+        self.artist = artist
         self.artwork = artwork
         self.allowsNewNote = allowsNewNote
         self.info = info

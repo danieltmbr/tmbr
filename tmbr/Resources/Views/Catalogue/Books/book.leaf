@@ -3,9 +3,7 @@
     #export("detail-header"):
     <div class="details">
         <h1>#(title)</h1>
-        #if(subtitle):
-        <h3>#(subtitle)</h3>
-        #endif
+        <h3>by #(author)</h3>
         #if(info):
         <p>#(info)</p>
         #endif

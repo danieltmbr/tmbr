@@ -7,8 +7,6 @@ struct MovieViewModel: Encodable, Sendable {
 
     private let id: MovieID
 
-    private let subtitle: String? = nil
-
     private let cover: ImageViewModel?
 
     private let allowsNewNote: Bool

@@ -17,7 +17,7 @@ struct PodcastViewModel: Encodable, Sendable {
 
     private let notesEndpoint: String
 
-    private let subtitle: String?
+    private let episodeTitle: String
 
     private let post: PostItemViewModel?
 
@@ -43,8 +43,8 @@ struct PodcastViewModel: Encodable, Sendable {
         self.info = info
         self.notes = notes
         self.notesEndpoint = notesEndpoint
-        self.title = episodeTitle
-        self.subtitle = "from \(title)"
+        self.episodeTitle = episodeTitle
+        self.title = title
         self.post = post
         self.resources = resources
     }

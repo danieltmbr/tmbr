@@ -7,7 +7,7 @@ struct BookViewModel: Encodable, Sendable {
 
     private let id: BookID
 
-    private let subtitle: String?
+    private let author: String?
 
     private let allowsNewNote: Bool
 
@@ -38,7 +38,7 @@ struct BookViewModel: Encodable, Sendable {
         title: String
     ) {
         self.id = id
-        self.subtitle = author.map { "by \($0)" }
+        self.author = author
         self.allowsNewNote = allowsNewNote
         self.cover = cover
         self.info = info
