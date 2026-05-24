@@ -113,8 +113,8 @@ struct HTMLMetadataParser {
     // Named scripts (with an `id` attribute) are keyed by their id in the result dict.
     // The first unnamed script's top-level keys are merged into the root for backward compat.
     private func parseJSONLD(from html: String) -> [String: Any] {
-        let scriptPattern = #"<script\b([^>]*)\btype=["']application/ld\+json["']([^>]*)>([\s\S]*?)</script>"#
-        let idPattern = #"\bid=["']([^"']+)["']"#
+        let scriptPattern = #"<script\b([^>]*)\btype=["']?application/ld\+json["']?([^>]*)>([\s\S]*?)</script>"#
+        let idPattern = #"\bid=["']?([^"'\s>]+)["']?"#
         guard let scriptRE = try? NSRegularExpression(pattern: scriptPattern, options: [.caseInsensitive]),
               let idRE = try? NSRegularExpression(pattern: idPattern, options: [.caseInsensitive]) else { return [:] }
 
