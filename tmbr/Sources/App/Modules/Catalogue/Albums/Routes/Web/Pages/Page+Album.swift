@@ -141,7 +141,7 @@ extension Page {
             }
             async let album = request.commands.albums.fetch(albumID, for: .read)
             async let notes = request.commands.notes.query(id: albumID, of: Album.previewType)
-            async let entries = request.commands.previews.listEntries(
+            async let entries = request.commands.previews.listContainerEntries(
                 ContainerEntriesInput(containerType: "album", containerID: albumID)
             )
             let resolvedAlbum = try await album

@@ -10,18 +10,22 @@ extension Commands {
 
         let fetch: CommandFactory<FetchParameters<PreviewID>, Preview>
 
+        let fetchContainerEntry: CommandFactory<ContainerEntryInput, ContainerEntry>
+
         let list: CommandFactory<PreviewQueryInput, [Preview]>
 
-        let listEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]>
+        let listContainerEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]>
 
         init(
             fetch: CommandFactory<FetchParameters<PreviewID>, Preview> = .fetchPreview,
+            fetchContainerEntry: CommandFactory<ContainerEntryInput, ContainerEntry> = .fetchContainerEntry,
             list: CommandFactory<PreviewQueryInput, [Preview]> = .listPreviews,
-            listEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]> = .listContainerEntries
+            listContainerEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]> = .listContainerEntries
         ) {
             self.fetch = fetch
+            self.fetchContainerEntry = fetchContainerEntry
             self.list = list
-            self.listEntries = listEntries
+            self.listContainerEntries = listContainerEntries
         }
     }
 }
