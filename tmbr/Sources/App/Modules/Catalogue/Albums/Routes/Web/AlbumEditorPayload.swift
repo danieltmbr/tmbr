@@ -20,6 +20,8 @@ struct AlbumEditorPayload: Decodable, Sendable {
 
     let releaseDate: Date?
 
+    private let tracklistJSONRaw: String?
+
     let resourceURLs: [String]
 
     let title: String
@@ -38,6 +40,12 @@ struct AlbumEditorPayload: Decodable, Sendable {
         resourceURLs.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
     }
 
+    var tracks: [TrackMetadata]? {
+        guard let raw = tracklistJSONRaw, !raw.isEmpty,
+              let data = raw.data(using: .utf8) else { return nil }
+        return try? JSONDecoder().decode([TrackMetadata].self, from: data)
+    }
+
     enum CodingKeys: String, CodingKey {
         case _csrf
         case access
@@ -49,6 +57,7 @@ struct AlbumEditorPayload: Decodable, Sendable {
         case releaseDate = "release-date"
         case resourceURLs
         case title
+        case tracklistJSONRaw = "tracklist-json"
     }
 
     init(
@@ -61,7 +70,8 @@ struct AlbumEditorPayload: Decodable, Sendable {
         notes: [NotePayload] = [],
         releaseDate: Date? = nil,
         resourceURLs: [String] = [],
-        title: String = ""
+        title: String = "",
+        tracklistJSONRaw: String? = nil
     ) {
         self._csrf = _csrf
         self.access = access
@@ -73,6 +83,7 @@ struct AlbumEditorPayload: Decodable, Sendable {
         self.releaseDate = releaseDate
         self.resourceURLs = resourceURLs
         self.title = title
+        self.tracklistJSONRaw = tracklistJSONRaw
     }
 }
 
@@ -86,7 +97,8 @@ extension AlbumInput {
             genre: payload.genre,
             releaseDate: payload.releaseDate,
             resourceURLs: payload.filteredResourceURLs,
-            title: payload.title
+            title: payload.title,
+            tracks: payload.tracks
         )
     }
 }

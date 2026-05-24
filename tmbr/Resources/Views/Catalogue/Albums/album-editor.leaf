@@ -52,6 +52,7 @@
         autocomplete="off"
         spellcheck="true"
     />
+    <input id="editor-tracklist-json" type="hidden" name="tracklist-json" value="" />
     #endexport
 
     #export("editor-image-picker"):

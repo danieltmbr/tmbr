@@ -19,6 +19,8 @@ struct AlbumInput {
 
     fileprivate let title: String
 
+    let tracks: [TrackMetadata]?
+
     init(
         access: Access,
         artist: String,
@@ -26,7 +28,8 @@ struct AlbumInput {
         genre: String?,
         releaseDate: Date?,
         resourceURLs: [String],
-        title: String
+        title: String,
+        tracks: [TrackMetadata]? = nil
     ) {
         self.access = access
         self.artist = artist
@@ -35,6 +38,7 @@ struct AlbumInput {
         self.releaseDate = releaseDate
         self.resourceURLs = resourceURLs
         self.title = title
+        self.tracks = tracks
     }
 
     init(payload: AlbumPayload) {

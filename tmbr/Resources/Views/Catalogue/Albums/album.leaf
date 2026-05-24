@@ -8,6 +8,22 @@
         <p>#(info)</p>
         #endif
         #extend("Catalogue/resources")
+        #if(tracks):
+        <section id="tracks-section">
+            <h4>Tracklist</h4>
+            <ol class="tracklist">
+                #for(track in tracks):
+                <li>
+                    #if(track.href):
+                    <a href="#(track.href)">#(track.title)</a>
+                    #else:
+                    <span>#(track.title)</span>
+                    #endif
+                </li>
+                #endfor
+            </ol>
+        </section>
+        #endif
     </div>
     #if(artwork):
     <div class="artwork">
@@ -17,22 +33,6 @@
     #endexport
 
     #export("detail-body"):
-    #if(tracks):
-    <section id="tracks-section">
-        <h3>Tracklist</h3>
-        <ol class="tracklist">
-            #for(track in tracks):
-            <li>
-                #if(track.href):
-                <a href="#(track.href)">#(track.title)</a>
-                #else:
-                <span>#(track.title)</span>
-                #endif
-            </li>
-            #endfor
-        </ol>
-    </section>
-    #endif
     #endexport
 
 #endextend

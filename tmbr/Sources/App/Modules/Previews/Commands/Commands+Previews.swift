@@ -12,6 +12,8 @@ extension Commands {
 
         let fetchContainerEntry: CommandFactory<ContainerEntryInput, ContainerEntry>
 
+        let importTracks: CommandFactory<ImportAlbumTracksInput, Void>
+
         let list: CommandFactory<PreviewQueryInput, [Preview]>
 
         let listContainerEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]>
@@ -19,11 +21,13 @@ extension Commands {
         init(
             fetch: CommandFactory<FetchParameters<PreviewID>, Preview> = .fetchPreview,
             fetchContainerEntry: CommandFactory<ContainerEntryInput, ContainerEntry> = .fetchContainerEntry,
+            importTracks: CommandFactory<ImportAlbumTracksInput, Void> = .importAlbumTracks,
             list: CommandFactory<PreviewQueryInput, [Preview]> = .listPreviews,
             listContainerEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]> = .listContainerEntries
         ) {
             self.fetch = fetch
             self.fetchContainerEntry = fetchContainerEntry
+            self.importTracks = importTracks
             self.list = list
             self.listContainerEntries = listContainerEntries
         }
