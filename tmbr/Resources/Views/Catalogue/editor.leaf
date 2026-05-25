@@ -12,6 +12,8 @@
         #endif
 
         #import("editor-title-input")
+        
+        #import("editor-type-picker")
 
         #extend("Catalogue/resources-editor")
 

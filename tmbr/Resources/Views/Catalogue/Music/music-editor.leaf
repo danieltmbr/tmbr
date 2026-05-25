@@ -1,0 +1,156 @@
+#extend("Catalogue/editor"):
+
+    #export("editor-title-input"):
+    <input
+        id="editor-title"
+        class="text-input title"
+        name="title"
+        type="text"
+        value=""
+        placeholder="Title"
+        autocomplete="off"
+        spellcheck="true"
+    />
+    #endexport
+
+    #export("editor-type-picker"):
+    <div class="type-picker" role="group" aria-label="Music type">
+        <label>
+            <input type="radio" name="music-type" value="song" checked />
+            Song
+        </label>
+        <label>
+            <input type="radio" name="music-type" value="album" />
+            Album
+        </label>
+        <label>
+            <input type="radio" name="music-type" value="playlist" />
+            Playlist
+        </label>
+    </div>
+    #endexport
+
+    #export("editor-fields"):
+    <input id="editor-artwork-id" type="hidden" name="artwork-id" value="" />
+    <input id="editor-artwork-source-url" type="hidden" name="artwork-source-url" value="" />
+
+    <div class="music-type-fields" data-music-type="song">
+        <input
+            id="editor-song-artist"
+            class="text-input"
+            name="artist"
+            type="text"
+            value=""
+            placeholder="Artist"
+            autocomplete="off"
+            spellcheck="true"
+        />
+        <input
+            id="editor-song-album"
+            class="text-input"
+            name="album"
+            type="text"
+            value=""
+            placeholder="Album"
+            autocomplete="off"
+            spellcheck="true"
+        />
+        <input
+            id="editor-song-release-date"
+            class="text-input"
+            type="text"
+            value=""
+            placeholder="Release date, e.g. 2024 or 2025-06-15"
+            autocomplete="off"
+        />
+        <input id="editor-song-release-date-iso" name="release-date" type="hidden" value="" />
+        <input
+            id="editor-song-genre"
+            class="text-input"
+            name="genre"
+            type="text"
+            value=""
+            placeholder="Genre"
+            autocomplete="off"
+            spellcheck="true"
+        />
+    </div>
+
+    <div class="music-type-fields" data-music-type="album" hidden>
+        <input
+            id="editor-album-artist"
+            class="text-input"
+            name="artist"
+            type="text"
+            value=""
+            placeholder="Artist"
+            autocomplete="off"
+            spellcheck="true"
+            disabled
+        />
+        <input
+            id="editor-album-release-date"
+            class="text-input"
+            type="text"
+            value=""
+            placeholder="Release date, e.g. 2024 or 2025-06-15"
+            autocomplete="off"
+            disabled
+        />
+        <input id="editor-album-release-date-iso" name="release-date" type="hidden" value="" disabled />
+        <input
+            id="editor-album-genre"
+            class="text-input"
+            name="genre"
+            type="text"
+            value=""
+            placeholder="Genre"
+            autocomplete="off"
+            spellcheck="true"
+            disabled
+        />
+        <input id="editor-album-tracklist-json" type="hidden" name="tracklist-json" value="" disabled />
+    </div>
+
+    <div class="music-type-fields" data-music-type="playlist" hidden>
+        <textarea
+            id="editor-playlist-description"
+            class="text-input"
+            name="description"
+            placeholder="Description"
+            autocomplete="off"
+            spellcheck="true"
+            rows="3"
+            disabled
+        ></textarea>
+        <input id="editor-playlist-tracklist-json" type="hidden" name="tracklist-json" value="" disabled />
+    </div>
+    #endexport
+
+    #export("editor-image-picker"):
+    <figure id="artwork-placeholder" class="image-picker empty">
+        <img id="artwork-image" src="" alt="Artwork" />
+        <span>#extend("Icons/gallery")</span>
+        <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
+    </figure>
+    #endexport
+
+    #export("editor-preview-form"):
+    <form id="preview-form" method="post" action="/songs/preview" target="_blank" hidden>
+        <input type="hidden" name="title" id="preview-title" />
+        <input type="hidden" name="artist" id="preview-artist" />
+        <input type="hidden" name="album" id="preview-album" />
+        <input type="hidden" name="genre" id="preview-genre" />
+        <input type="hidden" name="releaseDate" id="preview-release-date" />
+        <input type="hidden" name="description" id="preview-description" />
+        <input type="hidden" name="artworkURL" id="preview-artwork-url" />
+        <input type="hidden" name="resourceURLs" id="preview-resource-urls" />
+        <input type="hidden" name="notes" id="preview-notes" />
+    </form>
+    #endexport
+
+    #export("editor-type-script"):
+    <script src="/Scripts/Catalogue/Music/music-editor.js"></script>
+    #endexport
+
+#endextend
