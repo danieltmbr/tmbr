@@ -23,8 +23,6 @@ extension Commands {
 
         let promote: CommandFactory<UUID, Song>
 
-        let promoteCreate: CommandFactory<SongInput, Song>
-
         let search: CommandFactory<String?, SongSearchResult>
 
         init(
@@ -35,7 +33,6 @@ extension Commands {
             lookup: CommandFactory<String, Song?> = .lookupSong,
             metadata: CommandFactory<URL, SongMetadata> = .fetchMetadata,
             promote: CommandFactory<UUID, Song> = .promoteSong,
-            promoteCreate: CommandFactory<SongInput, Song> = .promoteCreate,
             search: CommandFactory<String?, SongSearchResult> = .searchSongs
         ) {
             self.create = create
@@ -45,7 +42,6 @@ extension Commands {
             self.lookup = lookup
             self.metadata = metadata
             self.promote = promote
-            self.promoteCreate = promoteCreate
             self.search = search
         }
     }

@@ -53,15 +53,5 @@ extension CommandFactory<SongInput, Song> {
         }
     }
 
-    static var promoteCreate: Self {
-        CommandFactory { request in
-            CreateSongCommand(
-                configure: .song,
-                database: request.commandDB,
-                permission: request.permissions.songs.create,
-                validate: .songPromotion
-            )
-            .logged(logger: request.logger)
-        }
-    }
+
 }

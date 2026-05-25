@@ -2,6 +2,7 @@ import Foundation
 import Vapor
 import Core
 import AuthKit
+import Fluent
 
 struct PromoteSongCommand: Command {
 
@@ -17,7 +18,13 @@ struct PromoteSongCommand: Command {
 
     private let galleryAddFromURL: CommandResolver<ImageURLPayload, Image>
 
-    private let create: CommandResolver<SongInput, Song>
+    private let configure: ModelConfiguration<Song, SongInput>
+
+    private let database: Database
+
+    private let permission: AuthPermissionResolver<Void>
+
+    private let validate: Validator<SongInput>
 
     init(
         fetchPreview: CommandResolver<FetchParameters<PreviewID>, Preview>,
@@ -26,7 +33,10 @@ struct PromoteSongCommand: Command {
         fetchSongMetadata: CommandResolver<URL, SongMetadata>,
         galleryLookup: CommandResolver<String, Image?>,
         galleryAddFromURL: CommandResolver<ImageURLPayload, Image>,
-        create: CommandResolver<SongInput, Song>
+        configure: ModelConfiguration<Song, SongInput>,
+        database: Database,
+        permission: AuthPermissionResolver<Void>,
+        validate: Validator<SongInput>
     ) {
         self.fetchPreview = fetchPreview
         self.fetchContainerEntry = fetchContainerEntry
@@ -34,7 +44,10 @@ struct PromoteSongCommand: Command {
         self.fetchSongMetadata = fetchSongMetadata
         self.galleryLookup = galleryLookup
         self.galleryAddFromURL = galleryAddFromURL
-        self.create = create
+        self.configure = configure
+        self.database = database
+        self.permission = permission
+        self.validate = validate
     }
 
     func execute(_ previewID: UUID) async throws -> Song {
@@ -43,7 +56,7 @@ struct PromoteSongCommand: Command {
 
         if entry.containerType == "album" {
             let album = try await fetchAlbum(entry.containerID, for: .read)
-            return try await create(SongInput(
+            return try await save(SongInput(
                 previewID: previewID,
                 access: preview.parentAccess,
                 album: album.title,
@@ -57,7 +70,7 @@ struct PromoteSongCommand: Command {
         } else {
             let songMeta = await fetchMetadataFromURL(preview.externalLinks.first)
             let artworkID = await resolveArtwork(songMeta?.artwork, title: preview.primaryInfo)
-            return try await create(SongInput(
+            return try await save(SongInput(
                 previewID: previewID,
                 access: preview.parentAccess,
                 album: songMeta?.album,
@@ -69,6 +82,15 @@ struct PromoteSongCommand: Command {
                 title: preview.primaryInfo
             ))
         }
+    }
+
+    private func save(_ input: SongInput) async throws -> Song {
+        try validate(input)
+        let user = try await permission.grant()
+        var song = Song(owner: user.userID)
+        configure(&song, with: input)
+        try await song.save(on: database)
+        return song
     }
 
     private func fetchMetadataFromURL(_ urlString: String?) async -> SongMetadata? {
@@ -103,7 +125,10 @@ extension CommandFactory<UUID, Song> {
                 fetchSongMetadata: request.commands.songs.metadata,
                 galleryLookup: request.commands.gallery.lookup,
                 galleryAddFromURL: request.commands.gallery.addFromURL,
-                create: request.commands.songs.promoteCreate
+                configure: .song,
+                database: request.commandDB,
+                permission: request.permissions.songs.create,
+                validate: .songPromotion
             )
             .logged(name: "Promote Song", logger: request.logger)
         }
