@@ -15,7 +15,10 @@
     #export("main"):
         #extend("Shared/signature")
         <section>
-            <nav>#extend("Shared/search")</nav>
+            <nav>
+                #extend("Shared/search")
+                #if(filterItems):#extend("Panels/filter")#endif
+            </nav>
             #extend("Previews/previews")
         </section>
         #if(compose):
@@ -26,6 +29,7 @@
         #if(compose):
             #if(compose.directURL):#else:<script src="/Scripts/Shared/toolbar.js"></script>#endif
         #endif
+        #if(filterItems):<script src="/Scripts/Shared/filter.js"></script>#endif
         <script src="/Scripts/Shared/search.js"></script>
         <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
     #endexport

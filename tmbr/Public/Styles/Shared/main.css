@@ -559,6 +559,7 @@ main > section > ul > a > li span.primary-info {
     top: anchor(bottom);
     right: anchor(right);
     margin-bottom: 0.5rem;
+    min-width: 180px;
     gap: 1rem;
 }
 

@@ -6,16 +6,17 @@ struct MusicSearchResult: Sendable {
     let noteMatches: [Preview]
 }
 
-extension Command where Self == PlainCommand<String?, MusicSearchResult> {
+extension Command where Self == PlainCommand<CatalogueQueryPayload, MusicSearchResult> {
 
     static func searchMusic(
         noteSearch: CommandResolver<NoteQueryPayload, [Note]>,
         previewSearch: CommandResolver<PreviewQueryInput, [Preview]>
     ) -> Self {
-        PlainCommand { term in
-            let musicTypes: Set<String> = [Album.previewType, Playlist.previewType, Song.previewType]
-            let previewInput = PreviewQueryInput(term: term, types: musicTypes)
-            let noteInput = NoteQueryPayload(term: term, types: musicTypes)
+        PlainCommand { payload in
+            let allMusicTypes: Set<String> = [Album.previewType, Playlist.previewType, Song.previewType]
+            let musicTypes = payload.types.map { allMusicTypes.intersection($0) } ?? allMusicTypes
+            let previewInput = PreviewQueryInput(term: payload.term, types: musicTypes)
+            let noteInput = NoteQueryPayload(term: payload.term, types: musicTypes)
 
             async let previewsTask = previewSearch(previewInput)
             async let notesTask = noteSearch(noteInput)
@@ -34,7 +35,7 @@ extension Command where Self == PlainCommand<String?, MusicSearchResult> {
     }
 }
 
-extension CommandFactory<String?, MusicSearchResult> {
+extension CommandFactory<CatalogueQueryPayload, MusicSearchResult> {
 
     static var searchMusic: Self {
         CommandFactory { request in

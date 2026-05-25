@@ -8,8 +8,8 @@ struct MusicAPIController: RouteCollection {
 
         // GET /api/music?term=...
         musicRoute.get { request async throws -> [PreviewResponse] in
-            let term = try? request.query.get(String.self, at: "term")
-            let result = try await request.commands.music.search(term)
+            let payload = try request.query.decode(CatalogueQueryPayload.self)
+            let result = try await request.commands.music.search(payload)
             let baseURL = request.baseURL
             return result.previews.map { PreviewResponse(preview: $0, baseURL: baseURL) }
                 + result.noteMatches.map { PreviewResponse(preview: $0, baseURL: baseURL, isNoteMatch: true) }

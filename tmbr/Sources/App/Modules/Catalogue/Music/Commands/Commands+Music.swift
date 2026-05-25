@@ -9,10 +9,10 @@ extension Commands {
 
     struct Music: CommandCollection, Sendable {
 
-        let search: CommandFactory<String?, MusicSearchResult>
+        let search: CommandFactory<CatalogueQueryPayload, MusicSearchResult>
 
         init(
-            search: CommandFactory<String?, MusicSearchResult> = .searchMusic
+            search: CommandFactory<CatalogueQueryPayload, MusicSearchResult> = .searchMusic
         ) {
             self.search = search
         }
