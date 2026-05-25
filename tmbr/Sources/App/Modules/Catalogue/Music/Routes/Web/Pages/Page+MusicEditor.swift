@@ -3,8 +3,20 @@ import Core
 import Foundation
 
 struct MusicEditorViewModel: Encodable, Sendable {
+
+    struct NoteViewModel: Encodable, Sendable {
+        let id: String?
+        let body: String
+        let access: String
+    }
+
     let pageTitle: String
-    let composeAction: String
+    let id: Int? = nil
+    let resourceURLs: [String] = []
+    let notes: [NoteViewModel] = []
+    let submit: Form.Submit
+    let _csrf: String?
+    let error: String? = nil
 }
 
 extension Template where Model == MusicEditorViewModel {
@@ -14,15 +26,16 @@ extension Template where Model == MusicEditorViewModel {
 extension Page {
     static var newMusic: Self {
         Page(template: .musicEditor) { req in
-            let canSong = (try? await req.permissions.songs.create()) != nil
-            let canAlbum = (try? await req.permissions.albums.create()) != nil
-            let canPlaylist = (try? await req.permissions.playlists.create()) != nil
-            guard canSong || canAlbum || canPlaylist else {
+            let allowed: ComposeDefinition = req.permissions.compose(.music)
+            guard !allowed.sections.isEmpty else {
                 throw Abort(.unauthorized)
             }
+            let csrf = UUID().uuidString
+            req.session.data["csrf.editor"] = csrf
             return MusicEditorViewModel(
                 pageTitle: "New music",
-                composeAction: "/music/new"
+                submit: Form.Submit(action: "/songs/new", label: "Save"),
+                _csrf: csrf
             )
         }
     }

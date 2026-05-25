@@ -1,91 +1,281 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const urlInput = document.getElementById('music-editor-url');
-    const typeSelector = document.getElementById('music-type-selector');
-    const fieldsContainer = document.getElementById('music-editor-fields');
-    const statusEl = document.getElementById('music-autofill-status');
-    const form = document.getElementById('music-editor-form');
+    const form = document.getElementById('editor-form');
+    if (!form) return;
 
-    if (!urlInput || !form) return;
+    const titleInput = document.getElementById('editor-title');
+    const statusEl  = document.getElementById('autofill-status');
 
-    // Type → target form action
+    const resourcesSection = document.getElementById('resources-section');
+    const detailsSection   = document.getElementById('details-section');
+    const notesSection     = document.getElementById('notes-section');
+    const gallery          = document.getElementById('gallery');
+    const gallerySection   = document.getElementById('gallery-section');
+    const galleryStatus    = document.getElementById('gallery-status');
+    const galleryTitle     = document.getElementById('gallery-title');
+    const notesGalleryOpen = document.getElementById('notes-gallery-open');
+    const galleryClose     = document.getElementById('gallery-close');
+
+    const persistence = new PersistenceController();
+    const uploads     = new UploadsController();
+    const metadata    = new MetadataController({ endpoint: '/music/metadata' });
+
+    const storageKey = 'editor:music:new';
+
     const typeActions = {
-        song: '/songs/new',
-        album: '/albums/new',
+        song:     '/songs/new',
+        album:    '/albums/new',
         playlist: '/playlists/new',
     };
 
-    let debounceTimer = null;
-    let currentType = null;
+    const typePreviewActions = {
+        song:     '/songs/preview',
+        album:    '/albums/preview',
+        playlist: '/playlists/preview',
+    };
 
-    function setStatus(msg, hidden = false) {
-        if (!statusEl) return;
-        statusEl.textContent = msg;
-        statusEl.hidden = hidden;
+    const fields = {
+        song: {
+            group:          document.querySelector('[data-music-type="song"]'),
+            artist:         document.getElementById('editor-song-artist'),
+            album:          document.getElementById('editor-song-album'),
+            releaseDate:    document.getElementById('editor-song-release-date'),
+            releaseDateISO: document.getElementById('editor-song-release-date-iso'),
+            genre:          document.getElementById('editor-song-genre'),
+        },
+        album: {
+            group:          document.querySelector('[data-music-type="album"]'),
+            artist:         document.getElementById('editor-album-artist'),
+            releaseDate:    document.getElementById('editor-album-release-date'),
+            releaseDateISO: document.getElementById('editor-album-release-date-iso'),
+            genre:          document.getElementById('editor-album-genre'),
+            tracklistJson:  document.getElementById('editor-album-tracklist-json'),
+        },
+        playlist: {
+            group:          document.querySelector('[data-music-type="playlist"]'),
+            description:    document.getElementById('editor-playlist-description'),
+            tracklistJson:  document.getElementById('editor-playlist-tracklist-json'),
+        },
+    };
+
+    let currentType = 'song';
+
+    const artwork = new ArtworkController({
+        hiddenInput:      document.getElementById('editor-artwork-id'),
+        externalUrlInput: document.getElementById('editor-artwork-source-url'),
+        placeholder:      document.getElementById('artwork-placeholder'),
+        imageEl:          document.getElementById('artwork-image'),
+        clearButton:      document.getElementById('artwork-clear'),
+    }, {
+        onChange:      () => saveDraft(),
+        onOpenGallery: () => imagePicker.open('image'),
+    });
+    artwork.init();
+
+    const notes = new NotesController(
+        { section: notesSection },
+        { onInput: () => saveDraft(), onAccessChange: () => saveDraft() }
+    );
+    notes.init();
+
+    const lookup = new LookupController({ endpoint: '/songs/lookup', excludeID: null });
+    const duplicateAlert = new DuplicateAlertController(
+        { containerEl: document.getElementById('duplicate-container'), linkSelector: '#duplicate-song-link' },
+        { onNavigate: () => persistence.clear(storageKey) }
+    );
+    duplicateAlert.init();
+
+    function selectType(type) {
+        if (!fields[type]) return;
+        currentType = type;
+
+        document.querySelectorAll('input[name="music-type"]').forEach(r => {
+            r.checked = r.value === type;
+        });
+
+        Object.entries(fields).forEach(([t, f]) => {
+            const active = t === type;
+            f.group.hidden = !active;
+            f.group.querySelectorAll('input, textarea').forEach(el => {
+                el.disabled = !active;
+            });
+        });
+
+        form.action = typeActions[type];
     }
 
     function applyMetadata(data) {
-        currentType = data.musicType;
-        if (!currentType || currentType === 'unknown') {
-            typeSelector.hidden = false;
-            fieldsContainer.hidden = true;
-            setStatus('Could not detect music type — please select manually.', false);
-            return;
+        if (data.musicType && data.musicType !== 'unknown') {
+            selectType(data.musicType);
         }
-        typeSelector.hidden = true;
-        fieldsContainer.hidden = false;
-        setStatus('');
+        const type = currentType;
+        const f = fields[type];
 
-        // Redirect to the type-specific editor pre-filled via query string
-        const params = new URLSearchParams();
-        if (data.title) params.set('title', data.title);
-        if (data.artist) params.set('artist', data.artist);
-        if (data.description) params.set('description', data.description);
-        if (data.artwork) params.set('artworkURL', data.artwork);
-        if (data.releaseDate) params.set('releaseDate', data.releaseDate);
-        if (data.genre) params.set('genre', data.genre);
-        if (Array.isArray(data.tracks) && data.tracks.length > 0) {
-            params.set('tracklistJSON', JSON.stringify(data.tracks));
+        if (!titleInput.value && data.title) titleInput.value = data.title;
+        if (artwork.isEmpty() && data.artwork) artwork.setExternalURL(data.artwork);
+
+        if (type === 'song' || type === 'album') {
+            if (f.artist && !f.artist.value && data.artist) f.artist.value = data.artist;
+            if (f.genre && !f.genre.value && data.genre) f.genre.value = data.genre;
+            if (f.releaseDate && data.releaseDate) f.releaseDate.value = data.releaseDate.substring(0, 10);
         }
-        params.set('url', urlInput.value);
-
-        const action = typeActions[currentType];
-        if (action) {
-            window.location.href = `${action}?${params}`;
+        if (type === 'song' && fields.song.album && !fields.song.album.value && data.album) {
+            fields.song.album.value = data.album;
+        }
+        if ((type === 'album' || type === 'playlist') && f.tracklistJson) {
+            if (Array.isArray(data.tracks) && data.tracks.length > 0) {
+                f.tracklistJson.value = JSON.stringify(data.tracks);
+            }
+        }
+        if (type === 'playlist' && f.description && !f.description.value && data.description) {
+            f.description.value = data.description;
         }
     }
 
-    async function fetchMetadata(url) {
-        try {
-            setStatus('Detecting…', false);
-            const res = await fetch(`/music/metadata?url=${encodeURIComponent(url)}`);
-            if (!res.ok) throw new Error(`Status ${res.status}`);
-            const data = await res.json();
-            applyMetadata(data);
-        } catch (err) {
-            console.error(err);
-            setStatus('Could not fetch metadata. Please paste a valid Apple Music link.', false);
-            typeSelector.hidden = false;
+    const resourceInputs = new ResourceInputsController(
+        { section: resourcesSection },
+        {
+            onUrlChange: (url) => autofill.fetchAndApply(url),
+            onInput: () => saveDraft(),
         }
-    }
+    );
+    resourceInputs.init();
 
-    urlInput.addEventListener('input', () => {
-        clearTimeout(debounceTimer);
-        const value = urlInput.value.trim();
-        if (!value) {
-            typeSelector.hidden = true;
-            fieldsContainer.hidden = true;
-            setStatus('', true);
-            return;
-        }
-        debounceTimer = setTimeout(() => fetchMetadata(value), 500);
+    document.querySelectorAll('input[name="music-type"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.checked) { selectType(radio.value); saveDraft(); }
+        });
     });
 
-    // Manual type selection → redirect to type-specific editor with URL prefilled
-    typeSelector.addEventListener('change', (e) => {
-        const type = e.target.value;
-        const action = typeActions[type];
-        if (action && urlInput.value) {
-            window.location.href = `${action}?url=${encodeURIComponent(urlInput.value)}`;
+    function getState() {
+        return {
+            type:         currentType,
+            title:        titleInput?.value || '',
+            notes:        notes.getNotes(),
+            resourceURLs: resourceInputs.getValues(),
+            artworkId:           artwork.getArtworkId(),
+            artworkThumbnailUrl: artwork.getThumbnailUrl(),
+            artworkExternalURL:  artwork.getExternalURL(),
+            song: {
+                artist:      fields.song.artist?.value || '',
+                album:       fields.song.album?.value || '',
+                releaseDate: fields.song.releaseDate?.value || '',
+                genre:       fields.song.genre?.value || '',
+            },
+            album: {
+                artist:        fields.album.artist?.value || '',
+                releaseDate:   fields.album.releaseDate?.value || '',
+                genre:         fields.album.genre?.value || '',
+                tracklistJson: fields.album.tracklistJson?.value || '',
+            },
+            playlist: {
+                description:   fields.playlist.description?.value || '',
+                tracklistJson: fields.playlist.tracklistJson?.value || '',
+            },
+        };
+    }
+
+    function setState(state) {
+        if (!state || typeof state !== 'object') return;
+        if (state.type) selectType(state.type);
+        if (state.title && !titleInput.value) titleInput.value = state.title;
+        if (Array.isArray(state.notes)) notes.setNotes(state.notes, true);
+        if (Array.isArray(state.resourceURLs)) resourceInputs.setValues(state.resourceURLs);
+        if (artwork.isEmpty()) {
+            if (state.artworkId) artwork.setArtwork(state.artworkId, state.artworkThumbnailUrl);
+            else if (state.artworkExternalURL) artwork.setExternalURL(state.artworkExternalURL);
         }
+        const s = state.song || {};
+        const a = state.album || {};
+        const p = state.playlist || {};
+        if (s.artist && !fields.song.artist?.value) fields.song.artist.value = s.artist;
+        if (s.album && !fields.song.album?.value) fields.song.album.value = s.album;
+        if (s.releaseDate && !fields.song.releaseDate?.value) fields.song.releaseDate.value = s.releaseDate;
+        if (s.genre && !fields.song.genre?.value) fields.song.genre.value = s.genre;
+        if (a.artist && !fields.album.artist?.value) fields.album.artist.value = a.artist;
+        if (a.releaseDate && !fields.album.releaseDate?.value) fields.album.releaseDate.value = a.releaseDate;
+        if (a.genre && !fields.album.genre?.value) fields.album.genre.value = a.genre;
+        if (a.tracklistJson && fields.album.tracklistJson) fields.album.tracklistJson.value = a.tracklistJson;
+        if (p.description && !fields.playlist.description?.value) fields.playlist.description.value = p.description;
+        if (p.tracklistJson && fields.playlist.tracklistJson) fields.playlist.tracklistJson.value = p.tracklistJson;
+    }
+
+    function saveDraft() { persistence.save(storageKey, getState()); }
+    function loadDraft() {
+        if (persistence.clearIfPending(storageKey)) return;
+        const saved = persistence.load(storageKey);
+        if (saved) setState(saved);
+    }
+
+    function fillPreview() {
+        const pf = document.getElementById('preview-form');
+        if (!pf) return;
+        pf.action = typePreviewActions[currentType];
+        const set = (id, v) => { const el = pf.querySelector(`#${id}`); if (el) el.value = v || ''; };
+        const f = fields[currentType];
+        set('preview-title', titleInput?.value || '');
+        set('preview-artwork-url', artwork.getThumbnailUrl());
+        set('preview-resource-urls', resourceInputs.getValues().join('\n'));
+        set('preview-notes', notes.getValues().join('\n\n'));
+        if (currentType === 'song' || currentType === 'album') {
+            set('preview-artist', f.artist?.value || '');
+            set('preview-genre', f.genre?.value || '');
+            set('preview-release-date', f.releaseDate?.value || '');
+        }
+        if (currentType === 'song') set('preview-album', fields.song.album?.value || '');
+        if (currentType === 'playlist') set('preview-description', f.description?.value || '');
+        pf.submit();
+    }
+
+    const autofill = {
+        async fetchAndApply(url) {
+            try {
+                const data = await metadata.fetch(url);
+                if (statusEl) { statusEl.textContent = ''; statusEl.hidden = true; }
+                applyMetadata(data);
+                if (currentType === 'song') {
+                    const html = await lookup.fetch(url).catch(() => null);
+                    if (html) duplicateAlert.show(html);
+                }
+                saveDraft();
+            } catch (err) {
+                handleAutofillError(err, url, statusEl);
+            }
+        }
+    };
+    retryPendingMetadata(autofill);
+    loadDraft();
+
+    titleInput?.addEventListener('input', saveDraft);
+
+    const imagePicker = new ImagePickerController(
+        { gallery, gallerySection, galleryStatus, galleryTitle, notesOpenButton: notesGalleryOpen, galleryCloseButton: galleryClose },
+        { onSelectImage: (id, url) => artwork.setArtwork(id, url), onInsertMarkdown: (md) => notes.insertMarkdown(md), imageTitle: 'Select artwork' }
+    );
+    imagePicker.init();
+
+    new DragAndDropController({ resourcesSection, detailsSection, notesSection }, { uploads, artwork, notes }).init();
+    new ShortcutsController([ShortcutsController.login, ShortcutsController.preview(() => fillPreview())]).init();
+
+    document.getElementById('editor-preview')?.addEventListener('click', () => fillPreview());
+
+    form.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+        e.preventDefault();
+        const focusable = Array.from(form.querySelectorAll('input:not([type="hidden"]), textarea')).filter(el => !el.disabled);
+        const idx = focusable.indexOf(e.target);
+        if (idx !== -1 && idx < focusable.length - 1) focusable[idx + 1].focus();
+    });
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        form.action = typeActions[currentType];
+        const f = fields[currentType];
+        if (f.releaseDate && f.releaseDateISO) {
+            const date = parseReleaseDate(f.releaseDate.value.trim());
+            if (date) f.releaseDateISO.value = date.toISOString();
+            else f.releaseDateISO.disabled = true;
+        }
+        persistence.markPendingClear(storageKey);
+        form.submit();
     });
 });
