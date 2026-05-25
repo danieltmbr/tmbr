@@ -16,30 +16,34 @@ struct PreviewResponse: Content, Sendable {
     }
     
     private let primaryInfo: String
-    
+
     private let secondaryInfo: String?
-    
+
     private let image: ImageResponse?
-    
+
     private let resources: [String]
-    
+
     private let source: Source
-    
+
+    private let isNoteMatch: Bool
+
     init(
         primaryInfo: String,
         secondaryInfo: String?,
         image: ImageResponse?,
         resources: [String],
-        source: Source
+        source: Source,
+        isNoteMatch: Bool = false
     ) {
         self.primaryInfo = primaryInfo
         self.secondaryInfo = secondaryInfo
         self.image = image
         self.resources = resources
         self.source = source
+        self.isNoteMatch = isNoteMatch
     }
-    
-    init(preview: Preview, baseURL: String) {
+
+    init(preview: Preview, baseURL: String, isNoteMatch: Bool = false) {
         self.init(
             primaryInfo: preview.primaryInfo,
             secondaryInfo: preview.secondaryInfo,
@@ -50,7 +54,8 @@ struct PreviewResponse: Content, Sendable {
             source: Source(
                 id: preview.parentID,
                 type: preview.parentType
-            )
+            ),
+            isNoteMatch: isNoteMatch
         )
     }
 }

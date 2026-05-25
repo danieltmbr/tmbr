@@ -12,7 +12,7 @@ struct MusicAPIController: RouteCollection {
             let result = try await request.commands.music.search(term)
             let baseURL = request.baseURL
             return result.previews.map { PreviewResponse(preview: $0, baseURL: baseURL) }
-                + result.noteMatches.map { PreviewResponse(preview: $0, baseURL: baseURL) }
+                + result.noteMatches.map { PreviewResponse(preview: $0, baseURL: baseURL, isNoteMatch: true) }
         }
     }
 }

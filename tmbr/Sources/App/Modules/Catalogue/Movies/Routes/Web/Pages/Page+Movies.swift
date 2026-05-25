@@ -10,12 +10,12 @@ extension Page {
     static var movies: Self {
         Page(template: .movies) { req in
             let term = try? req.query.get(String.self, at: "term")
-            async let composeURL: String? = (try? await req.permissions.movies.create()) != nil ? "/movies/new" : nil
             async let result = req.commands.movies.search(term)
+            let compose = ComposePopupViewModel(req.permissions.compose(.movie))
             let baseURL = req.baseURL
             let resolved = try await result
             return CatalogueListViewModel(
-                compose: await composeURL,
+                compose: compose,
                 term: term,
                 previews: resolved.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
                     + resolved.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) }

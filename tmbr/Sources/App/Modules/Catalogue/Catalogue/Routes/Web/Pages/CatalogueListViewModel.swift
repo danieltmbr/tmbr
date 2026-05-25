@@ -2,7 +2,7 @@ import Vapor
 import Core
 
 struct CatalogueListViewModel: Encodable, Sendable {
-    let compose: String?
+    let compose: ComposePopupViewModel?
     let term: String?
     let previews: [PreviewViewModel]
 }

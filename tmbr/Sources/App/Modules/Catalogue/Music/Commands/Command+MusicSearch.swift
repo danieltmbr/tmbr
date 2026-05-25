@@ -1,12 +1,6 @@
 import Foundation
 import Core
 
-private let musicTypes: Set<String> = [
-    Album.previewType,
-    Playlist.previewType,
-    Song.previewType,
-]
-
 struct MusicSearchResult: Sendable {
     let previews: [Preview]
     let noteMatches: [Preview]
@@ -19,6 +13,7 @@ extension Command where Self == PlainCommand<String?, MusicSearchResult> {
         previewSearch: CommandResolver<PreviewQueryInput, [Preview]>
     ) -> Self {
         PlainCommand { term in
+            let musicTypes: Set<String> = [Album.previewType, Playlist.previewType, Song.previewType]
             let previewInput = PreviewQueryInput(term: term, types: musicTypes)
             let noteInput = NoteQueryPayload(term: term, types: musicTypes)
 
