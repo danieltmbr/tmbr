@@ -10,13 +10,20 @@ struct MusicEditorViewModel: Encodable, Sendable {
         let access: String
     }
 
-    let pageTitle: String
-    let id: Int? = nil
-    let resourceURLs: [String] = []
-    let notes: [NoteViewModel] = []
-    let submit: Form.Submit
+    
     let _csrf: String?
+    
     let error: String? = nil
+    
+    let id: Int? = nil
+    
+    let notes: [NoteViewModel] = []
+    
+    let pageTitle: String
+    
+    let resourceURLs: [String] = []
+    
+    let submit: Form.Submit
 }
 
 extension Template where Model == MusicEditorViewModel {
@@ -33,9 +40,9 @@ extension Page {
             let csrf = UUID().uuidString
             req.session.data["csrf.editor"] = csrf
             return MusicEditorViewModel(
+                _csrf: csrf,
                 pageTitle: "New music",
-                submit: Form.Submit(action: "/songs/new", label: "Save"),
-                _csrf: csrf
+                submit: Form.Submit(action: "/songs/new", label: "Save")
             )
         }
     }
