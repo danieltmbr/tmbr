@@ -40,7 +40,7 @@ struct CreateSongCommand: Command {
 }
 
 extension CommandFactory<SongInput, Song> {
-    
+
     static var createSong: Self {
         CommandFactory { request in
             CreateSongCommand(
@@ -52,4 +52,6 @@ extension CommandFactory<SongInput, Song> {
             .logged(logger: request.logger)
         }
     }
+
+
 }

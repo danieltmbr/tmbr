@@ -5,11 +5,28 @@ import Fluent
 import AuthKit
 
 struct ImportAlbumTracksInput: Sendable {
-    let albumID: AlbumID
+    let albumID: Int
     let access: Access
-    let artist: String
+    let artist: String?
     let ownerID: UserID
     let tracks: [TrackMetadata]
+    let containerType: String
+
+    init(
+        albumID: Int,
+        access: Access,
+        artist: String?,
+        ownerID: UserID,
+        tracks: [TrackMetadata],
+        containerType: String = "album"
+    ) {
+        self.albumID = albumID
+        self.access = access
+        self.artist = artist
+        self.ownerID = ownerID
+        self.tracks = tracks
+        self.containerType = containerType
+    }
 }
 
 extension Command where Self == PlainCommand<ImportAlbumTracksInput, Void> {
@@ -24,12 +41,14 @@ extension Command where Self == PlainCommand<ImportAlbumTracksInput, Void> {
                     parentType: "track"
                 )
                 preview.primaryInfo = track.name
-                preview.secondaryInfo = "by \(input.artist)"
+                if let artist = input.artist {
+                    preview.secondaryInfo = "by \(artist)"
+                }
                 preview.externalLinks = [track.url].compactMap { $0 }
                 try await preview.save(on: database)
 
                 let entry = ContainerEntry(
-                    containerType: "album",
+                    containerType: input.containerType,
                     containerID: input.albumID,
                     previewID: try preview.requireID(),
                     position: index + 1

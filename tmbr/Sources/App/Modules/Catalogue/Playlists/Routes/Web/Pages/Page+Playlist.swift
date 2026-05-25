@@ -23,6 +23,8 @@ struct PlaylistViewModel: Encodable, Sendable {
 
     private let title: String
 
+    private let tracks: [TrackViewModel]
+
     init(
         id: PlaylistID,
         artwork: ImageViewModel?,
@@ -32,7 +34,8 @@ struct PlaylistViewModel: Encodable, Sendable {
         notesEndpoint: String,
         post: PostItemViewModel?,
         resources: [Hyperlink],
-        title: String
+        title: String,
+        tracks: [TrackViewModel] = []
     ) {
         self.id = id
         self.artwork = artwork
@@ -43,11 +46,13 @@ struct PlaylistViewModel: Encodable, Sendable {
         self.post = post
         self.resources = resources
         self.title = title
+        self.tracks = tracks
     }
 
     init(
         playlist: Playlist,
         notes: [Note],
+        tracks: [TrackViewModel],
         baseURL: String,
         allowsNewNote: Bool,
         platform: Platform<PlaylistMetadata> = .playlist
@@ -64,7 +69,8 @@ struct PlaylistViewModel: Encodable, Sendable {
             notesEndpoint: "/playlists/\(playlistID)/notes",
             post: try playlist.post.map(PostItemViewModel.init),
             resources: playlist.resourceURLs.compactMap(platform.hyperlink),
-            title: playlist.title
+            title: playlist.title,
+            tracks: tracks
         )
     }
 }
@@ -81,11 +87,16 @@ extension Page {
             }
             async let playlist = request.commands.playlists.fetch(playlistID, for: .read)
             async let notes = request.commands.notes.query(id: playlistID, of: Playlist.previewType)
+            async let entries = request.commands.previews.listContainerEntries(
+                ContainerEntriesInput(containerType: "playlist", containerID: playlistID)
+            )
             let resolvedPlaylist = try await playlist
             let allowsNewNote = (try? await request.permissions.playlists.edit.grant(resolvedPlaylist)) != nil
+            let tracks = try await entries.map(TrackViewModel.init)
             return try PlaylistViewModel(
                 playlist: resolvedPlaylist,
                 notes: await notes,
+                tracks: tracks,
                 baseURL: request.baseURL,
                 allowsNewNote: allowsNewNote
             )

@@ -24,6 +24,7 @@ extension MetadataExtractor where M == SongMetadata {
             artist: song.tags["music:musician_description"],
             artwork: song.tags["og:image"],
             externalID: songID,
+            genre: nil,
             releaseDate: song.tags["music:release_date"],
             title: song.tags["og:title"]
         )

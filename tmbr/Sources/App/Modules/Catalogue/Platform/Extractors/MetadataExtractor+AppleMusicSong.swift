@@ -33,11 +33,17 @@ extension MetadataExtractor where M == SongMetadata {
             return url.absoluteString
         }
 
+        let songJSON = song.json["schema:music-song"] as? [String: Any]
+            ?? (song.json["@type"] as? String == "MusicRecording" ? song.json : nil)
+        let genre = (songJSON?["genre"] as? [String])?.first
+            ?? songJSON?["genre"] as? String
+
         return SongMetadata(
             album: try? await album,
             artist: try? await artist,
             artwork: artwork,
             externalID: song.tags["apple:content_id"],
+            genre: genre,
             releaseDate: song.tags["music:release_date"],
             title: song.tags["apple:title"]
         )

@@ -86,6 +86,15 @@ extension Validator where Input == SongInput {
             }
         }
     }
+
+    // Lenient validator for the promote path — artist may be unknown (e.g. playlist track)
+    static var songPromotion: Self {
+        Validator { song in
+            guard !song.title.trimmed.isEmpty else {
+                throw Abort(.badRequest, reason: "The song title is missing")
+            }
+        }
+    }
 }
 
 extension SongInput {
