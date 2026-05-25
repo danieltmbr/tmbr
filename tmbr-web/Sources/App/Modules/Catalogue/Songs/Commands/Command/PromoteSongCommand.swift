@@ -2,6 +2,7 @@ import Foundation
 import Vapor
 import Core
 import AuthKit
+import Fluent
 import TmbrCore
 
 struct PromoteSongCommand: Command {

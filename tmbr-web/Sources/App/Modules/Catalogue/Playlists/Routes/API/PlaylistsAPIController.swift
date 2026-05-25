@@ -2,6 +2,7 @@ import Vapor
 import AuthKit
 import Fluent
 import Core
+import TmbrCore
 
 struct PlaylistsAPIController: RouteCollection {
 

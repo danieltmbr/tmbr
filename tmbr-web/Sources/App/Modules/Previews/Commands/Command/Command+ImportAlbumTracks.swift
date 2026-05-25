@@ -3,6 +3,7 @@ import Vapor
 import Core
 import Fluent
 import AuthKit
+import TmbrCore
 
 struct ImportAlbumTracksInput: Sendable {
     let albumID: Int

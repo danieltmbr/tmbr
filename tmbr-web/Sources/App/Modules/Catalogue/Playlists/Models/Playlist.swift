@@ -2,6 +2,7 @@ import Fluent
 import Vapor
 import Foundation
 import AuthKit
+import TmbrCore
 
 typealias PlaylistID = Playlist.IDValue
 

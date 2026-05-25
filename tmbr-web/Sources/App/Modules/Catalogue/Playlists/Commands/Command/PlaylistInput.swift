@@ -2,6 +2,7 @@ import Foundation
 import Vapor
 import AuthKit
 import Core
+import TmbrCore
 
 struct PlaylistInput {
 

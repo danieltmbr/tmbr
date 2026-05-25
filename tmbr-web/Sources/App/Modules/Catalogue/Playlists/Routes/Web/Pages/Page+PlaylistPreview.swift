@@ -2,6 +2,7 @@ import Core
 import Foundation
 import Vapor
 import AuthKit
+import TmbrCore
 
 private struct PlaylistPreviewPayload: Content {
     let title: String

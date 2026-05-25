@@ -4,6 +4,7 @@ import Core
 import Logging
 import Fluent
 import AuthKit
+import TmbrCore
 
 struct CreatePlaylistCommand: Command {
 

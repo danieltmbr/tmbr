@@ -2,6 +2,7 @@ import Vapor
 import Foundation
 import AuthKit
 import Core
+import TmbrCore
 
 struct PlaylistViewModel: Encodable, Sendable {
 

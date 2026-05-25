@@ -1,5 +1,6 @@
 import Vapor
 import Core
+import TmbrCore
 
 extension CommandFactory<FetchParameters<PlaylistID>, Playlist> {
 

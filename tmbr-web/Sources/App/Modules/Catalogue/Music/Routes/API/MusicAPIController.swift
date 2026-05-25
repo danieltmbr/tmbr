@@ -1,5 +1,6 @@
 import Vapor
 import Core
+import TmbrCore
 
 struct MusicAPIController: RouteCollection {
 

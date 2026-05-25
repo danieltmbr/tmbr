@@ -1,6 +1,7 @@
 import Foundation
 import Vapor
 import AuthKit
+import TmbrCore
 
 struct PlaylistEditorPayload: Decodable, Sendable {
 
