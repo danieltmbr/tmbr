@@ -13,10 +13,10 @@
 | 2 | Album — ContainerEntry tracklist + display + track auto-promotion | ✅ |
 | 3 | Album — Apple Music JSON-LD tracklist import on create | ✅ |
 | 4 | Playlist — model + basic CRUD (shell) | ✅ |
-| 5 | Playlist — ContainerEntry track management + Apple Music import | ⬜ |
-| 6 | Unified Music list page and API (`/music`) | ⬜ |
-| 7 | Unified "New Music" editor (`/music/new`) | ⬜ |
-| 8 | "Music" catalogue filter (virtual chip) | ⬜ |
+| 5 | Playlist — ContainerEntry track management + Apple Music import | ✅ |
+| 6 | Unified Music list page and API (`/music`) | ✅ |
+| 7 | Unified "New Music" editor (`/music/new`) | ✅ |
+| 8 | "Music" catalogue filter (virtual chip) | ✅ |
 
 ---
 
