@@ -11,6 +11,11 @@ struct ComposeSectionViewModel: Encodable, Sendable {
 
 struct ComposePopupViewModel: Encodable, Sendable {
 
+    // TODO: Replace with a proper enum (.direct(url:) / .panel([Section])) once Leaf is replaced.
+    // `directURL` leaks rendering intent into the model because Leaf can't branch on array counts.
+    // See .claude/docs/leaf-limitations.md
+    let directURL: String?
+
     let sections: [ComposeSectionViewModel]
 
     init?(_ definition: ComposeDefinition) {
@@ -23,5 +28,7 @@ struct ComposePopupViewModel: Encodable, Sendable {
                 hasSeparatorAfter: idx < definition.sections.count - 1
             )
         }
+        let allItems = self.sections.flatMap(\.items)
+        self.directURL = allItems.count == 1 ? allItems[0].url : nil
     }
 }

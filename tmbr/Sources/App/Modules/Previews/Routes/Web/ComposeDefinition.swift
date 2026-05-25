@@ -21,16 +21,31 @@ struct ComposeDefinition: Sendable {
 
     static let standard = ComposeDefinition(sections: [
         Section(entries: [
-            (ComposeAction(label: "Post", icon: .post, url: "/posts/new"), .createPost)
+            (.post,      .createPost)
         ]),
         Section(entries: [
-            (ComposeAction(label: "Book",    icon: .book,    url: "/books/new"),    .create("You don't have permission to add a book.")),
-            (ComposeAction(label: "Movie",   icon: .movie,   url: "/movies/new"),   .create("You don't have permission to add a movie.")),
-            (ComposeAction(label: "Podcast", icon: .podcast, url: "/podcasts/new"), .create("You don't have permission to add a podcast.")),
-            (ComposeAction(label: "Song",    icon: .song,    url: "/songs/new"),    .create("You don't have permission to add a song."))
+            (.book,    .create("You don't have permission to add a book.")),
+            (.movie,   .create("You don't have permission to add a movie.")),
+            (.podcast, .create("You don't have permission to add a podcast.")),
+            (.song,    .create("You don't have permission to add a song."))
         ]),
         Section(entries: [
-            (ComposeAction(label: "URL from clipboard", icon: .clipboard, url: "/catalogue/new"), AuthPermission())
+            (.clipboard, AuthPermission())
         ])
     ])
+
+    static let music = ComposeDefinition(sections: [
+        Section(entries: [
+            (.song,     .create("You don't have permission to add a song.")),
+            (.album,    .create("You don't have permission to add an album.")),
+            (.playlist, .create("You don't have permission to add a playlist."))
+        ])
+    ])
+
+    static let book     = ComposeDefinition(sections: [Section(entries: [(.book,     .create("You don't have permission to add a book."))])])
+    static let movie    = ComposeDefinition(sections: [Section(entries: [(.movie,    .create("You don't have permission to add a movie."))])])
+    static let podcast  = ComposeDefinition(sections: [Section(entries: [(.podcast,  .create("You don't have permission to add a podcast."))])])
+    static let song     = ComposeDefinition(sections: [Section(entries: [(.song,     .create("You don't have permission to add a song."))])])
+    static let album    = ComposeDefinition(sections: [Section(entries: [(.album,    .create("You don't have permission to add an album."))])])
+    static let playlist = ComposeDefinition(sections: [Section(entries: [(.playlist, .create("You don't have permission to add a playlist."))])])
 }

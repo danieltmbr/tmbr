@@ -1,19 +1,35 @@
 #extend("Shared/page"):
     #export("toolbar"):
         #if(compose):
-            <a id="compose" class="icon" href="#(compose)" aria-label="Compose">
-                #extend("Icons/pencil")
-            </a>
+            #if(compose.directURL):
+                <a id="compose" class="icon" href="#(compose.directURL)" aria-label="Compose">
+                    #extend("Icons/pencil")
+                </a>
+            #else:
+                <button id="compose" class="icon" type="button" aria-label="Compose">
+                    #extend("Icons/pencil")
+                </button>
+            #endif
         #endif
     #endexport
     #export("main"):
         #extend("Shared/signature")
         <section>
-            <nav>#extend("Shared/search")</nav>
+            <nav>
+                #extend("Shared/search")
+                #if(filterItems):#extend("Panels/filter")#endif
+            </nav>
             #extend("Previews/previews")
         </section>
+        #if(compose):
+            #if(compose.directURL):#else:#extend("Panels/compose")#endif
+        #endif
     #endexport
     #export("scripts"):
+        #if(compose):
+            #if(compose.directURL):#else:<script src="/Scripts/Shared/toolbar.js"></script>#endif
+        #endif
+        #if(filterItems):<script src="/Scripts/Shared/filter.js"></script>#endif
         <script src="/Scripts/Shared/search.js"></script>
         <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
     #endexport

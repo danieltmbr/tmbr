@@ -37,11 +37,27 @@ extension FilterItemViewModel {
         label: "Songs",
         value: Song.previewType
     )
+    
+    static let album = FilterItemViewModel(
+        icon: "album",
+        label: "Albums",
+        value: Album.previewType
+    )
+    
+    static let playlist = FilterItemViewModel(
+        icon: "playlist",
+        label: "Playlists",
+        value: Playlist.previewType
+    )
 }
 
 extension [FilterItemViewModel] {
     static let catalogue: Self = [
-        .book, .movie, .podcast, .song,
+        .book, .movie, .podcast, .song
+    ]
+    
+    static let music: Self = [
+        .song, .album, .playlist
     ]
 }
 

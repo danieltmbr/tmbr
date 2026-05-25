@@ -38,6 +38,7 @@ extension Module where Self == Catalogue {
                     .albums,
                     .books,
                     .movies,
+                    .music,
                     .playlists,
                     .podcasts,
                     .songs,
