@@ -1,0 +1,4 @@
+// Shared settings inherited by all configurations
+DEVELOPMENT_TEAM = VNN8LWX58P
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION = YES

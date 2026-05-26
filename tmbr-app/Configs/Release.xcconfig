@@ -1,0 +1,7 @@
+#include "Base.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = me.tmbr
+APP_DISPLAY_NAME = tmbr
+API_BASE_URL = https:$()/$()/tmbr.me
+SIWA_NATIVE_APP_ID = me.tmbr
+WEB_CREDENTIALS_DOMAIN = tmbr.me
