@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "container:tmbr-app/tmbr-app.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "container:tmbr-core">
+   </FileRef>
+   <FileRef
+      location = "container:tmbr-web">
+   </FileRef>
+</Workspace>

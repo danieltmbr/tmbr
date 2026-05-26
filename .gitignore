@@ -2,7 +2,6 @@ Packages
 .build
 .index-build
 .DS_Store
-*.xcodeproj
 DerivedData/
 Package.resolved
 .swiftpm
@@ -14,3 +13,5 @@ Tests/LinuxMain.swift
 # API Docs Generation
 generate-package-api-docs.swift
 theme-settings.json
+tmbr.xcworkspace/xcuserdata/danieltmbr.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
+tmbr.xcworkspace/xcuserdata/danieltmbr.xcuserdatad/UserInterfaceState.xcuserstate
