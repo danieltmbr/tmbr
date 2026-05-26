@@ -18,7 +18,7 @@
                BlueprintIdentifier = "E27B47872FC4E864006866D7"
                BuildableName = "tmbr.app"
                BlueprintName = "tmbr"
-               ReferencedContainer = "container:tmbr.xcodeproj">
+               ReferencedContainer = "container:tmbr-app.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -38,7 +38,7 @@
                BlueprintIdentifier = "E27B47962FC4E865006866D7"
                BuildableName = "tmbrTests.xctest"
                BlueprintName = "tmbrTests"
-               ReferencedContainer = "container:tmbr.xcodeproj">
+               ReferencedContainer = "container:tmbr-app.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -49,7 +49,7 @@
                BlueprintIdentifier = "E27B47A02FC4E865006866D7"
                BuildableName = "tmbrUITests.xctest"
                BlueprintName = "tmbrUITests"
-               ReferencedContainer = "container:tmbr.xcodeproj">
+               ReferencedContainer = "container:tmbr-app.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -71,7 +71,7 @@
             BlueprintIdentifier = "E27B47872FC4E864006866D7"
             BuildableName = "tmbr.app"
             BlueprintName = "tmbr"
-            ReferencedContainer = "container:tmbr.xcodeproj">
+            ReferencedContainer = "container:tmbr-app.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -88,7 +88,7 @@
             BlueprintIdentifier = "E27B47872FC4E864006866D7"
             BuildableName = "tmbr.app"
             BlueprintName = "tmbr"
-            ReferencedContainer = "container:tmbr.xcodeproj">
+            ReferencedContainer = "container:tmbr-app.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

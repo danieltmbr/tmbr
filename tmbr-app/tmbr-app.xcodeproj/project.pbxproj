@@ -192,7 +192,7 @@
 					};
 				};
 			};
-			buildConfigurationList = E27B47832FC4E864006866D7 /* Build configuration list for PBXProject "tmbr" */;
+			buildConfigurationList = E27B47832FC4E864006866D7 /* Build configuration list for PBXProject "tmbr-app" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -615,7 +615,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		E27B47832FC4E864006866D7 /* Build configuration list for PBXProject "tmbr" */ = {
+		E27B47832FC4E864006866D7 /* Build configuration list for PBXProject "tmbr-app" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E27B47A92FC4E865006866D7 /* Debug */,
