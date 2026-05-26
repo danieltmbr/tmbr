@@ -1,0 +1,30 @@
+import Vapor
+import Foundation
+import TmbrCore
+
+@dynamicMemberLookup
+struct EditPostPayload: Sendable {
+    
+    let id: PostID
+    
+    private let payload: PostPayload
+    
+    init(id: PostID, payload: PostPayload) {
+        self.id = id
+        self.payload = payload
+    }
+    
+    subscript <V>(dynamicMember keyPath: KeyPath<PostPayload, V>) -> V {
+        payload[keyPath: keyPath]
+    }
+    
+    func validate() throws {
+        try payload.validate()
+    }
+}
+
+extension PostPayload {
+    func edit(id: PostID) -> EditPostPayload {
+        EditPostPayload(id: id, payload: self)
+    }
+}

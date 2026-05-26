@@ -22,12 +22,12 @@ Swift 6.0.3 (Swift 5 mode), Vapor 4, Fluent/PostgreSQL, Leaf, Swift Testing
 
 ```bash
 swift build
-swift run App serve
+swift run Backend serve
 swift test
 swift test --filter CoreTests
 ```
 
-Run from `tmbr/` subdirectory.
+Run from `tmbr-web/` subdirectory.
 
 ## Constraints (Always Apply)
 
