@@ -4,25 +4,29 @@ import Crypto
 import JWT
 import Foundation
 import Core
+import TmbrCore
 
 struct AuthAPIController: RouteCollection {
-    
+
     func boot(routes: RoutesBuilder) throws {
-        // TODO: Implement oroper SignIn + SignOut
-        routes.post("api", "apple", "auth") { req async throws -> Response in
-            _ = try await authorizedUser(from: req)
-            // TODO: Return token
-            let response = Response(status: .ok)
-            try response.content.encode(["redirect": "/"]) // or any post-auth URL
-            return response
-        }
+        routes.post("api", "apple", "auth", use: signIn)
     }
-    
+
+    @Sendable
+    private func signIn(_ req: Request) async throws -> AuthResponse {
+        let user = try await authorizedUser(from: req)
+        guard let userID = user.id else {
+            throw Abort(.internalServerError, reason: "User has no ID")
+        }
+        let payload = AppTokenPayload(userID: userID)
+        let token = try await req.jwt.sign(payload)
+        return AuthResponse(token: token)
+    }
+
     private func authorizedUser(from request: Request) async throws -> User {
         let callbackData = try request.content.decode(AppleCallbackData.self)
-        let appleIdentity = try await request.jwt.apple.verify(callbackData.id_token)
-        
-        // API flow: require nonce, no session/state
+        let appleIdentity = try await request.jwt.apple.verify(callbackData.id_token, applicationIdentifier: Environment.signIn.nativeAppID)
+
         guard let tokenNonce = appleIdentity.nonce else {
             throw Abort(.unauthorized, reason: "Token missing nonce")
         }
@@ -33,11 +37,11 @@ struct AuthAPIController: RouteCollection {
         guard tokenNonce == hashedProvided || tokenNonce == providedNonce else {
             throw Abort(.unauthorized, reason: "Invalid nonce")
         }
-        
+
         let appleID = appleIdentity.subject.value
         let email = appleIdentity.email
         let name = callbackData.user?.name
-        
+
         return try await User.findOrCreate(
             in: request.db,
             appleID: appleID,
@@ -46,7 +50,7 @@ struct AuthAPIController: RouteCollection {
             lastName: name?.lastName
         )
     }
-    
+
     private func sha256Hex(_ string: String) -> String {
         let data = Data(string.utf8)
         let digest = SHA256.hash(data: data)
