@@ -8,6 +8,9 @@
       location = "container:tmbr-core">
    </FileRef>
    <FileRef
+      location = "container:api-kit">
+   </FileRef>
+   <FileRef
       location = "container:tmbr-web">
    </FileRef>
 </Workspace>

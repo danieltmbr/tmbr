@@ -46,3 +46,4 @@ Read the relevant doc:
 - Adding modules → `/.claude/docs/modules.md`
 - Frontend (HTML/CSS/JS/Leaf) → `/.claude/docs/frontend.md`
 - Swift design patterns → `/.claude/docs/patterns.md`
+- Native app networking (`api-kit` package, `RequestLoader`) → `/.claude/docs/native-networking.md`
