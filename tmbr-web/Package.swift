@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "tmbr",
+    name: "tmbr-web",
     platforms: [
        .macOS(.v15)
     ],
