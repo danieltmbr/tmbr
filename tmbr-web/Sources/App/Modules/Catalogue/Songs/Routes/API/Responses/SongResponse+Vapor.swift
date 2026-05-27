@@ -1,5 +1,5 @@
 import TmbrCore
 import Vapor
 
-extension SongResponse: Content {}
-extension SongResponse: AsyncResponseEncodable {}
+extension SongResponse: @retroactive Content {}
+extension SongResponse: @retroactive AsyncResponseEncodable {}

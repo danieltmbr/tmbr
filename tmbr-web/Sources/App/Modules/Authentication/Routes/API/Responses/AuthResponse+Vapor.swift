@@ -1,5 +1,5 @@
 import TmbrCore
 import Vapor
 
-extension AuthResponse: Content {}
-extension AuthResponse: AsyncResponseEncodable {}
+extension AuthResponse: @retroactive Content {}
+extension AuthResponse: @retroactive AsyncResponseEncodable {}

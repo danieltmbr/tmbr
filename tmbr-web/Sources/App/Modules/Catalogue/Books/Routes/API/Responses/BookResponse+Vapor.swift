@@ -1,5 +1,5 @@
 import TmbrCore
 import Vapor
 
-extension BookResponse: Content {}
-extension BookResponse: AsyncResponseEncodable {}
+extension BookResponse: @retroactive Content {}
+extension BookResponse: @retroactive AsyncResponseEncodable {}
