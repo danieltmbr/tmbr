@@ -14,7 +14,7 @@ final class AuthState {
 
     private let auth: AuthProvider
 
-    private let signInLoader: RequestLoader<AppleSignInRequest>
+    private let signInLoader: RequestLoader<BasicRequest<AppleSignInInput, AuthResponse>>
 
     init(config: APIConfig, keychain: Keychain) {
         let savedToken = keychain.loadToken()
@@ -22,7 +22,7 @@ final class AuthState {
         self.keychain = keychain
         self.auth = AuthProvider(token: savedToken)
         self.isSignedIn = savedToken != nil
-        self.signInLoader = config.loader(for: AppleSignInRequest(baseURL: config.baseURL))
+        self.signInLoader = config.loader(for: .post(baseURL: config.baseURL, path: "/api/apple/auth"))
     }
 
     func loader<R: Request>(for request: R) -> RequestLoader<R> {
