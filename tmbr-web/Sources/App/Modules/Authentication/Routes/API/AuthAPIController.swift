@@ -25,7 +25,7 @@ struct AuthAPIController: RouteCollection {
 
     private func authorizedUser(from request: Request) async throws -> User {
         let callbackData = try request.content.decode(AppleCallbackData.self)
-        let appleIdentity = try await request.jwt.apple.verify(callbackData.id_token, applicationIdentifier: Environment.signIn.nativeAppID)
+        let appleIdentity = try await request.jwt.apple.verify(callbackData.idToken, applicationIdentifier: Environment.signIn.nativeAppID)
 
         guard let tokenNonce = appleIdentity.nonce else {
             throw Abort(.unauthorized, reason: "Token missing nonce")

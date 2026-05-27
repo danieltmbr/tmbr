@@ -39,11 +39,11 @@ final class AuthState {
             throw AuthError.invalidCredential
         }
 
-        let response = try await signInLoader.load(from: .init(
-            identityToken: identityToken,
-            authCode: authCode,
+        let response = try await signInLoader.load(from: AppleCallbackData(
+            code: authCode,
+            idToken: identityToken,
             nonce: nonce,
-            userPayload: encodeUserPayload(credential: credential)
+            user: appleUser(from: credential)
         ))
 
         keychain.saveToken(response.token)
@@ -57,19 +57,15 @@ final class AuthState {
         isSignedIn = false
     }
 
-    // Apple only sends name/email on first sign-in; encode as JSON string to match backend's AppleCallbackData
-    private func encodeUserPayload(credential: ASAuthorizationAppleIDCredential) -> String? {
-        struct Name: Encodable { let firstName: String; let lastName: String }
-        struct UserInfo: Encodable { let email: String?; let name: Name? }
-
+    // Apple only sends name/email on first sign-in
+    private func appleUser(from credential: ASAuthorizationAppleIDCredential) -> AppleCallbackData.User? {
         let components = credential.fullName
-        let name: Name? = (components?.givenName != nil || components?.familyName != nil)
-            ? Name(firstName: components?.givenName ?? "", lastName: components?.familyName ?? "")
+        let hasName = components?.givenName != nil || components?.familyName != nil
+        guard credential.email != nil || hasName else { return nil }
+        let name: AppleCallbackData.User.Name? = hasName
+            ? .init(firstName: components?.givenName ?? "", lastName: components?.familyName ?? "")
             : nil
-
-        guard credential.email != nil || name != nil else { return nil }
-        let info = UserInfo(email: credential.email, name: name)
-        return try? String(data: JSONEncoder().encode(info), encoding: .utf8)
+        return .init(email: credential.email, name: name)
     }
 
     enum AuthError: LocalizedError {
