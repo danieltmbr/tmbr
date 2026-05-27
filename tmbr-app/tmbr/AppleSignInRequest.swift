@@ -15,7 +15,15 @@ struct AppleSignInInput: Encodable, Sendable {
     let nonce: String
     let userPayload: String?
 
-    enum CodingKeys: String, CodingKey {
+    nonisolated func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(identityToken, forKey: .identityToken)
+        try container.encode(authCode, forKey: .authCode)
+        try container.encode(nonce, forKey: .nonce)
+        try container.encodeIfPresent(userPayload, forKey: .userPayload)
+    }
+
+    private enum CodingKeys: String, CodingKey {
         case identityToken = "id_token"
         case authCode = "code"
         case nonce
