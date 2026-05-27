@@ -29,6 +29,11 @@ swift test --filter CoreTests
 
 Run from `tmbr-web/` subdirectory.
 
+For `api-kit` package tests (requires Xcode toolchain, not just CLT):
+```bash
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path api-kit
+```
+
 ## Constraints (Always Apply)
 
 - Use `request.commandDB`, never `application.db`
@@ -46,3 +51,4 @@ Read the relevant doc:
 - Adding modules → `/.claude/docs/modules.md`
 - Frontend (HTML/CSS/JS/Leaf) → `/.claude/docs/frontend.md`
 - Swift design patterns → `/.claude/docs/patterns.md`
+- Native app networking (`api-kit` package, `RequestLoader`) → `/.claude/docs/native-networking.md`
