@@ -70,7 +70,7 @@ struct GalleryAPIController: RouteCollection {
             alt: image.alt,
             url: absoluteURL(for: image.key, on: req),
             thumbnailUrl: absoluteURL(for: image.thumbnailKey, on: req),
-            size: CGSize(width: image.size.width, height: image.size.height),
+            size: ImageSize(width: Double(image.size.width), height: Double(image.size.height)),
             uploadedAt: image.uploadedAt ?? .now
         )
     }

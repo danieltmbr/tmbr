@@ -1,6 +1,5 @@
 import Foundation
 import TmbrCore
-import CoreGraphics
 
 extension ImageResponse {
 
@@ -10,7 +9,7 @@ extension ImageResponse {
             alt: image.alt,
             url: baseURL + "/gallery/data/\(image.key)",
             thumbnailUrl: baseURL + "/gallery/data/\(image.thumbnailKey)",
-            size: CGSize(width: image.size.width, height: image.size.height),
+            size: ImageSize(width: Double(image.size.width), height: Double(image.size.height)),
             uploadedAt: image.uploadedAt ?? .now
         )
     }
