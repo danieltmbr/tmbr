@@ -1,5 +1,5 @@
 import TmbrCore
 import Vapor
 
-extension PodcastResponse: Content {}
-extension PodcastResponse: AsyncResponseEncodable {}
+extension PodcastResponse: @retroactive Content {}
+extension PodcastResponse: @retroactive AsyncResponseEncodable {}

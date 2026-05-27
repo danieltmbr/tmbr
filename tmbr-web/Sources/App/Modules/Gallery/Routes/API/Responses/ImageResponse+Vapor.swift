@@ -1,4 +1,4 @@
 import TmbrCore
 import Vapor
 
-extension ImageResponse: Content {}
+extension ImageResponse: @retroactive Content {}

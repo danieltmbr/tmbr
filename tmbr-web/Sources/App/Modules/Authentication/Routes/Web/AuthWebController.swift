@@ -18,7 +18,7 @@ struct AuthWebController: RouteCollection {
     
     @Sendable
     private func signIn(_ req: Request) async throws -> Response {
-        let callbackData = try req.content.decode(AppleCallbackData.self)
+        let callbackData = try req.content.decode(AppleWebCallbackData.self)
         let appleIdentity = try await req.jwt.apple.verify(callbackData.id_token)
         
         guard let returnedState = callbackData.state else {

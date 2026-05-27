@@ -1,5 +1,5 @@
 import TmbrCore
 import Vapor
 
-extension PlaylistResponse: Content {}
-extension PlaylistResponse: AsyncResponseEncodable {}
+extension PlaylistResponse: @retroactive Content {}
+extension PlaylistResponse: @retroactive AsyncResponseEncodable {}

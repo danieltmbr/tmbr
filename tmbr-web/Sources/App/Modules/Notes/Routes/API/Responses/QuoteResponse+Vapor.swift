@@ -1,4 +1,4 @@
 import TmbrCore
 import Vapor
 
-extension QuoteResponse: Content {}
+extension QuoteResponse: @retroactive Content {}
