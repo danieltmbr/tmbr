@@ -13,7 +13,12 @@ public final class RecoverMiddleware: AsyncMiddleware {
         do {
             return try await next.respond(to: request)
         } catch {
-            request.logger.error("Recover error: \(error.localizedDescription)")
+            let status = (error as? AbortError)?.status ?? .internalServerError
+            let level: Logger.Level = status.code >= 500 ? .error : .warning
+            request.logger.log(
+                level: level,
+                "[\(status.code)] \(request.method) \(request.url.path) — \(String(reflecting: type(of: error))): \(error.localizedDescription)"
+            )
             return try await recover(error, request)
                 .encodeResponse(for: request)
         }
