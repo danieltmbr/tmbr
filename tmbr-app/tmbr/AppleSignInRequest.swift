@@ -2,7 +2,7 @@ import ApiKit
 import Foundation
 import TmbrCore
 
-typealias AppleSignInRequest = BasicRequest<AppleCallbackData, AuthResponse>
+typealias AppleSignInRequest = BasicRequest<AppleSignInData, AuthResponse>
 
 extension Request where Self == AppleSignInRequest {
     static func signIn(baseURL: URL) -> Self {

@@ -1,4 +1,4 @@
-public struct AppleCallbackData: Codable, Sendable {
+public struct AppleSignInData: Codable, Sendable {
 
     public struct User: Codable, Sendable {
 

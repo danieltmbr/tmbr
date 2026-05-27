@@ -39,7 +39,7 @@ final class AuthState {
             throw AuthError.invalidCredential
         }
 
-        let response = try await signInLoader.load(from: AppleCallbackData(
+        let response = try await signInLoader.load(from: AppleSignInData(
             code: authCode,
             idToken: identityToken,
             nonce: nonce,
@@ -58,11 +58,11 @@ final class AuthState {
     }
 
     // Apple only sends name/email on first sign-in
-    private func appleUser(from credential: ASAuthorizationAppleIDCredential) -> AppleCallbackData.User? {
+    private func appleUser(from credential: ASAuthorizationAppleIDCredential) -> AppleSignInData.User? {
         let components = credential.fullName
         let hasName = components?.givenName != nil || components?.familyName != nil
         guard credential.email != nil || hasName else { return nil }
-        let name: AppleCallbackData.User.Name? = hasName
+        let name: AppleSignInData.User.Name? = hasName
             ? .init(firstName: components?.givenName ?? "", lastName: components?.familyName ?? "")
             : nil
         return .init(email: credential.email, name: name)
