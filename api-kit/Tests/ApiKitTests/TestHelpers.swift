@@ -1,6 +1,11 @@
 import Foundation
 @testable import ApiKit
 
+actor CallCounter {
+    private(set) var count = 0
+    func increment() { count += 1 }
+}
+
 final class MockURLProtocol: URLProtocol, @unchecked Sendable {
     nonisolated(unsafe) static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 

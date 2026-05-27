@@ -3,23 +3,20 @@ import Foundation
 public final class RequestLoader<R: Request>: Sendable {
     private let request: R
     private let session: URLSession
-    private let auth: AuthToken?
-    private let tokenProvider: (any TokenProvider)?
+    private let auth: AuthProvider?
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
 
     public init(
         request: R,
         session: URLSession = .shared,
-        auth: AuthToken? = nil,
-        tokenProvider: (any TokenProvider)? = nil,
+        auth: AuthProvider? = nil,
         decoder: JSONDecoder = JSONDecoder(),
         encoder: JSONEncoder = JSONEncoder()
     ) {
         self.request = request
         self.session = session
         self.auth = auth
-        self.tokenProvider = tokenProvider
         self.decoder = decoder
         self.encoder = encoder
     }
@@ -33,9 +30,8 @@ public final class RequestLoader<R: Request>: Sendable {
             if let reqError = error as? RequestError,
                case .httpError(let statusCode, _) = reqError,
                statusCode == 401,
-               let tokenProvider {
-                let fresh = try await tokenProvider.fetchToken()
-                await auth?.set(fresh)
+               let auth {
+                let fresh = try await auth.refreshedToken()
                 let retryRequest = try request.makeRequest(from: input, token: fresh, using: encoder)
                 return try await execute(retryRequest)
             }
