@@ -8,11 +8,9 @@ struct tmbr: App {
 
     init() {
         print("Bundle ID: \(Bundle.main.bundleIdentifier ?? "nil")")
-        config = .fromInfoPlist()
-        if let saved = Keychain.loadToken() {
-            Task { await config.auth.set(saved) }
-        }
-        authState = AuthState(config: config)
+        let token = Keychain.loadToken()
+        config = .fromInfoPlist(token: token)
+        authState = AuthState(config: config, isSignedIn: token != nil)
     }
 
     var body: some Scene {

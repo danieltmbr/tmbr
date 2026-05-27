@@ -6,7 +6,7 @@ extension Environment {
         let appID = Environment.get("SIWA_APP_ID")!
 
         /// Bundle ID used by the native app sign-in flow
-        let nativeAppID = Environment.get("SIWA_NATIVE_APP_ID")!
+        let nativeAppID = Environment.get("SIWA_NATIVE_APP_ID") ?? { fatalError("SIWA_NATIVE_APP_ID missing — set the bundle ID of the native app in your environment") }()
         
         /// Registered redirect url
         let redirectUrl = Environment.get("SIWA_REDIRECT_URL")!

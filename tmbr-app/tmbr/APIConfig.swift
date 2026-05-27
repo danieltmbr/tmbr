@@ -12,11 +12,11 @@ struct APIConfig: Sendable {
 }
 
 extension APIConfig {
-    static func fromInfoPlist(session: URLSession = .shared) -> APIConfig {
+    static func fromInfoPlist(token: String? = nil, session: URLSession = .shared) -> APIConfig {
         let raw = Bundle.main.object(forInfoDictionaryKey: "APIBaseURL") as? String ?? ""
         guard let url = URL(string: raw), !raw.isEmpty else {
             fatalError("APIBaseURL missing or invalid in Info.plist — check the API_BASE_URL build setting")
         }
-        return APIConfig(baseURL: url, session: session, auth: AuthProvider())
+        return APIConfig(baseURL: url, session: session, auth: AuthProvider(token: token))
     }
 }

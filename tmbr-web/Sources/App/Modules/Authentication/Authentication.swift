@@ -55,9 +55,7 @@ struct Authentication: Module {
     }
     
     func boot(_ routes: RoutesBuilder) async throws {
-        try routes
-            .grouped(APITokenAuthenticator())
-            .register(collection: AuthAPIController())
+        try routes.register(collection: AuthAPIController())
         try routes
             .grouped(RecoverMiddleware())
             .register(collection: AuthWebController())

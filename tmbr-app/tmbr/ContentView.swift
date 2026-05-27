@@ -21,7 +21,7 @@ private struct HomeView: View {
                 .navigationTitle("tmbr")
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
-                        Button("Sign Out") { authState.signOut() }
+                        Button("Sign Out") { Task { await authState.signOut() } }
                     }
                 }
         }

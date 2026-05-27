@@ -9,13 +9,13 @@ final class AuthState {
     private let config: APIConfig
     private let signInLoader: RequestLoader<AppleSignInRequest>
 
-    init(config: APIConfig) {
+    init(config: APIConfig, isSignedIn: Bool = false) {
         self.config = config
         self.signInLoader = RequestLoader(
             request: AppleSignInRequest(baseURL: config.baseURL),
             session: config.session
         )
-        self.isSignedIn = Keychain.loadToken() != nil
+        self.isSignedIn = isSignedIn
     }
 
     func signIn(authorization: ASAuthorization, nonce: String) async throws {
@@ -40,9 +40,9 @@ final class AuthState {
         isSignedIn = true
     }
 
-    func signOut() {
+    func signOut() async {
+        await config.auth.set(nil)
         Keychain.deleteToken()
-        Task { await config.auth.set(nil) }
         isSignedIn = false
     }
 
