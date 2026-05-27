@@ -52,3 +52,11 @@ Read the relevant doc:
 - Frontend (HTML/CSS/JS/Leaf) → `/.claude/docs/frontend.md`
 - Swift design patterns → `/.claude/docs/patterns.md`
 - Native app networking (`api-kit` package, `RequestLoader`) → `/.claude/docs/native-networking.md`
+- Logging, testing, error recovery, post-mortems → `/.claude/docs/quality-assurance.md`
+
+## When Something Breaks
+
+1. Fix it
+2. Write (or update) a test that would have caught it
+3. Write a post-mortem in `.claude/incidents/` using `.claude/incidents/TEMPLATE.md`
+4. If the same component breaks twice — an E2E test is **required** before the fix is considered done

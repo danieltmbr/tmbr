@@ -39,6 +39,7 @@ struct Authentication: Module {
         
         app.middleware.use(app.sessions.middleware)
         app.middleware.use(User.sessionAuthenticator())
+        app.middleware.use(UserIDLoggingMiddleware())
 
         app.jwt.apple.applicationIdentifier = Environment.signIn.appID
         await app.jwt.keys.add(
