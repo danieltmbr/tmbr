@@ -22,7 +22,7 @@ final class AuthState {
         self.keychain = keychain
         self.auth = AuthProvider(token: savedToken)
         self.isSignedIn = savedToken != nil
-        self.signInLoader = config.loader(for: .post(baseURL: config.baseURL, path: "/api/apple/auth"))
+        self.signInLoader = config.loader(for: .signIn(baseURL: config.baseURL))
     }
 
     func loader<R: Request>(for request: R) -> RequestLoader<R> {
