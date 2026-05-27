@@ -1,9 +1,12 @@
 import Foundation
 
 public actor AuthProvider {
+    
     private var token: String?
+    
     private var refreshTask: Task<String, Error>?
-    private let refresher: @Sendable () async throws -> String
+    
+    private let refresher: (@Sendable () async throws -> String)?
 
     public init(
         token: String? = nil,
@@ -30,5 +33,7 @@ public actor AuthProvider {
         }
     }
 
-    public func set(_ token: String?) { self.token = token }
+    public func set(_ token: String?) {
+        self.token = token
+    }
 }

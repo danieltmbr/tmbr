@@ -45,7 +45,6 @@ struct SignInView: View {
             }
         case .failure(let err):
             let asErr = err as? ASAuthorizationError
-            print("SIWA error: \(err.localizedDescription), code: \(asErr?.code.rawValue ?? -1)")
             if asErr?.code == .canceled { return }
             error = err
         }

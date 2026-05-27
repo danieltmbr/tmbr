@@ -1,11 +1,13 @@
 import Foundation
 import Security
 
-enum Keychain {
-    private static let service = "me.tmbr.app"
-    private static let account = "auth-token"
+struct Keychain {
 
-    static func saveToken(_ token: String) {
+    private let service = "me.tmbr"
+
+    private let account = "auth-token"
+
+    func saveToken(_ token: String) {
         guard let data = token.data(using: .utf8) else { return }
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
@@ -18,7 +20,7 @@ enum Keychain {
         SecItemAdd(attributes as CFDictionary, nil)
     }
 
-    static func loadToken() -> String? {
+    func loadToken() -> String? {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
@@ -33,7 +35,7 @@ enum Keychain {
         return String(data: data, encoding: .utf8)
     }
 
-    static func deleteToken() {
+    func deleteToken() {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,

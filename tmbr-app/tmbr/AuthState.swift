@@ -5,17 +5,28 @@ import TmbrCore
 
 @Observable
 final class AuthState {
+
     private(set) var isSignedIn: Bool
+
     private let config: APIConfig
+
+    private let keychain: Keychain
+
+    private let auth: AuthProvider
+
     private let signInLoader: RequestLoader<AppleSignInRequest>
 
-    init(config: APIConfig, isSignedIn: Bool = false) {
+    init(config: APIConfig, keychain: Keychain) {
+        let savedToken = keychain.loadToken()
         self.config = config
-        self.signInLoader = RequestLoader(
-            request: AppleSignInRequest(baseURL: config.baseURL),
-            session: config.session
-        )
-        self.isSignedIn = isSignedIn
+        self.keychain = keychain
+        self.auth = AuthProvider(token: savedToken)
+        self.isSignedIn = savedToken != nil
+        self.signInLoader = config.loader(for: AppleSignInRequest(baseURL: config.baseURL))
+    }
+
+    func loader<R: Request>(for request: R) -> RequestLoader<R> {
+        RequestLoader(request: request, session: config.session, auth: auth)
     }
 
     func signIn(authorization: ASAuthorization, nonce: String) async throws {
@@ -35,14 +46,14 @@ final class AuthState {
             userPayload: encodeUserPayload(credential: credential)
         ))
 
-        Keychain.saveToken(response.token)
-        await config.auth.set(response.token)
+        keychain.saveToken(response.token)
+        await auth.set(response.token)
         isSignedIn = true
     }
 
     func signOut() async {
-        await config.auth.set(nil)
-        Keychain.deleteToken()
+        await auth.set(nil)
+        keychain.deleteToken()
         isSignedIn = false
     }
 
