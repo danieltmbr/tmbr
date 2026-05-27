@@ -6,7 +6,12 @@ struct tmbr: App {
     private let authState: AuthState
 
     init() {
-        authState = AuthState(config: .fromInfoPlist(), keychain: Keychain())
+        let config = APIConfig.fromInfoPlist()
+        authState = AuthState(
+            session: config.session,
+            keychain: Keychain(),
+            signInLoader: config.loader(for: .signIn(baseURL: config.baseURL))
+        )
     }
 
     var body: some Scene {
