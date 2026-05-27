@@ -4,7 +4,7 @@ import ApiKit
 struct APIConfig: Sendable {
     let baseURL: URL
     let session: URLSession
-    let auth: AuthToken
+    let auth: AuthProvider
 
     func loader<R: Request>(for request: R) -> RequestLoader<R> {
         RequestLoader(request: request, session: session, auth: auth)
@@ -17,6 +17,6 @@ extension APIConfig {
         guard let url = URL(string: raw), !raw.isEmpty else {
             fatalError("APIBaseURL missing or invalid in Info.plist — check the API_BASE_URL build setting")
         }
-        return APIConfig(baseURL: url, session: session, auth: AuthToken())
+        return APIConfig(baseURL: url, session: session, auth: AuthProvider())
     }
 }

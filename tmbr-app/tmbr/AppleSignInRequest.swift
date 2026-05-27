@@ -18,7 +18,7 @@ struct AppleSignInRequest: Request {
         self.baseURL = baseURL
     }
 
-    func makeRequest(from input: Input, encoder: JSONEncoder) throws -> URLRequest {
+    func makeRequest(from input: Input, token _: String?, using encoder: JSONEncoder) throws -> URLRequest {
         struct Body: Encodable {
             let code: String
             let id_token: String
