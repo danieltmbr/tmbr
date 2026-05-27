@@ -9,8 +9,10 @@ public struct GetRequest<Response: Decodable & Sendable>: Request {
         self.url = baseURL.appending(path: path)
     }
 
-    public func makeRequest(from _: Void, encoder: JSONEncoder) throws -> URLRequest {
-        URLRequest(url: url)
+    public func makeRequest(from _: Void, using encoder: JSONEncoder) throws -> URLRequest {
+        var req = URLRequest(url: url)
+        req.httpMethod = HTTPMethod.get.rawValue
+        return req
     }
 }
 
@@ -18,17 +20,22 @@ public struct BodyRequest<Body: Encodable & Sendable, Response: Decodable & Send
     public typealias Input = Body
 
     private let url: URL
-    private let method: String
 
-    public init(baseURL: URL, path: String, method: String = "POST") {
+    private let method: HTTPMethod
+
+    public init(
+        baseURL: URL,
+        path: String,
+        method: HTTPMethod = .post
+    ) {
         self.url = baseURL.appending(path: path)
         self.method = method
     }
 
-    public func makeRequest(from body: Body, encoder: JSONEncoder) throws -> URLRequest {
+    public func makeRequest(from body: Body, using encoder: JSONEncoder) throws -> URLRequest {
         var req = URLRequest(url: url)
-        req.httpMethod = method
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.httpMethod = method.rawValue
+        req.addHeader(.contentType.json)
         req.httpBody = try encoder.encode(body)
         return req
     }

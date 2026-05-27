@@ -23,9 +23,9 @@ public final class RequestLoader<R: Request>: Sendable {
 
     public func load(from input: R.Input) async throws -> R.Response {
         let token = await auth?.value
-        var urlRequest = try request.makeRequest(from: input, encoder: encoder)
+        var urlRequest = try request.makeRequest(from: input, using: encoder)
         if let token {
-            urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            urlRequest.addHeader(.authorization.bearer(token))
         }
         let (data, response) = try await session.data(for: urlRequest)
         if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode >= 400 {

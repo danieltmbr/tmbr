@@ -49,9 +49,9 @@ private func ok(_ req: URLRequest, body: String) -> (HTTPURLResponse, Data) {
 struct GetRequestTests {
     @Test func buildsURL() throws {
         let req = GetRequest<Echo>(baseURL: base, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: (), encoder: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: (), using: JSONEncoder())
         #expect(urlRequest.url?.absoluteString == "https://test.example.com/api/things")
-        #expect(urlRequest.httpMethod == nil)
+        #expect(urlRequest.httpMethod == "GET")
         #expect(urlRequest.httpBody == nil)
     }
 
@@ -66,31 +66,31 @@ struct GetRequestTests {
 
 @Suite("BodyRequest")
 struct BodyRequestTests {
-    private struct Payload: Encodable, Sendable { let name: String }
+    private struct Payload: Codable, Sendable { let name: String }
 
     @Test func buildsURLAndMethod() throws {
         let req = BodyRequest<Payload, Echo>(baseURL: base, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: Payload(name: "x"), encoder: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: Payload(name: "x"), using: JSONEncoder())
         #expect(urlRequest.url?.absoluteString == "https://test.example.com/api/things")
         #expect(urlRequest.httpMethod == "POST")
     }
 
     @Test func encodesBodyAsJSON() throws {
         let req = BodyRequest<Payload, Echo>(baseURL: base, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: Payload(name: "hello"), encoder: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: Payload(name: "hello"), using: JSONEncoder())
         let decoded = try JSONDecoder().decode(Payload.self, from: urlRequest.httpBody!)
         #expect(decoded.name == "hello")
     }
 
     @Test func setsContentTypeHeader() throws {
         let req = BodyRequest<Payload, Echo>(baseURL: base, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: Payload(name: "x"), encoder: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: Payload(name: "x"), using: JSONEncoder())
         #expect(urlRequest.value(forHTTPHeaderField: "Content-Type") == "application/json")
     }
 
     @Test func respectsCustomMethod() throws {
-        let req = BodyRequest<Payload, Echo>(baseURL: base, path: "/api/things", method: "PUT")
-        let urlRequest = try req.makeRequest(from: Payload(name: "x"), encoder: JSONEncoder())
+        let req = BodyRequest<Payload, Echo>(baseURL: base, path: "/api/things", method: .put)
+        let urlRequest = try req.makeRequest(from: Payload(name: "x"), using: JSONEncoder())
         #expect(urlRequest.httpMethod == "PUT")
     }
 }
