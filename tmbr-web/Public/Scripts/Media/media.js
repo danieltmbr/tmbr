@@ -5,8 +5,8 @@ class UploadsController {
         form.append('alt', file.name.replace(/\.[^.]+$/, ''));
         const res = await fetch('/gallery', { method: 'POST', body: form });
         if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            throw new Error(text || `Upload failed with status ${res.status}`);
+            const body = await res.json().catch(() => null);
+            throw new Error(body?.reason || `Upload failed with status ${res.status}`);
         }
         return await res.text();
     }

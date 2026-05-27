@@ -14,7 +14,12 @@ class MetadataController {
             err.status = 401;
             throw err;
         }
-        if (!response.ok) throw new Error(`Metadata fetch failed (${response.status})`);
+        if (!response.ok) {
+            const body = await response.json().catch(() => null);
+            const err = new Error(body?.reason || `Metadata fetch failed (${response.status})`);
+            err.status = response.status;
+            throw err;
+        }
         return await response.json();
     }
 }
@@ -461,8 +466,10 @@ function handleAutofillError(err, url, statusEl) {
             statusEl.hidden = false;
         }
         sessionStorage.setItem('pendingMetadataURL', url);
+    } else if (err.status >= 400 && err.status < 500) {
+        if (statusEl) { statusEl.textContent = err.message; statusEl.hidden = false; }
     } else {
-        if (statusEl) { statusEl.textContent = 'Failed to fetch metadata.'; statusEl.hidden = false; }
+        if (statusEl) { statusEl.textContent = 'Failed to fetch metadata. Please try again.'; statusEl.hidden = false; }
     }
 }
 
