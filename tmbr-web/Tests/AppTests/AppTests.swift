@@ -1,4 +1,4 @@
-@testable import App
+@testable import Backend
 import VaporTesting
 import Testing
 import Fluent

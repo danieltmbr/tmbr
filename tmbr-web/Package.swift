@@ -81,6 +81,7 @@ let package = Package(
             name: "AppTests",
             dependencies: [
                 .target(name: "Backend"),
+                .target(name: "AuthKit"),
                 .product(name: "VaporTesting", package: "vapor"),
             ],
             swiftSettings: swiftSettings

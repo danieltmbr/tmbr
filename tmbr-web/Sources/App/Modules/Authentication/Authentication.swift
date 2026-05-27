@@ -41,11 +41,15 @@ struct Authentication: Module {
         app.middleware.use(User.sessionAuthenticator())
         app.middleware.use(UserIDLoggingMiddleware())
 
-        app.jwt.apple.applicationIdentifier = Environment.signIn.appID
-        await app.jwt.keys.add(
-            hmac: HMACKey(from: Environment.signIn.secret),
-            digestAlgorithm: .sha256
-        )
+        // Skip Apple Sign In JWT setup when env vars are absent (e.g. test environment).
+        if let appID = Environment.get("SIWA_APP_ID"),
+           let secret = Environment.get("SIWA_STATE_SECRET") {
+            app.jwt.apple.applicationIdentifier = appID
+            await app.jwt.keys.add(
+                hmac: HMACKey(from: secret),
+                digestAlgorithm: .sha256
+            )
+        }
 
         await app.storage.setWithAsyncShutdown(
             PermissionService.Key.self,
