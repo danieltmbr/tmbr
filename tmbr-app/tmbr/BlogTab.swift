@@ -9,17 +9,16 @@ struct BlogTab: View {
         NavigationStack {
             List {
                 ForEach(Array(placeholderPosts.enumerated()), id: \.offset) { index, title in
-                    HStack {
-                        HStack(spacing: 6) {
-                            Text("\(index + 1).")
-                                .foregroundStyle(.secondary)
-                                .monospacedDigit()
-                            Text(title)
-                        }
-                        Spacer()
-                        Text("May 28")
-                            .font(.subheadline)
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text("\(index + 1).")
                             .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(title)
+                            Text("May 28")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
@@ -49,9 +48,6 @@ struct BlogTab: View {
         }
         .onChange(of: authState.isSignedIn) { _, isSignedIn in
             if isSignedIn { showSignIn = false }
-        }
-        .tabItem {
-            Label("Blog", systemImage: "doc.text")
         }
     }
 

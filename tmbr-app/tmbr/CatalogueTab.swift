@@ -12,18 +12,9 @@ struct CatalogueTab: View {
     var body: some View {
         NavigationStack {
             List(placeholderItems) { item in
-                HStack(spacing: 12) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.secondary.opacity(0.2))
-                        .frame(width: 44, height: 44)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(item.primaryInfo)
-                        Text(item.secondaryInfo)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Text("May 28")
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.primaryInfo)
+                    Text(item.secondaryInfo)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -74,9 +65,6 @@ struct CatalogueTab: View {
         }
         .onChange(of: authState.isSignedIn) { _, isSignedIn in
             if isSignedIn { showSignIn = false }
-        }
-        .tabItem {
-            Label("Catalogue", systemImage: "square.grid.2x2")
         }
     }
 
