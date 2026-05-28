@@ -4,27 +4,30 @@ struct SearchTab: View {
     @State private var searchText = ""
 
     var body: some View {
-        Group {
-            if searchText.isEmpty {
-                ContentUnavailableView(
-                    "Search",
-                    systemImage: "magnifyingglass",
-                    description: Text("Posts, songs, books, movies, and more.")
-                )
-            } else {
-                List(placeholderResults(for: searchText)) { result in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(result.primaryInfo)
-                        if let secondary = result.secondaryInfo {
-                            Text(secondary)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+        NavigationStack {
+            Group {
+                if searchText.isEmpty {
+                    ContentUnavailableView(
+                        "Search",
+                        systemImage: "magnifyingglass",
+                        description: Text("Posts, songs, books, movies, and more.")
+                    )
+                } else {
+                    List(placeholderResults(for: searchText)) { result in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(result.primaryInfo)
+                            if let secondary = result.secondaryInfo {
+                                Text(secondary)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }
             }
+            .navigationTitle("Search")
+            .searchable(text: $searchText, prompt: "Posts, songs, books…")
         }
-        .searchable(text: $searchText, prompt: "Posts, songs, books…")
     }
 
     private struct SearchResult: Identifiable {
