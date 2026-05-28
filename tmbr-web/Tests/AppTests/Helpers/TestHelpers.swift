@@ -14,7 +14,6 @@ func withApp(_ test: (Application) async throws -> ()) async throws {
     let app = try await Application.make(.testing)
     do {
         try await configure(app)
-        registerTestOnlyRoutes(app)
         try await app.autoMigrate()
         try await test(app)
         try await app.autoRevert()
@@ -77,20 +76,3 @@ func makeTestUser(
     return (user, headers)
 }
 
-// MARK: - Test-only routes
-
-/// Registers a `POST /__test/login` endpoint that is only available in the `.testing` environment.
-/// This bypasses Apple Sign In so tests can create authenticated sessions directly.
-private func registerTestOnlyRoutes(_ app: Application) {
-    guard app.environment == .testing else { return }
-    app.post("__test", "login") { req async throws -> Response in
-        struct LoginPayload: Content { let userID: Int }
-        let payload = try req.content.decode(LoginPayload.self)
-        guard let user = try await User.find(payload.userID, on: req.db) else {
-            throw Abort(.notFound)
-        }
-        req.auth.login(user)
-        req.session.authenticate(user)
-        return Response(status: .ok)
-    }
-}

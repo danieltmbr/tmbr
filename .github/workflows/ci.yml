@@ -1,0 +1,161 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Swift unit & integration tests (tmbr-web) ───────────────────────────────
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: tmbr_test
+          POSTGRES_USER: tmbr
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_NAME: tmbr_test
+      DATABASE_USERNAME: tmbr
+      DATABASE_PASSWORD: password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.0.3'
+      - name: Cache Swift build
+        uses: actions/cache@v4
+        with:
+          path: tmbr-web/.build
+          key: ${{ runner.os }}-swift-backend-${{ hashFiles('tmbr-web/Package.resolved') }}
+          restore-keys: ${{ runner.os }}-swift-backend-
+      - name: Build
+        working-directory: tmbr-web
+        run: swift build
+      - name: Test
+        working-directory: tmbr-web
+        run: swift test
+
+  # ─── Swift unit tests (api-kit, requires Xcode toolchain) ────────────────────
+  api-kit-tests:
+    name: API Kit Tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode 16.2
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+      - name: Cache Swift build
+        uses: actions/cache@v4
+        with:
+          path: api-kit/.build
+          key: ${{ runner.os }}-swift-apikit-${{ hashFiles('api-kit/Package.resolved') }}
+          restore-keys: ${{ runner.os }}-swift-apikit-
+      - name: Test
+        run: DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path api-kit
+
+  # ─── Playwright E2E tests against a live server ───────────────────────────────
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: tmbr_test
+          POSTGRES_USER: tmbr
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_NAME: tmbr_test
+      DATABASE_USERNAME: tmbr
+      DATABASE_PASSWORD: password
+      BASE_URL: http://localhost:8080
+    steps:
+      - uses: actions/checkout@v4
+      - uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.0.3'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Cache Swift build
+        uses: actions/cache@v4
+        with:
+          path: tmbr-web/.build
+          key: ${{ runner.os }}-swift-e2e-${{ hashFiles('tmbr-web/Package.resolved') }}
+          restore-keys: ${{ runner.os }}-swift-e2e-
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: tmbr-web/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('tmbr-web/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+      - name: Install npm dependencies
+        working-directory: tmbr-web
+        run: npm ci
+      - name: Install Playwright browsers
+        working-directory: tmbr-web
+        run: npx playwright install --with-deps chromium
+      - name: Build server
+        working-directory: tmbr-web
+        run: swift build
+      - name: Run database migrations
+        working-directory: tmbr-web
+        run: swift run Backend migrate --yes
+      - name: Start server
+        working-directory: tmbr-web
+        run: swift run Backend serve --env testing &
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/signin -o /dev/null && break || true
+            sleep 2
+          done
+      - name: Create test session
+        id: session
+        run: |
+          SESSION=$(curl -si -X POST http://localhost:8080/__test/login \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            | grep -i 'set-cookie:' \
+            | grep vapor_session \
+            | sed 's/.*vapor_session=//;s/;.*//' \
+            | tr -d '\r')
+          echo "cookie=$SESSION" >> "$GITHUB_OUTPUT"
+      - name: Run Playwright tests
+        working-directory: tmbr-web
+        env:
+          E2E_SESSION_COOKIE: ${{ steps.session.outputs.cookie }}
+        run: npx playwright test
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: tmbr-web/playwright-report/
+          retention-days: 7
