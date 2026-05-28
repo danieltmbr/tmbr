@@ -11,9 +11,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ─── Path change detection (PRs only) ────────────────────────────────────────
+  changes:
+    name: Detect Changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      api-kit: ${{ steps.filter.outputs.api-kit }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'tmbr-web/**'
+              - '.github/workflows/**'
+            api-kit:
+              - 'api-kit/**'
+              - '.github/workflows/**'
+
   # ─── Swift unit & integration tests (tmbr-web) ───────────────────────────────
   backend-tests:
     name: Backend Tests
+    needs: [changes]
+    if: |
+      always() && (
+        github.event_name == 'push' ||
+        needs.changes.outputs.backend == 'true'
+      )
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -58,6 +85,12 @@ jobs:
   # ─── Swift unit tests (api-kit, requires Xcode toolchain) ────────────────────
   api-kit-tests:
     name: API Kit Tests
+    needs: [changes]
+    if: |
+      always() && (
+        github.event_name == 'push' ||
+        needs.changes.outputs.api-kit == 'true'
+      )
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
@@ -75,6 +108,12 @@ jobs:
   # ─── Playwright E2E tests against a live server ───────────────────────────────
   e2e-tests:
     name: E2E Tests
+    needs: [changes]
+    if: |
+      always() && (
+        github.event_name == 'push' ||
+        needs.changes.outputs.backend == 'true'
+      )
     runs-on: ubuntu-latest
     services:
       postgres:
