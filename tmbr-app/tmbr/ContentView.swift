@@ -5,6 +5,7 @@ struct ContentView: View {
         TabView {
             BlogTab()
             CatalogueTab()
+            SearchTab()
         }
     }
 }

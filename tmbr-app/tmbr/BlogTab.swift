@@ -2,26 +2,28 @@ import SwiftUI
 
 struct BlogTab: View {
     @Environment(AuthState.self) private var authState
-    @State private var searchText = ""
     @State private var showSignIn = false
     @State private var showEditor = false
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(0..<5) { i in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Post Title \(i + 1)")
-                            .font(.headline)
-                        Text("A short excerpt from the post...")
+                ForEach(Array(placeholderPosts.enumerated()), id: \.offset) { index, title in
+                    HStack {
+                        HStack(spacing: 6) {
+                            Text("\(index + 1).")
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                            Text(title)
+                        }
+                        Spacer()
+                        Text("May 28")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
-                    .padding(.vertical, 4)
                 }
             }
             .navigationTitle("Blog")
-            .searchable(text: $searchText)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     if authState.isSignedIn {
@@ -40,12 +42,24 @@ struct BlogTab: View {
         }
         .sheet(isPresented: $showSignIn) {
             SignInView()
+                .environment(authState)
         }
         .fullScreenCover(isPresented: $showEditor) {
             BlogEditorView()
+        }
+        .onChange(of: authState.isSignedIn) { _, isSignedIn in
+            if isSignedIn { showSignIn = false }
         }
         .tabItem {
             Label("Blog", systemImage: "doc.text")
         }
     }
+
+    private let placeholderPosts = [
+        "On keeping a reading journal",
+        "Why I stopped using recommendations",
+        "Albums I return to every winter",
+        "Notes on Detransition, Baby",
+        "The case for private playlists",
+    ]
 }
