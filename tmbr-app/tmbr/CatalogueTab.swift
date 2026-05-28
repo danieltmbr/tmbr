@@ -21,6 +21,7 @@ struct CatalogueTab: View {
             }
             .navigationTitle("Catalogue")
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         showFilter = true
@@ -28,6 +29,7 @@ struct CatalogueTab: View {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
                 }
+                #endif
                 ToolbarItem(placement: .primaryAction) {
                     if authState.isSignedIn {
                         Button {
@@ -55,11 +57,13 @@ struct CatalogueTab: View {
                 selectedType = type
             }
         }
+        #if os(iOS)
         .fullScreenCover(isPresented: $showEditor) {
             if let type = selectedType {
                 MediaEditorView(type: type)
             }
         }
+        #endif
         .onChange(of: selectedType) { _, type in
             if type != nil { showEditor = true }
         }
