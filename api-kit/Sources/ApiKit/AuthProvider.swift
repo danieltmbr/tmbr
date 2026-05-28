@@ -6,7 +6,7 @@ public actor AuthProvider {
     
     private var refreshTask: Task<String, Error>?
     
-    private let refresher: (@Sendable () async throws -> String)?
+    private let refresher: @Sendable () async throws -> String
 
     public init(
         token: String? = nil,
