@@ -1,4 +1,4 @@
-# Quality Assurance Strategy
+# Quality Assurance
 
 ## Scope
 
@@ -11,199 +11,124 @@
 
 ---
 
-## Part 1: Structured Logging
+## Logging Requirements
 
-### Request Logging Middleware
+Every completed request must be logged with: method, path, status code, duration, trace ID, user ID (or "anonymous"). Error logs must additionally include error type and message.
 
-`Sources/Core/Logging/RequestLoggingMiddleware.swift` — logs every completed request.
+Log level scales with response status: `.info` for 2xx/3xx, `.warning` for 4xx, `.error` for 5xx.
 
-Placed after `TracingMiddleware` so the trace ID is already in logger metadata. Log level scales with response status: `.info` for 2xx/3xx, `.warning` for 4xx, `.error` for 5xx.
-
-Register in `Configuration+Logging.swift`.
-
-### RecoverMiddleware Logging
-
-`Sources/Core/Web/Recover/RecoverMiddleware.swift` — enrich the existing error log to include:
-- HTTP status code
-- Request method + path
-- Error type (`String(reflecting: type(of: error))`)
-- User ID from session (or "anonymous")
-- Trace ID is already in logger metadata via `TracingMiddleware`
-
-Not adding yet: external services (Sentry), DB query logging, request body logging.
+Not adding yet: external error tracking (Sentry), DB query logging, request body logging.
 
 ---
 
-## Part 2: Error Recovery for Users
+## Error Recovery Model
 
-Three tiers — distinct from logging, which is for us.
+Three tiers — distinct from logging, which is for developers.
 
-**Tier 1 — Auto-recovered by code**: Already working (auth 401 → redirect to login + retry). No change needed.
+**Tier 1 — Auto-recovered**: The code handles it transparently. Example: 401 → redirect to login + retry after re-auth. Only add auto-recovery when the fix is deterministic and invisible to the user.
 
-**Tier 2 — User-recoverable**: Validation errors, duplicates, wrong format. Vapor's `Abort(.badRequest, reason: "...")` already includes the reason in the JSON response body — the JS just ignores it. Fix: read `body.reason` and show it inline near the form with actionable text.
+**Tier 2 — User-recoverable**: The user can fix it with different input. Show the reason inline near the relevant control. Never show a generic message when a specific one is available.
 
-**Tier 3 — System errors**: 500s and unhandled exceptions. Show "Something went wrong. Please try again." — never expose internals. Log full detail server-side.
+**Tier 3 — System errors**: The user cannot fix it. Show "Something went wrong — [Report this issue](mailto:bug@tmbr.me)" — never expose internals. Log full detail server-side. A report link is essential since logs aren't actively monitored.
 
-### JS Error Handling Pattern
+---
 
-Shared helper (add to `catalogue-editor.js` or a new `Shared/errors.js`):
+## Post-Mortem Process
+
+When something breaks:
+
+1. Fix it
+2. Write (or update) a test that would have caught it
+3. Write a post-mortem in `.claude/incidents/` using `.claude/incidents/TEMPLATE.md`
+4. If the same component breaks twice — an E2E test is **required** before the fix is considered done
+
+---
+
+## E2E Test Policy
+
+Use E2E tests for user-visible flows that cross multiple layers (JS ↔ server ↔ DB). Backend tests cannot catch these.
+
+**Required**: any component that has broken twice gets an E2E test before the fix is considered done.
+
+**Recommended**: flows that depend on client-side state (draft persistence, gallery picker, inline error display).
+
+---
+
+## Web (tmbr-web/)
+
+### Testing Invariants
+
+Apply these to every new web feature. When adding a route, ask which categories it falls into and write a test for each.
+
+**Every protected route:**
+- Unauthenticated request → redirect to login
+
+**Every POST/PATCH/DELETE:**
+- Owner with valid input → succeeds; verify DB state after
+- Owner with invalid/missing input → 400 with `reason` in body
+- Non-owner → 403
+
+**Every model with visibility states (public/private/draft):**
+- Owner sees all their own items regardless of visibility
+- Non-owner cannot see private or draft items → 403
+- Non-owner can see public items
+
+**Every list endpoint:**
+- Only returns items the requester is authorized to see — no leaking private or draft items
+
+### JS Error Handling
+
+Distinguish user-fixable errors from system errors so each gets the right UI treatment.
 
 ```javascript
-class UserError extends Error {}  // user can fix this
-class SystemError extends Error {} // we need to fix this
+class UserError extends Error {}  // show reason inline — user can act on it
+class SystemError extends Error {} // show generic message + report link
 
 async function parseErrorResponse(response) {
     const body = await response.json().catch(() => null);
     if (response.status === 400 || response.status === 422) {
         throw new UserError(body?.reason ?? 'Please check your input and try again.');
     }
-    if (response.status === 404) {
-        throw new UserError('This item no longer exists.');
+    if (response.status === 403) {
+        throw new UserError('You don\'t have permission to do this.');
     }
-    throw new SystemError(); // 500+ — generic message, details are in server logs
+    if (response.status === 404) {
+        throw new SystemError(); // item disappeared — data bug, not user error
+    }
+    throw new SystemError();
 }
 ```
 
-Apply to: `MetadataController`, `LookupController`, `ResourceInputsController` fetch calls in `catalogue-editor.js`, and image upload calls in `media.js`.
-
 ---
 
-## Part 3: Backend Tests (Swift Testing)
+## Native (tmbr-app/)
 
-Framework already configured: `VaporTesting` + Swift Testing in `Package.swift`, `withApp()` helper in `AppTests.swift`.
+`tmbr-app/` is empty stubs now. Apply these when native development begins.
 
-### Shared Helpers — `Tests/AppTests/Helpers/TestHelpers.swift`
+### Testing Invariants
 
-Extract `withApp()` from `AppTests.swift` and add an authenticated variant:
+**Every API call:**
+- Successful response → model decoded correctly
+- 4xx → appropriate typed error surfaced to the UI
+- 5xx / offline / timeout → error surfaced, not a crash
 
-```swift
-// Creates a user, logs in via the real login endpoint, returns a session cookie
-func withAuthenticatedApp(_ test: (Application, String) async throws -> ()) async throws
-```
+**Every authenticated screen:**
+- No valid session → redirects to sign-in, not a blank or broken screen
 
-This exercises the actual auth stack, not a mock.
+**Every action that mutates server state:**
+- Success → UI reflects the change without requiring a manual refresh
+- Failure → error shown, UI not left in a broken intermediate state
 
-### Test Suites — Priority Order
+### Error Handling for Users
 
-**`Tests/AppTests/Auth/SessionTests.swift`**
-- Unauthenticated request to protected route → redirect to login
-- Login with valid credentials → session cookie set
-- Login with wrong password → error
-- Logout → session cleared
+Mirror the web tier model:
+- **User-recoverable (4xx)**: actionable inline message
+- **System errors (5xx)**: "Something went wrong — [Report this issue](mailto:bug@tmbr.me)"
+- **Offline**: "No internet connection" with a retry button
+- Loading states: spinner/skeleton — never a blank or stuck screen
 
-**`Tests/AppTests/Catalogue/AlbumTests.swift`** (Albums as representative; other types follow the same pattern)
-- `GET /albums/create` unauthenticated → redirect
-- `GET /albums/create` authenticated → 200, HTML contains `id="editor-title"`
-- `POST /albums` valid input → item in DB, redirect
-- `POST /albums` missing required field → 400/422 with reason
-- `PATCH /albums/:id` by owner → updated in DB
-- `PATCH /albums/:id` by different user → 403
-- `DELETE /albums/:id` by owner → removed from DB
-- `DELETE /albums/:id` by non-owner → 403
+### Sign In with Apple
 
-**`Tests/AppTests/Notes/NotesTests.swift`**
-- Add note to own catalogue item → persisted
-- Private note not visible to other users
-
-**`Tests/AppTests/Posts/PostTests.swift`**
-- Create post → persisted
-- Edit own post → updated
-- Edit other's post → 403
-
----
-
-## Part 4: Playwright E2E Tests
-
-### Setup
-
-Add to `tmbr-web/`:
-
-```
-package.json              — { "devDependencies": { "@playwright/test": "^1.x" } }
-playwright.config.ts      — baseURL: http://localhost:8080, testDir: ./Tests/E2E
-Tests/E2E/
-  helpers/auth.ts         — shared login() helper
-  auth.spec.ts
-  catalogue-editor.spec.ts
-```
-
-Run against a local server:
-```bash
-# Terminal 1
-cd tmbr-web && swift run Backend serve
-
-# Terminal 2
-cd tmbr-web && npx playwright test
-```
-
-### `catalogue-editor.spec.ts` — the critical suite
-
-Covers the scenarios that broke repeatedly:
-- Create album with all fields → lands on detail page, data persisted
-- Artwork: set URL → preview shown; clear → `empty` class restored
-- Artwork: select from gallery sidebar → state synced to hidden input
-- Notes: add note → visible; mark for deletion → delete flag set
-- Draft: fills from localStorage on refresh; clears after successful submit
-- Duplicate detection: same title+artist → alert shown, submission blocked
-- Resource inputs: add row; remove row; autofill triggers on URL change
-- Error messages: metadata fetch returns 400 → user sees specific reason, not generic
-
----
-
-## Part 5: Post-Mortem Process
-
-When something breaks:
-
-1. Fix it
-2. Write (or update) a test that would have caught it
-3. Write a post-mortem in `.claude/incidents/` using the template
-4. If the same component breaks twice — an E2E test is **required** before the fix is considered done
-
-Post-mortems live in `.claude/incidents/`. Template: `.claude/incidents/TEMPLATE.md`.
-
-Format:
-```markdown
-# Incident: [Short description]
-
-**Date**: YYYY-MM-DD
-**Severity**: Low / Medium / High
-**Status**: Resolved / Ongoing
-
-## What happened
-[Symptom from the user's perspective]
-
-## Root cause
-[The specific technical cause — be concrete]
-
-## How it was fixed
-[The change made to resolve it]
-
-## Prevention
-- [ ] New test: [describe what it verifies]
-- [ ] Process/doc change: [what to add or update]
-- [ ] Long-term fix if current solution is a workaround: [describe]
-
-## Tests added
-[File paths or descriptions]
-```
-
----
-
-## Part 6: Leaf Replacement (Long-Term)
-
-The Note textarea + access checkbox incident (`incidents/001`) is a symptom of Leaf's structural limitations: no component scoping, weak template inheritance. The current fix is a CLAUDE.md reminder, not a real solution.
-
-Worth evaluating when the web frontend next needs significant work: `swift-html` or a Leaf macro/component abstraction that enforces proper scoping. See `leaf-limitations.md` for the known issues.
-
----
-
-## Implementation Order
-
-1. Logging (`RequestLoggingMiddleware` + enrich `RecoverMiddleware`)
-2. JS error recovery tiers 2/3
-3. Test helpers + auth backend tests
-4. Catalogue backend tests
-5. Notes + Posts backend tests
-6. Playwright setup + auth E2E
-7. Catalogue E2E (most complex — do last)
-8. Post-mortem template + first incident write-up + CLAUDE.md update
+- Successful → user persisted, session established, navigates to home
+- Cancelled by user → returns to sign-in screen cleanly, no error shown
+- Invalid/expired token → error handled, not a crash

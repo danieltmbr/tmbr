@@ -53,6 +53,7 @@ Read the relevant doc:
 - Swift design patterns → `/.claude/docs/patterns.md`
 - Native app networking (`api-kit` package, `RequestLoader`) → `/.claude/docs/native-networking.md`
 - Logging, testing, error recovery, post-mortems → `/.claude/docs/quality-assurance.md`
+- QA implementation backlog (specific tests to write, files to create) → `/.claude/docs/qa-backlog.md`
 
 ## When Something Breaks
 
