@@ -1,4 +1,4 @@
-#if DEBUG
+#if DEBUG || VAPOR_TESTING
 import Vapor
 import AuthKit
 import Fluent

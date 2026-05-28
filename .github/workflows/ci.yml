@@ -37,8 +37,8 @@ jobs:
       DATABASE_PASSWORD: password
     steps:
       - uses: actions/checkout@v4
-      # Swift 6.1 used here — 6.0.3 has a known compiler crash (SIGSEGV) on
-      # Linux when emitting IR for certain complex generic specialisations.
+      # Release mode avoids a Linux compiler crash (SIGSEGV in CreateCast) that
+      # affects debug builds of complex cross-module generic expressions.
       - uses: swift-actions/setup-swift@v2
         with:
           swift-version: '6.1'
@@ -50,10 +50,10 @@ jobs:
           restore-keys: ${{ runner.os }}-swift-backend-
       - name: Build
         working-directory: tmbr-web
-        run: swift build
+        run: swift build -c release
       - name: Test
         working-directory: tmbr-web
-        run: swift test
+        run: swift test -c release
 
   # ─── Swift unit tests (api-kit, requires Xcode toolchain) ────────────────────
   api-kit-tests:
@@ -125,13 +125,15 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Build server
         working-directory: tmbr-web
-        run: swift build
+        # -DVAPOR_TESTING enables /__test/login in release builds (test routes are
+        # guarded by #if DEBUG || VAPOR_TESTING and never compiled into production).
+        run: swift build -c release -Xswiftc -DVAPOR_TESTING
       - name: Run database migrations
         working-directory: tmbr-web
-        run: swift run Backend migrate --yes
+        run: .build/release/Backend migrate --yes
       - name: Start server
         working-directory: tmbr-web
-        run: swift run Backend serve --env testing &
+        run: .build/release/Backend serve --env testing &
       - name: Wait for server to be ready
         run: |
           for i in $(seq 1 30); do

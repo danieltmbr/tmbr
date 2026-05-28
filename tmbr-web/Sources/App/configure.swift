@@ -24,7 +24,7 @@ func configure(_ app: Application) async throws {
     )
     try await registry.configure(app)
     try await registry.boot(app.routes)
-    #if DEBUG
+    #if DEBUG || VAPOR_TESTING
     if app.environment == .testing {
         registerTestOnlyRoutes(app)
     }

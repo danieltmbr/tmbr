@@ -58,16 +58,14 @@ extension Command where Self == PlainCommand<String?, AlbumSearchResult> {
 
 extension CommandFactory<String?, AlbumSearchResult> {
 
-    // Explicit type and broken chain work around a Swift Linux IR-gen crash
-    // (null CreateCast) that triggers on chained existential boxing in generic closures.
-    static var searchAlbums: CommandFactory<String?, AlbumSearchResult> {
+    static var searchAlbums: Self {
         CommandFactory { request in
-            let command = PlainCommand<String?, AlbumSearchResult>.searchAlbums(
+            .searchAlbums(
                 database: request.commandDB,
                 permission: request.permissions.previews.query,
                 noteSearch: request.commands.notes.search
             )
-            return command.logged(name: "Search Albums", logger: request.logger)
+            .logged(name: "Search Albums", logger: request.logger)
         }
     }
 }
