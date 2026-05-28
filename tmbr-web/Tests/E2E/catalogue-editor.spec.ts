@@ -135,24 +135,39 @@ test.describe('Catalogue editor — Albums', () => {
 
 test.describe('Catalogue editor — Note access controls', () => {
 
-    test('note textarea: access checkbox is within the form bounds', async ({ page }) => {
+    // Regression: Leaf template scope bug caused the access checkbox to float
+    // outside its container. See .claude/incidents/001-note-textarea-layout.md.
+    test('note access checkbox: visible, inside notes section, and interactive', async ({ page }) => {
         await page.goto('/albums/new');
-        // Find all note sections
-        const noteSection = page.locator('.notes-editor, [data-notes-editor]').first();
-        if (await noteSection.isVisible({ timeout: 1000 }).catch(() => false)) {
-            const checkbox = noteSection.locator('[type="checkbox"][name*="access"]').first();
-            if (await checkbox.isAttached()) {
-                // The checkbox should be visible and within the form
-                const formBounds = await page.locator('form').boundingBox();
-                const checkboxBounds = await checkbox.boundingBox();
-                if (formBounds && checkboxBounds) {
-                    expect(checkboxBounds.x).toBeGreaterThanOrEqual(formBounds.x);
-                    expect(checkboxBounds.x + checkboxBounds.width).toBeLessThanOrEqual(
-                        formBounds.x + formBounds.width + 10 // 10px tolerance
-                    );
-                }
-            }
-        }
+
+        // NotesController.init() always appends an empty wrapper on load —
+        // assert rather than guard so a missing section fails loudly.
+        const notesSection = page.locator('#notes-section');
+        await expect(notesSection).toBeVisible();
+
+        const noteWrapper = notesSection.locator('.note-wrapper').first();
+        await expect(noteWrapper).toBeVisible();
+
+        const checkbox = noteWrapper.locator('.note-access input[type="checkbox"]');
+        await expect(checkbox).toBeVisible();
+
+        // Verify the checkbox is rendered inside the notes section bounds.
+        // A Leaf scoping bug would push it outside, even though it's in the DOM tree.
+        const sectionBounds = await notesSection.boundingBox();
+        const checkboxBounds = await checkbox.boundingBox();
+        expect(sectionBounds).not.toBeNull();
+        expect(checkboxBounds).not.toBeNull();
+        expect(checkboxBounds!.x).toBeGreaterThanOrEqual(sectionBounds!.x);
+        expect(checkboxBounds!.x + checkboxBounds!.width).toBeLessThanOrEqual(sectionBounds!.x + sectionBounds!.width + 1);
+        expect(checkboxBounds!.y).toBeGreaterThanOrEqual(sectionBounds!.y);
+        expect(checkboxBounds!.y + checkboxBounds!.height).toBeLessThanOrEqual(sectionBounds!.y + sectionBounds!.height + 1);
+
+        // Verify the checkbox is interactive, not just positioned correctly.
+        const initialChecked = await checkbox.isChecked();
+        await checkbox.click();
+        await expect(checkbox).toBeChecked({ checked: !initialChecked });
+        await checkbox.click();
+        await expect(checkbox).toBeChecked({ checked: initialChecked });
     });
 
 });
