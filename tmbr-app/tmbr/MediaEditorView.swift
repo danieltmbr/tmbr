@@ -9,7 +9,7 @@ struct MediaEditorView: View {
             Text("\(type.label) Editor")
                 .foregroundStyle(.secondary)
                 .navigationTitle(type.label)
-                .navigationBarTitleDisplayMode(.inline)
+                .toolbarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Cancel") { dismiss() }

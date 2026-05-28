@@ -8,7 +8,7 @@ struct BlogEditorView: View {
             Text("Blog Editor")
                 .foregroundStyle(.secondary)
                 .navigationTitle("New Post")
-                .navigationBarTitleDisplayMode(.inline)
+                .toolbarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Cancel") { dismiss() }

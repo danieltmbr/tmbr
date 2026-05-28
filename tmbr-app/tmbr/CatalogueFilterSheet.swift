@@ -26,7 +26,7 @@ struct CatalogueFilterSheet: View {
                 }
             }
             .navigationTitle("Filter")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     let allSelected = selectedTypes.count == CatalogueItemType.allCases.count

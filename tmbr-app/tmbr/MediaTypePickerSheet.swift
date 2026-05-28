@@ -16,7 +16,7 @@ struct MediaTypePickerSheet: View {
                 }
             }
             .navigationTitle("New Item")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
