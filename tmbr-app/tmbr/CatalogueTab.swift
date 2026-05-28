@@ -25,7 +25,7 @@ struct CatalogueTab: View {
                     Button {
                         showFilter = true
                     } label: {
-                        Image(systemName: "slider.horizontal.3")
+                        Image(systemName: "line.3.horizontal.decrease")
                     }
                 }
                 ToolbarItem(placement: .primaryAction) {
