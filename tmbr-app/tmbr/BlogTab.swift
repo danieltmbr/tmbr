@@ -43,11 +43,9 @@ struct BlogTab: View {
             SignInView()
                 .environment(authState)
         }
-        #if os(iOS)
-        .fullScreenCover(isPresented: $showEditor) {
+        .sheet(isPresented: $showEditor) {
             BlogEditorView()
         }
-        #endif
         .onChange(of: authState.isSignedIn) { _, isSignedIn in
             if isSignedIn { showSignIn = false }
         }

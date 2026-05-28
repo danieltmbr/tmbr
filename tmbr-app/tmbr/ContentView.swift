@@ -13,5 +13,6 @@ struct ContentView: View {
                 SearchTab()
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
     }
 }
