@@ -28,6 +28,16 @@ struct CatalogueFilterSheet: View {
             .navigationTitle("Filter")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    let allSelected = selectedTypes.count == CatalogueItemType.allCases.count
+                    Button(allSelected ? "Deselect All" : "Select All") {
+                        if allSelected {
+                            selectedTypes.removeAll()
+                        } else {
+                            selectedTypes = Set(CatalogueItemType.allCases)
+                        }
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                 }
