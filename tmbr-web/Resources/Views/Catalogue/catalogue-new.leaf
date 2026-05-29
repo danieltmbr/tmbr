@@ -1,0 +1,95 @@
+#extend("Shared/page"):
+
+    #export("styles"):
+    <link rel="stylesheet" href="/Styles/Shared/editor.css">
+    #endexport
+
+    #export("main"):
+    <form id="editor-form" method="POST" action="/catalogue/new">
+
+        <input type="hidden" name="artwork-id" id="editor-artwork-id" value="" />
+        <input type="hidden" name="artwork-source-url" id="editor-artwork-source-url" value="" />
+
+        <input
+            id="editor-url"
+            class="text-input title"
+            name="url"
+            type="url"
+            value="#(url)"
+            placeholder="URL"
+            autocomplete="off"
+            spellcheck="false"
+        />
+
+        <input
+            id="editor-title"
+            class="text-input"
+            name="title"
+            type="text"
+            value="#(title)"
+            placeholder="Title"
+            autocomplete="off"
+            spellcheck="true"
+        />
+
+        <input
+            id="editor-subtitle"
+            class="text-input"
+            name="subtitle"
+            type="text"
+            value="#(subtitle)"
+            placeholder="Subtitle (optional)"
+            autocomplete="off"
+            spellcheck="true"
+        />
+
+        <section id="details-section">
+            <h3>Details</h3>
+            <div class="details-content">
+                <div class="details-inputs">
+                    <input
+                        id="editor-category"
+                        class="text-input"
+                        name="category"
+                        type="text"
+                        value="#(category)"
+                        placeholder="Category (e.g. cooking, running)"
+                        autocomplete="off"
+                        spellcheck="false"
+                        list="category-suggestions"
+                    />
+                    <datalist id="category-suggestions">
+                        #for(cat in categories):
+                        <option value="#(cat)"></option>
+                        #endfor
+                    </datalist>
+                </div>
+
+                <figure id="artwork-placeholder" class="image-picker empty">
+                    <img id="artwork-image" src="" alt="Artwork" />
+                    <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
+                </figure>
+            </div>
+        </section>
+
+        #if(error):
+            <p class="editor-error">#unsafeHTML(error)</p>
+        #endif
+
+        <p id="autofill-status" class="system-info" hidden></p>
+
+        <div class="editor-actions">
+            <div></div>
+            <div>
+                <input type="hidden" name="access" value="private" />
+                <button class="primary" type="submit">Save</button>
+            </div>
+        </div>
+    </form>
+    #endexport
+
+    #export("scripts"):
+    <script src="/Scripts/Catalogue/catalogue-new.js"></script>
+    #endexport
+
+#endextend

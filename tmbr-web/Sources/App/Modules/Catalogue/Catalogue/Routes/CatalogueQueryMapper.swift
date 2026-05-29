@@ -2,7 +2,8 @@ import Foundation
 
 struct CatalogueQueryMapper: Sendable {
 
-    private static let catalogueTypes: Set<String> = [
+    // Known model-backed types. Shallow user-defined types are merged in per-request via init(shallowTypes:).
+    static let catalogueTypes: Set<String> = [
         Album.previewType,
         Book.previewType,
         Movie.previewType,
@@ -20,6 +21,11 @@ struct CatalogueQueryMapper: Sendable {
 
     init(allowedTypes: Set<String> = Self.catalogueTypes) {
         self.allowedTypes = allowedTypes
+    }
+
+    /// Merges user-defined shallow categories into the allowed set.
+    init(shallowTypes: [String]) {
+        self.allowedTypes = Self.catalogueTypes.union(shallowTypes)
     }
 
     func toPreviewQuery(from payload: CatalogueQueryPayload) -> PreviewQueryInput {

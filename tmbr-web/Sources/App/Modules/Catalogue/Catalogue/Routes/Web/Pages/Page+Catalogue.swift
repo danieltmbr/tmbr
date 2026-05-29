@@ -1,5 +1,6 @@
 import Vapor
 import Core
+import AuthKit
 
 struct CatalogueViewModel: Encodable, Sendable {
 
@@ -77,13 +78,46 @@ extension Page {
             let payload = try req.query.decode(CatalogueQueryPayload.self)
             let term = payload.term
             let selectedTypes = payload.types
-            let result = try await req.commands.catalogue.search(payload)
+
+            // Fetch user's shallow categories to include them in the feed and filter chips.
+            let shallowCategories: [String]
+            if let userID = req.auth.get(User.self).flatMap({ try? $0.requireID() }) {
+                shallowCategories = (try? await req.commands.previews.listShallowCategories(userID)) ?? []
+            } else {
+                shallowCategories = []
+            }
+
+            let mapper = CatalogueQueryMapper(shallowTypes: shallowCategories)
+            let previewInput = mapper.toPreviewQuery(from: payload)
+            let noteInput = mapper.toNotesQuery(from: payload)
+            async let previewsTask = req.commands.previews.list(previewInput)
+            async let notesTask = req.commands.notes.search(noteInput)
+            let (rawPreviews, notes) = try await (previewsTask, notesTask)
+            let previewIDs = Set(rawPreviews.compactMap(\.id))
+            var seen = previewIDs
+            let noteMatches = notes.compactMap { note -> Preview? in
+                guard let id = note.attachment.id, !seen.contains(id) else { return nil }
+                seen.insert(id)
+                return note.attachment
+            }
+            let result = CatalogueSearchResult(previews: rawPreviews, noteMatches: noteMatches)
             let baseURL = req.baseURL
             let compose = ComposePopupViewModel(req.permissions.compose(.standard))
+
+            // Standard filter chips + one chip per user-defined shallow category.
+            let shallowFilterItems = shallowCategories.map { category in
+                FilterItemViewModel(
+                    icon: "link",
+                    label: category.capitalized,
+                    value: category
+                )
+            }
+            let allFilterItems = ([FilterItemViewModel].catalogue + shallowFilterItems).map { filter in
+                filter.check(selectedTypes?.contains(filter.value) ?? true)
+            }
+
             return CatalogueViewModel(
-                filterItems: .catalogue.map { filter in
-                    filter.check(selectedTypes?.contains(filter.value) ?? true)
-                },
+                filterItems: allFilterItems,
                 previews: result.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
                     + result.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) },
                 term: term,
