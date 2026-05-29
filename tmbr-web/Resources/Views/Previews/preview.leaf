@@ -1,0 +1,21 @@
+#extend("Catalogue/details"):
+
+    #export("detail-header"):
+    <div class="details">
+        <h1>#(title)</h1>
+        #if(subtitle):
+        <h3>#(subtitle)</h3>
+        #endif
+        #extend("Catalogue/resources")
+    </div>
+    #if(artwork):
+    <div class="artwork">
+        <img src="#(artwork.url)" alt="#(title)">
+    </div>
+    #endif
+    #endexport
+
+    #export("detail-body"):
+    #endexport
+
+#endextend

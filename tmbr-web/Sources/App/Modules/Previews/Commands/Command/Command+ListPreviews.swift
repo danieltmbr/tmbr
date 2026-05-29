@@ -6,22 +6,22 @@ import Fluent
 import AuthKit
 
 struct PreviewQueryInput: Sendable {
-    
+
     let term: String?
-    
-    let types: Set<String>?
+
+    let categoryIDs: Set<UUID>?
 
     init(
         term: String? = nil,
-        types: Set<String>? = nil
+        categoryIDs: Set<UUID>? = nil
     ) {
         self.term = term
-        self.types = types
+        self.categoryIDs = categoryIDs
     }
 }
 
 extension Command where Self == PlainCommand<PreviewQueryInput, [Preview]> {
-    
+
     static func listPreviews(
         database: Database,
         permission: BasePermissionResolver<QueryBuilder<Preview>>
@@ -29,9 +29,13 @@ extension Command where Self == PlainCommand<PreviewQueryInput, [Preview]> {
         PlainCommand { input in
             let query = Preview.query(on: database)
                 .with(\.$parentOwner)
-                .filter(\.$parentType ~~? input.types)
                 .sort(\.$createdAt, .descending)
                 .with(\.$image)
+                .with(\.$catalogueCategory)
+
+            if let categoryIDs = input.categoryIDs {
+                query.filter(\.$catalogueCategory.$id ~~ categoryIDs)
+            }
             if let term = input.term, !term.isEmpty {
                 query.group(.or) { group in
                     group.filter(\.$primaryInfo, .custom("ILIKE"), "%\(term)%")
@@ -45,7 +49,7 @@ extension Command where Self == PlainCommand<PreviewQueryInput, [Preview]> {
 }
 
 extension CommandFactory<PreviewQueryInput, [Preview]> {
-    
+
     static var listPreviews: Self {
         CommandFactory { request in
             .listPreviews(

@@ -23,12 +23,14 @@ extension Command where Self == PlainCommand<QuoteQueryPayload, [Quote]> {
                         attachment.with(\.$image)
                     }
                 }
-                .filter(Preview.self, \.$parentType ~~? input.types)
                 .group(.or) { group in
                     let sql = "body ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
                     group.filter(.sql(unsafeRaw: sql))
                 }
                 .sort(\Quote.$createdAt, .descending)
+            if let categoryIDs = input.categoryIDs {
+                query.filter(Preview.self, \.$catalogueCategory.$id ~~ categoryIDs)
+            }
             try await permission.grant(query)
             return try await query.all()
         }

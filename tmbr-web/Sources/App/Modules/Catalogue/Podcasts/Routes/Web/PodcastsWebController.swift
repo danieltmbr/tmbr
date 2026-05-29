@@ -197,7 +197,7 @@ struct PodcastsWebController: RouteCollection {
         }
         do {
             let podcast = try await request.commands.podcasts.fetch(podcastID, for: .write)
-            return try await NotesWebController.createNote(attachmentID: podcast.$preview.id, on: request)
+            return try await request.createNoteResponse(attachmentID: podcast.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }

@@ -50,18 +50,25 @@ extension FilterItemViewModel {
         label: "Podcasts",
         value: Podcast.previewType
     )
-    
+
     static let song = FilterItemViewModel(
         icon: "song",
         label: "Songs",
         value: Song.previewType
     )
-}
 
-extension FilterItemViewModel {
     static let en = FilterItemViewModel(icon: "🇬🇧", label: "English", value: Language.en.rawValue)
     static let hu = FilterItemViewModel(icon: "🇭🇺", label: "Hungarian", value: Language.hu.rawValue)
 }
+
+private let catalogueIcons: [String: String] = [
+    Album.previewType:    "album",
+    Book.previewType:     "book",
+    Movie.previewType:    "movie",
+    Playlist.previewType: "playlist",
+    Podcast.previewType:  "podcast",
+    Song.previewType:     "song",
+]
 
 extension [FilterItemViewModel] {
     static let catalogue: Self = [
@@ -83,13 +90,36 @@ extension Page {
     static var catalogue: Self {
         Page(template: .catalogue) { req in
             let payload = try req.query.decode(CatalogueQueryPayload.self)
-            let effectivePayload = CatalogueQueryPayload(term: payload.term, types: payload.types, languages: req.languagePreference)
-            let result = try await req.commands.catalogue.search(effectivePayload)
+            let effectivePayload = CatalogueQueryPayload(
+                term: payload.term,
+                types: payload.types,
+                languages: req.languagePreference
+            )
+
+            let allCategories = try await req.commands.catalogueCategories.list()
+            let mapper = CatalogueQueryMapper(categories: allCategories)
+            let search: PlainCommand<CatalogueQueryPayload, CatalogueSearchResult> = .searchCatalogue(
+                mapper: mapper,
+                noteSearch: req.commands.notes.search,
+                previewSearch: req.commands.previews.list
+            )
+            let result = try await search(effectivePayload)
             let baseURL = req.baseURL
             let compose = ComposePopupViewModel(req.permissions.compose(.standard))
-            let typeItems = [FilterItemViewModel].catalogue.map { $0.check(payload.types?.contains($0.value) ?? true) }
+
+            let typeItems = allCategories.map { cat in
+                FilterItemViewModel(
+                    icon: catalogueIcons[cat.slug] ?? "link",
+                    label: cat.name,
+                    value: cat.slug
+                ).check(payload.types?.contains(cat.slug) ?? true)
+            }
+            let languageItems = [FilterItemViewModel].languages.map {
+                $0.check(payload.languages?.contains($0.value) ?? true)
+            }
+
             return CatalogueViewModel(
-                panels: [.types(typeItems)],
+                panels: [.types(typeItems), .languages(languageItems)],
                 previews: result.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
                     + result.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) },
                 term: payload.term,

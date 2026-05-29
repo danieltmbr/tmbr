@@ -23,9 +23,15 @@ extension Command where Self == PlainCommand<String?, MovieSearchResult> {
                 return trimmed.isEmpty ? nil : trimmed.replacingOccurrences(of: "'", with: "''")
             }
 
+            guard let movieCategory = try await CatalogueCategory.query(on: database)
+                .filter(\.$slug == Movie.previewType).first(),
+                let categoryID = movieCategory.id else {
+                return MovieSearchResult(previews: [], noteMatches: [])
+            }
+
             let query = Preview.query(on: database)
                 .with(\.$image)
-                .filter(\.$parentType == Movie.previewType)
+                .filter(\.$catalogueCategory.$id == categoryID)
                 .join(Movie.self, on: \Movie.$preview.$id == \Preview.$id)
                 .sort(\.$createdAt, .descending)
 
@@ -40,7 +46,7 @@ extension Command where Self == PlainCommand<String?, MovieSearchResult> {
             try await permission.grant(query)
 
             async let previewsTask = query.all()
-            async let notesTask = noteSearch(NoteQueryPayload(term: term, types: [Movie.previewType]))
+            async let notesTask = noteSearch(NoteQueryPayload(term: term, categoryIDs: [categoryID]))
             let (previews, notes) = try await (previewsTask, notesTask)
 
             let previewIDs = Set(previews.compactMap(\.id))

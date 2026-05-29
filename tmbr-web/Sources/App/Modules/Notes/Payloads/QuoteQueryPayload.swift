@@ -3,6 +3,11 @@ import Foundation
 struct QuoteQueryPayload: Decodable, Sendable {
 
     let term: String?
-    
-    let types: Set<String>?
+
+    let categoryIDs: Set<UUID>?
+
+    init(term: String? = nil, categoryIDs: Set<UUID>? = nil) {
+        self.term = term
+        self.categoryIDs = categoryIDs
+    }
 }

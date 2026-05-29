@@ -13,8 +13,8 @@ struct TrackViewModel: Encodable, Sendable {
     init(entry: ContainerEntry) {
         position = entry.position
         title = entry.preview.primaryInfo
-        if let parentID = entry.preview.parentID {
-            href = "/\(entry.preview.parentType)s/\(parentID)"
+        if let parentID = entry.preview.parentID, let slug = entry.preview.catalogueCategory?.slug {
+            href = "/\(slug)s/\(parentID)"
             previewID = nil
         } else {
             href = nil

@@ -100,7 +100,7 @@ struct AlbumsWebController: RouteCollection {
                                 albumID: try album.requireID(),
                                 access: payload.access,
                                 artist: payload.artist,
-                                ownerID: preview.$parentOwner.id,
+                                ownerID: preview.ownerID,
                                 tracks: tracks
                             )
                         )
@@ -208,7 +208,7 @@ struct AlbumsWebController: RouteCollection {
         }
         do {
             let album = try await request.commands.albums.fetch(albumID, for: .write)
-            return try await NotesWebController.createNote(attachmentID: album.$preview.id, on: request)
+            return try await request.createNoteResponse(attachmentID: album.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }

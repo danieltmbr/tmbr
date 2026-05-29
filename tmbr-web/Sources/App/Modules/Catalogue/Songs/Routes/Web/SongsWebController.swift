@@ -205,7 +205,7 @@ struct SongsWebController: RouteCollection {
         }
         do {
             let song = try await request.commands.songs.fetch(songID, for: .write)
-            return try await NotesWebController.createNote(attachmentID: song.$preview.id, on: request)
+            return try await request.createNoteResponse(attachmentID: song.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }

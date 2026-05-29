@@ -195,7 +195,7 @@ struct BooksWebController: RouteCollection {
         }
         do {
             let book = try await request.commands.books.fetch(bookID, for: .write)
-            return try await NotesWebController.createNote(attachmentID: book.$preview.id, on: request)
+            return try await request.createNoteResponse(attachmentID: book.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }

@@ -20,9 +20,11 @@ extension Command where Self == PlainCommand<QuoteQueryPayload, Quote> {
                         attachment.with(\.$image)
                     }
                 }
-                .filter(Preview.self, \.$parentType ~~? input.types)
                 .sort(.sql(unsafeRaw: "RANDOM()"))
-                .limit(1)
+            if let categoryIDs = input.categoryIDs {
+                query.filter(Preview.self, \.$catalogueCategory.$id ~~ categoryIDs)
+            }
+            query.limit(1)
             try await permission.grant(query)
             guard let quote = try await query.first() else {
                 throw Abort(.notFound, reason: "No quote found")

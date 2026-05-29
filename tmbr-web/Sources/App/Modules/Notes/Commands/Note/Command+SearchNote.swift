@@ -21,13 +21,15 @@ extension Command where Self == PlainCommand<NoteQueryPayload, [Note]> {
                 .with(\.$attachment) { $0.with(\.$image) }
                 .with(\.$author)
                 .with(\.$quotes)
-                .filter(Preview.self, \.$parentType ~~? input.types)
                 .filter(\.$language ~~? input.languages.map { $0.compactMap(Language.init(rawValue:)) })
                 .group(.or) { group in
                     let sql = "body ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
                     group.filter(.sql(unsafeRaw: sql))
                 }
                 .sort(\Note.$createdAt, .descending)
+            if let categoryIDs = input.categoryIDs {
+                query.filter(Preview.self, \.$catalogueCategory.$id ~~ categoryIDs)
+            }
             try await permission.grant(query)
             return try await query.all()
         }

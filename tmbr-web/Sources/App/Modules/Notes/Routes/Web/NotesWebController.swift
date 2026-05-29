@@ -11,25 +11,6 @@ struct NotesWebController: RouteCollection {
         notes.put(":noteID", use: edit)
     }
 
-    static func createNote(attachmentID: UUID, on request: Request) async throws -> Response {
-        guard let payload = try? request.content.decode(NotePayload.self) else {
-            return Response(status: .badRequest)
-        }
-        do {
-            let note = try await request.commands.notes.create(CreateNoteInput(
-                body: payload.body,
-                access: payload.access,
-                attachmentID: attachmentID,
-                language: payload.language ?? .en
-            ))
-            let model = try NoteViewModel(note: note, isEditable: true)
-            let view = try await Template.noteItem.render(NoteItemContext(note: model), with: request.view)
-            return try await view.encodeResponse(for: request)
-        } catch {
-            return Response(status: .unprocessableEntity)
-        }
-    }
-
     @Sendable
     private func edit(request: Request) async throws -> Response {
         guard let noteID = request.parameters.get("noteID", as: NoteID.self) else {
