@@ -25,6 +25,7 @@ struct CatalogueFilterSheet: View {
                     }
                 }
             }
+            .listStyle(.plain)
             .navigationTitle("Filter")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
@@ -43,5 +44,6 @@ struct CatalogueFilterSheet: View {
                 }
             }
         }
+        .frame(minWidth: 320, minHeight: 380)
     }
 }

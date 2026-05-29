@@ -10,9 +10,9 @@ enum CatalogueItemType: String, CaseIterable, Identifiable {
     var systemImage: String {
         switch self {
         case .song: "music.note"
-        case .album: "music.note.list"
-        case .playlist: "list.bullet"
-        case .book: "book"
+        case .album: "music.note.square.stack"
+        case .playlist: "music.note.list"
+        case .book: "book.closed"
         case .podcast: "mic"
         case .movie: "film"
         }

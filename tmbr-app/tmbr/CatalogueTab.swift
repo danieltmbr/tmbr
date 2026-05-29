@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CatalogueTab: View {
     @Environment(AuthState.self) private var authState
-    @State private var showSignIn = false
+    @State private var showAccount = false
     @State private var showFilter = false
     @State private var showTypePicker = false
     @State private var selectedType: CatalogueItemType?
@@ -21,6 +21,25 @@ struct CatalogueTab: View {
             }
             .navigationTitle("Catalogue")
             .toolbar {
+#if os(iOS)
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showFilter = true
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease")
+                    }
+                }
+                if authState.isSignedIn {
+                    ToolbarSpacer(.fixed, placement: .topBarLeading)
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showTypePicker = true
+                        } label: {
+                            Image(systemName: "square.and.pencil")
+                        }
+                    }
+                }
+#else
                 ToolbarItem(placement: .automatic) {
                     Button {
                         showFilter = true
@@ -28,23 +47,27 @@ struct CatalogueTab: View {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    if authState.isSignedIn {
+                if authState.isSignedIn {
+                    ToolbarItem(placement: .primaryAction) {
                         Button {
                             showTypePicker = true
                         } label: {
                             Image(systemName: "square.and.pencil")
                         }
-                    } else {
-                        Button("Sign In") {
-                            showSignIn = true
-                        }
+                    }
+                }
+#endif
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showAccount = true
+                    } label: {
+                        Image(systemName: authState.isSignedIn ? "person.circle.fill" : "person.circle")
                     }
                 }
             }
         }
-        .sheet(isPresented: $showSignIn) {
-            SignInView()
+        .sheet(isPresented: $showAccount) {
+            AccountSheet()
                 .environment(authState)
         }
         .sheet(isPresented: $showFilter) {
@@ -62,9 +85,6 @@ struct CatalogueTab: View {
         }
         .onChange(of: selectedType) { _, type in
             if type != nil { showEditor = true }
-        }
-        .onChange(of: authState.isSignedIn) { _, isSignedIn in
-            if isSignedIn { showSignIn = false }
         }
     }
 

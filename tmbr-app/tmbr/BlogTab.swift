@@ -2,7 +2,7 @@ import SwiftUI
 
 struct BlogTab: View {
     @Environment(AuthState.self) private var authState
-    @State private var showSignIn = false
+    @State private var showAccount = false
     @State private var showEditor = false
 
     var body: some View {
@@ -13,41 +13,60 @@ struct BlogTab: View {
                         Text("\(index + 1).")
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
+#if os(macOS)
+                        Text(title)
+                        Spacer()
+                        Text("May 28")
+                            .foregroundStyle(.secondary)
+#else
                         VStack(alignment: .leading, spacing: 2) {
                             Text(title)
                             Text("May 28")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
+#endif
                     }
                 }
             }
             .navigationTitle("Blog")
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    if authState.isSignedIn {
+#if os(iOS)
+                if authState.isSignedIn {
+                    ToolbarItem(placement: .topBarLeading) {
                         Button {
                             showEditor = true
                         } label: {
                             Image(systemName: "square.and.pencil")
                         }
-                    } else {
-                        Button("Sign In") {
-                            showSignIn = true
+                    }
+                }
+#else
+                if authState.isSignedIn {
+                    ToolbarItem(placement: .automatic) {
+                        Button {
+                            showEditor = true
+                        } label: {
+                            Image(systemName: "square.and.pencil")
                         }
+                    }
+                }
+#endif
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showAccount = true
+                    } label: {
+                        Image(systemName: authState.isSignedIn ? "person.circle.fill" : "person.circle")
                     }
                 }
             }
         }
-        .sheet(isPresented: $showSignIn) {
-            SignInView()
+        .sheet(isPresented: $showAccount) {
+            AccountSheet()
                 .environment(authState)
         }
         .sheet(isPresented: $showEditor) {
             BlogEditorView()
-        }
-        .onChange(of: authState.isSignedIn) { _, isSignedIn in
-            if isSignedIn { showSignIn = false }
         }
     }
 
