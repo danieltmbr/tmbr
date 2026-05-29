@@ -1,6 +1,6 @@
 # QA Backlog
 
-Concrete work to bring the codebase up to the standards in `quality-assurance.md`. Check items off as they're completed.
+Concrete work to bring the codebase up to the standards in `/.claude/docs/quality-assurance.md`. Check items off as they're completed.
 
 ## Implementation Order
 
@@ -35,7 +35,7 @@ Trace ID is already present via `TracingMiddleware`.
 
 ## 2. JS Error Recovery
 
-Add `parseErrorResponse()` (see pattern in `quality-assurance.md`) to `catalogue-editor.js` or extract to `Public/js/Shared/errors.js`.
+Add `parseErrorResponse()` (see pattern in `/.claude/docs/quality-assurance.md`) to `catalogue-editor.js` or extract to `Public/js/Shared/errors.js`.
 
 Apply to:
 - `MetadataController`, `LookupController`, `ResourceInputsController` fetch calls in `catalogue-editor.js`
@@ -70,7 +70,7 @@ This exercises the actual auth stack, not a mock.
 
 ## 5. Catalogue Tests — `Tests/AppTests/Catalogue/AlbumTests.swift`
 
-Albums as representative — other catalogue types follow the same pattern per the Testing Invariants in `quality-assurance.md`.
+Albums as representative — other catalogue types follow the same pattern per the Testing Invariants in `/.claude/docs/quality-assurance.md`.
 
 - `GET /albums/create` unauthenticated → redirect
 - `GET /albums/create` authenticated → 200, HTML contains `id="editor-title"`
@@ -146,4 +146,4 @@ Covers the scenarios that broke repeatedly:
 
 The Note textarea + access checkbox incident (`incidents/001`) is a symptom of Leaf's structural limitations: no component scoping, weak template inheritance. The current fix is a CLAUDE.md reminder, not a real solution.
 
-Evaluate when the frontend next needs significant work: `swift-html` or a Leaf macro/component abstraction that enforces proper scoping. See `leaf-limitations.md` for the known issues.
+Evaluate when the frontend next needs significant work: `swift-html` or a Leaf macro/component abstraction that enforces proper scoping. See the "Leaf Limitations" section in `frontend.md` for the known issues.

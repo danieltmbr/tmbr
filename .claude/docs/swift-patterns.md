@@ -1,5 +1,7 @@
 # Swift Design Patterns
 
+These patterns apply to both the backend (`tmbr-web`) and the native app (`tmbr-app`). They are Swift language-level decisions, not platform-specific.
+
 ## Closure-Based Functional Types
 
 Prefer structs that wrap closures over protocols with multiple implementations:

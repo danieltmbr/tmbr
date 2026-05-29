@@ -353,7 +353,6 @@ func makeMockSession() -> URLSession {
         #expect(req.value(forHTTPHeaderField: "Authorization") == "Bearer first-token")
         return (HTTPURLResponse(url: req.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!, Data())
     }
-    // would need real json for full decode test — simplified here
 
     await auth.set("refreshed-token")
     MockURLProtocol.handler = { req in
