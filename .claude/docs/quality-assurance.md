@@ -11,28 +11,6 @@
 
 ---
 
-## Logging Requirements
-
-Every completed request must be logged with: method, path, status code, duration, trace ID, user ID (or "anonymous"). Error logs must additionally include error type and message.
-
-Log level scales with response status: `.info` for 2xx/3xx, `.warning` for 4xx, `.error` for 5xx.
-
-Not adding yet: external error tracking (Sentry), DB query logging, request body logging.
-
----
-
-## Error Recovery Model
-
-Three tiers — distinct from logging, which is for developers.
-
-**Tier 1 — Auto-recovered**: The code handles it transparently. Example: 401 → redirect to login + retry after re-auth. Only add auto-recovery when the fix is deterministic and invisible to the user.
-
-**Tier 2 — User-recoverable**: The user can fix it with different input. Show the reason inline near the relevant control. Never show a generic message when a specific one is available.
-
-**Tier 3 — System errors**: The user cannot fix it. Show "Something went wrong — [Report this issue](mailto:bug@tmbr.me)" — never expose internals. Log full detail server-side. A report link is essential since logs aren't actively monitored.
-
----
-
 ## Post-Mortem Process
 
 When something breaks:
@@ -54,27 +32,27 @@ Use E2E tests for user-visible flows that cross multiple layers (JS ↔ server �
 
 ---
 
+## Error Recovery Model
+
+Three tiers — distinct from logging, which is for developers.
+
+**Tier 1 — Auto-recovered**: The code handles it transparently. Example: 401 → redirect to login + retry after re-auth. Only add auto-recovery when the fix is deterministic and invisible to the user.
+
+**Tier 2 — User-recoverable**: The user can fix it with different input. Show the reason inline near the relevant control. Never show a generic message when a specific one is available.
+
+**Tier 3 — System errors**: The user cannot fix it. Show "Something went wrong — [Report this issue](mailto:bug@tmbr.me)" — never expose internals. Log full detail server-side. A report link is essential since logs aren't actively monitored.
+
+---
+
 ## Web (tmbr-web/)
 
-### Testing Invariants
+### Logging Requirements
 
-Apply these to every new web feature. When adding a route, ask which categories it falls into and write a test for each.
+Every completed request must be logged with: method, path, status code, duration, trace ID, user ID (or "anonymous"). Error logs must additionally include error type and message.
 
-**Every protected route:**
-- Unauthenticated request → redirect to login
+Log level scales with response status: `.info` for 2xx/3xx, `.warning` for 4xx, `.error` for 5xx.
 
-**Every POST/PATCH/DELETE:**
-- Owner with valid input → succeeds; verify DB state after
-- Owner with invalid/missing input → 400 with `reason` in body
-- Non-owner → 403
-
-**Every model with visibility states (public/private/draft):**
-- Owner sees all their own items regardless of visibility
-- Non-owner cannot see private or draft items → 403
-- Non-owner can see public items
-
-**Every list endpoint:**
-- Only returns items the requester is authorized to see — no leaking private or draft items
+Not adding yet: external error tracking (Sentry), DB query logging, request body logging.
 
 ### JS Error Handling
 
@@ -99,11 +77,39 @@ async function parseErrorResponse(response) {
 }
 ```
 
+### Testing Invariants
+
+Apply these to every new web feature. When adding a route, ask which categories it falls into and write a test for each.
+
+**Every protected route:**
+- Unauthenticated request → redirect to login
+
+**Every POST/PATCH/DELETE:**
+- Owner with valid input → succeeds; verify DB state after
+- Owner with invalid/missing input → 400 with `reason` in body
+- Non-owner → 403
+
+**Every model with visibility states (public/private/draft):**
+- Owner sees all their own items regardless of visibility
+- Non-owner cannot see private or draft items → 403
+- Non-owner can see public items
+
+**Every list endpoint:**
+- Only returns items the requester is authorized to see — no leaking private or draft items
+
 ---
 
 ## Native (tmbr-app/)
 
-`tmbr-app/` is empty stubs now. Apply these when native development begins.
+`tmbr-app/` is early-stage. Apply these when native development begins.
+
+### Error Handling for Users
+
+Mirror the web tier model:
+- **User-recoverable (4xx)**: actionable inline message
+- **System errors (5xx)**: "Something went wrong — [Report this issue](mailto:bug@tmbr.me)"
+- **Offline**: "No internet connection" with a retry button
+- Loading states: spinner/skeleton — never a blank or stuck screen
 
 ### Testing Invariants
 
@@ -118,14 +124,6 @@ async function parseErrorResponse(response) {
 **Every action that mutates server state:**
 - Success → UI reflects the change without requiring a manual refresh
 - Failure → error shown, UI not left in a broken intermediate state
-
-### Error Handling for Users
-
-Mirror the web tier model:
-- **User-recoverable (4xx)**: actionable inline message
-- **System errors (5xx)**: "Something went wrong — [Report this issue](mailto:bug@tmbr.me)"
-- **Offline**: "No internet connection" with a retry button
-- Loading states: spinner/skeleton — never a blank or stuck screen
 
 ### Sign In with Apple
 

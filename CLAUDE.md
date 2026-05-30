@@ -1,6 +1,11 @@
 # CLAUDE.md
 
-Vapor web app for capturing thoughts as Posts or Notes on catalogue items (songs, books, movies, podcasts).
+Tmbr is a platform for capturing thoughts as Posts or Notes on catalogue items (songs, books, movies, podcasts). The project is a monorepo with three packages and a shared workspace:
+
+- **tmbr-web** — Vapor 4 backend + Leaf web frontend
+- **tmbr-core** — Shared Swift types (Codable/Sendable DTOs, enums, ID typealiases) used by both platforms
+- **tmbr-app** — Native iOS/macOS SwiftUI app
+- **api-kit** — Networking library (RequestLoader, AuthToken) used by tmbr-app
 
 ## How We Work Together
 
@@ -14,46 +19,25 @@ Don't pick the easiest path and keep going. Pause, explain the options, and ask.
 
 **Question new types.** Before proposing a new struct/class, ask: can this be a convenience initializer on an existing type instead?
 
-## Stack
+## Repository Layout
 
-Swift 6.0.3 (Swift 5 mode), Vapor 4, Fluent/PostgreSQL, Leaf, Swift Testing
+| Package | Purpose | Platform |
+|---------|---------|----------|
+| `tmbr-core` | Shared Codable/Sendable types — no platform-specific deps | Both |
+| `tmbr-web` | Vapor backend + Leaf frontend | Linux/macOS |
+| `tmbr-app` | Native SwiftUI app | iOS/macOS |
+| `api-kit` | Networking infrastructure (RequestLoader, AuthToken) | iOS/macOS |
 
-## Commands
-
-```bash
-swift build
-swift run Backend serve
-swift test
-swift test --filter CoreTests
-```
-
-Run from `tmbr-web/` subdirectory.
-
-For `api-kit` package tests (requires Xcode toolchain, not just CLT):
-```bash
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path api-kit
-```
-
-## Constraints (Always Apply)
-
-- Use `request.commandDB`, never `application.db`
-- Command Input types are separate from API payloads — map in controllers
-- New modules need computed property extensions for dot-syntax (`Commands+X`, `PermissionScopes+X`)
-- Response DTOs go in `Routes/API/Responses/`, not `Payloads/`
-- HTML/CSS: semantic elements, target tags not classes, flexbox/grid layout
-- JS: vanilla only, Controller pattern with init()/destroy()
-- New catalogue types go inside `Catalogue/`, not as top-level modules
+**tmbr-core is the shared contract.** API response DTOs and input payloads used by both the backend and native app live here as pure `Codable & Sendable` types. `tmbr-web` adds Fluent/Vapor conformances in extensions. `tmbr-app` imports them directly. Never add Apple-framework-specific types to `tmbr-core` — it must compile on Linux.
 
 ## Before Starting
 
-Read the relevant doc:
-- Database/schema work → `/.claude/docs/database.md`
-- Adding modules → `/.claude/docs/modules.md`
-- Frontend (HTML/CSS/JS/Leaf) → `/.claude/docs/frontend.md`
-- Swift design patterns → `/.claude/docs/patterns.md`
-- Native app networking (`api-kit` package, `RequestLoader`) → `/.claude/docs/native-networking.md`
-- Logging, testing, error recovery, post-mortems → `/.claude/docs/quality-assurance.md`
-- QA implementation backlog (specific tests to write, files to create) → `/.claude/docs/qa-backlog.md`
+Read the relevant doc first:
+- **Web backend/frontend work** → `tmbr-web/CLAUDE.md`
+- **Native app work** → `tmbr-app/CLAUDE.md`
+- **Swift design patterns** (both platforms) → `.claude/docs/swift-patterns.md`
+- **QA, testing invariants, logging, post-mortems** → `.claude/docs/quality-assurance.md`
+- **Monorepo layout, cross-package contracts** → `.claude/docs/repository-layout.md`
 
 ## When Something Breaks
 
