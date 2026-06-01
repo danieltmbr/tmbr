@@ -15,3 +15,4 @@ node_modules/
 generate-package-api-docs.swift
 theme-settings.json
 tmbr.xcworkspace/xcuserdata/
+node_modules/

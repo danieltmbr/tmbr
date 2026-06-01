@@ -1,29 +1,25 @@
 import SwiftUI
 
 struct ContentView: View {
-    @Environment(AuthState.self) private var authState
-
     var body: some View {
-        if authState.isSignedIn {
-            HomeView()
-        } else {
-            SignInView()
+        TabView {
+#if os(macOS)
+            Tab(role: .search) {
+                SearchTab()
+            }
+#endif
+            Tab("Blog", systemImage: "doc.text") {
+                BlogTab()
+            }
+            Tab("Catalogue", systemImage: "square.grid.2x2") {
+                CatalogueTab()
+            }
+#if !os(macOS)
+            Tab(role: .search) {
+                SearchTab()
+            }
+#endif
         }
-    }
-}
-
-private struct HomeView: View {
-    @Environment(AuthState.self) private var authState
-
-    var body: some View {
-        NavigationStack {
-            Text("Welcome to tmbr")
-                .navigationTitle("tmbr")
-                .toolbar {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button("Sign Out") { Task { await authState.signOut() } }
-                    }
-                }
-        }
+        .tabViewStyle(.sidebarAdaptable)
     }
 }
