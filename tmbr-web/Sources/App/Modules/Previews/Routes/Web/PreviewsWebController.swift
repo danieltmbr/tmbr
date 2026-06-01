@@ -166,9 +166,19 @@ struct CatalogueNewPayload: Decodable, Sendable {
     let subtitle: String?
     let category: String
     let access: Access
-    let artworkID: ImageID?
-    let artworkSourceURL: String?
+    private let artworkIDRaw: String?
+    private let artworkSourceURLRaw: String?
     let notes: [NotePayload]
+
+    var artworkID: ImageID? {
+        guard let raw = artworkIDRaw, !raw.isEmpty else { return nil }
+        return Int(raw)
+    }
+
+    var artworkSourceURL: String? {
+        guard let raw = artworkSourceURLRaw, !raw.isEmpty else { return nil }
+        return raw
+    }
 
     enum CodingKeys: String, CodingKey {
         case url
@@ -176,8 +186,8 @@ struct CatalogueNewPayload: Decodable, Sendable {
         case subtitle
         case category
         case access
-        case artworkID = "artwork-id"
-        case artworkSourceURL = "artwork-source-url"
+        case artworkIDRaw = "artwork-id"
+        case artworkSourceURLRaw = "artwork-source-url"
         case notes
     }
 }
