@@ -71,7 +71,7 @@ private struct CataloguePreviewPayload: Content {
 }
 
 extension Template where Model == CatalogueItemViewModel {
-    static let cataloguePreview = Template(name: "Catalogue/item")
+    static let cataloguePreview = Template(name: "Previews/preview")
 }
 
 extension Page {
