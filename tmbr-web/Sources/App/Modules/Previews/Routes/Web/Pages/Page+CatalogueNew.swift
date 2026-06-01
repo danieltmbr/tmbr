@@ -59,3 +59,47 @@ extension Page {
         }
     }
 }
+
+// MARK: - Preview
+
+private struct CataloguePreviewPayload: Content {
+    let title: String
+    let subtitle: String?
+    let artworkURL: String?
+    let url: String?
+    let notes: String
+}
+
+extension Template where Model == CatalogueItemViewModel {
+    static let cataloguePreview = Template(name: "Catalogue/item")
+}
+
+extension Page {
+    static var cataloguePreview: Self {
+        Page(template: .cataloguePreview) { request in
+            try request.auth.require(User.self)
+            let payload = try request.content.decode(CataloguePreviewPayload.self)
+            let formatter = MarkdownFormatter.html
+            let notes: [NoteViewModel] = payload.notes.isEmpty ? [] : [
+                NoteViewModel(
+                    id: UUID(),
+                    body: formatter.format(payload.notes),
+                    created: Date.now.formatted(.publishDate)
+                )
+            ]
+            let resource: Hyperlink? = payload.url.flatMap { urlString in
+                guard !urlString.isEmpty, let url = URL(string: urlString) else { return nil }
+                return Hyperlink(label: url.host ?? urlString, url: url)
+            }
+            return CatalogueItemViewModel(
+                title: "Preview: \(payload.title)",
+                subtitle: payload.subtitle,
+                artwork: payload.artworkURL.flatMap { url in
+                    url.isEmpty ? nil : ImageViewModel(previewURL: url)
+                },
+                notes: notes,
+                resources: resource.map { [$0] } ?? []
+            )
+        }
+    }
+}

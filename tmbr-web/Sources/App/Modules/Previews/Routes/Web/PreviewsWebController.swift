@@ -14,7 +14,7 @@ struct PreviewsWebController: RouteCollection {
         recovering.get("catalogue", "new", page: .catalogueNew)
         recovering.get("catalogue", "new", "metadata", use: metadata)
         recovering.post("catalogue", "new", use: createItem)
-        recovering.post("catalogue", "new", "preview", use: previewItem)
+        recovering.post("catalogue", "new", "preview", page: .cataloguePreview)
     }
 
     // MARK: - Notes
@@ -41,17 +41,6 @@ struct PreviewsWebController: RouteCollection {
         } catch {
             return Response(status: .unprocessableEntity)
         }
-    }
-
-    // MARK: - Catalogue Preview
-
-    @Sendable
-    private func previewItem(_ request: Request) async throws -> Response {
-        try request.auth.require(User.self)
-        let payload = try request.content.decode(CataloguePreviewPayload.self)
-        let vm = CatalogueItemViewModel(previewing: payload)
-        let view = try await Template.catalogueItemPreview.render(vm, with: request.view)
-        return try await view.encodeResponse(for: request)
     }
 
     // MARK: - Catalogue New

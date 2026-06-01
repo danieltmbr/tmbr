@@ -25,60 +25,46 @@ struct CatalogueItemViewModel: Encodable, Sendable {
     private let post: PostItemViewModel?
 
     init(
+        title: String,
+        subtitle: String? = nil,
+        artwork: ImageViewModel? = nil,
+        info: String? = nil,
+        notes: [NoteViewModel] = [],
+        notesEndpoint: String = "",
+        resources: [Hyperlink] = [],
+        allowsNewNote: Bool = false,
+        post: PostItemViewModel? = nil
+    ) {
+        self.title = title
+        self.subtitle = subtitle
+        self.artwork = artwork
+        self.info = info
+        self.notes = notes
+        self.notesEndpoint = notesEndpoint
+        self.resources = resources
+        self.allowsNewNote = allowsNewNote
+        self.post = post
+    }
+
+    init(
         preview: Preview,
         notes: [Note],
         allowsNewNote: Bool,
         baseURL: String
     ) throws {
-        title = preview.primaryInfo
-        subtitle = preview.secondaryInfo
-        artwork = preview.image.flatMap { ImageViewModel(image: $0, baseURL: baseURL) }
-        info = nil
-        self.notes = try notes.map { try NoteViewModel(note: $0, isEditable: allowsNewNote) }
-        notesEndpoint = "/catalogue/item/\(preview.id!)/notes"
-        resources = preview.externalLinks.compactMap { urlString in
-            guard let url = URL(string: urlString) else { return nil }
-            return Hyperlink(label: url.host ?? urlString, url: url)
-        }
-        self.allowsNewNote = allowsNewNote
-        post = nil
+        self.init(
+            title: preview.primaryInfo,
+            subtitle: preview.secondaryInfo,
+            artwork: preview.image.flatMap { ImageViewModel(image: $0, baseURL: baseURL) },
+            notes: try notes.map { try NoteViewModel(note: $0, isEditable: allowsNewNote) },
+            notesEndpoint: "/catalogue/item/\(preview.id!)/notes",
+            resources: preview.externalLinks.compactMap { urlString in
+                guard let url = URL(string: urlString) else { return nil }
+                return Hyperlink(label: url.host ?? urlString, url: url)
+            },
+            allowsNewNote: allowsNewNote
+        )
     }
-
-    init(previewing payload: CataloguePreviewPayload) {
-        title = "Preview: \(payload.title)"
-        subtitle = payload.subtitle
-        artwork = payload.artworkURL.flatMap { url in
-            url.isEmpty ? nil : ImageViewModel(previewURL: url)
-        }
-        info = nil
-        let formatter = MarkdownFormatter.html
-        notes = payload.notes.isEmpty ? [] : [
-            NoteViewModel(
-                id: UUID(),
-                body: formatter.format(payload.notes),
-                created: Date.now.formatted(.publishDate)
-            )
-        ]
-        notesEndpoint = ""
-        resources = payload.url.flatMap { urlString -> Hyperlink? in
-            guard !urlString.isEmpty, let url = URL(string: urlString) else { return nil }
-            return Hyperlink(label: url.host ?? urlString, url: url)
-        }.map { [$0] } ?? []
-        allowsNewNote = false
-        post = nil
-    }
-}
-
-struct CataloguePreviewPayload: Decodable, Sendable {
-    let title: String
-    let subtitle: String?
-    let artworkURL: String?
-    let url: String?
-    let notes: String
-}
-
-extension Template where Model == CatalogueItemViewModel {
-    static let catalogueItemPreview = Template(name: "Catalogue/item")
 }
 
 extension Template where Model == CatalogueItemViewModel {
