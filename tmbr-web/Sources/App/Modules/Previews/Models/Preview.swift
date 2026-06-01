@@ -40,6 +40,8 @@ final class Preview: Model, @unchecked Sendable {
     @Timestamp(key: "updated_at", on: .update)
     private(set) var updatedAt: Date?
 
+    var ownerID: UserID { $parentOwner.id }
+
     init() {}
 
     func adopt(parentID: Int, parentType: String, parentAccess: Access, parentOwner: UserID) {

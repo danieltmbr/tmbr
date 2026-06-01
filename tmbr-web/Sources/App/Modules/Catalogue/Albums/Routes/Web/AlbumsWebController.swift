@@ -100,7 +100,7 @@ struct AlbumsWebController: RouteCollection {
                                 albumID: try album.requireID(),
                                 access: payload.access,
                                 artist: payload.artist,
-                                ownerID: preview.$parentOwner.id,
+                                ownerID: preview.ownerID,
                                 tracks: tracks
                             )
                         )

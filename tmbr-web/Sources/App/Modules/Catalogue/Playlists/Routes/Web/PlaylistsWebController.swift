@@ -79,7 +79,7 @@ struct PlaylistsWebController: RouteCollection {
                                 albumID: try playlist.requireID(),
                                 access: payload.access,
                                 artist: nil,
-                                ownerID: preview.$parentOwner.id,
+                                ownerID: preview.ownerID,
                                 tracks: tracks,
                                 containerType: "playlist"
                             )

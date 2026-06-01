@@ -74,7 +74,7 @@ extension AuthPermission<AttachNotePermissionInput> {
             let authorIDs = Set(input.notes.map(\.$author.id))
             guard authorIDs.count == 1 else { return false }
             let authorID = authorIDs.first!
-            return authorID == user.userID && authorID == input.preview.parentOwner.id
+            return authorID == user.userID && authorID == input.preview.ownerID
         }
     }
 }

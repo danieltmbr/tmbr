@@ -12,7 +12,7 @@ extension Permission<Preview> {
         ) { user, preview in
             if preview.parentAccess == .public { return true }
             guard let user else { throw Abort(.unauthorized) }
-            return preview.$parentOwner.id == user.userID || user.role == .admin
+            return preview.ownerID == user.userID || user.role == .admin
         }
     }
 }
@@ -23,7 +23,7 @@ extension AuthPermission<Preview> {
         AuthPermission<Preview>(
             "Only its owners can edit a preview."
         ) { user, preview in
-            preview.$parentOwner.id == user.userID || user.role == .admin
+            preview.ownerID == user.userID || user.role == .admin
         }
     }
 }
