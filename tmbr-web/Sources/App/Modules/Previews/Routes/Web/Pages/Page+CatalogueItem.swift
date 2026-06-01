@@ -43,6 +43,42 @@ struct CatalogueItemViewModel: Encodable, Sendable {
         self.allowsNewNote = allowsNewNote
         post = nil
     }
+
+    init(previewing payload: CataloguePreviewPayload) {
+        title = "Preview: \(payload.title)"
+        subtitle = payload.subtitle
+        artwork = payload.artworkURL.flatMap { url in
+            url.isEmpty ? nil : ImageViewModel(previewURL: url)
+        }
+        info = nil
+        let formatter = MarkdownFormatter.html
+        notes = payload.notes.isEmpty ? [] : [
+            NoteViewModel(
+                id: UUID(),
+                body: formatter.format(payload.notes),
+                created: Date.now.formatted(.publishDate)
+            )
+        ]
+        notesEndpoint = ""
+        resources = payload.url.flatMap { urlString -> Hyperlink? in
+            guard !urlString.isEmpty, let url = URL(string: urlString) else { return nil }
+            return Hyperlink(label: url.host ?? urlString, url: url)
+        }.map { [$0] } ?? []
+        allowsNewNote = false
+        post = nil
+    }
+}
+
+struct CataloguePreviewPayload: Decodable, Sendable {
+    let title: String
+    let subtitle: String?
+    let artworkURL: String?
+    let url: String?
+    let notes: String
+}
+
+extension Template where Model == CatalogueItemViewModel {
+    static let catalogueItemPreview = Template(name: "Catalogue/item")
 }
 
 extension Template where Model == CatalogueItemViewModel {

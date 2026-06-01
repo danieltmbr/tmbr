@@ -90,24 +90,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // ─── Preview link ─────────────────────────────────────────────────────────
+    // ─── Preview ──────────────────────────────────────────────────────────────
 
-    const previewLink = document.getElementById('editor-preview-link');
-
-    function syncPreviewLink() {
-        if (!previewLink) return;
-        const url = urlInput?.value.trim() || '';
-        previewLink.href = url;
-        previewLink.hidden = !url;
+    function fillPreview() {
+        const pf = document.getElementById('preview-form');
+        if (!pf) return;
+        const set = (id, v) => { const el = pf.querySelector(`#${id}`); if (el) el.value = v || ''; };
+        set('preview-title',       titleInput?.value || '');
+        set('preview-subtitle',    subtitleInput?.value || '');
+        set('preview-artwork-url', artwork.getExternalURL() || '');
+        set('preview-url',         urlInput?.value || '');
+        set('preview-notes',       notesController?.getValues().join('\n\n') || '');
+        pf.submit();
     }
+
+    document.getElementById('editor-preview')?.addEventListener('click', fillPreview);
 
     // ─── Init ─────────────────────────────────────────────────────────────────
 
     retryPendingMetadata(autofill);
     loadDraft();
-    syncPreviewLink();
 
-    urlInput?.addEventListener('input', () => { saveDraft(); syncPreviewLink(); });
+    urlInput?.addEventListener('input', saveDraft);
     urlInput?.addEventListener('change', () => autofill.fetchAndApply(urlInput.value.trim()));
     urlInput?.addEventListener('blur',   () => autofill.fetchAndApply(urlInput.value.trim()));
     titleInput?.addEventListener('input',    saveDraft);
