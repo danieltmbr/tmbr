@@ -77,23 +77,28 @@ struct PreviewsWebController: RouteCollection {
 
         let artworkID = try await resolveArtwork(payload: payload, title: payload.title, on: request)
 
-        let preview = try await request.commands.previews.create(
-            CreatePreviewItemInput(
-                title: payload.title.trimmingCharacters(in: .whitespaces),
-                subtitle: {
-                    let s = payload.subtitle?.trimmingCharacters(in: .whitespaces) ?? ""
-                    return s.isEmpty ? nil : s
-                }(),
-                access: payload.access,
-                artworkID: artworkID,
-                externalLink: {
-                    let u = payload.url?.trimmingCharacters(in: .whitespaces) ?? ""
-                    return u.isEmpty ? nil : u
-                }(),
-                category: category,
-                ownerID: userID
+        let preview = try await request.commands.transaction { commands in
+            let preview = try await commands.previews.create(
+                CreatePreviewItemInput(
+                    title: payload.title.trimmingCharacters(in: .whitespaces),
+                    subtitle: {
+                        let s = payload.subtitle?.trimmingCharacters(in: .whitespaces) ?? ""
+                        return s.isEmpty ? nil : s
+                    }(),
+                    access: payload.access,
+                    artworkID: artworkID,
+                    externalLink: {
+                        let u = payload.url?.trimmingCharacters(in: .whitespaces) ?? ""
+                        return u.isEmpty ? nil : u
+                    }(),
+                    category: category,
+                    ownerID: userID
+                )
             )
-        )
+            let noteInputs = payload.notes.map { NoteInput(body: $0.body, access: $0.access && payload.access) }
+            _ = try await commands.notes.batchCreate(noteInputs, for: preview)
+            return preview
+        }
         return request.redirect(to: "/catalogue/item/\(preview.id!)")
     }
 
@@ -122,13 +127,24 @@ struct PreviewsWebController: RouteCollection {
         } else {
             categories = []
         }
+        let noteViewModels = payload.notes.map {
+            CatalogueNewViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access)
+        }
+        let artworkURL: String?
+        if let raw = payload.artworkSourceURL, !raw.trimmingCharacters(in: .whitespaces).isEmpty {
+            artworkURL = raw
+        } else {
+            artworkURL = nil
+        }
         let vm = CatalogueNewViewModel(
             url: payload.url,
             title: payload.title,
             subtitle: payload.subtitle,
+            artworkURL: artworkURL,
             category: payload.category,
             access: payload.access,
             categories: categories,
+            notes: noteViewModels,
             error: error
         )
         let view = try await Template.catalogueNew.render(vm, with: request.view)
@@ -144,7 +160,7 @@ struct CatalogueItemMetadataResponse: Content, Sendable {
     let artworkURL: String?
 }
 
-struct CatalogueNewPayload: Content, Sendable {
+struct CatalogueNewPayload: Decodable, Sendable {
     let url: String?
     let title: String
     let subtitle: String?
@@ -152,6 +168,7 @@ struct CatalogueNewPayload: Content, Sendable {
     let access: Access
     let artworkID: ImageID?
     let artworkSourceURL: String?
+    let notes: [NotePayload]
 
     enum CodingKeys: String, CodingKey {
         case url
@@ -161,5 +178,6 @@ struct CatalogueNewPayload: Content, Sendable {
         case access
         case artworkID = "artwork-id"
         case artworkSourceURL = "artwork-source-url"
+        case notes
     }
 }

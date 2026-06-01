@@ -1,62 +1,128 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const urlInput = document.getElementById('editor-url');
-    const titleInput = document.getElementById('editor-title');
-    const subtitleInput = document.getElementById('editor-subtitle');
-    const artworkImage = document.getElementById('artwork-image');
-    const artworkPlaceholder = document.getElementById('artwork-placeholder');
-    const artworkClear = document.getElementById('artwork-clear');
-    const artworkSourceInput = document.getElementById('editor-artwork-source-url');
-    const statusEl = document.getElementById('autofill-status');
+    const form = document.getElementById('editor-form');
+    if (!form) return;
 
-    if (!urlInput) return;
+    const urlInput       = document.getElementById('editor-url');
+    const titleInput     = document.getElementById('editor-title');
+    const subtitleInput  = document.getElementById('editor-subtitle');
+    const categoryInput  = document.getElementById('editor-category');
+    const statusEl       = document.getElementById('autofill-status');
+    const resourcesSection = document.getElementById('resources-section');
+    const detailsSection   = document.getElementById('details-section');
+    const notesSection     = document.getElementById('notes-section');
 
-    urlInput.addEventListener('blur', onURLBlur);
-    urlInput.addEventListener('change', onURLBlur);
-    artworkClear?.addEventListener('click', clearArtwork);
+    const persistence = new PersistenceController();
+    const storageKey  = 'editor:catalogue:new';
+    const metadata    = new MetadataController({ endpoint: '/catalogue/new/metadata' });
 
-    async function onURLBlur() {
-        const url = urlInput.value.trim();
-        if (!url) return;
+    const artwork = new ArtworkController(
+        {
+            hiddenInput:      document.getElementById('editor-artwork-id'),
+            externalUrlInput: document.getElementById('editor-artwork-source-url'),
+            placeholder:      document.getElementById('artwork-placeholder'),
+            imageEl:          document.getElementById('artwork-image'),
+            clearButton:      document.getElementById('artwork-clear'),
+        },
+        { onChange: () => saveDraft(), onOpenGallery: null }
+    );
+    artwork.init();
 
-        setStatus('Fetching metadata…');
-        try {
-            const res = await fetch(`/catalogue/new/metadata?url=${encodeURIComponent(url)}`);
-            if (!res.ok) { setStatus(''); return; }
-            const data = await res.json();
-            autofill(data);
-            setStatus('');
-        } catch {
-            setStatus('');
+    let notesController = null;
+    if (notesSection) {
+        notesController = new NotesController(
+            { section: notesSection },
+            { onInput: () => saveDraft(), onAccessChange: () => saveDraft() }
+        );
+        notesController.init();
+    }
+
+    new DragAndDropController(
+        { resourcesSection, detailsSection, notesSection },
+        { uploads: new UploadsController(), artwork, notes: notesController }
+    ).init();
+
+    // ─── State ───────────────────────────────────────────────────────────────
+
+    function getState() {
+        return {
+            url:        urlInput?.value || '',
+            title:      titleInput?.value || '',
+            subtitle:   subtitleInput?.value || '',
+            category:   categoryInput?.value || '',
+            notes:      notesController?.getNotes() || [],
+            artworkURL: artwork.getExternalURL() || '',
+        };
+    }
+
+    function setState(state) {
+        if (!state || typeof state !== 'object') return;
+        if (state.url      && !urlInput?.value)      urlInput.value      = state.url;
+        if (state.title    && !titleInput?.value)     titleInput.value    = state.title;
+        if (state.subtitle && !subtitleInput?.value)  subtitleInput.value = state.subtitle;
+        if (state.category && !categoryInput?.value)  categoryInput.value = state.category;
+        if (Array.isArray(state.notes)) notesController?.setNotes(state.notes, true);
+        if (state.artworkURL && artwork.isEmpty()) artwork.setExternalURL(state.artworkURL);
+    }
+
+    function saveDraft() { persistence.save(storageKey, getState()); }
+
+    function loadDraft() {
+        if (persistence.clearIfPending(storageKey)) return;
+        const saved = persistence.load(storageKey);
+        if (saved) setState(saved);
+    }
+
+    // ─── Autofill ─────────────────────────────────────────────────────────────
+
+    const autofill = {
+        async fetchAndApply(url) {
+            if (!url) return;
+            try {
+                const data = await metadata.fetch(url);
+                if (data.title    && !titleInput?.value.trim())    titleInput.value    = data.title;
+                if (data.subtitle && !subtitleInput?.value.trim()) subtitleInput.value = data.subtitle;
+                if (data.artworkURL && artwork.isEmpty()) artwork.setExternalURL(data.artworkURL);
+                if (statusEl) { statusEl.textContent = ''; statusEl.hidden = true; }
+                saveDraft();
+            } catch (err) {
+                handleAutofillError(err, url, statusEl);
+            }
         }
+    };
+
+    // ─── Preview link ─────────────────────────────────────────────────────────
+
+    const previewLink = document.getElementById('editor-preview-link');
+
+    function syncPreviewLink() {
+        if (!previewLink) return;
+        const url = urlInput?.value.trim() || '';
+        previewLink.href = url;
+        previewLink.hidden = !url;
     }
 
-    function autofill(data) {
-        if (data.title && !titleInput.value.trim()) {
-            titleInput.value = data.title;
-        }
-        if (data.subtitle && !subtitleInput.value.trim()) {
-            subtitleInput.value = data.subtitle;
-        }
-        if (data.artworkURL) {
-            setArtwork(data.artworkURL);
-        }
-    }
+    // ─── Init ─────────────────────────────────────────────────────────────────
 
-    function setArtwork(url) {
-        artworkImage.src = url;
-        artworkSourceInput.value = url;
-        artworkPlaceholder.classList.remove('empty');
-    }
+    retryPendingMetadata(autofill);
+    loadDraft();
+    syncPreviewLink();
 
-    function clearArtwork() {
-        artworkImage.src = '';
-        artworkSourceInput.value = '';
-        artworkPlaceholder.classList.add('empty');
-    }
+    urlInput?.addEventListener('input', () => { saveDraft(); syncPreviewLink(); });
+    urlInput?.addEventListener('change', () => autofill.fetchAndApply(urlInput.value.trim()));
+    urlInput?.addEventListener('blur',   () => autofill.fetchAndApply(urlInput.value.trim()));
+    titleInput?.addEventListener('input',    saveDraft);
+    subtitleInput?.addEventListener('input', saveDraft);
+    categoryInput?.addEventListener('input', saveDraft);
 
-    function setStatus(msg) {
-        if (!statusEl) return;
-        statusEl.textContent = msg;
-        statusEl.hidden = !msg;
-    }
+    form.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+        e.preventDefault();
+        const focusable = Array.from(form.querySelectorAll('input:not([type="hidden"]), textarea')).filter(el => !el.disabled);
+        const idx = focusable.indexOf(e.target);
+        if (idx !== -1 && idx < focusable.length - 1) focusable[idx + 1].focus();
+    });
+
+    form.addEventListener('submit', () => {
+        persistence.markPendingClear(storageKey);
+    });
 });

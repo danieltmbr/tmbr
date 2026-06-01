@@ -8,22 +8,11 @@
     <form id="editor-form" method="POST" action="/catalogue/new">
 
         <input type="hidden" name="artwork-id" id="editor-artwork-id" value="" />
-        <input type="hidden" name="artwork-source-url" id="editor-artwork-source-url" value="" />
-
-        <input
-            id="editor-url"
-            class="text-input title"
-            name="url"
-            type="url"
-            value="#(url)"
-            placeholder="URL"
-            autocomplete="off"
-            spellcheck="false"
-        />
+        <input type="hidden" name="artwork-source-url" id="editor-artwork-source-url" value="#(artworkURL)" />
 
         <input
             id="editor-title"
-            class="text-input"
+            class="text-input title"
             name="title"
             type="text"
             value="#(title)"
@@ -32,16 +21,19 @@
             spellcheck="true"
         />
 
-        <input
-            id="editor-subtitle"
-            class="text-input"
-            name="subtitle"
-            type="text"
-            value="#(subtitle)"
-            placeholder="Subtitle (optional)"
-            autocomplete="off"
-            spellcheck="true"
-        />
+        <section id="resources-section">
+            <h3>Resources</h3>
+            <input
+                id="editor-url"
+                class="text-input resource-url"
+                name="url"
+                type="url"
+                value="#(url)"
+                placeholder="https://…"
+                autocomplete="off"
+                spellcheck="false"
+            />
+        </section>
 
         <section id="details-section">
             <h3>Details</h3>
@@ -53,7 +45,7 @@
                         name="category"
                         type="text"
                         value="#(category)"
-                        placeholder="Category (e.g. cooking, running)"
+                        placeholder="Type (e.g. recipe, running)"
                         autocomplete="off"
                         spellcheck="false"
                         list="category-suggestions"
@@ -63,10 +55,21 @@
                         <option value="#(cat)"></option>
                         #endfor
                     </datalist>
+                    <input
+                        id="editor-subtitle"
+                        class="text-input"
+                        name="subtitle"
+                        type="text"
+                        value="#(subtitle)"
+                        placeholder="Description (optional)"
+                        autocomplete="off"
+                        spellcheck="true"
+                    />
                 </div>
 
-                <figure id="artwork-placeholder" class="image-picker empty">
-                    <img id="artwork-image" src="" alt="Artwork" />
+                <figure id="artwork-placeholder" class="image-picker #if(!artworkURL):empty#endif">
+                    <img id="artwork-image" src="#(artworkURL)" alt="Artwork" />
+                    <span>#extend("Icons/gallery")</span>
                     <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
                 </figure>
             </div>
@@ -76,10 +79,12 @@
             <p class="editor-error">#unsafeHTML(error)</p>
         #endif
 
+        #extend("Notes/notes-editor")
+
         <p id="autofill-status" class="system-info" hidden></p>
 
         <div class="editor-actions">
-            <div></div>
+            <a id="editor-preview-link" class="link" target="_blank" rel="noopener" hidden>Preview</a>
             <div>
                 <input type="hidden" name="access" value="private" />
                 <button class="primary" type="submit">Save</button>
@@ -89,6 +94,10 @@
     #endexport
 
     #export("scripts"):
+    <script src="/Scripts/Shared/persistence.js"></script>
+    <script src="/Scripts/Media/media.js"></script>
+    <script src="/Scripts/Notes/notes-editor.js"></script>
+    <script src="/Scripts/Catalogue/catalogue-editor.js"></script>
     <script src="/Scripts/Catalogue/catalogue-new.js"></script>
     #endexport
 
