@@ -86,7 +86,7 @@
         <div class="editor-actions">
             <button id="editor-preview" class="link" type="button">Preview</button>
             <div>
-                <input type="hidden" name="access" value="private" />
+                <input type="hidden" name="access" value="#(access)" />
                 <button class="primary" type="submit">Save</button>
             </div>
         </div>

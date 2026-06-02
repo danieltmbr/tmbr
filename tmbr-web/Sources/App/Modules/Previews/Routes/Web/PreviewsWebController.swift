@@ -162,7 +162,7 @@ struct PreviewsWebController: RouteCollection {
             subtitle: payload?.subtitle,
             artworkURL: artworkURL,
             category: payload?.category ?? "",
-            access: payload?.access ?? .private,
+            access: payload?.access ?? .public,
             categories: categories,
             notes: noteViewModels,
             error: error

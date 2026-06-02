@@ -28,7 +28,7 @@ struct CatalogueNewViewModel: Encodable, Sendable {
         subtitle: String? = nil,
         artworkURL: String? = nil,
         category: String = "",
-        access: Access = .private,
+        access: Access = .public,
         categories: [String] = [],
         notes: [NoteViewModel] = [],
         error: String? = nil
