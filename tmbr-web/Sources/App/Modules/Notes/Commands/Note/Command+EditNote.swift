@@ -7,13 +7,22 @@ import AuthKit
 import TmbrCore
 
 struct EditNoteInput: Sendable {
-    
+
     let id: NoteID
-    
+
     let access: Access
-    
+
     let body: String
-    
+
+    let language: Language
+
+    init(id: NoteID, access: Access, body: String, language: Language = .en) {
+        self.id = id
+        self.access = access
+        self.body = body
+        self.language = language
+    }
+
     func validate() throws {
         guard !body.trimmed.isEmpty else {
             throw Abort(.badRequest, reason: "Body is required")
@@ -44,6 +53,7 @@ struct EditNoteCommand: Command {
         try input.validate()
         note.body = input.body
         note.access = input.access && note.attachment.parentAccess
+        note.language = input.language
         try await note.save(on: database)
         return note
     }
@@ -71,7 +81,8 @@ extension CommandResolver where Input == EditNoteInput {
         let input = EditNoteInput(
             id: noteID,
             access: payload.access,
-            body: payload.body
+            body: payload.body,
+            language: payload.language ?? .en
         )
         return try await self.callAsFunction(input)
     }

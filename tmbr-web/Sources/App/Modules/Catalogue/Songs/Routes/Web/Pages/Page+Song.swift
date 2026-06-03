@@ -119,7 +119,7 @@ extension Page {
                 throw Abort(.badRequest)
             }
             async let song = request.commands.songs.fetch(songID, for: .read)
-            async let notes = request.commands.notes.query(id: songID, of: Song.previewType)
+            async let notes = request.commands.notes.query(id: songID, of: Song.previewType, languages: request.languagePreference)
             let resolvedSong = try await song
             let allowsNewNote = (try? await request.permissions.songs.edit.grant(resolvedSong)) != nil
             return try SongViewModel(

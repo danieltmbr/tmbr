@@ -1,9 +1,10 @@
 import Vapor
 import Core
+import TmbrCore
 
 struct CatalogueViewModel: Encodable, Sendable {
 
-    let filterItems: [FilterItemViewModel]
+    let panels: [FilterPanelViewModel]
 
     let previews: [PreviewViewModel]
 
@@ -57,14 +58,21 @@ extension FilterItemViewModel {
     )
 }
 
+extension FilterItemViewModel {
+    static let en = FilterItemViewModel(icon: "🇬🇧", label: "English", value: Language.en.rawValue)
+    static let hu = FilterItemViewModel(icon: "🇭🇺", label: "Hungarian", value: Language.hu.rawValue)
+}
+
 extension [FilterItemViewModel] {
     static let catalogue: Self = [
         .book, .movie, .music, .podcast,
     ]
-    
+
     static let music: Self = [
         .song, .album, .playlist
     ]
+
+    static let languages: Self = [.en, .hu]
 }
 
 extension Template where Model == CatalogueViewModel {
@@ -75,18 +83,16 @@ extension Page {
     static var catalogue: Self {
         Page(template: .catalogue) { req in
             let payload = try req.query.decode(CatalogueQueryPayload.self)
-            let term = payload.term
-            let selectedTypes = payload.types
-            let result = try await req.commands.catalogue.search(payload)
+            let effectivePayload = CatalogueQueryPayload(term: payload.term, types: payload.types, languages: req.languagePreference)
+            let result = try await req.commands.catalogue.search(effectivePayload)
             let baseURL = req.baseURL
             let compose = ComposePopupViewModel(req.permissions.compose(.standard))
+            let typeItems = [FilterItemViewModel].catalogue.map { $0.check(payload.types?.contains($0.value) ?? true) }
             return CatalogueViewModel(
-                filterItems: .catalogue.map { filter in
-                    filter.check(selectedTypes?.contains(filter.value) ?? true)
-                },
+                panels: [.types(typeItems)],
                 previews: result.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
                     + result.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) },
-                term: term,
+                term: payload.term,
                 compose: compose
             )
         }

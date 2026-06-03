@@ -1,20 +1,25 @@
-<button id="filter-open" class="icon" type="button" aria-label="Filter">
-    #extend("Icons/filter")
+#for(panel in panels):
+<button id="#(panel.openButtonId)" class="icon" type="button" aria-label="#(panel.ariaLabel)">
+    #if(panel.icon == "filter"):#extend("Icons/filter")#endif
+    #if(panel.icon == "globe"):#extend("Icons/globe")#endif
 </button>
 
-<aside id="filter-panel" class="panel popup">
+<aside id="#(panel.panelId)" class="panel popup" data-filter-panel data-open-button-id="#(panel.openButtonId)" data-param="#(panel.param)">
     <ul class="system-info">
-        #for(item in filterItems):
+        #for(item in panel.items):
         <li class="filter-item">
-            <input type="checkbox" id="filter-#(item.value)" value="#(item.value)"#if(item.checked): checked#endif>
-            <label for="filter-#(item.value)">
+            <input type="checkbox" id="#(panel.panelId)-#(item.value)" value="#(item.value)"#if(item.checked): checked#endif>
+            <label for="#(panel.panelId)-#(item.value)">
                 #(item.label)
                 #extend("Icons/icons")
             </label>
         </li>
         #endfor
+        #if(panel.showSelectAll):
         <hr/>
-        <li id="filter-select-all">Select all</li>
-        <li id="filter-deselect-all">Deselect all</li>
+        <li data-select-all>Select all</li>
+        <li data-deselect-all>Deselect all</li>
+        #endif
     </ul>
 </aside>
+#endfor

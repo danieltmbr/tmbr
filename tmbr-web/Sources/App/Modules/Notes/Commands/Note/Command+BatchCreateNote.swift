@@ -49,7 +49,8 @@ struct BatchCreateNoteCommand: Command {
                 attachmentID: attachmentID,
                 authorID: user.userID,
                 access: input.attachment.parentAccess && $0.access,
-                body: $0.body
+                body: $0.body,
+                language: $0.language
             )
         }
         try await attachPermission(notes, to: input.attachment)

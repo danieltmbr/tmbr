@@ -4,6 +4,7 @@ import Core
 import Logging
 import Fluent
 import AuthKit
+import TmbrCore
 
 extension Command where Self == PlainCommand<NoteQueryPayload, [Note]> {
     static func searchNote(
@@ -21,6 +22,7 @@ extension Command where Self == PlainCommand<NoteQueryPayload, [Note]> {
                 .with(\.$author)
                 .with(\.$quotes)
                 .filter(Preview.self, \.$parentType ~~? input.types)
+                .filter(\.$language ~~? input.languages.map { $0.compactMap(Language.init(rawValue:)) })
                 .group(.or) { group in
                     let sql = "body ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
                     group.filter(.sql(unsafeRaw: sql))

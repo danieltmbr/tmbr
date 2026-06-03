@@ -2,7 +2,33 @@
 <html>
     #extend("Shared/head")
     <body>
-        <div id="toolbar">#import("toolbar")</div>
+        <div id="toolbar">
+            <div id="toolbar-leading">
+                <button id="language-open" class="icon" type="button" aria-label="Language">
+                    #extend("Icons/globe")
+                </button>
+            </div>
+            <div id="toolbar-trailing">
+                #import("toolbar")
+            </div>
+        </div>
+        <aside id="language-panel" class="panel popup"
+            data-filter-panel
+            data-open-button-id="language-open"
+            data-param="languages"
+            data-global-panel>
+            <ul class="system-info">
+                <li class="panel-label">Show content written in:</li>
+                <li class="filter-item">
+                    <input type="checkbox" id="language-panel-en" value="en">
+                    <label for="language-panel-en">English</label>
+                </li>
+                <li class="filter-item">
+                    <input type="checkbox" id="language-panel-hu" value="hu">
+                    <label for="language-panel-hu">Hungarian</label>
+                </li>
+            </ul>
+        </aside>
         <main>#import("main")</main>
         #extend("Shared/footer")
     </body>

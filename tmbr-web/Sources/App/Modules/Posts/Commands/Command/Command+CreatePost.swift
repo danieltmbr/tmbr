@@ -37,6 +37,7 @@ struct CreatePostCommand: Command {
         let post = Post(
             authorID: user.userID,
             content: payload.body ?? "",
+            language: payload.language,
             state: payload.state,
             title: payload.title
         )

@@ -14,6 +14,8 @@ public struct NoteResponse: Codable, Sendable {
 
     public let created: Date
 
+    public let language: Language
+
     public let quotes: [QuoteResponse]
 
     public init(
@@ -23,6 +25,7 @@ public struct NoteResponse: Codable, Sendable {
         author: UserResponse,
         body: String,
         created: Date,
+        language: Language,
         quotes: [QuoteResponse]
     ) {
         self.id = id
@@ -31,6 +34,7 @@ public struct NoteResponse: Codable, Sendable {
         self.author = author
         self.body = body
         self.created = created
+        self.language = language
         self.quotes = quotes
     }
 }

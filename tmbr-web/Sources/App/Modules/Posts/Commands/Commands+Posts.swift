@@ -17,14 +17,14 @@ extension Commands {
         
         let fetch: CommandFactory<FetchParameters<PostID>, Post>
         
-        let list: CommandFactory<Void, [Post]>
-        
+        let list: CommandFactory<PostQueryPayload, [Post]>
+
         init(
             create: CommandFactory<PostPayload, Post> = .createPost,
             delete: CommandFactory<PostID, Void> = .deletePost,
             edit: CommandFactory<EditPostPayload, Post> = .editPost,
             fetch: CommandFactory<FetchParameters<PostID>, Post> = .fetchPost,
-            list: CommandFactory<Void, [Post]> = .listPosts
+            list: CommandFactory<PostQueryPayload, [Post]> = .listPosts
         ) {
             self.create = create
             self.delete = delete

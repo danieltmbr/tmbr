@@ -1,24 +1,29 @@
 import Vapor
 import Foundation
+import TmbrCore
 
 struct PostPayload: Decodable, Sendable {
-    
+
     let title: String
-    
+
     let body: String?
-    
+
+    let language: Language
+
     let state: Post.State
-    
+
     let _csrf: String?
-    
+
     init(
         title: String = "",
         body: String? = nil,
+        language: Language = .en,
         state: Post.State = .draft,
         _csrf: String? = nil
     ) {
         self.title = title
         self.body = body
+        self.language = language
         self.state = state
         self._csrf = _csrf
     }

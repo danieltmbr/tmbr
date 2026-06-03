@@ -10,12 +10,15 @@ struct NotePayload: Decodable, Sendable {
 
     let access: Access
 
+    let language: Language?
+
     let deleted: Bool?
 
-    init(body: String, access: Access = .private) {
+    init(body: String, access: Access = .private, language: Language = .en) {
         self.id = nil
         self.body = body
         self.access = access
+        self.language = language
         self.deleted = nil
     }
 

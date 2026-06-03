@@ -11,9 +11,10 @@ struct PostsAPIController: RouteCollection {
         let postsRoute = routes.grouped("api", "posts")
         let protectedRoutes = postsRoute.grouped(AppleSignInAuthenticator())
         
-        // GET /api/posts
+        // GET /api/posts — supports ?languages[]=en&languages[]=hu
         postsRoute.get { req async throws -> [Post] in
-            try await req.commands.posts.list()
+            let query = try req.query.decode(PostQueryPayload.self)
+            return try await req.commands.posts.list(query)
         }
         
         // GET /api/posts/:postID

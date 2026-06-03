@@ -76,6 +76,7 @@ struct PostsWebController: RouteCollection {
                 pageTitle: pageTitle,
                 title: submitted.title,
                 body: submitted.body ?? "",
+                language: submitted.language,
                 state: submitted.state,
                 submit: submit,
                 error: editorErrorHTML(for: error, on: req),

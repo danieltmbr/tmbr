@@ -1,3 +1,4 @@
+import Core
 import Fluent
 import Vapor
 import AuthKit
@@ -21,6 +22,9 @@ final class Post: Model, Content, @unchecked Sendable {
     @Field(key: "created_at")
     var createdAt: Date
 
+    @Field(key: "language")
+    var language: Language
+
     @ID(custom: "id", generatedBy: .database)
     var id: Int?
 
@@ -29,18 +33,19 @@ final class Post: Model, Content, @unchecked Sendable {
 
     @Field(key: "state")
     var state: State
-    
+
     @Field(key: "title")
     var title: String
 
     init() {}
-    
+
     init(
         attachmentID: UUID? = nil,
         authorID: UserID,
         content: String,
         createdAt: Date = .now,
         id: Int? = nil,
+        language: Language = .en,
         state: State = .draft,
         title: String
     ) {
@@ -49,7 +54,12 @@ final class Post: Model, Content, @unchecked Sendable {
         self.content = content
         self.createdAt = createdAt
         self.id = id
+        self.language = language
         self.state = state
         self.title = title
     }
+}
+
+extension Post: LanguageFilterable {
+    static var languageKeyPath: KeyPath<Post, FieldProperty<Post, Language>> { \.$language }
 }

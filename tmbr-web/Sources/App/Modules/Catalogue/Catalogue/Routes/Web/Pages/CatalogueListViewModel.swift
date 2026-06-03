@@ -2,23 +2,23 @@ import Vapor
 import Core
 
 struct CatalogueListViewModel: Encodable, Sendable {
-    
+
     let compose: ComposePopupViewModel?
-    
-    let filterItems: [FilterItemViewModel]
-    
+
+    let panels: [FilterPanelViewModel]
+
     let term: String?
-    
+
     let previews: [PreviewViewModel]
 
     init(
         compose: ComposePopupViewModel?,
-        filterItems: [FilterItemViewModel] = [],
+        panels: [FilterPanelViewModel] = [],
         term: String?,
         previews: [PreviewViewModel]
     ) {
         self.compose = compose
-        self.filterItems = filterItems
+        self.panels = panels
         self.term = term
         self.previews = previews
     }

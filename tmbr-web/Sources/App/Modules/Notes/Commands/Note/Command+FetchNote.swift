@@ -4,61 +4,39 @@ import Core
 import Logging
 import Fluent
 import AuthKit
+import TmbrCore
 
-struct QueryNotesInput: Sendable {
-    let ownerID: Int
-    
-    let ownerType: String
-}
+extension Command where Self == PlainCommand<NoteID, Note> {
 
-extension Command where Self == PlainCommand<QueryNotesInput, [Note]> {
-    
-    static func queryNotes(
+    static func fetchNote(
         database: Database,
         permission: BasePermissionResolver<QueryBuilder<Note>>
     ) -> Self {
-        PlainCommand { input in
+        PlainCommand { noteID in
             let query = Note
                 .query(on: database)
-                .join(Preview.self, on: \Note.$attachment.$id == \Preview.$id)
-                .filter(Preview.self, \.$parentType == input.ownerType)
-                .filter(Preview.self, \.$parentID == input.ownerID)
-                .with(\.$attachment) { attachment in
-                    attachment.with(\.$image)
-                }
-                .sort(\Note.$createdAt, .descending)
+                .filter(\.$id == noteID)
+                .with(\.$attachment) { $0.with(\.$image) }
+                .with(\.$author)
+                .with(\.$quotes)
             try await permission.grant(query)
-            return try await query.all()
+            guard let note = try await query.first() else {
+                throw Abort(.notFound)
+            }
+            return note
         }
     }
 }
 
-extension CommandFactory<QueryNotesInput, [Note]> {
-    
-    static var queryNotes: Self {
+extension CommandFactory<NoteID, Note> {
+
+    static var fetchNote: Self {
         CommandFactory { request in
-            .queryNotes(
+            .fetchNote(
                 database: request.commandDB,
                 permission: request.permissions.notes.query
             )
-            .logged(
-                name: "Query notes",
-                logger: request.logger
-            )
+            .logged(name: "Fetch note", logger: request.logger)
         }
-    }
-}
-
-extension CommandResolver where Input == QueryNotesInput {
-    
-    func callAsFunction(id: Int, of type: String) async throws -> Output {
-        try await callAsFunction(QueryNotesInput(
-            ownerID: id,
-            ownerType: type
-        ))
-    }
-    
-    func callAsFunction<Item: Previewable>(for item: Item) async throws -> Output {
-        try await callAsFunction(id: item.requireID(), of: Item.previewType)
     }
 }

@@ -144,7 +144,7 @@ extension Page {
                 throw Abort(.badRequest)
             }
             async let album = request.commands.albums.fetch(albumID, for: .read)
-            async let notes = request.commands.notes.query(id: albumID, of: Album.previewType)
+            async let notes = request.commands.notes.query(id: albumID, of: Album.previewType, languages: request.languagePreference)
             async let entries = request.commands.previews.listContainerEntries(
                 ContainerEntriesInput(containerType: "album", containerID: albumID)
             )

@@ -58,7 +58,12 @@
                     />
                     Publish
                 </label>
-                
+
+                <select id="editor-post-language" name="language">
+                    <option value="en" #if(language=="en"){ selected }>🇬🇧 English</option>
+                    <option value="hu" #if(language=="hu"){ selected }>🇭🇺 Hungarian</option>
+                </select>
+
                 <button id="editor-post-save" class="primary" type="submit">#(submit.label)</button>
             </div>
         </div>

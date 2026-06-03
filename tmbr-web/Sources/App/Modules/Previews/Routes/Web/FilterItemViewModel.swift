@@ -1,13 +1,13 @@
 struct FilterItemViewModel: Encodable, Sendable {
-        
+
     let checked: Bool
 
     let icon: String
-    
+
     let label: String
 
     let value: String
-    
+
     init(
         checked: Bool = false,
         icon: String,
@@ -19,7 +19,7 @@ struct FilterItemViewModel: Encodable, Sendable {
         self.label = label
         self.value = value
     }
-    
+
     func check(_ checked: Bool) -> Self {
         Self(
             checked: checked,

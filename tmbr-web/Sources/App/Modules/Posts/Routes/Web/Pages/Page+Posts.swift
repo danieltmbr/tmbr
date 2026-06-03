@@ -3,20 +3,21 @@ import Foundation
 import Vapor
 import Fluent
 import AuthKit
+import TmbrCore
 
 struct PostItemViewModel: Content {
     private let id: Int
-    
+
     private let title: String
-    
+
     private let publishDate: String
-    
+
     init(id: Int, title: String, publishDate: String) {
         self.id = id
         self.title = title
         self.publishDate = publishDate
     }
-    
+
     init(post: Post) throws {
         self.init(
             id: try post.requireID(),
@@ -28,11 +29,16 @@ struct PostItemViewModel: Content {
 
 struct PostsViewModel: Encodable, Sendable {
 
+    private let panels: [FilterPanelViewModel]
+
     private let posts: [PostItemViewModel]
+
+    private let term: String?
 
     private let compose: ComposePopupViewModel?
 
-    init(posts: [Post], compose: ComposePopupViewModel?) {
+    init(panels: [FilterPanelViewModel], posts: [Post], term: String?, compose: ComposePopupViewModel?) {
+        self.panels = panels
         self.posts = posts.compactMap { post in
             guard let id = post.id else { return nil }
             return PostItemViewModel(
@@ -41,6 +47,7 @@ struct PostsViewModel: Encodable, Sendable {
                 publishDate: (post.publishedAt ?? post.createdAt).formatted(.publishDate)
             )
         }
+        self.term = term
         self.compose = compose
     }
 }
@@ -52,9 +59,10 @@ extension Template where Model == PostsViewModel {
 extension Page {
     static var posts: Self {
         Page(template: .posts) { req in
-            let posts = try await req.commands.posts.list()
+            let query = try req.query.decode(PostQueryPayload.self)
+            let posts = try await req.commands.posts.list(query)
             let compose = ComposePopupViewModel(req.permissions.compose(.standard))
-            return PostsViewModel(posts: posts, compose: compose)
+            return PostsViewModel(panels: [], posts: posts, term: query.term, compose: compose)
         }
     }
 
@@ -67,7 +75,7 @@ extension Page {
                 .sort(\.$createdAt, .descending)
                 .all()
             let compose = ComposePopupViewModel(req.permissions.compose(.standard))
-            return PostsViewModel(posts: posts, compose: compose)
+            return PostsViewModel(panels: [], posts: posts, term: nil, compose: compose)
         }
     }
 }

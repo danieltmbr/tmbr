@@ -1,29 +1,34 @@
 class FilterController {
-    constructor({ openButton, closeButton, panel }) {
+    constructor({ openButton, panel }) {
         this.openButton = openButton;
-        this.closeButton = closeButton;
         this.panel = panel;
+        this.param = panel.dataset.param;
         this._snapshot = new Set();
         this._onOpenClick = this.open.bind(this);
-        this._onCloseClick = this.close.bind(this);
-        this._onSelectAll = this._selectAll.bind(this);
-        this._onDeselectAll = this._deselectAll.bind(this);
         this._onOutsideClick = this._handleOutsideClick.bind(this);
     }
 
     init() {
+        if (this.param === 'languages') {
+            this._initFromCookie();
+        }
         this.openButton.addEventListener('click', this._onOpenClick);
-        this.closeButton?.addEventListener('click', this._onCloseClick);
+        this.panel.querySelector('[data-select-all]')
+            ?.addEventListener('click', () => this._setAll(true));
+        this.panel.querySelector('[data-deselect-all]')
+            ?.addEventListener('click', () => this._setAll(false));
+    }
 
-        document.getElementById('filter-select-all')
-            ?.addEventListener('click', this._onSelectAll);
-        document.getElementById('filter-deselect-all')
-            ?.addEventListener('click', this._onDeselectAll);
+    _initFromCookie() {
+        const raw = document.cookie.split(';').find(c => c.trim().startsWith('lang_pref='))?.split('=')[1] ?? '';
+        const prefs = raw ? raw.split('|') : [];
+        this.panel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.checked = prefs.length === 0 || prefs.includes(cb.value);
+        });
     }
 
     destroy() {
         this.openButton.removeEventListener('click', this._onOpenClick);
-        this.closeButton?.removeEventListener('click', this._onCloseClick);
         document.removeEventListener('click', this._onOutsideClick);
     }
 
@@ -60,15 +65,9 @@ class FilterController {
         return true;
     }
 
-    _selectAll() {
+    _setAll(checked) {
         this.panel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-            cb.checked = true;
-        });
-    }
-
-    _deselectAll() {
-        this.panel.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-            cb.checked = false;
+            cb.checked = checked;
         });
     }
 
@@ -79,23 +78,32 @@ class FilterController {
     }
 
     _apply() {
-        const params = new URLSearchParams();
+        const checked = [];
+        this.panel.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+            checked.push(cb.value);
+        });
+        if ('globalPanel' in this.panel.dataset) {
+            document.cookie = `lang_pref=${checked.join('|')}; max-age=${365 * 24 * 60 * 60}; path=/; SameSite=Lax`;
+            window.location.reload();
+            return;
+        }
+        const params = new URLSearchParams(window.location.search);
+        params.delete(this.param);
         const searchInput = document.getElementById('search-input');
         if (searchInput?.value) {
             params.set('term', searchInput.value);
         }
-        this.panel.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-            params.append('types', cb.value);
-        });
+        checked.forEach(v => params.append(this.param, v));
         window.location.href = window.location.pathname + '?' + params.toString();
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const ctrl = new FilterController({
-        openButton: document.getElementById('filter-open'),
-        closeButton: document.getElementById('filter-close'),
-        panel: document.getElementById('filter-panel'),
+    document.querySelectorAll('[data-filter-panel]').forEach(panel => {
+        const ctrl = new FilterController({
+            openButton: document.getElementById(panel.dataset.openButtonId),
+            panel,
+        });
+        ctrl.init();
     });
-    ctrl.init();
 });

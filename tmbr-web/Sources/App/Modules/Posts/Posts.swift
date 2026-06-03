@@ -20,6 +20,8 @@ struct Posts: Module {
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(AddPostAttachment())
         app.migrations.add(AddPostPublishedAt())
+        app.migrations.add(AddPostLanguage())
+        app.migrations.add(FixLanguageFieldValues())
         app.routes.defaultMaxBodySize = ByteCount(value: 1*1024*1024)
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)

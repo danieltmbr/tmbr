@@ -6,21 +6,23 @@ import AuthKit
 import TmbrCore
 
 struct PostEditorViewModel: Encodable, Sendable {
-    
+
     private let id: Int?
-    
+
     private let pageTitle: String?
 
     private let title: String
-    
+
     private let body: String
-    
+
+    private let language: String
+
     private let state: Post.State
-    
+
     private let submit: Form.Submit
 
     let _csrf: String?
-    
+
     private let error: String?
 
     init(
@@ -28,6 +30,7 @@ struct PostEditorViewModel: Encodable, Sendable {
         pageTitle: String?,
         title: String = "",
         body: String = "",
+        language: Language = .en,
         state: Post.State = .draft,
         submit: Form.Submit,
         error: String? = nil,
@@ -37,6 +40,7 @@ struct PostEditorViewModel: Encodable, Sendable {
         self.pageTitle = pageTitle
         self.title = title
         self.body = body
+        self.language = language.rawValue
         self.state = state
         self.submit = submit
         self.error = error
@@ -50,6 +54,7 @@ struct PostEditorViewModel: Encodable, Sendable {
             pageTitle: "Edit '\(post.title)'",
             title: post.title,
             body: post.content,
+            language: post.language,
             state: post.state,
             submit: Form.Submit(
                 action: "/posts/\(id)",

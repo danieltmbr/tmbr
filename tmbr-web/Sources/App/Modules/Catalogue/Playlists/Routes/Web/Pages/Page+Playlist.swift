@@ -87,7 +87,7 @@ extension Page {
                 throw Abort(.badRequest)
             }
             async let playlist = request.commands.playlists.fetch(playlistID, for: .read)
-            async let notes = request.commands.notes.query(id: playlistID, of: Playlist.previewType)
+            async let notes = request.commands.notes.query(id: playlistID, of: Playlist.previewType, languages: request.languagePreference)
             async let entries = request.commands.previews.listContainerEntries(
                 ContainerEntriesInput(containerType: "playlist", containerID: playlistID)
             )
