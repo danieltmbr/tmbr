@@ -40,6 +40,7 @@ struct Authentication: Module {
         app.middleware.use(app.sessions.middleware)
         app.middleware.use(User.sessionAuthenticator())
         app.middleware.use(UserIDLoggingMiddleware())
+        app.middleware.use(LanguagePreferenceMiddleware())
 
         // Skip Apple Sign In JWT setup when env vars are absent (e.g. test environment).
         if let appID = Environment.get("SIWA_APP_ID"),

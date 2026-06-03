@@ -27,7 +27,7 @@ struct CatalogueQueryMapper: Sendable {
     }
 
     func toNotesQuery(from payload: CatalogueQueryPayload) -> NoteQueryPayload {
-        NoteQueryPayload(term: payload.term, types: filter(types: payload.types))
+        NoteQueryPayload(term: payload.term, types: filter(types: payload.types), languages: payload.languages)
     }
 
     func toQuoteQuery(from payload: CatalogueQueryPayload) -> QuoteQueryPayload {

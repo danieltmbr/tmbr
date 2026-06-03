@@ -16,7 +16,7 @@ extension Command where Self == PlainCommand<CatalogueQueryPayload, MusicSearchR
             let allMusicTypes: Set<String> = [Album.previewType, Playlist.previewType, Song.previewType]
             let musicTypes = payload.types.map { allMusicTypes.intersection($0) } ?? allMusicTypes
             let previewInput = PreviewQueryInput(term: payload.term, types: musicTypes)
-            let noteInput = NoteQueryPayload(term: payload.term, types: musicTypes)
+            let noteInput = NoteQueryPayload(term: payload.term, types: musicTypes, languages: payload.languages)
 
             async let previewsTask = previewSearch(previewInput)
             async let notesTask = noteSearch(noteInput)

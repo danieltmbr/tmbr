@@ -16,7 +16,7 @@
         <section>
             <nav>
                 #extend("Shared/search")
-                #extend("Panels/filter")
+                #if(panels):#extend("Panels/filter")#endif
             </nav>
 
             #extend("Previews/previews")

@@ -127,7 +127,7 @@ extension Page {
                 throw Abort(.badRequest)
             }
             async let podcastTask = request.commands.podcasts.fetch(podcastID, for: .read)
-            async let notesTask = request.commands.notes.query(id: podcastID, of: Podcast.previewType)
+            async let notesTask = request.commands.notes.query(id: podcastID, of: Podcast.previewType, languages: request.languagePreference)
             let resolvedPodcast = try await podcastTask
             let allowsNewNote = (try? await request.permissions.podcasts.edit.grant(resolvedPodcast)) != nil
             return try PodcastViewModel(

@@ -11,6 +11,7 @@ extension PostResponse {
             author: UserResponse(user: post.author),
             content: post.content,
             createdAt: post.createdAt,
+            language: post.language,
             publishedAt: post.publishedAt,
             state: post.state,
             title: post.title

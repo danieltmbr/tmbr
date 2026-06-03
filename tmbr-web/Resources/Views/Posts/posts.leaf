@@ -10,8 +10,12 @@
 
     #export("main"):
         #extend("Shared/signature")
-        #if(count(posts) > 0):
-            <section alt="Articles">
+        <section>
+            <nav>
+                #extend("Shared/search")
+                #if(panels):#extend("Panels/filter")#endif
+            </nav>
+            #if(count(posts) > 0):
                 <ul class="counted">
                 #for(post in posts):
                     <a href="/posts/#(post.id)"><li>
@@ -21,8 +25,8 @@
                     </li></a>
                 #endfor
                 </ul>
-            </section>
-        #endif
+            #endif
+        </section>
 
         #if(compose):
             #extend("Panels/compose")
@@ -31,6 +35,8 @@
 
     #export("scripts"):
         <script src="/Scripts/Shared/toolbar.js"></script>
+        #if(panels):<script src="/Scripts/Shared/filter.js"></script>#endif
+        <script src="/Scripts/Shared/search.js"></script>
         <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
     #endexport
 

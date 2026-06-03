@@ -110,7 +110,7 @@ extension Page {
                 throw Abort(.badRequest)
             }
             async let movieTask = request.commands.movies.fetch(movieID, for: .read)
-            async let notesTask = request.commands.notes.query(id: movieID, of: Movie.previewType)
+            async let notesTask = request.commands.notes.query(id: movieID, of: Movie.previewType, languages: request.languagePreference)
             let resolvedMovie = try await movieTask
             let allowsNewNote = (try? await request.permissions.movies.edit.grant(resolvedMovie)) != nil
             return try MovieViewModel(

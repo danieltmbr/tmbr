@@ -8,10 +8,12 @@ import TmbrCore
 
 struct CreateNoteInput: Decodable {
     var body: String
-    
+
     var access: Access
-    
+
     var attachmentID: UUID
+
+    var language: Language = .en
 }
 
 struct CreateNoteCommand: Command {
@@ -47,7 +49,8 @@ struct CreateNoteCommand: Command {
             attachmentID: input.attachmentID,
             authorID: user.userID,
             access: preview.parentAccess && input.access,
-            body: input.body
+            body: input.body,
+            language: input.language
         )
         try await attachPermission(note, to: preview)
         try await note.save(on: database)

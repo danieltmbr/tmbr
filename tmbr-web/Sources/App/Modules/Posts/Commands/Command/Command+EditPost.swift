@@ -36,6 +36,7 @@ struct EditPostCommand: Command {
         try payload.validate()
         post.title = payload.title
         post.content = payload.body ?? ""
+        post.language = payload.language
         post.state = payload.state
         if post.state == .published && post.publishedAt == nil {
             post.publishedAt = .now

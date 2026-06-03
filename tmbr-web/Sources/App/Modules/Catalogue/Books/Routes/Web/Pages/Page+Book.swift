@@ -119,7 +119,7 @@ extension Page {
                 throw Abort(.badRequest)
             }
             async let bookTask = request.commands.books.fetch(bookID, for: .read)
-            async let notesTask = request.commands.notes.query(id: bookID, of: Book.previewType)
+            async let notesTask = request.commands.notes.query(id: bookID, of: Book.previewType, languages: request.languagePreference)
             let resolvedBook = try await bookTask
             let allowsNewNote = (try? await request.permissions.books.edit.grant(resolvedBook)) != nil
             return try BookViewModel(
