@@ -19,8 +19,11 @@ final class Preview: Model, @unchecked Sendable {
     @Parent(key: "parent_owner")
     private(set) var parentOwner: User
     
-    @Field(key: "parent_type")
-    private(set) var parentType: String
+    @OptionalField(key: "parent_type")
+    private(set) var parentType: String?
+
+    @OptionalField(key: "category")
+    private(set) var category: String?
 
     @Field(key: "primary_info")
     var primaryInfo: String
@@ -56,13 +59,15 @@ final class Preview: Model, @unchecked Sendable {
         parentID: Int?,
         parentAccess: Access,
         parentOwner: UserID,
-        parentType: String
+        parentType: String? = nil,
+        category: String? = nil
     ) {
         self.id = id
         self.parentID = parentID
         self.parentAccess = parentAccess
         self.$parentOwner.id = parentOwner
         self.parentType = parentType
+        self.category = category
     }
 }
 

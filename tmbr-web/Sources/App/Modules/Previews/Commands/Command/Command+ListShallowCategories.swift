@@ -5,28 +5,22 @@ import Fluent
 import AuthKit
 import TmbrCore
 
-/// Returns distinct parentType strings for the given user's shallow (parentID = nil, non-track) Previews.
-extension Command where Self == PlainCommand<UserID, [String]> {
+extension Command where Self == PlainCommand<Void, [String]> {
 
     static func listShallowCategories(database: Database) -> Self {
-        PlainCommand { ownerID in
-            let previews = try await Preview
-                .query(on: database)
-                .filter(\.$parentOwner.$id == ownerID)
+        PlainCommand { _ in
+            try await Preview.query(on: database)
+                .filter(\.$parentType == nil)
                 .filter(\.$parentID == nil)
-                .filter(\.$parentType != "track")
-                .field(\.$parentType)
+                .field(\.$category)
+                .unique()
                 .all()
-            let seen = NSMutableOrderedSet()
-            for preview in previews {
-                seen.add(preview.parentType)
-            }
-            return seen.array as? [String] ?? previews.map(\.parentType)
+                .compactMap(\.category)
         }
     }
 }
 
-extension CommandFactory<UserID, [String]> {
+extension CommandFactory<Void, [String]> {
 
     static var listShallowCategories: Self {
         CommandFactory { request in

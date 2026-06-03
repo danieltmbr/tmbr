@@ -117,6 +117,22 @@ document.addEventListener('DOMContentLoaded', () => {
     titleInput?.addEventListener('input',    saveDraft);
     subtitleInput?.addEventListener('input', saveDraft);
     categoryInput?.addEventListener('input', saveDraft);
+    categoryInput?.addEventListener('change', checkCategoryHint);
+    categoryInput?.addEventListener('blur', checkCategoryHint);
+
+    function checkCategoryHint() {
+        const reserved = new Set(['song', 'songs', 'album', 'albums', 'book', 'books', 'movie', 'movies', 'podcast', 'podcasts', 'playlist', 'playlists', 'music']);
+        const hint = document.getElementById('category-hint');
+        if (!hint || !categoryInput) return;
+        const val = categoryInput.value.trim().toLowerCase();
+        if (val && reserved.has(val)) {
+            hint.textContent = `You already have a ${categoryInput.value.trim()} section — use that for dedicated media.`;
+            hint.hidden = false;
+        } else {
+            hint.textContent = '';
+            hint.hidden = true;
+        }
+    }
 
     form.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;

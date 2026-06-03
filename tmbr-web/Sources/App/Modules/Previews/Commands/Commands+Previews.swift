@@ -21,7 +21,7 @@ extension Commands {
 
         let listContainerEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]>
 
-        let listShallowCategories: CommandFactory<UserID, [String]>
+        let listShallowCategories: CommandFactory<Void, [String]>
 
         init(
             create: CommandFactory<CreatePreviewItemInput, Preview> = .createPreviewItem,
@@ -30,7 +30,7 @@ extension Commands {
             importTracks: CommandFactory<ImportAlbumTracksInput, Void> = .importAlbumTracks,
             list: CommandFactory<PreviewQueryInput, [Preview]> = .listPreviews,
             listContainerEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]> = .listContainerEntries,
-            listShallowCategories: CommandFactory<UserID, [String]> = .listShallowCategories
+            listShallowCategories: CommandFactory<Void, [String]> = .listShallowCategories
         ) {
             self.create = create
             self.fetch = fetch

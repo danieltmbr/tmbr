@@ -24,7 +24,7 @@ extension Command where Self == PlainCommand<CreatePreviewItemInput, Preview> {
                 parentID: nil,
                 parentAccess: input.access,
                 parentOwner: input.ownerID,
-                parentType: input.category
+                category: input.category
             )
             preview.primaryInfo = input.title
             preview.secondaryInfo = input.subtitle

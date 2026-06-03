@@ -16,16 +16,83 @@ struct CatalogueAPIController: RouteCollection {
         let catalogue = routes.grouped("api", "catalogue")
         catalogue.get(use: list)
         catalogue.get("search", use: search)
-        // TODO: return domain object based on preview
-        // catalogue.get(":previewID", use: get)
-        
+        catalogue.get("item", ":previewID", use: getItem)
+        catalogue.post("item", ":previewID", "notes", use: createItemNote)
+        catalogue.post("new", use: createItem)
+        catalogue.get("new", "metadata", use: metadata)
+
         let quotes = catalogue.grouped("quotes")
         quotes.get(use: quoteList)
         quotes.get("search", use: quoteSearch)
         quotes.get("random", use: randomQuote)
     }
 
-    // MARK: - Handlers
+    // MARK: - Catalogue item handlers
+
+    @Sendable
+    private func getItem(request: Request) async throws -> PreviewResponse {
+        guard let previewID = request.parameters.get("previewID", as: UUID.self) else {
+            throw Abort(.badRequest, reason: "Invalid preview ID")
+        }
+        let preview = try await request.commands.previews.fetch(previewID, for: .read)
+        return PreviewResponse(preview: preview, baseURL: request.baseURL)
+    }
+
+    @Sendable
+    private func createItemNote(request: Request) async throws -> NoteResponse {
+        guard let previewID = request.parameters.get("previewID", as: UUID.self) else {
+            throw Abort(.badRequest, reason: "Invalid preview ID")
+        }
+        let payload = try request.content.decode(NotePayload.self)
+        _ = try await request.commands.previews.fetch(previewID, for: .write)
+        let input = CreateNoteInput(body: payload.body, access: payload.access, attachmentID: previewID)
+        let note = try await request.commands.notes.create(input)
+        try await note.$attachment.load(on: request.commandDB)
+        try await note.$author.load(on: request.commandDB)
+        return NoteResponse(note: note, baseURL: request.baseURL)
+    }
+
+    @Sendable
+    private func createItem(request: Request) async throws -> PreviewResponse {
+        let payload = try request.content.decode(CatalogueNewPayload.self)
+        let user = try request.auth.require(User.self)
+        let userID = try user.requireID()
+        let rawCategory = payload.category.trimmingCharacters(in: .whitespaces).lowercased()
+        let category = rawCategory.isEmpty ? "link" : rawCategory
+        let input = CreatePreviewItemInput(
+            title: payload.title.trimmingCharacters(in: .whitespaces),
+            subtitle: {
+                let s = payload.subtitle?.trimmingCharacters(in: .whitespaces) ?? ""
+                return s.isEmpty ? nil : s
+            }(),
+            access: payload.access,
+            artworkID: payload.artworkID,
+            externalLink: {
+                let u = payload.url?.trimmingCharacters(in: .whitespaces) ?? ""
+                return u.isEmpty ? nil : u
+            }(),
+            category: category,
+            ownerID: userID
+        )
+        let preview = try await request.commands.previews.create(input)
+        return PreviewResponse(preview: preview, baseURL: request.baseURL)
+    }
+
+    @Sendable
+    private func metadata(request: Request) async throws -> CatalogueItemMetadataResponse {
+        let urlString = try request.query.get(String.self, at: "url")
+        guard let url = URL(string: urlString) else {
+            throw Abort(.badRequest, reason: "Invalid URL")
+        }
+        let meta = try await request.commands.catalogue.metadata(url)
+        return CatalogueItemMetadataResponse(
+            title: meta.tags["og:title"],
+            subtitle: meta.tags["og:description"] ?? meta.tags["og:site_name"],
+            artworkURL: meta.tags["og:image"]
+        )
+    }
+
+    // MARK: - Catalogue list handlers
 
     @Sendable
     private func list(request: Request) async throws -> [PreviewResponse] {
@@ -52,7 +119,7 @@ struct CatalogueAPIController: RouteCollection {
                 resources: $0.attachment.externalLinks,
                 source: PreviewResponse.Source(
                     id: $0.attachment.parentID,
-                    type: $0.attachment.parentType
+                    type: $0.attachment.parentType ?? $0.attachment.category ?? "item"
                 )
             )
         }

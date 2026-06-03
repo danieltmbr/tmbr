@@ -13,8 +13,9 @@ extension PreviewResponse {
             resources: preview.externalLinks,
             source: Source(
                 id: preview.parentID,
-                type: preview.parentType
+                type: preview.parentType ?? preview.category ?? "item"
             ),
+            category: preview.category,
             isNoteMatch: isNoteMatch
         )
     }

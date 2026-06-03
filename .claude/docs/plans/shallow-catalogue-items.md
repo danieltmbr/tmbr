@@ -1,7 +1,5 @@
 # Plan: Shallow Catalogue Items — Zero-Effort New Media Types
 
-> Save this file to `tmbr-web/.claude/docs/plans/shallow-catalogue-items.md` at the start of implementation.
-
 ---
 
 ## Context
@@ -9,10 +7,6 @@
 The Preview model is a polymorphic proxy used by every catalogue item. PR #153 made `parentID` nullable, which opened a new capability: a Preview with `parentType = "track"` and `parentID = nil` is an "orphan" — it has a title, secondary info, and external links, but no backing database model. Music tracks use this for the album tracklist, where an orphan is auto-promoted to a Song when the user taps it.
 
 The same infrastructure generalises to **any media type a user wants to bookmark**: a YouTube video, a newsletter, an article, a film they can't find in the movie database yet. Instead of building a full Song/Book/Movie module, the user pastes a URL, gives it a title, and gets a full catalogue item with a detail page and notes — immediately, with zero new backend code.
-
-The goal of this plan is to complete the last two pieces:
-1. **Make notes work on shallow detail pages** (`/catalogue/item/:uuid`) — currently stubbed out
-2. **Implement `/catalogue/new`** — the creation entry point that's wired into the compose panel but has no handler
 
 ---
 
@@ -26,264 +20,196 @@ After this work, a user can:
 4. Read the page, click through to the URL, and add notes — exactly like any other catalogue item
 5. See the item in their catalogue feed alongside songs, books, movies, etc.
 
-Adding a new "type" later (e.g. "newsletter", "video") requires: adding a string constant, adding it to `CatalogueQueryMapper.catalogueTypes`, and optionally adding a dedicated compose action. No migration, no model, no commands.
+Adding a new "type" later (e.g. "newsletter", "video") requires only: the user types a new category name in the form. No migration, no model, no commands.
 
 ---
 
-## What Already Exists
+## Architecture: `parentType` vs `category`
 
-- `GET /catalogue/item/:previewID` — `PreviewsWebController` + `Page+CatalogueItem` — renders a shallow detail page using `Catalogue/details.leaf`. Works, but notes are stubbed (`allowsNewNote = false`, `notes = []`, no POST route).
-- `ComposeAction.clipboard` — compose panel button pointing to `/catalogue/new`. The button already exists in the UI; no handler exists yet.
-- `HTMLMetadataParser` — already used by all catalogue type editors for OpenGraph / JSON-LD extraction. Reuse for autofill on the new form.
-- `commands.notes.query(id:of:)` — existing note-loading pattern used by all type-specific detail pages.
-- `commands.notes.create(input:)` — existing note-creation command; `CreateNoteInput.attachmentID` is a Preview UUID.
-- Orphan Preview creation pattern — established in `importTracks` (Album/Playlist import). Direct `preview.save(on: db)` with `parentID: nil`.
+`parentType` is system-controlled and `category` is user-controlled — they are separate fields on `Preview`. This eliminates any collision between system-managed promotable placeholders (e.g. `"track"`) and user-defined labels:
+
+| Record kind | `parentType` | `parentID` | `category` |
+|---|---|---|---|
+| Model-backed (Song, Book, etc.) | `"song"`, `"book"`, … | non-nil | nil |
+| Track placeholder (system) | `"track"` | nil | nil |
+| User-defined shallow item | **nil** | nil | `"link"`, `"recipes"`, … |
+
+Shallow user-created items are identified by `parentType IS NULL AND parentID IS NULL`. No reserved-string guards are needed.
+
+Track placeholders keep `parentType = "track"` for promotion identity. `PreviewModelMiddleware` looks up the preview by UUID during promotion and overwrites `parentType` with `"song"` via `adopt(parentID:parentType:...)`. The string "track" is never used as a lookup key during promotion, so a user naming their category "track" causes no conflict.
+
+---
+
+## What Already Exists (as of initial PR)
+
+- `GET /catalogue/item/:previewID` — renders a shallow detail page, notes loaded, `allowsNewNote` from auth.
+- `POST /catalogue/item/:previewID/notes` — creates a note on a shallow item.
+- `GET /catalogue/new` / `POST /catalogue/new` — creation form with OpenGraph autofill, artwork, notes.
+- `GET /catalogue/new/metadata?url=` — metadata fetch endpoint.
+- `ComposeAction.clipboard` — compose panel button pointing to `/catalogue/new`.
+- `HTMLMetadataParser` — used for OpenGraph autofill.
+- `CreatePreviewItemCommand` — creates an orphan `Preview` with `category` set and `parentType` nil.
+- `listShallowCategories` command — `SELECT DISTINCT category` for all public shallow items.
+- `CatalogueQueryMapper` — splits types into `knownTypes` (filter on `parentType`) and `categories` (filter on `category`).
+- `Request.createNoteResponse(attachmentID:)` — shared helper used by all 7 catalogue web controllers.
+- API counterparts: `GET/POST /api/catalogue/item/:previewID`, `POST /api/catalogue/new`, `GET /api/catalogue/new/metadata`.
 
 ---
 
 ## Implementation
 
-### Step 1 — Wire notes onto `Page+CatalogueItem`
+### Step 1 — Wire notes onto `Page+CatalogueItem` ✓
 
 **File:** `Sources/App/Modules/Previews/Routes/Web/Pages/Page+CatalogueItem.swift`
 
-Currently `notes = []` and `allowsNewNote = false` are hardcoded. Replace with:
-
-```swift
-extension Page {
-    static var catalogueItem: Self {
-        Page(template: .catalogueItem) { request in
-            guard let previewID = request.parameters.get("previewID", as: UUID.self) else {
-                throw Abort(.badRequest)
-            }
-            async let preview = request.commands.previews.fetch(previewID, for: .read)
-            let resolvedPreview = try await preview
-
-            // Check ownership for note creation
-            let currentUser = try? request.auth.require(User.self)
-            let allowsNewNote = currentUser?.id == resolvedPreview.$parentOwner.id
-
-            // Load notes attached to this Preview UUID directly
-            let notes = try await request.commands.notes.list(attachmentID: previewID)
-
-            return CatalogueItemViewModel(
-                preview: resolvedPreview,
-                notes: notes,
-                allowsNewNote: allowsNewNote,
-                baseURL: request.baseURL
-            )
-        }
-    }
-}
-```
-
-Update `CatalogueItemViewModel.init` to accept `notes` and `allowsNewNote` instead of hardcoding them.
-
-**Note:** The note-loading call uses `attachmentID` (Preview UUID) directly — not `query(id:of:)` which requires a catalogue-item integer ID. Verify the exact command signature in `Commands+Notes.swift`; if no `list(attachmentID:)` variant exists, add one (it's a simple `Note.query(on:).filter(\.$attachment.$id == attachmentID).all()`).
+Loads notes via `request.commands.notes.fetchByAttachment(previewID)`. Determines `allowsNewNote` via `request.permissions.previews.edit.grant(resolvedPreview)`.
 
 ---
 
-### Step 2 — Add `POST /catalogue/item/:previewID/notes`
+### Step 2 — Add `POST /catalogue/item/:previewID/notes` ✓
 
-**File:** `Sources/App/Modules/Previews/Routes/Web/PreviewsWebController.swift`
-
-Add the notes creation handler. This is simpler than the type-specific versions because we already have the Preview UUID — no "fetch item → get preview ID" indirection needed:
-
-```swift
-struct PreviewsWebController: RouteCollection {
-    func boot(routes: RoutesBuilder) throws {
-        let protected = routes.grouped(SessionAuthenticator())
-        routes
-            .grouped(RecoverMiddleware())
-            .get("catalogue", "item", ":previewID", page: .catalogueItem)
-        protected
-            .grouped(RecoverMiddleware())
-            .post("catalogue", "item", ":previewID", "notes", use: createNote)
-    }
-
-    private func createNote(_ request: Request) async throws -> Response {
-        guard let previewID = request.parameters.get("previewID", as: UUID.self) else {
-            return Response(status: .badRequest)
-        }
-        guard let payload = try? request.content.decode(NotePayload.self) else {
-            return Response(status: .badRequest)
-        }
-        // Fetch preview to verify ownership (for: .write enforces this)
-        let preview = try await request.commands.previews.fetch(previewID, for: .write)
-        let input = CreateNoteInput(
-            body: payload.body,
-            access: payload.access,
-            attachmentID: previewID
-        )
-        let note = try await request.commands.notes.create(input)
-        let model = try NoteViewModel(note: note, isEditable: true)
-        let view = try await Template.noteItem.render(NoteItemContext(note: model), with: request.view)
-        return try await view.encodeResponse(for: request)
-    }
-}
-```
-
-**Verify** that `commands.previews.fetch(previewID, for: .write)` enforces ownership — look at the existing `FetchPreviewCommand` to confirm it throws `.forbidden` for non-owners, or add that check if absent.
+Route and handler live in `CatalogueWebController`. Uses the shared `request.createNoteResponse(attachmentID:)` helper after verifying write permission with `commands.previews.fetch(previewID, for: .write)`.
 
 ---
 
-### Step 3 — Add a `CreatePreviewItemCommand`
+### Step 3 — Add `CreatePreviewItemCommand` ✓
 
-**New file:** `Sources/App/Modules/Previews/Commands/Command/Command+CreatePreviewItem.swift`
+**File:** `Sources/App/Modules/Previews/Commands/Command/Command+CreatePreviewItem.swift`
 
-There is no command for creating a standalone orphan Preview. Add one:
-
+Input struct:
 ```swift
 struct CreatePreviewItemInput: Sendable {
     let title: String
     let subtitle: String?
     let access: Access
-    let externalLink: String?   // the primary URL resource
-    let parentType: String      // e.g. "link", "video" — caller provides
+    let artworkID: ImageID?
+    let externalLink: String?
+    let category: String      // stored in preview.category, not parentType
     let ownerID: UserID
 }
 ```
 
-The command creates a Preview directly (no `PreviewModelMiddleware` involved):
-```swift
-let preview = Preview(
-    parentType: input.parentType,
-    parentID: nil,
-    parentAccess: input.access,
-    parentOwner: input.ownerID
-)
-preview.primaryInfo = input.title
-preview.secondaryInfo = input.subtitle
-preview.externalLinks = [input.externalLink].compactMap { $0 }
-try await preview.save(on: request.commandDB)
-return preview
-```
-
-Add a computed property to `Commands+Previews.swift`:
-```swift
-extension Commands {
-    // already exists — add createItem to the collection
-    var createPreviewItem: CommandFactory<CreatePreviewItemInput, Preview> { ... }
-}
-```
+Creates a Preview with `category: input.category` and `parentType: nil` (no backing model).
 
 ---
 
-### Step 4 — Implement `GET /catalogue/new` and `POST /catalogue/new`
+### Step 4 — Implement `GET /catalogue/new` and `POST /catalogue/new` ✓
 
-**New file:** `Sources/App/Modules/Previews/Routes/Web/Pages/Page+CatalogueNew.swift`
+Routes and handlers in `CatalogueWebController`. `Page+CatalogueNew` renders the form. Handler validates title, resolves artwork via gallery lookup/upload, creates item via `CreatePreviewItemCommand`, creates notes in a transaction, redirects to `/catalogue/item/:uuid`.
 
-The create-item page. ViewModel fields:
-- `error: String?`
-- `_csrf: String?`
-- access toggle fields
-
-**New route in `PreviewsWebController.boot`:**
-
-```
-GET  /catalogue/new  → page: .catalogueNew   (render the form)
-POST /catalogue/new  → createItem handler
-```
-
-**`POST /catalogue/new` handler:**
-1. Validate CSRF
-2. Decode payload: `url: String?, title: String, subtitle: String?, access: Access`
-3. `title` is required — re-render form with error if blank
-4. Call `commands.previews.createPreviewItem(CreatePreviewItemInput(title:, subtitle:, access:, externalLink: url, parentType: "link", ownerID: user.id))`
-5. Redirect to `/catalogue/item/\(preview.id!)`
-
-**New template:** `Resources/Views/Catalogue/catalogue-new.leaf`
-
-Simple form: URL field, title field, secondary info field, access toggle, submit. Extend `Shared/page`. The form requires auth — `PreviewsWebController` should guard this route group behind `SessionAuthenticator`.
+**Template:** `Resources/Views/Catalogue/catalogue-new.leaf` — URL field, title field, subtitle, category autocomplete (`<datalist>`), access toggle, artwork picker, notes editor.
 
 ---
 
-### Step 5 — OpenGraph autofill on the new form
+### Step 5 — OpenGraph autofill ✓
 
-**New route:** `GET /catalogue/new/metadata?url=` (returns JSON)
+`GET /catalogue/new/metadata?url=` reuses `HTMLMetadataParser` via `request.commands.catalogue.metadata(url)`. Returns `CatalogueItemMetadataResponse` (title, subtitle, artworkURL from og:* tags).
 
-Reuses `HTMLMetadataParser` (already used by all catalogue type editors). Returns:
-```json
-{ "title": "...", "subtitle": "...", "artworkURL": "https://..." }
-```
-Extracted from OpenGraph: `og:title` → title, `og:description` or `og:site_name` → subtitle, `og:image` → artworkURL.
-
-**New JS file:** `Public/Scripts/Catalogue/catalogue-new.js`
-
-Same pattern as other catalogue editor JS: on URL field `blur` / paste, call `/catalogue/new/metadata?url=...`, autofill title + subtitle if blank. Also show an artwork preview image (same pattern as other editors that preview artwork before save).
-
-On submit, include `artworkSourceURL` in the payload. The handler resolves the artwork via the existing `resolveArtwork` gallery pattern — `lookup(url)` first to avoid duplicate uploads, then `addFromURL` if not found — and sets `preview.$image.id`.
-
-This is a significant UX improvement and consistent with how all other catalogue editors handle artwork.
+`Public/Scripts/Catalogue/catalogue-new.js` autofills title/subtitle/artwork on URL field blur/change. Also shows an inline non-blocking hint if the user types a system type name (song, album, etc.) as a category.
 
 ---
 
-### Step 6 — User-defined category (parentType as a form field)
+### Step 6 — User-defined category ✓
 
-Instead of hardcoding `parentType = "link"`, let the user name their own categories — "cooking", "running", "inspiration", etc. This is the mechanism for zero-effort new types: no backend change required, the user just types a new category name.
+The `category` field is a free-text input in the form. Defaults to `"link"` if blank. Lowercased and trimmed before storage. The `<datalist>` autocomplete is populated from `listShallowCategories()` (all existing public categories).
 
-**Form field:** A text input labelled "Category" with `<datalist>` autocomplete populated from the user's existing shallow-item categories.
-
-**Getting existing categories:** The page context (`Page+CatalogueNew`) queries distinct `parentType` values from the user's shallow Previews (i.e. `parentID IS NULL`, `parentType NOT IN ('track')`). This list is passed to the ViewModel and rendered as `<datalist>` options on the form.
-
-**On submit:** The `parentType` is taken from the form input — lowercased, stripped of leading/trailing whitespace. If blank, default to `"link"`.
-
-**Validation:** Disallow `"track"` as a user-provided category (it's a reserved internal type). Otherwise accept any non-empty string.
+No reserved-string validation needed — `parentType` and `category` are separate columns, so no system type can collide with a user category.
 
 ---
 
-### Step 7 — Catalogue feed visibility (dynamic, not static)
+### Step 7 — Catalogue feed visibility ✓
 
 **File:** `Sources/App/Modules/Catalogue/Catalogue/Routes/CatalogueQueryMapper.swift`
 
-Because users define their own category names, we cannot maintain a static `catalogueTypes` set. Instead, change the query logic to:
+`init(shallowTypes: [String])` merges user categories into `allowedTypes`. All `to*Query(from:)` methods call `split(_:)` to separate the filtered set into:
+- `knownTypes` → filter on `parentType IN (...)` (model-backed items)
+- `categories` → filter on `parentType IS NULL AND category IN (...)` (user shallow items)
 
-- **Known types** (`"song"`, `"album"`, `"playlist"`, `"book"`, `"movie"`, `"podcast"`) — always included, hardcoded set
-- **Shallow items** — any Preview with `parentID IS NULL` and `parentType NOT IN ('track')` is always included
+Both are passed to `PreviewQueryInput`, `NoteQueryPayload`, `QuoteQueryPayload`. `Page+Catalogue` uses `Command.searchCatalogue(mapper:noteSearch:previewSearch:)` instead of inline search logic.
 
-This means the mapper uses two query clauses OR'd together:
-1. `parentType IN (known types) AND parentID IS NOT NULL`
-2. `parentID IS NULL AND parentType != 'track'`
-
-**Catalogue filter chips:** User-defined categories should appear as filter chips. When building the filter options, include distinct shallow `parentType` values from the user's Previews alongside the standard chips ("All", "Music", "Books", etc.). This requires a small query addition in the catalogue page context — fetch distinct shallow parentTypes for the current user and add them as filter options.
+Filter chips: standard chips + one per shallow category from `listShallowCategories()`.
 
 ---
 
-### Step 8 — Save this plan to the project
+### Step 8 — Shared `createNote` extraction ✓
 
-Copy this document to `tmbr-web/.claude/docs/plans/shallow-catalogue-items.md` as the durable project reference.
+**File:** `Sources/App/Modules/Notes/Routes/Web/Request+CreateNoteResponse.swift`
+
+Shared `Request` extension used by all 7 web controllers (Songs, Albums, Books, Movies, Podcasts, Playlists, Catalogue). Decodes `NotePayload`, creates note, renders `NoteItemContext`.
 
 ---
 
-## Files to Create
+### Step 9 — API counterparts ✓
+
+Added to `CatalogueAPIController`:
+
+| Route | Response |
+|---|---|
+| `GET /api/catalogue/item/:previewID` | `PreviewResponse` |
+| `POST /api/catalogue/item/:previewID/notes` | `NoteResponse` |
+| `POST /api/catalogue/new` | `PreviewResponse` |
+| `GET /api/catalogue/new/metadata?url=` | `CatalogueItemMetadataResponse` |
+
+---
+
+### Step 10 — `parentType`/`category` migration ✓
+
+**File:** `Sources/App/Modules/Previews/Models/Migrations/AddPreviewCategory.swift`
+
+- Makes `parent_type` nullable.
+- Adds `category VARCHAR` column.
+- Backfills: `UPDATE previews SET category = parent_type, parent_type = NULL WHERE parent_id IS NULL AND parent_type IS NOT NULL AND parent_type != 'track'`.
+
+---
+
+## Files Created
 
 | File | Purpose |
 |------|---------|
-| `Previews/Commands/Command/Command+CreatePreviewItem.swift` | New command for creating standalone orphan Previews |
-| `Previews/Routes/Web/Pages/Page+CatalogueNew.swift` | View model + Page for the creation form (includes existing-categories query for datalist autocomplete) |
-| `Resources/Views/Catalogue/catalogue-new.leaf` | Creation form template (URL, title, subtitle, category, access, artwork preview) |
-| `Public/Scripts/Catalogue/catalogue-new.js` | OpenGraph autofill + artwork preview JS |
+| `Previews/Commands/Command/Command+CreatePreviewItem.swift` | Creates standalone orphan Preview with `category` |
+| `Previews/Commands/Command/Command+ListShallowCategories.swift` | `SELECT DISTINCT category` for all public shallow items |
+| `Previews/Models/Migrations/AddPreviewCategory.swift` | Makes `parent_type` nullable, adds `category` column |
+| `Previews/Routes/Web/Pages/Page+CatalogueNew.swift` | ViewModel + Page for creation form |
+| `Resources/Views/Catalogue/catalogue-new.leaf` | Creation form template |
+| `Public/Scripts/Catalogue/catalogue-new.js` | OpenGraph autofill + artwork + category hint JS |
+| `Notes/Routes/Web/Request+CreateNoteResponse.swift` | Shared note creation helper for all web controllers |
 
-## Files to Modify
+## Files Modified
 
 | File | Change |
 |------|--------|
-| `Previews/Routes/Web/Pages/Page+CatalogueItem.swift` | Load notes, set `allowsNewNote` from auth |
-| `Previews/Routes/Web/PreviewsWebController.swift` | Add POST notes + GET/POST/metadata catalogue/new routes |
-| `Previews/Commands/Commands+Previews.swift` | Add `createPreviewItem` and `listCategories` to command collection |
-| `Catalogue/Catalogue/Routes/CatalogueQueryMapper.swift` | Replace static type set with two-clause query (known types + orphan Previews) |
-| `Catalogue/Catalogue/Routes/Web/CatalogueWebController.swift` (or Page+Catalogue.swift) | Include user's shallow categories in filter chip options |
+| `Previews/Models/Preview.swift` | `parentType: String?` (nullable), added `category: String?` |
+| `Previews/Commands/Commands+Previews.swift` | Added `create`, `listShallowCategories` (Void input) |
+| `Previews/Routes/Web/Pages/Page+CatalogueItem.swift` | Loads notes, sets `allowsNewNote` from auth |
+| `Previews/Routes/Web/PreviewsWebController.swift` | Payload types only; no routes |
+| `Previews/Routes/Web/PreviewViewModel.swift` | Handles nullable `parentType` |
+| `Previews/Routes/API/Responses/PreviewResponse.swift` | Handles nullable `parentType`, passes `category` |
+| `Catalogue/Catalogue/Routes/CatalogueQueryMapper.swift` | `init(shallowTypes:)` delegates, splits types/categories |
+| `Catalogue/Catalogue/Routes/Web/CatalogueWebController.swift` | All catalogue routes + handlers |
+| `Catalogue/Catalogue/Routes/Web/Pages/Page+Catalogue.swift` | Uses `searchCatalogue` command, category filter chips |
+| `Catalogue/Catalogue/Routes/API/CatalogueAPIController.swift` | Added item/notes/new API endpoints |
+| `Catalogue/Albums/Routes/Web/Pages/Page+Album.swift` | Handles nullable `parentType` in TrackViewModel |
+| `Notes/Payloads/NoteQueryPayload.swift` | Added `categories: Set<String>?` |
+| `Notes/Payloads/QuoteQueryPayload.swift` | Added `categories: Set<String>?` |
+| `Notes/Commands/Note/Command+SearchNote.swift` | Two-clause OR filter for types + categories |
+| `Notes/Commands/Quote/Command+ListQuotes.swift` | Two-clause OR filter |
+| `Notes/Commands/Quote/Command+SearchQuote.swift` | Two-clause OR filter |
+| `Notes/Commands/Quote/Command+RandomQuote.swift` | Two-clause OR filter |
+| `Previews/Commands/Command/Command+ListPreviews.swift` | Added `categories` to `PreviewQueryInput`, two-clause filter |
+| All 6 catalogue type web controllers | `createNote` delegates to `request.createNoteResponse(attachmentID:)` |
+| `tmbr-core/Responses/PreviewResponse.swift` | Added `category: String?` (backward-compatible) |
 
 ---
 
 ## Verification
 
-1. **Notes on existing shallow page** — Navigate to an album detail page, click an unpromoted track link (goes to `/catalogue/item/:uuid`), confirm the notes section is visible and a new note can be created and persists on refresh.
-
-2. **Compose flow** — Click the compose button → "URL from clipboard" → paste a URL (e.g. a YouTube link), fill in a title, submit → redirected to a new `/catalogue/item/:uuid` page with correct title and link.
-
-3. **Autofill** — On the `/catalogue/new` form, paste a URL with OpenGraph tags and confirm title/subtitle autofill.
-
-4. **Catalogue feed** — The newly created item appears in `/catalogue` and `/catalogue?type=link`.
-
-5. **Regression** — Existing catalogue types (songs, books, albums) still create and display notes without change.
+1. **Notes on shallow page** — Navigate to an album tracklist, tap an unpromoted track (`/catalogue/item/:uuid`), confirm notes section visible and a new note can be created and persists on refresh.
+2. **Compose flow** — Click compose → "URL from clipboard" → paste URL + title → redirected to new `/catalogue/item/:uuid` with correct title and link.
+3. **Autofill** — On `/catalogue/new`, paste a URL with OpenGraph tags and confirm title/subtitle/artwork autofill.
+4. **Category hint** — Type "song" as a category name → inline non-blocking warning appears.
+5. **Catalogue feed** — Newly created item appears in `/catalogue` and `/catalogue?type=link`.
+6. **Track placeholder isolation** — Album tracks do NOT appear as filter chips or standalone catalogue items.
+7. **User "track" category** — User can create `category = "track"` item; it appears in feed and does not interfere with album track promotion.
+8. **Global shallow categories** — Log in as User A, create item with category "recipes". Log in as User B — "recipes" chip appears in `/catalogue`.
+9. **API routes** — `POST /api/catalogue/new` creates item + returns `PreviewResponse`. `POST /api/catalogue/item/:uuid/notes` returns `NoteResponse`.
+10. **Notes regression** — Songs, books, albums still create and display notes without change.

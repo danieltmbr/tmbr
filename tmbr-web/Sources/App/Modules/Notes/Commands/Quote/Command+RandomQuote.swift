@@ -20,9 +20,25 @@ extension Command where Self == PlainCommand<QuoteQueryPayload, Quote> {
                         attachment.with(\.$image)
                     }
                 }
-                .filter(Preview.self, \.$parentType ~~? input.types)
                 .sort(.sql(unsafeRaw: "RANDOM()"))
-                .limit(1)
+            switch (input.types, input.categories) {
+            case (let types?, let cats?):
+                query.group(.or) { group in
+                    group.filter(Preview.self, \.$parentType ~~ types)
+                    group.group(.and) { inner in
+                        inner.filter(Preview.self, \.$parentType == nil)
+                        inner.filter(Preview.self, \.$category ~~ cats)
+                    }
+                }
+            case (let types?, nil):
+                query.filter(Preview.self, \.$parentType ~~ types)
+            case (nil, let cats?):
+                query.filter(Preview.self, \.$parentType == nil)
+                query.filter(Preview.self, \.$category ~~ cats)
+            case (nil, nil):
+                break
+            }
+            query.limit(1)
             try await permission.grant(query)
             guard let quote = try await query.first() else {
                 throw Abort(.notFound, reason: "No quote found")

@@ -23,6 +23,8 @@ public struct PreviewResponse: Codable, Sendable {
 
     public let source: Source
 
+    public let category: String?
+
     public let isNoteMatch: Bool
 
     public init(
@@ -31,6 +33,7 @@ public struct PreviewResponse: Codable, Sendable {
         image: ImageResponse?,
         resources: [String],
         source: Source,
+        category: String? = nil,
         isNoteMatch: Bool = false
     ) {
         self.primaryInfo = primaryInfo
@@ -38,6 +41,7 @@ public struct PreviewResponse: Codable, Sendable {
         self.image = image
         self.resources = resources
         self.source = source
+        self.category = category
         self.isNoteMatch = isNoteMatch
     }
 }

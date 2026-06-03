@@ -6,17 +6,21 @@ import Fluent
 import AuthKit
 
 struct PreviewQueryInput: Sendable {
-    
+
     let term: String?
-    
+
     let types: Set<String>?
+
+    let categories: Set<String>?
 
     init(
         term: String? = nil,
-        types: Set<String>? = nil
+        types: Set<String>? = nil,
+        categories: Set<String>? = nil
     ) {
         self.term = term
         self.types = types
+        self.categories = categories
     }
 }
 
@@ -29,9 +33,26 @@ extension Command where Self == PlainCommand<PreviewQueryInput, [Preview]> {
         PlainCommand { input in
             let query = Preview.query(on: database)
                 .with(\.$parentOwner)
-                .filter(\.$parentType ~~? input.types)
                 .sort(\.$createdAt, .descending)
                 .with(\.$image)
+
+            switch (input.types, input.categories) {
+            case (let types?, let cats?):
+                query.group(.or) { group in
+                    group.filter(\.$parentType ~~ types)
+                    group.group(.and) { inner in
+                        inner.filter(\.$parentType == nil)
+                        inner.filter(\.$category ~~ cats)
+                    }
+                }
+            case (let types?, nil):
+                query.filter(\.$parentType ~~ types)
+            case (nil, let cats?):
+                query.filter(\.$parentType == nil)
+                query.filter(\.$category ~~ cats)
+            case (nil, nil):
+                break
+            }
             if let term = input.term, !term.isEmpty {
                 query.group(.or) { group in
                     group.filter(\.$primaryInfo, .custom("ILIKE"), "%\(term)%")

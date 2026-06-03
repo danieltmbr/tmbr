@@ -52,9 +52,8 @@ extension Template where Model == CatalogueNewViewModel {
 extension Page {
     static var catalogueNew: Self {
         Page(template: .catalogueNew) { request in
-            let user = try request.auth.require(User.self)
-            let userID = try user.requireID()
-            let categories = (try? await request.commands.previews.listShallowCategories(userID)) ?? []
+            try request.auth.require(User.self)
+            let categories = (try? await request.commands.previews.listShallowCategories()) ?? []
             return CatalogueNewViewModel(categories: categories)
         }
     }

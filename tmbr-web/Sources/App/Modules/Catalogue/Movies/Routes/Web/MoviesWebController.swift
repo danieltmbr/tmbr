@@ -194,20 +194,9 @@ struct MoviesWebController: RouteCollection {
         guard let movieID = request.parameters.get("movieID", as: Int.self) else {
             return Response(status: .badRequest)
         }
-        guard let payload = try? request.content.decode(NotePayload.self) else {
-            return Response(status: .badRequest)
-        }
         do {
             let movie = try await request.commands.movies.fetch(movieID, for: .write)
-            let input = CreateNoteInput(
-                body: payload.body,
-                access: payload.access,
-                attachmentID: movie.$preview.id
-            )
-            let note = try await request.commands.notes.create(input)
-            let model = try NoteViewModel(note: note, isEditable: true)
-            let view = try await Template.noteItem.render(NoteItemContext(note: model), with: request.view)
-            return try await view.encodeResponse(for: request)
+            return try await request.createNoteResponse(attachmentID: movie.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }

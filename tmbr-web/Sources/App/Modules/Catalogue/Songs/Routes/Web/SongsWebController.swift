@@ -203,20 +203,9 @@ struct SongsWebController: RouteCollection {
         guard let songID = request.parameters.get("songID", as: Int.self) else {
             return Response(status: .badRequest)
         }
-        guard let payload = try? request.content.decode(NotePayload.self) else {
-            return Response(status: .badRequest)
-        }
         do {
             let song = try await request.commands.songs.fetch(songID, for: .write)
-            let input = CreateNoteInput(
-                body: payload.body,
-                access: payload.access,
-                attachmentID: song.$preview.id
-            )
-            let note = try await request.commands.notes.create(input)
-            let model = try NoteViewModel(note: note, isEditable: true)
-            let view = try await Template.noteItem.render(NoteItemContext(note: model), with: request.view)
-            return try await view.encodeResponse(for: request)
+            return try await request.createNoteResponse(attachmentID: song.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }
