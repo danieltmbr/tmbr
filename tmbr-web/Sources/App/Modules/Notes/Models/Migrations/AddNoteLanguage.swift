@@ -5,7 +5,7 @@ import SQLKit
 struct AddNoteLanguage: AsyncMigration {
     func prepare(on database: Database) async throws {
         guard let sqlDB = database as? SQLDatabase else { return }
-        try await sqlDB.raw("ALTER TABLE notes ADD COLUMN language TEXT NOT NULL DEFAULT 'en'").run()
+        try await sqlDB.raw("ALTER TABLE notes ADD COLUMN IF NOT EXISTS language TEXT NOT NULL DEFAULT 'en'").run()
     }
 
     func revert(on database: Database) async throws {
