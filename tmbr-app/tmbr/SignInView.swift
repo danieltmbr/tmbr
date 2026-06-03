@@ -1,13 +1,11 @@
 import SwiftUI
 import AuthenticationServices
 import CryptoKit
-import OSLog
-
-private let logger = Logger(subsystem: "me.tmbr", category: "auth")
 
 struct SignInView: View {
     @Environment(AuthState.self) private var authState
     @State private var currentNonce: String = ""
+    @State private var error: Error?
 
     var body: some View {
         VStack(spacing: 24) {
@@ -19,6 +17,11 @@ struct SignInView: View {
                 .frame(height: 50)
                 .padding(.horizontal, 40)
                 .padding(.bottom, 60)
+        }
+        .alert("Sign In Failed", isPresented: .constant(error != nil), presenting: error) { _ in
+            Button("OK") { error = nil }
+        } message: { err in
+            Text(err.localizedDescription)
         }
     }
 
@@ -37,13 +40,13 @@ struct SignInView: View {
                 do {
                     try await authState.signIn(authorization: authorization, nonce: nonce)
                 } catch {
-                    logger.error("Sign in failed: \(error)")
+                    self.error = error
                 }
             }
         case .failure(let err):
             let asErr = err as? ASAuthorizationError
             if asErr?.code == .canceled { return }
-            logger.error("Apple credential error: \(err)")
+            error = err
         }
     }
 

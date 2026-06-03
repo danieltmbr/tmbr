@@ -10,7 +10,7 @@ extension Command where Self == PlainCommand<Void, [Post]> {
         PlainCommand {
             try await Post.query(on: database)
                 .filter(\.$state == .published)
-                .sort(\.$createdAt, .descending)
+                .sort(\.$publishedAt, .descending)
                 .with(\.$author)
                 .all()
         }

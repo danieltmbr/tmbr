@@ -10,7 +10,7 @@ public actor AuthProvider {
 
     public init(
         token: String? = nil,
-        refresher: (@Sendable () async throws -> String)? = nil
+        refresher: @escaping @Sendable () async throws -> String
     ) {
         self.token = token
         self.refresher = refresher
@@ -20,8 +20,7 @@ public actor AuthProvider {
 
     public func refreshedToken() async throws -> String {
         if let task = refreshTask { return try await task.value }
-        guard let refresher else { throw RefreshError.noRefresher }
-        let task = Task { try await refresher() }
+        let task = Task { [refresher] in try await refresher() }
         refreshTask = task
         do {
             let fresh = try await task.value
@@ -36,9 +35,5 @@ public actor AuthProvider {
 
     public func set(_ token: String?) {
         self.token = token
-    }
-
-    public enum RefreshError: Error {
-        case noRefresher
     }
 }

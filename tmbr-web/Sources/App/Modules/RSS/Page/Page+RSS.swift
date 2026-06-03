@@ -11,7 +11,7 @@ extension Page {
         Page { request in
             let posts = try await Post.query(on: request.db)
                 .filter(\.$state == .published)
-                .sort(\.$createdAt, .descending)
+                .sort(\.$publishedAt, .descending)
                 .all()
             let model = RSSViewModel(
                 title: "tmbr",
@@ -22,7 +22,7 @@ extension Page {
                     return RSSViewModel.Post(
                         title: $0.title,
                         url: "https://tmbr.me/posts/\(id)",
-                        publishDate: $0.createdAt.formatted(.rfc822)
+                        publishDate: ($0.publishedAt ?? $0.createdAt).formatted(.rfc822)
                     )
                 }
             )
