@@ -6,7 +6,7 @@ struct AddPostPublishedAt: AsyncMigration {
     func prepare(on database: Database) async throws {
         guard let sqlDB = database as? SQLDatabase else { return }
 
-        try await sqlDB.raw("ALTER TABLE posts ADD COLUMN published_at TIMESTAMPTZ").run()
+        try await sqlDB.raw("ALTER TABLE posts ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ").run()
 
         try await sqlDB.raw("""
             UPDATE posts
