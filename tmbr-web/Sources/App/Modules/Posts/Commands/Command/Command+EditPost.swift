@@ -37,6 +37,9 @@ struct EditPostCommand: Command {
         post.title = payload.title
         post.content = payload.body ?? ""
         post.state = payload.state
+        if post.state == .published && post.publishedAt == nil {
+            post.publishedAt = .now
+        }
         try await post.save(on: database)
         notify(about: post)
         return post

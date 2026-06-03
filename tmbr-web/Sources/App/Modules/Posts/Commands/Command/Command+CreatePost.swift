@@ -40,6 +40,9 @@ struct CreatePostCommand: Command {
             state: payload.state,
             title: payload.title
         )
+        if post.state == .published {
+            post.publishedAt = .now
+        }
         try await post.save(on: database)
         notify(about: post)
         return post
