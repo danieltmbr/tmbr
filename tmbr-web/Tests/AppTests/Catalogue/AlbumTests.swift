@@ -167,6 +167,52 @@ struct AlbumTests {
         }
     }
 
+    @Test("POST /albums/:id/notes preserves submitted language")
+    func createNote_withNonDefaultLanguage_savesLanguage() async throws {
+        try await withAuthenticatedApp { app, headers in
+            var csrf = ""
+            try await app.testing().test(.GET, "/albums/new", headers: headers) { res async in
+                let body = res.body.string
+                if let range = body.range(of: "name=\"_csrf\" value=\"") {
+                    let start = body.index(range.upperBound, offsetBy: 0)
+                    let end = body[start...].firstIndex(of: "\"") ?? body.endIndex
+                    csrf = String(body[start..<end])
+                }
+            }
+            var albumLocation = ""
+            try await app.testing().test(
+                .POST, "/albums/new",
+                headers: headers,
+                beforeRequest: { req in
+                    struct AlbumForm: Content {
+                        let _csrf: String; let title: String; let artist: String; let access: String
+                    }
+                    try req.content.encode(AlbumForm(_csrf: csrf, title: "Test Album", artist: "Tester", access: "private"))
+                },
+                afterResponse: { res async in albumLocation = res.headers.first(name: "Location") ?? "" }
+            )
+            let albumID = albumLocation.components(separatedBy: "/").last ?? ""
+            #expect(!albumID.isEmpty)
+
+            struct NoteForm: Content {
+                let body: String; let access: String; let language: String
+            }
+            try await app.testing().test(
+                .POST, "/albums/\(albumID)/notes",
+                headers: headers,
+                beforeRequest: { req in
+                    try req.content.encode(NoteForm(body: "Teszt megjegyzés", access: "private", language: "hu"))
+                },
+                afterResponse: { res async in
+                    #expect(res.status == .ok)
+                }
+            )
+
+            let note = try await Note.query(on: app.db).first()
+            #expect(note?.language == .hu)
+        }
+    }
+
     @Test("GET /albums/:id detail page returns 200")
     func getAlbumDetail_returnsOK() async throws {
         try await withAuthenticatedApp { app, headers in

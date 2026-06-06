@@ -193,20 +193,9 @@ struct BooksWebController: RouteCollection {
         guard let bookID = request.parameters.get("bookID", as: Int.self) else {
             return Response(status: .badRequest)
         }
-        guard let payload = try? request.content.decode(NotePayload.self) else {
-            return Response(status: .badRequest)
-        }
         do {
             let book = try await request.commands.books.fetch(bookID, for: .write)
-            let input = CreateNoteInput(
-                body: payload.body,
-                access: payload.access,
-                attachmentID: book.$preview.id
-            )
-            let note = try await request.commands.notes.create(input)
-            let model = try NoteViewModel(note: note, isEditable: true)
-            let view = try await Template.noteItem.render(NoteItemContext(note: model), with: request.view)
-            return try await view.encodeResponse(for: request)
+            return try await NotesWebController.createNote(attachmentID: book.$preview.id, on: request)
         } catch {
             return Response(status: .unprocessableEntity)
         }

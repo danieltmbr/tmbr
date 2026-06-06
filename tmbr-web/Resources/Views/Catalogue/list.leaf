@@ -29,7 +29,6 @@
         #if(compose):
             #if(compose.directURL):#else:<script src="/Scripts/Shared/toolbar.js"></script>#endif
         #endif
-        #if(panels):<script src="/Scripts/Shared/filter.js"></script>#endif
         <script src="/Scripts/Shared/search.js"></script>
         <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
     #endexport
