@@ -23,10 +23,12 @@ struct Notifications: Module {
     }
     
     func configure(_ app: Vapor.Application) async throws {
-        await app.storage.setWithAsyncShutdown(
-            ServiceKey.self,
-            to: try NotificationService(app: app)
-        )
+        do {
+            let service = try NotificationService(app: app)
+            await app.storage.setWithAsyncShutdown(ServiceKey.self, to: service)
+        } catch {
+            app.logger.warning("Push notifications disabled: \(error)")
+        }
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)
     }

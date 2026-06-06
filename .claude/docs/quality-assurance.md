@@ -1,5 +1,23 @@
 # Quality Assurance
 
+## CI Pipeline
+
+Tests run automatically via GitHub Actions on every PR and push to `main` (`.github/workflows/ci.yml`).
+
+| Job | Runner | What it runs |
+|-----|--------|-------------|
+| `backend-tests` | ubuntu-latest + Postgres 17 | `swift test` in `tmbr-web/` — all AppTests and CoreTests |
+| `api-kit-tests` | macos-15 + Xcode 16.2 | `swift test --package-path api-kit` |
+| `e2e-tests` | ubuntu-latest + Postgres 17 | Playwright against a live server booted with `--env testing` |
+
+**E2E session in CI:** The server boots in `.testing` mode, which registers `POST /__test/login`. The workflow POSTs `{}` to create a fresh test user, extracts the `vapor_session` cookie from the response, and passes it to Playwright via `E2E_SESSION_COOKIE`. No Apple Sign In credentials are needed.
+
+**No secrets required** — the server gracefully skips Apple JWT setup when `SIWA_APP_ID` is absent.
+
+When a job fails: check the Actions tab on the PR. For E2E failures, download the `playwright-report` artifact (uploaded on failure) for screenshots and traces.
+
+---
+
 ## Scope
 
 | Package | Priority | Current state |
