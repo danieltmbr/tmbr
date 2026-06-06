@@ -29,6 +29,22 @@ struct NotificationsAPIController: RouteCollection {
             return .created
         }
         
+        // PATCH /api/notifications/web-push/subscription
+        webPushRoute.patch("subscription") { req async throws -> HTTPStatus in
+            struct LanguageUpdate: Content {
+                let endpoint: String
+                let languages: [String]
+            }
+            let update = try req.content.decode(LanguageUpdate.self)
+            if let sub = try await WebPushSubscription.query(on: req.db)
+                .filter(\.$endpoint == update.endpoint)
+                .first() {
+                sub.languages = update.languages.joined(separator: "|")
+                try await sub.save(on: req.db)
+            }
+            return .ok
+        }
+
         // DELETE /api/notifications/web-push/subscription
         webPushRoute.delete("subscription") { req async throws -> HTTPStatus in
             let subscription = try req.content.decode(WebPushSubscription.self)
@@ -55,10 +71,12 @@ struct NotificationsAPIController: RouteCollection {
             }
             Task.detached {
                 let notificationService = req.application.notificationService
-                try await notificationService?.notify(
-                    subscriptions: WebPushSubscription.query(on: req.db).all(),
-                    content: PushNotification(post: post)
-                )
+                let allSubs = try await WebPushSubscription.query(on: req.db).all()
+                let postLang = post.language.rawValue
+                let subs = allSubs.filter {
+                    $0.languages.isEmpty || $0.languages.split(separator: "|").contains(Substring(postLang))
+                }
+                try await notificationService?.notify(subscriptions: subs, content: PushNotification(post: post))
             }
             return .ok
         }

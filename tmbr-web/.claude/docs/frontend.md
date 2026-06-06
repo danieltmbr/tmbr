@@ -279,3 +279,23 @@ Concretely: a reusable component (e.g. an interactive widget) that needs its own
 A component-oriented system (React, Vue, SwiftUI-style) solves this naturally — each component declares its own dependencies and they are deduplicated at render time. Leaf has no equivalent.
 
 **Practical consequence:** When adding a new reusable partial that needs JS, the parent page template must manually include the partial's scripts. This is enforced by the pattern in the Note Editing section above — it exists because Leaf cannot do it automatically.
+
+### 3. No parameterised component partials
+
+**Where it hit:** Language picker component reused across post editor, catalogue editor notes, and catalogue detail note editing.
+
+A language picker (`<select>` with globe icon) is visually identical in every context, but the `name` attribute and the context variable path for the pre-selected value differ:
+
+| Location | `name` | selected-state variable |
+|---|---|---|
+| `post-editor.leaf` | `"language"` | `#(language)` |
+| `notes-editor.leaf` loop | `"notes[#(index)][language]"` | `#(note.language)` |
+| `note-item.leaf` | none (JS-driven) | `#(note.editDetails.language)` |
+
+Leaf has no parameterised include/component mechanism. `#extend` is for layout inheritance — the extended template does not receive arguments, only the full rendering context of the calling template. `#import`/`#export` are for named block slots between layout and child, not for passing values down into a partial. There is no `#set` to shadow a variable name before including a partial.
+
+The only partial that can be cleanly extracted is the static option list (`Shared/language-options.leaf`, two `<option>` lines) because it carries no context-dependent `selected` attribute. Each call site still duplicates the `<label>`, `<select name="...">`, and `#if(...):selected#endif` lines.
+
+**Workaround:** Normalise variable names on the view model so every partial use-site exposes the same key. This works where the partial is included at the top level but breaks inside `#for` loops, where the loop variable path (`note.language`) cannot be renamed to a top-level `language` key without preprocessing the collection on the server.
+
+A component-oriented templating system would accept parameters at inclusion time and render the same template with different bindings. Leaf has no equivalent.

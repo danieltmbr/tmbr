@@ -82,9 +82,11 @@ class NotesController {
             .map(wrapper => {
                 const textarea = wrapper.querySelector('textarea.note-body');
                 const checkbox = wrapper.querySelector('.note-access input[type="checkbox"]');
+                const langSelect = wrapper.querySelector('.language-picker select');
                 const body = textarea ? textarea.value.trim() : '';
                 const access = checkbox && checkbox.checked ? 'public' : 'private';
-                return { body, access };
+                const language = langSelect?.value ?? 'en';
+                return { body, access, language };
             })
             .filter(note => note.body.length > 0);
     }
@@ -108,6 +110,7 @@ class NotesController {
             }
             const textarea = wrapper.querySelector('textarea.note-body');
             const checkbox = wrapper.querySelector('.note-access input[type="checkbox"]');
+            const langSelect = wrapper.querySelector('.language-picker select');
             if (textarea && !textarea.value) {
                 textarea.value = typeof note === 'string' ? note : (note.body || '');
             }
@@ -116,6 +119,9 @@ class NotesController {
                 if (typeof note === 'object' && note.access) {
                     checkbox.checked = note.access === 'public' && isPublic;
                 }
+            }
+            if (langSelect && typeof note === 'object' && note.language) {
+                langSelect.value = note.language;
             }
         });
         const hasEmpty = this.getWrappers().some(w => {

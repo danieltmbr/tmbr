@@ -14,9 +14,9 @@ struct EditNoteInput: Sendable {
 
     let body: String
 
-    let language: Language
+    let language: Language?
 
-    init(id: NoteID, access: Access, body: String, language: Language = .en) {
+    init(id: NoteID, access: Access, body: String, language: Language? = nil) {
         self.id = id
         self.access = access
         self.body = body
@@ -53,7 +53,7 @@ struct EditNoteCommand: Command {
         try input.validate()
         note.body = input.body
         note.access = input.access && note.attachment.parentAccess
-        note.language = input.language
+        note.language = input.language ?? note.language
         try await note.save(on: database)
         return note
     }
@@ -82,7 +82,7 @@ extension CommandResolver where Input == EditNoteInput {
             id: noteID,
             access: payload.access,
             body: payload.body,
-            language: payload.language ?? .en
+            language: payload.language
         )
         return try await self.callAsFunction(input)
     }

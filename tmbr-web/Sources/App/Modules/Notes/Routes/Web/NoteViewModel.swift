@@ -8,6 +8,7 @@ struct NoteViewModel: Encodable, Sendable {
     struct EditDetails: Encodable, Sendable {
         let rawBody: String
         let access: String
+        let language: String
     }
 
     private let id: NoteID
@@ -44,7 +45,7 @@ struct NoteViewModel: Encodable, Sendable {
             id: try note.requireID(),
             body: formatter.format(note.body),
             created: (note.createdAt ?? .now).formatted(.publishDate),
-            editDetails: isEditable ? EditDetails(rawBody: note.body, access: note.access.rawValue) : nil,
+            editDetails: isEditable ? EditDetails(rawBody: note.body, access: note.access.rawValue, language: note.language.rawValue) : nil,
             error: error
         )
     }

@@ -84,6 +84,15 @@ class FilterController {
         });
         if ('globalPanel' in this.panel.dataset) {
             document.cookie = `lang_pref=${checked.join('|')}; max-age=${365 * 24 * 60 * 60}; path=/; SameSite=Lax`;
+            const endpoint = localStorage.getItem('pushEndpoint');
+            if (endpoint) {
+                fetch('/api/notifications/web-push/subscription', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ endpoint, languages: checked }),
+                    keepalive: true
+                });
+            }
             window.location.reload();
             return;
         }

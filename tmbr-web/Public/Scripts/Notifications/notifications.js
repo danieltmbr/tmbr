@@ -49,11 +49,14 @@ async function subscribeUser(service) {
             userVisibleOnly: true,
             applicationServerKey: applicationServerKey
         });
+        const langCookie = document.cookie.split(';').find(c => c.trim().startsWith('lang_pref='));
+        const languages = langCookie ? (langCookie.split('=')[1] || '').split('|').filter(Boolean) : [];
         await fetch('/api/notifications/web-push/subscription', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(subscription)
+            body: JSON.stringify({ ...subscription.toJSON(), languages })
         });
+        localStorage.setItem('pushEndpoint', subscription.endpoint);
         return subscription;
     } catch (error) {
         console.error('Subscription failed:', error);
@@ -68,6 +71,7 @@ async function unsubscribeUser(service, subscription) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(subscription)
     });
+    localStorage.removeItem('pushEndpoint');
     return subscription.unsubscribe();
 }
 
@@ -109,11 +113,16 @@ function updateNotificationToggle(isSubscribed) {
 async function initialiseNotificationToggle() {
     const notificationToggle = document.getElementById('notification-toggle');
     const push = await checkPushSubscription();
-    
+
     if (!push.service) {
         notificationToggle.role = '';
         notificationToggle.href = '/notifications';
     } else {
+        if (push.subscription) {
+            localStorage.setItem('pushEndpoint', push.subscription.endpoint);
+        } else {
+            localStorage.removeItem('pushEndpoint');
+        }
         const handler = async event => {
           event.preventDefault();
           event.stopPropagation();
