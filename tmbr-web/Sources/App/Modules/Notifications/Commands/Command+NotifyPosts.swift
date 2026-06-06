@@ -15,10 +15,12 @@ extension Command where Self == PlainCommand<Post, Void> {
     ) -> Self {
         PlainCommand { post in
             try await permission.grant(post)
-            try await service?.notify(
-                subscriptions: WebPushSubscription.query(on: database).all(),
-                content: PushNotification(post: post)
-            )
+            let allSubs = try await WebPushSubscription.query(on: database).all()
+            let postLang = post.language.rawValue
+            let subs = allSubs.filter {
+                $0.languages.isEmpty || $0.languages.split(separator: "|").contains(Substring(postLang))
+            }
+            try await service?.notify(subscriptions: subs, content: PushNotification(post: post))
         }
     }
 }

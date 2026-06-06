@@ -8,6 +8,7 @@ struct MusicEditorViewModel: Encodable, Sendable {
         let id: String?
         let body: String
         let access: String
+        let language: String
     }
 
     

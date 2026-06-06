@@ -14,6 +14,13 @@
                        #if(note.editDetails.access == "public"):checked#endif/>
                 Public
             </label>
+            <label class="language-picker">
+                #extend("Icons/globe")
+                <select class="note-language-select">
+                    <option value="en" #if(note.editDetails.language == "en"):selected#endif>en</option>
+                    <option value="hu" #if(note.editDetails.language == "hu"):selected#endif>hu</option>
+                </select>
+            </label>
         </div>
     </div>
     <button type="button" class="icon" aria-label="Edit note">#extend("Icons/pencil")</button>

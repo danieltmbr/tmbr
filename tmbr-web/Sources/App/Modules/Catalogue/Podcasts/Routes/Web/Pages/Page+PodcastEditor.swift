@@ -11,6 +11,7 @@ struct PodcastEditorViewModel: Encodable, Sendable {
         let id: String?
         let body: String
         let access: Access
+        let language: Language
     }
 
     private let artworkAspect: String = ""
@@ -111,7 +112,7 @@ struct PodcastEditorViewModel: Encodable, Sendable {
             episodeNumber: podcast.episodeNumber.map(String.init) ?? "",
             episodeTitle: podcast.episodeTitle,
             genre: podcast.genre ?? "",
-            notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access) },
+            notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) },
             releaseDate: podcast.releaseDate?.formatted(.releaseDate) ?? "",
             resourceURLs: podcast.resourceURLs,
             seasonNumber: podcast.seasonNumber.map(String.init) ?? "",

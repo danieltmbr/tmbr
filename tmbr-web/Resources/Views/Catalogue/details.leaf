@@ -30,6 +30,12 @@
                             <input type="checkbox" class="note-access-toggle" value="public" />
                             Public
                         </label>
+                        <label class="language-picker">
+                            #extend("Icons/globe")
+                            <select class="note-language-select">
+                                #extend("Shared/language-options")
+                            </select>
+                        </label>
                     </div>
                 </div>
                 #endif

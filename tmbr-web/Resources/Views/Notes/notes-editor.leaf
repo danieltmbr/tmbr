@@ -22,6 +22,13 @@
                         #if(note.access == "public"):checked#endif/>
                     Public
                 </label>
+                <label class="language-picker">
+                    #extend("Icons/globe")
+                    <select name="notes[#(index)][language]">
+                        <option value="en" #if(note.language == "en"):selected#endif>en</option>
+                        <option value="hu" #if(note.language == "hu"):selected#endif>hu</option>
+                    </select>
+                </label>
                 <button type="button" class="note-toggle icon" aria-label="Delete note">
                     #extend("Icons/trash")
                     #extend("Icons/recycle")
@@ -43,6 +50,12 @@
                 <label class="note-access">
                     <input type="checkbox" name="notes[0][access]" value="public" />
                     Public
+                </label>
+                <label class="language-picker">
+                    #extend("Icons/globe")
+                    <select name="notes[0][language]">
+                        #extend("Shared/language-options")
+                    </select>
                 </label>
             </div>
         </div>

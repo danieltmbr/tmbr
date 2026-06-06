@@ -11,6 +11,7 @@ struct MovieEditorViewModel: Encodable, Sendable {
         let id: String?
         let body: String
         let access: Access
+        let language: Language
     }
 
     private let id: Int?
@@ -100,7 +101,7 @@ struct MovieEditorViewModel: Encodable, Sendable {
             coverSourceURL: nil,
             coverThumbnailURL: coverThumbnailURL,
             genre: movie.genre ?? "",
-            notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access) },
+            notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) },
             releaseDate: movie.releaseDate?.formatted(.releaseDate) ?? "",
             resourceURLs: movie.resourceURLs,
             submit: Form.Submit(

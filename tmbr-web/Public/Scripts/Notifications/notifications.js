@@ -49,10 +49,12 @@ async function subscribeUser(service) {
             userVisibleOnly: true,
             applicationServerKey: applicationServerKey
         });
+        const langCookie = document.cookie.split(';').find(c => c.trim().startsWith('lang_pref='));
+        const languages = langCookie ? (langCookie.split('=')[1] || '').split('|').filter(Boolean) : [];
         await fetch('/api/notifications/web-push/subscription', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(subscription)
+            body: JSON.stringify({ ...subscription.toJSON(), languages })
         });
         return subscription;
     } catch (error) {

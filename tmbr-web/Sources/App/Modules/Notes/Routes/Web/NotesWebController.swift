@@ -32,7 +32,8 @@ struct NotesWebController: RouteCollection {
                 created: "",
                 editDetails: NoteViewModel.EditDetails(
                     rawBody: payload.body,
-                    access: payload.access.rawValue
+                    access: payload.access.rawValue,
+                    language: (payload.language ?? .en).rawValue
                 ),
                 error: errorMessage
             )

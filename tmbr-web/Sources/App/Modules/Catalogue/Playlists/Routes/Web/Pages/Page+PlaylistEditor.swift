@@ -11,6 +11,7 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
         let id: String?
         let body: String
         let access: Access
+        let language: Language
     }
 
     private let artworkAspect: String = ""
@@ -93,7 +94,7 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
             artworkSourceURL: nil,
             artworkThumbnailURL: artworkThumbnailURL,
             description: playlist.description ?? "",
-            notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access) },
+            notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) },
             resourceURLs: playlist.resourceURLs,
             submit: Form.Submit(
                 action: "/playlists/\(id)",

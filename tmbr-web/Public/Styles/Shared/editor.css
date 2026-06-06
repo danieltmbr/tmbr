@@ -375,7 +375,7 @@ form section > header {
 }
 
 .note-wrapper textarea.note-body {
-    padding-right: 108px;
+    padding-right: 152px;
 }
 
 .note-wrapper:hover textarea.note-body {
@@ -406,6 +406,37 @@ form section > header {
 .note-access:has(input[disabled]) {
     opacity: 0.4;
     pointer-events: none;
+}
+
+.language-picker {
+    background: color-mix(in srgb, Canvas 90%, transparent);
+    padding: 2px 6px 2px 4px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 1.2rem;
+    font-family: system-ui, -apple-system, Helvetica, sans-serif;
+    cursor: pointer;
+}
+
+.language-picker > svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.language-picker > select {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
 }
 
 .note-toggle {

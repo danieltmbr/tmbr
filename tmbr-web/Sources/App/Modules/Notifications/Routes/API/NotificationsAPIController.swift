@@ -55,10 +55,12 @@ struct NotificationsAPIController: RouteCollection {
             }
             Task.detached {
                 let notificationService = req.application.notificationService
-                try await notificationService?.notify(
-                    subscriptions: WebPushSubscription.query(on: req.db).all(),
-                    content: PushNotification(post: post)
-                )
+                let allSubs = try await WebPushSubscription.query(on: req.db).all()
+                let postLang = post.language.rawValue
+                let subs = allSubs.filter {
+                    $0.languages.isEmpty || $0.languages.split(separator: "|").contains(Substring(postLang))
+                }
+                try await notificationService?.notify(subscriptions: subs, content: PushNotification(post: post))
             }
             return .ok
         }
