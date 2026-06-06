@@ -2,7 +2,144 @@
 
 ---
 
-## Context
+## Revised Implementation (v2 — `CatalogueCategory` table)
+
+> The original plan below describes the first attempt. This section documents what was actually built and why the approach changed.
+
+### Why the first attempt was scrapped
+
+The v1 approach encoded the "type" of a Preview in two separate columns:
+
+| Column | Owner | Purpose |
+|--------|-------|---------|
+| `parent_type VARCHAR NOT NULL` | System | Identifies the backing model (song, album, track, …) |
+| `category VARCHAR` | User | User-defined orphan type (recipe, guide, link, …) |
+
+This worked correctly but the split propagated complexity everywhere it was consumed:
+- Every query command (`listPreviews`, `searchNote`, `listQuotes`, `randomQuote`, `searchQuote`) needed a `switch (types, categories)` clause that produced OR-grouped SQL.
+- `NoteQueryPayload` and `QuoteQueryPayload` both carried `types: Set<String>?` AND `categories: Set<String>?`.
+- `CatalogueQueryMapper` had a `split()` function that separated user-selected filter slugs into "known types" (filter by `parentType`) vs. "user categories" (filter by `category`).
+- Filter chips required combining a compile-time-hardcoded set of known types with a runtime `SELECT DISTINCT category` query.
+
+The root cause: two different columns encoding the same concept ("what kind of thing is this Preview?").
+
+### The v2 design: `catalogue_categories` table
+
+A single `catalogue_categories` table is the source of truth for every kind of Preview entity. All types — system model-backed, promotable track placeholders, and user-defined orphan types — live in one place.
+
+```
+catalogue_categories
+├── id       UUID  PK
+├── slug     VARCHAR  UNIQUE  -- normalized key (lowercase, trimmed, spaces collapsed)
+├── name     VARCHAR          -- display value (original user casing, e.g. "Guided Run")
+└── kind     VARCHAR          -- 'catalogue' | 'promotable' | 'orphan'
+```
+
+| `kind` | Examples | Appears in feed? | Appears as filter chip? |
+|--------|----------|-----------------|------------------------|
+| `catalogue` | song, album, book, movie, playlist, podcast | Yes (when `parentID != nil`) | Yes |
+| `promotable` | track | No (until promoted to a song) | No |
+| `orphan` | recipe, guide, link, … | Yes | Yes |
+
+`Preview` now holds a single FK instead of two string columns:
+
+```
+previews
+├── category_id  UUID  FK → catalogue_categories(id)   -- replaces parent_type + category
+└── parent_id    INT?                                  -- still present; nil for orphans + track placeholders
+```
+
+### Slug vs. name
+
+`slug` is the normalized deduplication key: lowercased, trimmed, internal runs of whitespace collapsed. `name` preserves the author's original casing for display ("Guided Run", not "guided run"). Upsert always matches on `slug`, so two users typing "Guided Run" and "guided run" resolve to the same row.
+
+System categories are seeded with capitalised names (Song, Album, Book, Movie, Playlist, Podcast, Track) during the `CreateCatalogueCategories` migration.
+
+### Query simplification
+
+With a single FK, every type filter becomes one clause:
+
+```swift
+// Before (v1) — required switch on (types, categories) to produce OR-grouped SQL
+switch (input.types, input.categories) {
+case (let types?, let cats?):
+    query.group(.or) { ... }
+...
+}
+
+// After (v2) — one filter regardless of whether IDs are system types or orphan types
+if let categoryIDs = input.categoryIDs {
+    query.filter(\.$catalogueCategory.$id ~~ categoryIDs)
+}
+```
+
+`NoteQueryPayload`, `QuoteQueryPayload`, and `PreviewQueryInput` all collapsed from two optional sets to one: `categoryIDs: Set<UUID>?`.
+
+`CatalogueQueryMapper` lost `split()` entirely. It now resolves user-selected slug strings (from URL params) to UUIDs via `selectedCategoryIDs(from:)`, handling virtual type expansion ("music" → {album, playlist, song}) the same as before.
+
+### Filter chips
+
+```swift
+// Before (v1)
+let shallowCategories = try await req.commands.previews.listShallowCategories()  // SELECT DISTINCT
+let mapper = CatalogueQueryMapper(shallowTypes: shallowCategories)
+let chips = [FilterItemViewModel].catalogue + shallowCategories.map { ... }      // combined static + dynamic
+
+// After (v2)
+let allCategories = try await req.commands.catalogueCategories.list()  // WHERE kind != 'promotable'
+let mapper = CatalogueQueryMapper(categories: allCategories)
+let chips = allCategories.map { FilterItemViewModel(icon: ..., label: cat.name, value: cat.slug) }
+```
+
+One query. No static list to maintain. No joining of compile-time and runtime data.
+
+### Orphan creation
+
+When a user creates a shallow item with a new category name, `CreatePreviewItemCommand` upserts into `catalogue_categories`:
+
+```swift
+let slug = name.lowercased().components(separatedBy: .whitespaces).filter { !$0.isEmpty }.joined(separator: " ")
+if let existing = try await CatalogueCategory.query(on: db).filter(\.$slug == slug).first() {
+    category = existing
+} else {
+    category = CatalogueCategory(slug: slug, name: name, kind: .orphan)
+    try await category.create(on: db)
+}
+preview.$catalogueCategory.id = category.id!
+```
+
+The category row is created on first use, no separate admin step required.
+
+### Adoption (model-backed types)
+
+`PreviewModelMiddleware` now looks up the `CatalogueCategory` row by slug before setting the FK:
+
+```swift
+let category = try await CatalogueCategory.query(on: db).filter(\.$slug == M.previewType).first()!
+preview.adopt(parentID: ..., categoryID: category.id!, ...)
+```
+
+One extra DB read per model creation — acceptable since it's not a hot path and these category rows are always in the PostgreSQL buffer cache.
+
+### Migration path
+
+The v1 migration `AddPreviewCategory.swift` was removed (it was only on the feature branch). It is replaced by two migrations registered in `Previews.swift`:
+
+1. **`CreateCatalogueCategories`** — creates the table and seeds the 7 system rows.
+2. **`MigratePreviewToCategoryID`** — adds `category_id` FK to `previews`, backfills from `parent_type`, drops `parent_type` and `category`.
+
+**Dev note:** Anyone who ran `AddPreviewCategory` locally must revert first:
+```bash
+cd tmbr-web && swift run Backend revert
+```
+
+### Virtual types
+
+The `"music"` virtual filter (which expands to album + playlist + song) remains hardcoded in `CatalogueQueryMapper`. Adding it to the DB would require a membership relationship (join table or array column) just to know what a virtual type expands to — significant schema weight for a UI shortcut that is 3 lines of code. Revisit if the set of virtual groups grows.
+
+---
+
+## Context (original v1 plan)
 
 The Preview model is a polymorphic proxy used by every catalogue item. PR #153 made `parentID` nullable, which opened a new capability: a Preview with `parentType = "track"` and `parentID = nil` is an "orphan" — it has a title, secondary info, and external links, but no backing database model. Music tracks use this for the album tracklist, where an orphan is auto-promoted to a Song when the user taps it.
 
