@@ -9,23 +9,19 @@ struct PreviewQueryInput: Sendable {
 
     let term: String?
 
-    let types: Set<String>?
-
-    let categories: Set<String>?
+    let categoryIDs: Set<UUID>?
 
     init(
         term: String? = nil,
-        types: Set<String>? = nil,
-        categories: Set<String>? = nil
+        categoryIDs: Set<UUID>? = nil
     ) {
         self.term = term
-        self.types = types
-        self.categories = categories
+        self.categoryIDs = categoryIDs
     }
 }
 
 extension Command where Self == PlainCommand<PreviewQueryInput, [Preview]> {
-    
+
     static func listPreviews(
         database: Database,
         permission: BasePermissionResolver<QueryBuilder<Preview>>
@@ -35,23 +31,10 @@ extension Command where Self == PlainCommand<PreviewQueryInput, [Preview]> {
                 .with(\.$parentOwner)
                 .sort(\.$createdAt, .descending)
                 .with(\.$image)
+                .with(\.$catalogueCategory)
 
-            switch (input.types, input.categories) {
-            case (let types?, let cats?):
-                query.group(.or) { group in
-                    group.filter(\.$parentType ~~ types)
-                    group.group(.and) { inner in
-                        inner.filter(\.$parentType == nil)
-                        inner.filter(\.$category ~~ cats)
-                    }
-                }
-            case (let types?, nil):
-                query.filter(\.$parentType ~~ types)
-            case (nil, let cats?):
-                query.filter(\.$parentType == nil)
-                query.filter(\.$category ~~ cats)
-            case (nil, nil):
-                break
+            if let categoryIDs = input.categoryIDs {
+                query.filter(\.$catalogueCategory.$id ~~ categoryIDs)
             }
             if let term = input.term, !term.isEmpty {
                 query.group(.or) { group in
@@ -66,7 +49,7 @@ extension Command where Self == PlainCommand<PreviewQueryInput, [Preview]> {
 }
 
 extension CommandFactory<PreviewQueryInput, [Preview]> {
-    
+
     static var listPreviews: Self {
         CommandFactory { request in
             .listPreviews(

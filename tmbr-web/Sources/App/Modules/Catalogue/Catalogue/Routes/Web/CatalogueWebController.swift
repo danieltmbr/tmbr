@@ -62,9 +62,6 @@ struct CatalogueWebController: RouteCollection {
             let user = try request.auth.require(User.self)
             let userID = try user.requireID()
 
-            let rawCategory = payload.category.trimmingCharacters(in: .whitespaces).lowercased()
-            let category = rawCategory.isEmpty ? "link" : rawCategory
-
             let artworkID = try await resolveArtwork(payload: payload, title: payload.title, on: request)
 
             let preview = try await request.commands.transaction { commands in
@@ -81,7 +78,7 @@ struct CatalogueWebController: RouteCollection {
                             let u = payload.url?.trimmingCharacters(in: .whitespaces) ?? ""
                             return u.isEmpty ? nil : u
                         }(),
-                        category: category,
+                        categoryName: payload.category,
                         ownerID: userID
                     )
                 )
@@ -128,7 +125,7 @@ struct CatalogueWebController: RouteCollection {
     }
 
     private func renderNewWithError(_ request: Request, payload: CatalogueNewPayload?, error: String) async throws -> Response {
-        let categories = (try? await request.commands.previews.listShallowCategories()) ?? []
+        let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
         let noteViewModels = (payload?.notes ?? []).map {
             CatalogueNewViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access)
         }

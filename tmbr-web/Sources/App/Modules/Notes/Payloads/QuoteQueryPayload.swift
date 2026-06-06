@@ -4,13 +4,10 @@ struct QuoteQueryPayload: Decodable, Sendable {
 
     let term: String?
 
-    let types: Set<String>?
+    let categoryIDs: Set<UUID>?
 
-    let categories: Set<String>?
-
-    init(term: String? = nil, types: Set<String>? = nil, categories: Set<String>? = nil) {
+    init(term: String? = nil, categoryIDs: Set<UUID>? = nil) {
         self.term = term
-        self.types = types
-        self.categories = categories
+        self.categoryIDs = categoryIDs
     }
 }

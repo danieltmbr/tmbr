@@ -40,6 +40,12 @@ final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
         on db: any Database,
         next: any AnyAsyncModelResponder
     ) async throws {
+        let catalogueCategory = try await CatalogueCategory.query(on: db)
+            .filter(\.$slug == M.previewType)
+            .first()
+        guard let categoryID = catalogueCategory?.id else {
+            throw Abort(.internalServerError, reason: "No CatalogueCategory found for type '\(M.previewType)'")
+        }
         if let adoptingID = previewID(model) {
             try attach(adoptingID, model)
             try await next.create(model, on: db)
@@ -48,7 +54,7 @@ final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
             }
             preview.adopt(
                 parentID: try model.requireID(),
-                parentType: M.previewType,
+                categoryID: categoryID,
                 parentAccess: model.access,
                 parentOwner: model.ownerID
             )
@@ -63,7 +69,7 @@ final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {
                 parentID: try model.requireID(),
                 parentAccess: model.access,
                 parentOwner: model.ownerID,
-                parentType: M.previewType
+                categoryID: categoryID
             )
             try configure(&preview, model)
             try await preview.save(on: db)

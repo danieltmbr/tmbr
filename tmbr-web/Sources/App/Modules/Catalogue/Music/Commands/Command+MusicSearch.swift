@@ -1,5 +1,6 @@
 import Foundation
 import Core
+import Fluent
 
 struct MusicSearchResult: Sendable {
     let previews: [Preview]
@@ -9,14 +10,23 @@ struct MusicSearchResult: Sendable {
 extension Command where Self == PlainCommand<CatalogueQueryPayload, MusicSearchResult> {
 
     static func searchMusic(
+        database: Database,
         noteSearch: CommandResolver<NoteQueryPayload, [Note]>,
         previewSearch: CommandResolver<PreviewQueryInput, [Preview]>
     ) -> Self {
         PlainCommand { payload in
-            let allMusicTypes: Set<String> = [Album.previewType, Playlist.previewType, Song.previewType]
-            let musicTypes = payload.types.map { allMusicTypes.intersection($0) } ?? allMusicTypes
-            let previewInput = PreviewQueryInput(term: payload.term, types: musicTypes)
-            let noteInput = NoteQueryPayload(term: payload.term, types: musicTypes)
+            let allMusicSlugs: Set<String> = [Album.previewType, Playlist.previewType, Song.previewType]
+            let requestedSlugs = payload.types.map { allMusicSlugs.intersection($0) } ?? allMusicSlugs
+
+            let categoryIDs = Set(
+                try await CatalogueCategory.query(on: database)
+                    .filter(\.$slug ~~ requestedSlugs)
+                    .all()
+                    .compactMap(\.id)
+            )
+
+            let previewInput = PreviewQueryInput(term: payload.term, categoryIDs: categoryIDs)
+            let noteInput = NoteQueryPayload(term: payload.term, categoryIDs: categoryIDs)
 
             async let previewsTask = previewSearch(previewInput)
             async let notesTask = noteSearch(noteInput)
@@ -40,6 +50,7 @@ extension CommandFactory<CatalogueQueryPayload, MusicSearchResult> {
     static var searchMusic: Self {
         CommandFactory { request in
             .searchMusic(
+                database: request.commandDB,
                 noteSearch: request.commands.notes.search,
                 previewSearch: request.commands.previews.list
             )

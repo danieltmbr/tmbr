@@ -21,22 +21,8 @@ extension Command where Self == PlainCommand<QuoteQueryPayload, Quote> {
                     }
                 }
                 .sort(.sql(unsafeRaw: "RANDOM()"))
-            switch (input.types, input.categories) {
-            case (let types?, let cats?):
-                query.group(.or) { group in
-                    group.filter(Preview.self, \.$parentType ~~ types)
-                    group.group(.and) { inner in
-                        inner.filter(Preview.self, \.$parentType == nil)
-                        inner.filter(Preview.self, \.$category ~~ cats)
-                    }
-                }
-            case (let types?, nil):
-                query.filter(Preview.self, \.$parentType ~~ types)
-            case (nil, let cats?):
-                query.filter(Preview.self, \.$parentType == nil)
-                query.filter(Preview.self, \.$category ~~ cats)
-            case (nil, nil):
-                break
+            if let categoryIDs = input.categoryIDs {
+                query.filter(Preview.self, \.$catalogueCategory.$id ~~ categoryIDs)
             }
             query.limit(1)
             try await permission.grant(query)

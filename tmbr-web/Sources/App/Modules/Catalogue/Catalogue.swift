@@ -16,6 +16,7 @@ struct Catalogue: Module {
     func configure(_ app: Vapor.Application) async throws {
         try await app.permissions.add(scope: PermissionScopes.Catalogue())
         try await app.commands.add(collection: Commands.Catalogue())
+        try await app.commands.add(collection: Commands.CatalogueCategories())
         try await media.configure(app)
 
         // Run after all catalogue sub-modules have added their table migrations

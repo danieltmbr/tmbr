@@ -4,6 +4,7 @@ import TmbrCore
 extension PreviewResponse {
 
     init(preview: Preview, baseURL: String, isNoteMatch: Bool = false) {
+        let category = preview.catalogueCategory
         self.init(
             primaryInfo: preview.primaryInfo,
             secondaryInfo: preview.secondaryInfo,
@@ -13,9 +14,9 @@ extension PreviewResponse {
             resources: preview.externalLinks,
             source: Source(
                 id: preview.parentID,
-                type: preview.parentType ?? preview.category ?? "item"
+                type: category?.slug ?? "item"
             ),
-            category: preview.category,
+            category: category?.kind == .orphan ? category?.slug : nil,
             isNoteMatch: isNoteMatch
         )
     }

@@ -50,7 +50,7 @@ extension FilterItemViewModel {
         label: "Podcasts",
         value: Podcast.previewType
     )
-    
+
     static let song = FilterItemViewModel(
         icon: "song",
         label: "Songs",
@@ -58,11 +58,20 @@ extension FilterItemViewModel {
     )
 }
 
+private let catalogueIcons: [String: String] = [
+    Album.previewType:    "album",
+    Book.previewType:     "book",
+    Movie.previewType:    "movie",
+    Playlist.previewType: "playlist",
+    Podcast.previewType:  "podcast",
+    Song.previewType:     "song",
+]
+
 extension [FilterItemViewModel] {
     static let catalogue: Self = [
         .book, .movie, .music, .podcast,
     ]
-    
+
     static let music: Self = [
         .song, .album, .playlist
     ]
@@ -79,8 +88,8 @@ extension Page {
             let term = payload.term
             let selectedTypes = payload.types
 
-            let shallowCategories = (try? await req.commands.previews.listShallowCategories()) ?? []
-            let mapper = CatalogueQueryMapper(shallowTypes: shallowCategories)
+            let allCategories = try await req.commands.catalogueCategories.list()
+            let mapper = CatalogueQueryMapper(categories: allCategories)
             let search: PlainCommand<CatalogueQueryPayload, CatalogueSearchResult> = .searchCatalogue(
                 mapper: mapper,
                 noteSearch: req.commands.notes.search,
@@ -90,15 +99,16 @@ extension Page {
             let baseURL = req.baseURL
             let compose = ComposePopupViewModel(req.permissions.compose(.standard))
 
-            let shallowFilterItems = shallowCategories.map { category in
-                FilterItemViewModel(icon: "link", label: category.capitalized, value: category)
-            }
-            let allFilterItems = ([FilterItemViewModel].catalogue + shallowFilterItems).map { filter in
-                filter.check(selectedTypes?.contains(filter.value) ?? true)
+            let filterItems = allCategories.map { cat in
+                FilterItemViewModel(
+                    icon: catalogueIcons[cat.slug] ?? "link",
+                    label: cat.name,
+                    value: cat.slug
+                ).check(selectedTypes?.contains(cat.slug) ?? true)
             }
 
             return CatalogueViewModel(
-                filterItems: allFilterItems,
+                filterItems: filterItems,
                 previews: result.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
                     + result.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) },
                 term: term,

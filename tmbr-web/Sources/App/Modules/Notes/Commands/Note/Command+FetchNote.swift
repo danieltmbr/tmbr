@@ -21,7 +21,8 @@ extension Command where Self == PlainCommand<QueryNotesInput, [Note]> {
             let query = Note
                 .query(on: database)
                 .join(Preview.self, on: \Note.$attachment.$id == \Preview.$id)
-                .filter(Preview.self, \.$parentType == input.ownerType)
+                .join(CatalogueCategory.self, on: \CatalogueCategory.$id == \Preview.$catalogueCategory.$id)
+                .filter(CatalogueCategory.self, \.$slug == input.ownerType)
                 .filter(Preview.self, \.$parentID == input.ownerID)
                 .with(\.$attachment) { attachment in
                     attachment.with(\.$image)

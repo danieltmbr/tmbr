@@ -57,8 +57,6 @@ struct CatalogueAPIController: RouteCollection {
         let payload = try request.content.decode(CatalogueNewPayload.self)
         let user = try request.auth.require(User.self)
         let userID = try user.requireID()
-        let rawCategory = payload.category.trimmingCharacters(in: .whitespaces).lowercased()
-        let category = rawCategory.isEmpty ? "link" : rawCategory
         let input = CreatePreviewItemInput(
             title: payload.title.trimmingCharacters(in: .whitespaces),
             subtitle: {
@@ -71,7 +69,7 @@ struct CatalogueAPIController: RouteCollection {
                 let u = payload.url?.trimmingCharacters(in: .whitespaces) ?? ""
                 return u.isEmpty ? nil : u
             }(),
-            category: category,
+            categoryName: payload.category,
             ownerID: userID
         )
         let preview = try await request.commands.previews.create(input)
@@ -119,7 +117,7 @@ struct CatalogueAPIController: RouteCollection {
                 resources: $0.attachment.externalLinks,
                 source: PreviewResponse.Source(
                     id: $0.attachment.parentID,
-                    type: $0.attachment.parentType ?? $0.attachment.category ?? "item"
+                    type: $0.attachment.catalogueCategory?.slug ?? "item"
                 )
             )
         }

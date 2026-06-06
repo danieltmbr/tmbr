@@ -53,7 +53,7 @@ extension Page {
     static var catalogueNew: Self {
         Page(template: .catalogueNew) { request in
             try request.auth.require(User.self)
-            let categories = (try? await request.commands.previews.listShallowCategories()) ?? []
+            let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
             return CatalogueNewViewModel(categories: categories)
         }
     }

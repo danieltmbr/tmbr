@@ -11,7 +11,7 @@ struct CreatePreviewItemInput: Sendable {
     let access: Access
     let artworkID: ImageID?
     let externalLink: String?
-    let category: String
+    let categoryName: String
     let ownerID: UserID
 }
 
@@ -19,12 +19,31 @@ extension Command where Self == PlainCommand<CreatePreviewItemInput, Preview> {
 
     static func createPreviewItem(database: Database) -> Self {
         PlainCommand { input in
+            let name = input.categoryName.trimmingCharacters(in: .whitespacesAndNewlines)
+            let slug = name
+                .lowercased()
+                .components(separatedBy: .whitespaces)
+                .filter { !$0.isEmpty }
+                .joined(separator: " ")
+            let resolvedSlug = slug.isEmpty ? "link" : slug
+            let resolvedName = name.isEmpty ? "Link" : name
+
+            let category: CatalogueCategory
+            if let existing = try await CatalogueCategory.query(on: database)
+                .filter(\.$slug == resolvedSlug)
+                .first() {
+                category = existing
+            } else {
+                category = CatalogueCategory(slug: resolvedSlug, name: resolvedName, kind: .orphan)
+                try await category.create(on: database)
+            }
+
             let preview = Preview(
                 id: UUID(),
                 parentID: nil,
                 parentAccess: input.access,
                 parentOwner: input.ownerID,
-                category: input.category
+                categoryID: category.id
             )
             preview.primaryInfo = input.title
             preview.secondaryInfo = input.subtitle
@@ -33,6 +52,7 @@ extension Command where Self == PlainCommand<CreatePreviewItemInput, Preview> {
                 preview.$image.id = artworkID
             }
             try await preview.save(on: database)
+            preview.$catalogueCategory.value = category
             return preview
         }
     }

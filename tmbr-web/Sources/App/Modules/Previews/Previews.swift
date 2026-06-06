@@ -22,7 +22,8 @@ struct Previews: Module {
         app.migrations.add(AddPreviewParentAccessAndOwner())
         app.migrations.add(ExtendPreview())
         app.migrations.add(CreateContainerEntries())
-        app.migrations.add(AddPreviewCategory())
+        app.migrations.add(CreateCatalogueCategories())
+        app.migrations.add(MigratePreviewToCategoryID())
 
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)
