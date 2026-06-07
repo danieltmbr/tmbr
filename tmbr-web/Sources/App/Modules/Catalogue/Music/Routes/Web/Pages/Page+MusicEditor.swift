@@ -4,21 +4,13 @@ import Foundation
 
 struct MusicEditorViewModel: Encodable, Sendable {
 
-    struct NoteViewModel: Encodable, Sendable {
-        let id: String?
-        let body: String
-        let access: String
-        let language: String
-    }
-
-    
     let _csrf: String?
     
     let error: String? = nil
     
     let id: Int? = nil
     
-    let notes: [NoteViewModel] = []
+    let notes: [NoteEditorViewModel] = []
     
     let pageTitle: String
     

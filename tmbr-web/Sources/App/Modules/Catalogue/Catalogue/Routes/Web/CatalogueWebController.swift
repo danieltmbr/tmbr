@@ -88,7 +88,7 @@ struct CatalogueWebController: RouteCollection {
         } else {
             artworkURL = nil
         }
-        let vm = CatalogueNewViewModel(
+        let vm = CatalogueEditorViewModel(
             previewID: previewID,
             url: payload?.url,
             title: payload?.title ?? "",
@@ -195,7 +195,7 @@ struct CatalogueWebController: RouteCollection {
     private func renderNewWithError(_ request: Request, payload: CatalogueNewPayload?, error: String) async throws -> Response {
         let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
         let noteViewModels = (payload?.notes ?? []).map {
-            CatalogueNewViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
+            NoteEditorViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
         }
         let artworkURL: String?
         if let raw = payload?.artworkSourceURL, !raw.trimmingCharacters(in: .whitespaces).isEmpty {
@@ -203,7 +203,7 @@ struct CatalogueWebController: RouteCollection {
         } else {
             artworkURL = nil
         }
-        let vm = CatalogueNewViewModel(
+        let vm = CatalogueEditorViewModel(
             url: payload?.url,
             title: payload?.title ?? "",
             subtitle: payload?.subtitle,

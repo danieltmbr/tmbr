@@ -4,14 +4,7 @@ import AuthKit
 import Core
 import TmbrCore
 
-struct CatalogueNewViewModel: Encodable, Sendable {
-
-    struct NoteViewModel: Encodable, Sendable {
-        let id: String?
-        let body: String
-        let access: Access
-        let language: Language
-    }
+struct CatalogueEditorViewModel: Encodable, Sendable {
 
     private let previewID: String?
     private let url: String?
@@ -21,7 +14,7 @@ struct CatalogueNewViewModel: Encodable, Sendable {
     private let category: String
     private let access: String
     private let categories: [String]
-    private let notes: [NoteViewModel]
+    private let notes: [NoteEditorViewModel]
     private let error: String?
 
     init(
@@ -33,7 +26,7 @@ struct CatalogueNewViewModel: Encodable, Sendable {
         category: String = "",
         access: Access = .public,
         categories: [String] = [],
-        notes: [NoteViewModel] = [],
+        notes: [NoteEditorViewModel] = [],
         error: String? = nil
     ) {
         self.previewID = previewID.map { $0.uuidString }
@@ -49,7 +42,7 @@ struct CatalogueNewViewModel: Encodable, Sendable {
     }
 }
 
-extension Template where Model == CatalogueNewViewModel {
+extension Template where Model == CatalogueEditorViewModel {
     static let catalogueEditor = Template(name: "Catalogue/catalogue-editor")
 }
 
@@ -58,7 +51,7 @@ extension Page {
         Page(template: .catalogueEditor) { request in
             try await request.permissions.previews.create.grant()
             let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
-            return CatalogueNewViewModel(categories: categories)
+            return CatalogueEditorViewModel(categories: categories)
         }
     }
 
@@ -75,7 +68,7 @@ extension Page {
             let baseURL = request.baseURL
             let artworkURL: String? = resolvedPreview.image.map { "\(baseURL)/gallery/data/\($0.thumbnailKey)" }
             let notes = try await existingNotes
-            return CatalogueNewViewModel(
+            return CatalogueEditorViewModel(
                 previewID: previewID,
                 url: resolvedPreview.externalLinks.first,
                 title: resolvedPreview.primaryInfo,
@@ -84,7 +77,7 @@ extension Page {
                 category: resolvedPreview.catalogueCategory?.name ?? "",
                 access: resolvedPreview.parentAccess,
                 categories: categoryNames,
-                notes: notes.map { CatalogueNewViewModel.NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) }
+                notes: notes.map { NoteEditorViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) }
             )
         }
     }

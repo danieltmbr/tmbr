@@ -169,7 +169,7 @@ struct SongsWebController: RouteCollection {
         }
 
         let noteViewModels = submitted.notes.map {
-            SongEditorViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
+            NoteEditorViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
         }
 
         let csrf = UUID().uuidString
