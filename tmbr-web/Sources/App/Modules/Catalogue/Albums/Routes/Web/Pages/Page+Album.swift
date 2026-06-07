@@ -1,4 +1,5 @@
 import Vapor
+import Fluent
 import Foundation
 import AuthKit
 import Core
@@ -9,10 +10,14 @@ struct TrackViewModel: Encodable, Sendable {
     let title: String
     let href: String?
     let previewID: String?
+    let trackURL: String?
+    let notes: [NoteViewModel]
 
-    init(entry: ContainerEntry) {
+    init(entry: ContainerEntry, notes: [NoteViewModel] = []) {
         position = entry.position
         title = entry.preview.primaryInfo
+        trackURL = entry.preview.externalLinks.first
+        self.notes = notes
         if let parentID = entry.preview.parentID, let route = entry.preview.catalogueCategory?.route {
             href = "/\(route)/\(parentID)"
             previewID = nil
@@ -150,7 +155,13 @@ extension Page {
             )
             let resolvedAlbum = try await album
             let allowsNewNote = (try? await request.permissions.albums.edit.grant(resolvedAlbum)) != nil
-            let tracks = try await entries.map(TrackViewModel.init)
+            let resolvedEntries = try await entries
+            let trackPreviewIDs = resolvedEntries.compactMap { $0.preview.id }
+            let trackNotesByPreviewID = try await fetchTrackNotes(for: trackPreviewIDs, on: request)
+            let tracks = resolvedEntries.map { entry -> TrackViewModel in
+                let entryNotes = entry.preview.id.flatMap { trackNotesByPreviewID[$0] } ?? []
+                return TrackViewModel(entry: entry, notes: entryNotes)
+            }
             return try AlbumViewModel(
                 album: resolvedAlbum,
                 notes: await notes,
@@ -160,4 +171,19 @@ extension Page {
             )
         }
     }
+}
+
+private func fetchTrackNotes(for previewIDs: [UUID], on request: Request) async throws -> [UUID: [NoteViewModel]] {
+    guard !previewIDs.isEmpty else { return [:] }
+    let notes = try await Note.query(on: request.commandDB)
+        .group(.or) { group in previewIDs.forEach { group.filter(\.$attachment.$id == $0) } }
+        .with(\.$attachment)
+        .sort(\Note.$createdAt, .descending)
+        .all()
+    var result: [UUID: [NoteViewModel]] = [:]
+    for note in notes {
+        guard let vm = try? NoteViewModel(note: note) else { continue }
+        result[note.$attachment.id, default: []].append(vm)
+    }
+    return result
 }

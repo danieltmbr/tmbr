@@ -11,6 +11,8 @@ struct Metadata: @unchecked Sendable {
 
     let tags: [String: String]
 
+    let multiTags: [String: [String]]
+
     let type: String
 
     let url: URL
@@ -58,7 +60,7 @@ struct FetchMetadataCommand: Command {
             throw Abort(.badGateway, reason: "Metadata fetch failed. Response HTML is invalid or missing")
         }
 
-        let (tags, json) = parser.parse(html: html)
+        let (tags, multiTags, json) = parser.parse(html: html)
 
         guard let type = tags["og:type"] else {
             throw Abort(.badGateway, reason: "Metadata fetch failed. Unidentified media type.")
@@ -67,6 +69,7 @@ struct FetchMetadataCommand: Command {
         return Metadata(
             json: json,
             tags: tags,
+            multiTags: multiTags,
             type: type,
             url: url
         )

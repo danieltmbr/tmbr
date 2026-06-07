@@ -24,18 +24,42 @@ struct PlaylistsWebController: RouteCollection {
         recoveringRoute.post("new", use: createPlaylist)
 
         playlistsRoute.get("metadata", use: metadata)
+        playlistsRoute.get("tracks", "search", use: trackSearch)
         recoveringRoute.post("preview", page: .playlistPreview)
 
         recoveringRoute.get(":playlistID", "edit", page: .editPlaylist)
         recoveringRoute.post(":playlistID", use: updatePlaylist)
 
         recoveringRoute.post(":playlistID", "notes", use: createNote)
+        recoveringRoute.post(":playlistID", "sync-tracks", use: syncTracks)
     }
 
     @Sendable
     private func metadata(_ request: Request) async throws -> PlaylistMetadata {
         let url = try request.query.get(String.self, at: "url")
         return try await request.commands.playlists.metadata(url)
+    }
+
+    private struct TrackPickerItem: Content, Sendable {
+        let previewID: UUID
+        let title: String
+        let subtitle: String?
+        let url: String?
+    }
+
+    @Sendable
+    private func trackSearch(_ request: Request) async throws -> [TrackPickerItem] {
+        let query = try? request.query.get(String.self, at: "q")
+        let result = try await request.commands.songs.search(query)
+        return (result.previews + result.noteMatches).compactMap { preview in
+            guard let id = preview.id else { return nil }
+            return TrackPickerItem(
+                previewID: id,
+                title: preview.primaryInfo,
+                subtitle: preview.secondaryInfo,
+                url: preview.externalLinks.first
+            )
+        }
     }
 
     @Sendable
@@ -99,6 +123,17 @@ struct PlaylistsWebController: RouteCollection {
                     _ = try await commands.notes.sync(
                         SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
                     )
+                    if let tracks = playlistInput.tracks {
+                        try await commands.previews.syncContainerEntries(
+                            SyncContainerEntriesInput(
+                                containerType: "playlist",
+                                containerID: playlistID,
+                                tracks: tracks,
+                                access: payload.access,
+                                ownerID: preview.ownerID
+                            )
+                        )
+                    }
                 }
 
                 return playlist
@@ -125,10 +160,21 @@ struct PlaylistsWebController: RouteCollection {
         }
 
         let alt = payload.title.isEmpty ? "Playlist artwork" : payload.title
-        let newImage = try await req.commands.gallery.addFromURL(
-            ImageURLPayload(url: artworkURL, alt: alt)
-        )
-        return try newImage.requireID()
+        do {
+            let newImage = try await req.commands.gallery.addFromURL(
+                ImageURLPayload(url: artworkURL, alt: alt)
+            )
+            return try newImage.requireID()
+        } catch {
+            guard let fallbackURL = payload.artworkFallbackURL else { throw error }
+            if let existingImage = try await req.commands.gallery.lookup(fallbackURL) {
+                return try existingImage.requireID()
+            }
+            let fallbackImage = try await req.commands.gallery.addFromURL(
+                ImageURLPayload(url: fallbackURL, alt: alt)
+            )
+            return try fallbackImage.requireID()
+        }
     }
 
     private func renderEditorWithError(
@@ -177,6 +223,42 @@ struct PlaylistsWebController: RouteCollection {
         let response = try await view.encodeResponse(for: req)
         req.session.data["csrf.editor"] = csrf
         return response
+    }
+
+    @Sendable
+    private func syncTracks(_ request: Request) async throws -> Response {
+        guard let playlistID = request.parameters.get("playlistID", as: Int.self) else {
+            return Response(status: .badRequest)
+        }
+        let playlist = try await request.commands.playlists.fetch(playlistID, for: .write)
+        let platform = Platform<PlaylistMetadata>.playlist
+        let appleMusicURL = playlist.resourceURLs
+            .compactMap { URL(string: $0) }
+            .first { platform.name(for: $0) != nil && $0.absoluteString.contains("music.apple.com") }
+        guard let appleMusicURL else {
+            throw Abort(.badRequest, reason: "No Apple Music URL found for this playlist")
+        }
+        let metadata = try await request.commands.playlists.metadata(appleMusicURL)
+        guard let tracks = metadata.tracks, !tracks.isEmpty else {
+            return request.redirect(to: "/playlists/\(playlistID)")
+        }
+        try await request.commands.transaction { commands in
+            let preview = try await commands.previews.fetch(playlist.$preview.id, for: .write)
+            try await commands.previews.deleteContainerEntries(
+                DeleteContainerEntriesInput(containerType: "playlist", containerID: playlistID)
+            )
+            try await commands.previews.importTracks(
+                ImportAlbumTracksInput(
+                    albumID: playlistID,
+                    access: playlist.access,
+                    artist: nil,
+                    ownerID: preview.ownerID,
+                    tracks: tracks,
+                    containerType: "playlist"
+                )
+            )
+        }
+        return request.redirect(to: "/playlists/\(playlistID)")
     }
 
     @Sendable

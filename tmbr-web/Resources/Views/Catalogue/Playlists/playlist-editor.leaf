@@ -16,6 +16,7 @@
     #export("editor-fields"):
     <input id="editor-artwork-id" type="hidden" name="artwork-id" value="#(artworkId)" />
     <input id="editor-artwork-source-url" type="hidden" name="artwork-source-url" value="#(artworkSourceURL)" />
+    <input id="editor-artwork-fallback-url" type="hidden" name="artwork-fallback-url" value="#(artworkFallbackURL)" />
     <textarea
         id="editor-description"
         class="text-input"
@@ -26,6 +27,33 @@
         rows="3"
     >#(description)</textarea>
     <input id="editor-tracklist-json" type="hidden" name="tracklist-json" value="" />
+    #if(tracks):
+    <section id="editor-tracklist-section">
+        <h4>Tracklist</h4>
+        <ol id="editor-tracklist" class="tracklist">
+            #for(track in tracks):
+            <li
+                data-preview-id="#(track.previewID)"
+                data-track-url="#(track.trackURL)"
+                data-track-name="#(track.title)"
+            >
+                <span>#(track.title)</span>
+                <button type="button" class="icon track-remove" aria-label="Remove track">&times;</button>
+            </li>
+            #endfor
+        </ol>
+        <div id="editor-track-search">
+            <input
+                id="editor-track-query"
+                class="text-input"
+                type="search"
+                placeholder="Search your songs to add…"
+                autocomplete="off"
+            />
+            <ul id="editor-track-results" hidden></ul>
+        </div>
+    </section>
+    #endif
     #endexport
 
     #export("editor-image-picker"):

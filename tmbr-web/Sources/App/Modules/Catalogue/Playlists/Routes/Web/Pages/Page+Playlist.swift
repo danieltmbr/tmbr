@@ -1,4 +1,5 @@
 import Vapor
+import Fluent
 import Foundation
 import AuthKit
 import Core
@@ -12,6 +13,8 @@ struct PlaylistViewModel: Encodable, Sendable {
 
     private let allowsNewNote: Bool
 
+    private let createdAt: String?
+
     private let description: String?
 
     private let notes: [NoteViewModel]
@@ -22,6 +25,8 @@ struct PlaylistViewModel: Encodable, Sendable {
 
     private let resources: [Hyperlink]
 
+    private let syncEndpoint: String?
+
     private let title: String
 
     private let tracks: [TrackViewModel]
@@ -30,22 +35,26 @@ struct PlaylistViewModel: Encodable, Sendable {
         id: PlaylistID,
         artwork: ImageViewModel?,
         allowsNewNote: Bool,
+        createdAt: String?,
         description: String?,
         notes: [NoteViewModel],
         notesEndpoint: String,
         post: PostItemViewModel?,
         resources: [Hyperlink],
+        syncEndpoint: String?,
         title: String,
         tracks: [TrackViewModel] = []
     ) {
         self.id = id
         self.artwork = artwork
         self.allowsNewNote = allowsNewNote
+        self.createdAt = createdAt
         self.description = description
         self.notes = notes
         self.notesEndpoint = notesEndpoint
         self.post = post
         self.resources = resources
+        self.syncEndpoint = syncEndpoint
         self.title = title
         self.tracks = tracks
     }
@@ -59,17 +68,24 @@ struct PlaylistViewModel: Encodable, Sendable {
         platform: Platform<PlaylistMetadata> = .playlist
     ) throws {
         let playlistID = try playlist.requireID()
+        let resolvedPlatform = platform
+        let resources = playlist.resourceURLs.compactMap(resolvedPlatform.hyperlink)
+        // Expose sync endpoint to the detail page only for owners when an Apple Music URL is present
+        let hasAppleMusicURL = resources.contains(where: { $0.urlString.contains("music.apple.com") })
+        let syncEndpoint = allowsNewNote && hasAppleMusicURL ? "/playlists/\(playlistID)/sync-tracks" : nil
         self.init(
             id: playlistID,
             artwork: playlist.artwork.flatMap {
                 ImageViewModel(image: $0, baseURL: baseURL)
             },
             allowsNewNote: allowsNewNote,
+            createdAt: playlist.createdAt.map { $0.formatted(.releaseDate) },
             description: playlist.description,
             notes: try notes.map { try NoteViewModel(note: $0, isEditable: allowsNewNote) },
             notesEndpoint: "/playlists/\(playlistID)/notes",
             post: try playlist.post.map(PostItemViewModel.init),
-            resources: playlist.resourceURLs.compactMap(platform.hyperlink),
+            resources: resources,
+            syncEndpoint: syncEndpoint,
             title: playlist.title,
             tracks: tracks
         )
@@ -93,7 +109,13 @@ extension Page {
             )
             let resolvedPlaylist = try await playlist
             let allowsNewNote = (try? await request.permissions.playlists.edit.grant(resolvedPlaylist)) != nil
-            let tracks = try await entries.map(TrackViewModel.init)
+            let resolvedEntries = try await entries
+            let trackPreviewIDs = resolvedEntries.compactMap { $0.preview.id }
+            let trackNotesByPreviewID = try await fetchTrackNotes(for: trackPreviewIDs, on: request)
+            let tracks = resolvedEntries.map { entry -> TrackViewModel in
+                let entryNotes = entry.preview.id.flatMap { trackNotesByPreviewID[$0] } ?? []
+                return TrackViewModel(entry: entry, notes: entryNotes)
+            }
             return try PlaylistViewModel(
                 playlist: resolvedPlaylist,
                 notes: await notes,
@@ -103,4 +125,19 @@ extension Page {
             )
         }
     }
+}
+
+private func fetchTrackNotes(for previewIDs: [UUID], on request: Request) async throws -> [UUID: [NoteViewModel]] {
+    guard !previewIDs.isEmpty else { return [:] }
+    let notes = try await Note.query(on: request.commandDB)
+        .group(.or) { group in previewIDs.forEach { group.filter(\.$attachment.$id == $0) } }
+        .with(\.$attachment)
+        .sort(\Note.$createdAt, .descending)
+        .all()
+    var result: [UUID: [NoteViewModel]] = [:]
+    for note in notes {
+        guard let vm = try? NoteViewModel(note: note) else { continue }
+        result[note.$attachment.id, default: []].append(vm)
+    }
+    return result
 }

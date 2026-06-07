@@ -33,30 +33,56 @@ struct ImportAlbumTracksInput: Sendable {
 extension Command where Self == PlainCommand<ImportAlbumTracksInput, Void> {
     static func importAlbumTracks(database: Database) -> Self {
         PlainCommand { input in
-            guard let trackCategory = try await CatalogueCategory.query(on: database)
-                .filter(\.$slug == "track")
-                .first(), let categoryID = trackCategory.id else {
+            async let trackCategoryQuery = CatalogueCategory.query(on: database)
+                .filter(\.$slug == "track").first()
+            async let songCategoryQuery = CatalogueCategory.query(on: database)
+                .filter(\.$slug == "song").first()
+
+            guard let trackCategory = try await trackCategoryQuery,
+                  let categoryID = trackCategory.id else {
                 throw Abort(.internalServerError, reason: "Track category not found in catalogue_categories")
             }
-            for (index, track) in input.tracks.enumerated() {
-                let preview = Preview(
-                    id: UUID(),
-                    parentID: nil,
-                    parentAccess: input.access,
-                    parentOwner: input.ownerID,
-                    categoryID: categoryID
-                )
-                preview.primaryInfo = track.name
-                if let artist = input.artist {
-                    preview.secondaryInfo = "by \(artist)"
+
+            // Build a URL→previewID map from the user's existing songs to avoid duplicates
+            var existingByURL: [String: UUID] = [:]
+            if let songCategoryID = try await songCategoryQuery?.id {
+                let songPreviews = try await Preview.query(on: database)
+                    .filter(\Preview.$catalogueCategory.$id == songCategoryID)
+                    .filter(\Preview.$parentOwner.$id == input.ownerID)
+                    .all()
+                for preview in songPreviews {
+                    guard let id = preview.id else { continue }
+                    for link in preview.externalLinks {
+                        existingByURL[link] = id
+                    }
                 }
-                preview.externalLinks = [track.url].compactMap { $0 }
-                try await preview.save(on: database)
+            }
+
+            for (index, track) in input.tracks.enumerated() {
+                let previewID: UUID
+                if let url = track.url, let existing = existingByURL[url] {
+                    previewID = existing
+                } else {
+                    let preview = Preview(
+                        id: UUID(),
+                        parentID: nil,
+                        parentAccess: input.access,
+                        parentOwner: input.ownerID,
+                        categoryID: categoryID
+                    )
+                    preview.primaryInfo = track.name
+                    if let artist = input.artist {
+                        preview.secondaryInfo = "by \(artist)"
+                    }
+                    preview.externalLinks = [track.url].compactMap { $0 }
+                    try await preview.save(on: database)
+                    previewID = try preview.requireID()
+                }
 
                 let entry = ContainerEntry(
                     containerType: input.containerType,
                     containerID: input.albumID,
-                    previewID: try preview.requireID(),
+                    previewID: previewID,
                     position: index + 1
                 )
                 try await entry.save(on: database)

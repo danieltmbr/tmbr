@@ -80,6 +80,84 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Tracklist management (edit mode)
+    const tracklistSection = document.getElementById('editor-tracklist-section');
+    const tracklistEl      = document.getElementById('editor-tracklist');
+    const trackQueryInput  = document.getElementById('editor-track-query');
+    const trackResultsEl   = document.getElementById('editor-track-results');
+
+    function serializeTracklist() {
+        if (!tracklistEl || !tracklistJsonInput) return;
+        const items = Array.from(tracklistEl.querySelectorAll('li'));
+        const tracks = items.map(li => ({
+            previewID: li.dataset.previewId || undefined,
+            name: li.dataset.trackName || '',
+            url: li.dataset.trackUrl || undefined,
+        }));
+        tracklistJsonInput.value = JSON.stringify(tracks);
+    }
+
+    function removeTrack(li) {
+        li.remove();
+        serializeTracklist();
+    }
+
+    function addTrackToList(item) {
+        if (!tracklistEl) return;
+        const existing = tracklistEl.querySelector(`[data-preview-id="${item.previewID}"]`);
+        if (existing) return;
+        const li = document.createElement('li');
+        li.dataset.previewId = item.previewID;
+        li.dataset.trackName = item.title;
+        if (item.url) li.dataset.trackUrl = item.url;
+        li.innerHTML = `<span>${item.title}${item.subtitle ? ` <small>${item.subtitle}</small>` : ''}</span>` +
+            `<button type="button" class="icon track-remove" aria-label="Remove track">&times;</button>`;
+        li.querySelector('.track-remove').addEventListener('click', () => removeTrack(li));
+        tracklistEl.appendChild(li);
+        serializeTracklist();
+        if (trackQueryInput) trackQueryInput.value = '';
+        if (trackResultsEl) trackResultsEl.hidden = true;
+    }
+
+    if (tracklistEl) {
+        // Wire existing remove buttons
+        tracklistEl.querySelectorAll('.track-remove').forEach(btn => {
+            btn.addEventListener('click', () => removeTrack(btn.closest('li')));
+        });
+        // Populate tracklist-json on page load so it is submitted even without changes
+        serializeTracklist();
+    }
+
+    if (trackQueryInput && trackResultsEl) {
+        let searchTimeout = null;
+        trackQueryInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const q = trackQueryInput.value.trim();
+            if (!q) { trackResultsEl.hidden = true; return; }
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/playlists/tracks/search?q=${encodeURIComponent(q)}`);
+                    if (!res.ok) return;
+                    const items = await res.json();
+                    trackResultsEl.innerHTML = '';
+                    if (!items.length) { trackResultsEl.hidden = true; return; }
+                    items.slice(0, 10).forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item.title + (item.subtitle ? ` — ${item.subtitle}` : '');
+                        li.addEventListener('click', () => addTrackToList(item));
+                        trackResultsEl.appendChild(li);
+                    });
+                    trackResultsEl.hidden = false;
+                } catch { /* ignore */ }
+            }, 300);
+        });
+        document.addEventListener('click', e => {
+            if (!trackResultsEl.contains(e.target) && e.target !== trackQueryInput) {
+                trackResultsEl.hidden = true;
+            }
+        });
+    }
+
     function saveDraft() { persistence.save(storageKey, getState()); }
     function loadDraft() {
         if (persistence.clearIfPending(storageKey)) return;
@@ -87,10 +165,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (saved) setState(saved);
     }
 
+    const artworkFallbackInput = document.getElementById('editor-artwork-fallback-url');
+
     function applyMetadata(data) {
         if (!titleInput.value && data.title) titleInput.value = data.title;
         if (!descriptionInput.value && data.description) descriptionInput.value = data.description;
-        if (data.artwork && artwork.isEmpty()) artwork.setExternalURL(data.artwork);
+        if (data.artwork && artwork.isEmpty()) {
+            artwork.setExternalURL(data.artwork);
+            if (artworkFallbackInput && data.artworkFallback) artworkFallbackInput.value = data.artworkFallback;
+        }
         if (Array.isArray(data.tracks) && data.tracks.length > 0 && tracklistJsonInput) {
             tracklistJsonInput.value = JSON.stringify(data.tracks);
         }

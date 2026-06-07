@@ -20,6 +20,7 @@ struct Playlists: Module {
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(CreatePlaylist())
         app.migrations.add(DeferPlaylistPreviewForeignKey())
+        app.migrations.add(AddCreatedAtToPlaylist())
         app.databases.middleware.use(PreviewModelMiddleware.playlist, on: .psql)
 
         try await app.permissions.add(scope: permissions)

@@ -2,14 +2,13 @@ import Foundation
 
 struct HTMLMetadataParser {
 
-    func parse(html: String) -> (tags: [String: String], json: [String: Any]) {
+    func parse(html: String) -> (tags: [String: String], multiTags: [String: [String]], json: [String: Any]) {
         let head = head(from: html) ?? html
-        let tags = match(in: head, key: "property")
-            .merging(
-                match(in: head, key: "name"),
-                uniquingKeysWith: { current, _ in current }
-            )
-        return (tags, parseJSONLD(from: html))
+        let multiByProperty = matchAll(in: head, key: "property")
+        let multiByName = matchAll(in: head, key: "name")
+        let multiTags = multiByProperty.merging(multiByName) { current, new in current + new }
+        let tags = multiTags.compactMapValues { $0.first }
+        return (tags, multiTags, parseJSONLD(from: html))
     }
 
     // MARK: - Helpers
@@ -43,32 +42,35 @@ struct HTMLMetadataParser {
         try! NSRegularExpression(pattern: pattern, options: options)
     }
 
-    private func match(
+    private func matchAll(
         in text: String,
         key: String
-    ) -> [String: String] {
+    ) -> [String: [String]] {
         let regex1 = regex(pattern: metaPattern(key: key))
         let regex2 = regex(pattern: metaPatternContentFirst(key: key))
-        var results: [String: String] = [:]
+        var results: [String: [String]] = [:]
         // metaPattern: groups 1,2 are key (double/single quoted), groups 3,4 are value
-        results.merge(collectMatches(in: text, regex: regex1, keyIndices: [1, 2], valueIndices: [3, 4])) { current, _ in current }
+        for (k, v) in collectAllMatches(in: text, regex: regex1, keyIndices: [1, 2], valueIndices: [3, 4]) {
+            results[k, default: []].append(contentsOf: v)
+        }
         // metaPatternContentFirst: groups 1,2 are value, groups 3,4 are key
-        results.merge(collectMatches(in: text, regex: regex2, keyIndices: [3, 4], valueIndices: [1, 2])) { current, _ in current }
+        for (k, v) in collectAllMatches(in: text, regex: regex2, keyIndices: [3, 4], valueIndices: [1, 2]) {
+            results[k, default: []].append(contentsOf: v)
+        }
         return results
     }
 
-    private func collectMatches(
+    private func collectAllMatches(
         in text: String,
         regex: NSRegularExpression,
         keyIndices: [Int],
         valueIndices: [Int]
-    ) -> [String: String] {
-        var results: [String: String] = [:]
+    ) -> [String: [String]] {
+        var results: [String: [String]] = [:]
         let nsRange = NSRange(text.startIndex..<text.endIndex, in: text)
         regex.enumerateMatches(in: text, options: [], range: nsRange) { m, _, _ in
             guard let m = m else { return }
 
-            // Find which key group matched (alternation means only one will)
             let keyString = keyIndices.lazy
                 .compactMap { index -> String? in
                     guard index < m.numberOfRanges,
@@ -78,7 +80,6 @@ struct HTMLMetadataParser {
                 }
                 .first
 
-            // Find which value group matched
             let valueString = valueIndices.lazy
                 .compactMap { index -> String? in
                     guard index < m.numberOfRanges,
@@ -92,7 +93,7 @@ struct HTMLMetadataParser {
                   let value = valueString else { return }
 
             let decodedValue = decodeEntities(value.trimmingCharacters(in: .whitespacesAndNewlines))
-            results[key] = decodedValue
+            results[key, default: []].append(decodedValue)
         }
         return results
     }
