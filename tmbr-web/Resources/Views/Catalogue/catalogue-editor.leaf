@@ -5,7 +5,7 @@
     #endexport
 
     #export("main"):
-    <form id="editor-form" method="POST" action="/catalogue/new">
+    <form id="editor-form" method="POST" action="#if(previewID):/catalogue/item/#(previewID)#else:/catalogue/new#endif">
 
         <input type="hidden" name="artwork-id" id="editor-artwork-id" value="" />
         <input type="hidden" name="artwork-source-url" id="editor-artwork-source-url" value="#(artworkURL)" />
@@ -84,7 +84,9 @@
         <p id="autofill-status" class="system-info" hidden></p>
 
         <div class="editor-actions">
-            <button id="editor-preview" class="link" type="button">Preview</button>
+            #if(!previewID):
+                <button id="editor-preview" class="link" type="button">Preview</button>
+            #endif
             <div>
                 <input type="hidden" name="access" value="#(access)" />
                 <button class="primary" type="submit">Save</button>
@@ -92,6 +94,7 @@
         </div>
     </form>
 
+    #if(!previewID):
     <form id="preview-form" method="post" action="/catalogue/new/preview" target="_blank" hidden>
         <input type="hidden" name="title" id="preview-title" />
         <input type="hidden" name="subtitle" id="preview-subtitle" />
@@ -99,6 +102,7 @@
         <input type="hidden" name="url" id="preview-url" />
         <input type="hidden" name="notes" id="preview-notes" />
     </form>
+    #endif
     #endexport
 
     #export("scripts"):
@@ -106,7 +110,11 @@
     <script src="/Scripts/Media/media.js"></script>
     <script src="/Scripts/Notes/notes-editor.js"></script>
     <script src="/Scripts/Catalogue/catalogue-editor.js"></script>
+    #if(previewID):
+    <script src="/Scripts/Catalogue/catalogue-item-edit.js"></script>
+    #else:
     <script src="/Scripts/Catalogue/catalogue-new.js"></script>
+    #endif
     #endexport
 
 #endextend

@@ -94,13 +94,15 @@ extension Page {
             let baseURL = req.baseURL
             let compose = ComposePopupViewModel(req.permissions.compose(.standard))
 
-            let typeItems = allCategories.map { cat in
-                FilterItemViewModel(
-                    icon: cat.icon ?? "link",
-                    label: cat.name,
-                    value: cat.slug
-                ).check(payload.types?.contains(cat.slug) ?? true)
-            }
+            let typeItems = allCategories
+                .filter { $0.parentSlug == nil }
+                .map { cat in
+                    FilterItemViewModel(
+                        icon: cat.icon ?? "link",
+                        label: cat.name,
+                        value: cat.slug
+                    ).check(payload.types?.contains(cat.slug) ?? true)
+                }
 
             return CatalogueViewModel(
                 panels: [.types(typeItems)],

@@ -5,10 +5,8 @@ final class CatalogueCategory: Model, @unchecked Sendable {
 
     static let schema = "catalogue_categories"
 
-    typealias IDValue = UUID
-
-    @ID(key: .id)
-    var id: UUID?
+    @ID(custom: "id", generatedBy: .database)
+    var id: Int?
 
     @Field(key: "slug")
     var slug: String
@@ -25,19 +23,31 @@ final class CatalogueCategory: Model, @unchecked Sendable {
     @OptionalField(key: "icon")
     var icon: String?
 
+    @OptionalField(key: "parent_slug")
+    var parentSlug: String?
+
     enum Kind: String, Codable, CaseIterable {
         case catalogue   // model-backed items visible in the feed: song, album, book, movie, playlist, podcast
         case promotable  // shallow placeholder awaiting promotion: track
         case orphan      // user-defined, no backing model: recipe, guide, link, …
+        case collection  // display-only grouping of related catalogue types, e.g. music → song/album/playlist
     }
 
     init() {}
 
-    init(slug: String, name: String, kind: Kind, route: String? = nil, icon: String? = nil) {
+    init(
+        slug: String,
+        name: String,
+        kind: Kind,
+        route: String? = nil,
+        icon: String? = nil,
+        parentSlug: String? = nil
+    ) {
         self.slug = slug
         self.name = name
         self.kind = kind
         self.route = route
         self.icon = icon
+        self.parentSlug = parentSlug
     }
 }

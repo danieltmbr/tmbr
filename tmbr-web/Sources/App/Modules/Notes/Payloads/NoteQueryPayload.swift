@@ -4,7 +4,7 @@ struct NoteQueryPayload: Decodable, Sendable {
 
     let term: String?
 
-    let categoryIDs: Set<UUID>?
+    let categoryIDs: Set<Int>?
 
     let categorySlug: String?
 
@@ -12,7 +12,7 @@ struct NoteQueryPayload: Decodable, Sendable {
 
     init(
         term: String? = nil,
-        categoryIDs: Set<UUID>? = nil,
+        categoryIDs: Set<Int>? = nil,
         categorySlug: String? = nil,
         languages: Set<String>? = nil
     ) {

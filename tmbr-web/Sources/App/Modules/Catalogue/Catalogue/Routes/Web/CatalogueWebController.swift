@@ -11,6 +11,8 @@ struct CatalogueWebController: RouteCollection {
         recovering.get("catalogue", page: .catalogue)
 
         recovering.get("catalogue", "item", ":previewID", page: .catalogueItem)
+        recovering.get("catalogue", "item", ":previewID", "edit", page: .catalogueItemEditor)
+        recovering.post("catalogue", "item", ":previewID", use: updateItem)
         recovering.post("catalogue", "item", ":previewID", "notes", use: createNote)
 
         recovering.get("catalogue", "new", page: .catalogueNew)
@@ -32,6 +34,72 @@ struct CatalogueWebController: RouteCollection {
         } catch {
             return Response(status: .unprocessableEntity)
         }
+    }
+
+    // MARK: - Catalogue item edit
+
+    @Sendable
+    private func updateItem(_ request: Request) async throws -> Response {
+        guard let previewID = request.parameters.get("previewID", as: UUID.self) else {
+            return Response(status: .badRequest)
+        }
+        do {
+            let payload = try request.content.decode(CatalogueNewPayload.self)
+
+            guard !payload.title.trimmingCharacters(in: .whitespaces).isEmpty else {
+                return try await renderEditorWithError(request, previewID: previewID, payload: payload, error: "Title is required.")
+            }
+
+            let preview = try await request.commands.previews.fetch(previewID, for: .write)
+            try await request.permissions.previews.edit.grant(preview)
+
+            let artworkID = try await resolveArtwork(payload: payload, title: payload.title, on: request)
+
+            let updatedPreview = try await request.commands.previews.update(
+                UpdatePreviewItemInput(
+                    previewID: previewID,
+                    title: payload.title.trimmingCharacters(in: .whitespaces),
+                    subtitle: {
+                        let s = payload.subtitle?.trimmingCharacters(in: .whitespaces) ?? ""
+                        return s.isEmpty ? nil : s
+                    }(),
+                    artworkID: artworkID,
+                    externalLink: {
+                        let u = payload.url?.trimmingCharacters(in: .whitespaces) ?? ""
+                        return u.isEmpty ? nil : u
+                    }(),
+                    categoryName: payload.category
+                )
+            )
+            let syncEntries = payload.notes.map { SyncNoteEntry(id: $0.noteID, body: $0.body, access: $0.access, deleted: $0.deleted ?? false) }
+            _ = try await request.commands.notes.sync(SyncNotesInput(attachment: updatedPreview, parentAccess: preview.parentAccess, entries: syncEntries))
+            return request.redirect(to: "/catalogue/item/\(previewID)")
+        } catch {
+            let payload = try? request.content.decode(CatalogueNewPayload.self)
+            return try await renderEditorWithError(request, previewID: previewID, payload: payload, error: errorMessage(for: error, on: request))
+        }
+    }
+
+    private func renderEditorWithError(_ request: Request, previewID: UUID, payload: CatalogueNewPayload?, error: String) async throws -> Response {
+        let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
+        let artworkURL: String?
+        if let raw = payload?.artworkSourceURL, !raw.trimmingCharacters(in: .whitespaces).isEmpty {
+            artworkURL = raw
+        } else {
+            artworkURL = nil
+        }
+        let vm = CatalogueNewViewModel(
+            previewID: previewID,
+            url: payload?.url,
+            title: payload?.title ?? "",
+            subtitle: payload?.subtitle,
+            artworkURL: artworkURL,
+            category: payload?.category ?? "",
+            categories: categories,
+            error: error
+        )
+        let view = try await Template.catalogueEditor.render(vm, with: request.view)
+        return try await view.encodeResponse(for: request)
     }
 
     // MARK: - Catalogue new
@@ -127,7 +195,7 @@ struct CatalogueWebController: RouteCollection {
     private func renderNewWithError(_ request: Request, payload: CatalogueNewPayload?, error: String) async throws -> Response {
         let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
         let noteViewModels = (payload?.notes ?? []).map {
-            CatalogueNewViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access)
+            CatalogueNewViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
         }
         let artworkURL: String?
         if let raw = payload?.artworkSourceURL, !raw.trimmingCharacters(in: .whitespaces).isEmpty {
@@ -146,7 +214,7 @@ struct CatalogueWebController: RouteCollection {
             notes: noteViewModels,
             error: error
         )
-        let view = try await Template.catalogueNew.render(vm, with: request.view)
+        let view = try await Template.catalogueEditor.render(vm, with: request.view)
         return try await view.encodeResponse(for: request)
     }
 }

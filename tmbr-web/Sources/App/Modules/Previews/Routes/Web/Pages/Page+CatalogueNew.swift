@@ -10,8 +10,10 @@ struct CatalogueNewViewModel: Encodable, Sendable {
         let id: String?
         let body: String
         let access: Access
+        let language: Language
     }
 
+    private let previewID: String?
     private let url: String?
     private let title: String
     private let subtitle: String?
@@ -23,6 +25,7 @@ struct CatalogueNewViewModel: Encodable, Sendable {
     private let error: String?
 
     init(
+        previewID: UUID? = nil,
         url: String? = nil,
         title: String = "",
         subtitle: String? = nil,
@@ -33,6 +36,7 @@ struct CatalogueNewViewModel: Encodable, Sendable {
         notes: [NoteViewModel] = [],
         error: String? = nil
     ) {
+        self.previewID = previewID.map { $0.uuidString }
         self.url = url
         self.title = title
         self.subtitle = subtitle
@@ -46,12 +50,12 @@ struct CatalogueNewViewModel: Encodable, Sendable {
 }
 
 extension Template where Model == CatalogueNewViewModel {
-    static let catalogueNew = Template(name: "Catalogue/catalogue-new")
+    static let catalogueEditor = Template(name: "Catalogue/catalogue-editor")
 }
 
 extension Page {
     static var catalogueNew: Self {
-        Page(template: .catalogueNew) { request in
+        Page(template: .catalogueEditor) { request in
             try await request.permissions.previews.create.grant()
             let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
             return CatalogueNewViewModel(categories: categories)

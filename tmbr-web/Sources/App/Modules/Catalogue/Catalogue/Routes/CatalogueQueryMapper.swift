@@ -2,11 +2,6 @@ import Foundation
 
 struct CatalogueQueryMapper: Sendable {
 
-    // Virtual type chips that expand to multiple concrete category slugs.
-    private static let virtualTypes: [String: Set<String>] = [
-        "music": [Album.previewType, Playlist.previewType, Song.previewType],
-    ]
-
     private let categories: [CatalogueCategory]
 
     init(categories: [CatalogueCategory] = []) {
@@ -35,12 +30,17 @@ struct CatalogueQueryMapper: Sendable {
         )
     }
 
-    private func selectedCategoryIDs(from slugs: Set<String>?) -> Set<UUID>? {
+    private func selectedCategoryIDs(from slugs: Set<String>?) -> Set<Int>? {
         guard let slugs else {
-            let allIDs = Set(categories.compactMap(\.id))
-            return allIDs.isEmpty ? nil : allIDs
+            // nil = all selected: exclude collection categories (they have no direct preview assignments)
+            let leafIDs = Set(categories.filter { $0.kind != .collection }.compactMap(\.id))
+            return leafIDs.isEmpty ? nil : leafIDs
         }
-        let expanded = slugs.flatMap { Self.virtualTypes[$0] ?? [$0] }
+        // Expand collection slugs to their child category slugs
+        let expanded = slugs.flatMap { slug -> [String] in
+            let children = categories.filter { $0.parentSlug == slug }.map(\.slug)
+            return children.isEmpty ? [slug] : children
+        }
         let matched = categories.filter { expanded.contains($0.slug) }.compactMap(\.id)
         return matched.isEmpty ? nil : Set(matched)
     }
