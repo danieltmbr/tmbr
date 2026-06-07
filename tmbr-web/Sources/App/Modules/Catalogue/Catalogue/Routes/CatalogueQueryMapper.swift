@@ -2,41 +2,46 @@ import Foundation
 
 struct CatalogueQueryMapper: Sendable {
 
-    private static let catalogueTypes: Set<String> = [
-        Album.previewType,
-        Book.previewType,
-        Movie.previewType,
-        Playlist.previewType,
-        Podcast.previewType,
-        Song.previewType,
-    ]
+    private let categories: [CatalogueCategory]
 
-    // Virtual type chips that expand to multiple concrete previewTypes
-    private static let virtualTypes: [String: Set<String>] = [
-        "music": [Album.previewType, Playlist.previewType, Song.previewType],
-    ]
-
-    private let allowedTypes: Set<String>
-
-    init(allowedTypes: Set<String> = Self.catalogueTypes) {
-        self.allowedTypes = allowedTypes
+    init(categories: [CatalogueCategory] = []) {
+        self.categories = categories
     }
 
     func toPreviewQuery(from payload: CatalogueQueryPayload) -> PreviewQueryInput {
-        PreviewQueryInput(term: payload.term, types: filter(types: payload.types))
+        PreviewQueryInput(
+            term: payload.term,
+            categoryIDs: selectedCategoryIDs(from: payload.types)
+        )
     }
 
     func toNotesQuery(from payload: CatalogueQueryPayload) -> NoteQueryPayload {
-        NoteQueryPayload(term: payload.term, types: filter(types: payload.types), languages: payload.languages)
+        NoteQueryPayload(
+            term: payload.term,
+            categoryIDs: selectedCategoryIDs(from: payload.types),
+            languages: payload.languages
+        )
     }
 
     func toQuoteQuery(from payload: CatalogueQueryPayload) -> QuoteQueryPayload {
-        QuoteQueryPayload(term: payload.term, types: filter(types: payload.types))
+        QuoteQueryPayload(
+            term: payload.term,
+            categoryIDs: selectedCategoryIDs(from: payload.types)
+        )
     }
 
-    private func filter(types: Set<String>?) -> Set<String> {
-        guard let types else { return allowedTypes }
-        let expanded = types.flatMap { Self.virtualTypes[$0] ?? [$0] }
-        return allowedTypes.filter { expanded.contains($0) }
+    private func selectedCategoryIDs(from slugs: Set<String>?) -> Set<Int>? {
+        guard let slugs else {
+            // nil = all selected: exclude collection categories (they have no direct preview assignments)
+            let leafIDs = Set(categories.filter { $0.kind != .collection }.compactMap(\.id))
+            return leafIDs.isEmpty ? nil : leafIDs
+        }
+        // Expand collection slugs to their child category slugs
+        let expanded = slugs.flatMap { slug -> [String] in
+            let children = categories.filter { $0.parentSlug == slug }.map(\.slug)
+            return children.isEmpty ? [slug] : children
+        }
+        let matched = categories.filter { expanded.contains($0.slug) }.compactMap(\.id)
+        return matched.isEmpty ? nil : Set(matched)
     }
 }

@@ -13,6 +13,7 @@ struct PostsWebController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
         routes.get(page: .posts)
+        routes.get("posts", page: .posts)
         routes.get("posts", ":postID", page: .post)
 
         routes.get("drafts", page: .drafts)

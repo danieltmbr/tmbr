@@ -24,11 +24,13 @@
             <li>
                 #if(track.href):
                 <a href="#(track.href)">#(track.title)</a>
-                #else:
+                #elseif(allowsNewNote):
                 <form method="post" action="/songs/promote">
                     <input type="hidden" name="previewID" value="#(track.previewID)" />
                     <button type="submit" class="link">#(track.title)</button>
                 </form>
+                #else:
+                #(track.title)
                 #endif
             </li>
             #endfor

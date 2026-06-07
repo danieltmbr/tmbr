@@ -79,7 +79,7 @@ struct PlaylistsWebController: RouteCollection {
                                 albumID: try playlist.requireID(),
                                 access: payload.access,
                                 artist: nil,
-                                ownerID: preview.$parentOwner.id,
+                                ownerID: preview.ownerID,
                                 tracks: tracks,
                                 containerType: "playlist"
                             )
@@ -153,7 +153,7 @@ struct PlaylistsWebController: RouteCollection {
         }
 
         let noteViewModels = submitted.notes.map {
-            PlaylistEditorViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
+            NoteEditorViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
         }
 
         let csrf = UUID().uuidString
@@ -186,7 +186,7 @@ struct PlaylistsWebController: RouteCollection {
         }
         do {
             let playlist = try await request.commands.playlists.fetch(playlistID, for: .write)
-            return try await NotesWebController.createNote(attachmentID: playlist.$preview.id, on: request)
+            return try await request.createNoteResponse(attachmentID: playlist.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }

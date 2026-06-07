@@ -161,7 +161,7 @@ struct MoviesWebController: RouteCollection {
         }
 
         let noteViewModels = submitted.notes.map {
-            MovieEditorViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
+            NoteEditorViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
         }
 
         let csrf = UUID().uuidString
@@ -196,7 +196,7 @@ struct MoviesWebController: RouteCollection {
         }
         do {
             let movie = try await request.commands.movies.fetch(movieID, for: .write)
-            return try await NotesWebController.createNote(attachmentID: movie.$preview.id, on: request)
+            return try await request.createNoteResponse(attachmentID: movie.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }

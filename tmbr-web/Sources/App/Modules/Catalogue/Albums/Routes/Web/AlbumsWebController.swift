@@ -100,7 +100,7 @@ struct AlbumsWebController: RouteCollection {
                                 albumID: try album.requireID(),
                                 access: payload.access,
                                 artist: payload.artist,
-                                ownerID: preview.$parentOwner.id,
+                                ownerID: preview.ownerID,
                                 tracks: tracks
                             )
                         )
@@ -173,7 +173,7 @@ struct AlbumsWebController: RouteCollection {
         }
 
         let noteViewModels = submitted.notes.map {
-            AlbumEditorViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
+            NoteEditorViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
         }
 
         let csrf = UUID().uuidString
@@ -208,7 +208,7 @@ struct AlbumsWebController: RouteCollection {
         }
         do {
             let album = try await request.commands.albums.fetch(albumID, for: .write)
-            return try await NotesWebController.createNote(attachmentID: album.$preview.id, on: request)
+            return try await request.createNoteResponse(attachmentID: album.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }

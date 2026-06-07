@@ -15,7 +15,7 @@ extension Command where Self == PlainCommand<ContainerEntriesInput, [ContainerEn
                 .filter(\.$containerType == input.containerType)
                 .filter(\.$containerID == input.containerID)
                 .sort(\.$position)
-                .with(\.$preview)
+                .with(\.$preview) { $0.with(\.$catalogueCategory) }
                 .all()
         }
     }

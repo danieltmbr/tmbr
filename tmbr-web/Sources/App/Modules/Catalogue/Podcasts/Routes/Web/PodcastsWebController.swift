@@ -160,7 +160,7 @@ struct PodcastsWebController: RouteCollection {
         }
 
         let noteViewModels = submitted.notes.map {
-            PodcastEditorViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
+            NoteEditorViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
         }
 
         let csrf = UUID().uuidString
@@ -197,7 +197,7 @@ struct PodcastsWebController: RouteCollection {
         }
         do {
             let podcast = try await request.commands.podcasts.fetch(podcastID, for: .write)
-            return try await NotesWebController.createNote(attachmentID: podcast.$preview.id, on: request)
+            return try await request.createNoteResponse(attachmentID: podcast.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }

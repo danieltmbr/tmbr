@@ -25,7 +25,8 @@ extension Command where Self == PlainCommand<String?, PlaylistSearchResult> {
 
             let query = Preview.query(on: database)
                 .with(\.$image)
-                .filter(\.$parentType == Playlist.previewType)
+                .join(CatalogueCategory.self, on: \CatalogueCategory.$id == \Preview.$catalogueCategory.$id)
+                .filter(CatalogueCategory.self, \.$slug == Playlist.previewType)
                 .join(Playlist.self, on: \Playlist.$preview.$id == \Preview.$id)
                 .sort(\.$createdAt, .descending)
 
@@ -39,7 +40,7 @@ extension Command where Self == PlainCommand<String?, PlaylistSearchResult> {
             try await permission.grant(query)
 
             async let previewsTask = query.all()
-            async let notesTask = noteSearch(NoteQueryPayload(term: term, types: [Playlist.previewType]))
+            async let notesTask = noteSearch(NoteQueryPayload(term: term, categorySlug: Playlist.previewType))
             let (previews, notes) = try await (previewsTask, notesTask)
 
             let previewIDs = Set(previews.compactMap(\.id))

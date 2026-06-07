@@ -7,12 +7,6 @@ import TmbrCore
 
 struct PlaylistEditorViewModel: Encodable, Sendable {
 
-    struct NoteViewModel: Encodable, Sendable {
-        let id: String?
-        let body: String
-        let access: Access
-        let language: Language
-    }
 
     private let artworkAspect: String = ""
 
@@ -30,7 +24,7 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
 
     private let description: String
 
-    private let notes: [NoteViewModel]
+    private let notes: [NoteEditorViewModel]
 
     private let resourceURLs: [String]
 
@@ -50,7 +44,7 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
         artworkSourceURL: String? = nil,
         artworkThumbnailURL: String? = nil,
         description: String = "",
-        notes: [NoteViewModel] = [],
+        notes: [NoteEditorViewModel] = [],
         resourceURLs: [String] = [],
         submit: Form.Submit,
         title: String = "",
@@ -94,7 +88,7 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
             artworkSourceURL: nil,
             artworkThumbnailURL: artworkThumbnailURL,
             description: playlist.description ?? "",
-            notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) },
+            notes: notes.map { NoteEditorViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) },
             resourceURLs: playlist.resourceURLs,
             submit: Form.Submit(
                 action: "/playlists/\(id)",

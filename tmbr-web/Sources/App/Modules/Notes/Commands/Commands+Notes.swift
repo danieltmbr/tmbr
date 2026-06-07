@@ -19,6 +19,8 @@ extension Commands {
 
         let fetch: CommandFactory<NoteID, Note>
 
+        let fetchByAttachment: CommandFactory<PreviewID, [Note]>
+
         let query: CommandFactory<QueryNotesInput, [Note]>
 
         let search: CommandFactory<NoteQueryPayload, [Note]>
@@ -31,6 +33,7 @@ extension Commands {
             delete: CommandFactory<NoteID, Void> = .deleteNote,
             edit: CommandFactory<EditNoteInput, Note> = .editNote,
             fetch: CommandFactory<NoteID, Note> = .fetchNote,
+            fetchByAttachment: CommandFactory<PreviewID, [Note]> = .fetchNotesByAttachment,
             query: CommandFactory<QueryNotesInput, [Note]> = .queryNotes,
             search: CommandFactory<NoteQueryPayload, [Note]> = .searchNote,
             sync: CommandFactory<SyncNotesInput, [Note]> = .syncNotes
@@ -40,6 +43,7 @@ extension Commands {
             self.delete = delete
             self.edit = edit
             self.fetch = fetch
+            self.fetchByAttachment = fetchByAttachment
             self.query = query
             self.search = search
             self.sync = sync

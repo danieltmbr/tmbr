@@ -4,13 +4,21 @@ struct NoteQueryPayload: Decodable, Sendable {
 
     let term: String?
 
-    let types: Set<String>?
+    let categoryIDs: Set<Int>?
+
+    let categorySlug: String?
 
     let languages: Set<String>?
 
-    init(term: String? = nil, types: Set<String>? = nil, languages: Set<String>? = nil) {
+    init(
+        term: String? = nil,
+        categoryIDs: Set<Int>? = nil,
+        categorySlug: String? = nil,
+        languages: Set<String>? = nil
+    ) {
         self.term = term
-        self.types = types
+        self.categoryIDs = categoryIDs
+        self.categorySlug = categorySlug
         self.languages = languages
     }
 }

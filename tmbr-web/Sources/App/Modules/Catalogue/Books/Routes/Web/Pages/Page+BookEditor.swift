@@ -7,12 +7,6 @@ import TmbrCore
 
 struct BookEditorViewModel: Encodable, Sendable {
 
-    struct NoteViewModel: Encodable, Sendable {
-        let id: String?
-        let body: String
-        let access: Access
-        let language: Language
-    }
 
     private let id: Int?
 
@@ -30,7 +24,7 @@ struct BookEditorViewModel: Encodable, Sendable {
 
     private let genre: String
 
-    private let notes: [NoteViewModel]
+    private let notes: [NoteEditorViewModel]
 
     private let releaseDate: String
 
@@ -53,7 +47,7 @@ struct BookEditorViewModel: Encodable, Sendable {
         coverSourceURL: String? = nil,
         coverThumbnailURL: String? = nil,
         genre: String = "",
-        notes: [NoteViewModel] = [],
+        notes: [NoteEditorViewModel] = [],
         releaseDate: String = "",
         resourceURLs: [String] = [],
         submit: Form.Submit,
@@ -101,7 +95,7 @@ struct BookEditorViewModel: Encodable, Sendable {
             coverSourceURL: nil,
             coverThumbnailURL: coverThumbnailURL,
             genre: book.genre ?? "",
-            notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) },
+            notes: notes.map { NoteEditorViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) },
             releaseDate: book.releaseDate?.formatted(.releaseDate) ?? "",
             resourceURLs: book.resourceURLs,
             submit: Form.Submit(

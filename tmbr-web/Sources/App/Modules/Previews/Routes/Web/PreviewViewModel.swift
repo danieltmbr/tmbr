@@ -18,8 +18,8 @@ struct PreviewViewModel: Encodable, Sendable {
         primaryInfo = preview.primaryInfo
         secondaryInfo = preview.secondaryInfo
         thumbnailURL = preview.image.map { "\(baseURL)/gallery/data/\($0.thumbnailKey)" }
-        if let parentID = preview.parentID {
-            href = "/\(preview.parentType)s/\(parentID)"
+        if let parentID = preview.parentID, let route = preview.catalogueCategory?.route {
+            href = "/\(route)/\(parentID)"
         } else {
             href = "/catalogue/item/\(preview.id!)"
         }

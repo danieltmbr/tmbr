@@ -33,13 +33,18 @@ struct ImportAlbumTracksInput: Sendable {
 extension Command where Self == PlainCommand<ImportAlbumTracksInput, Void> {
     static func importAlbumTracks(database: Database) -> Self {
         PlainCommand { input in
+            guard let trackCategory = try await CatalogueCategory.query(on: database)
+                .filter(\.$slug == "track")
+                .first(), let categoryID = trackCategory.id else {
+                throw Abort(.internalServerError, reason: "Track category not found in catalogue_categories")
+            }
             for (index, track) in input.tracks.enumerated() {
                 let preview = Preview(
                     id: UUID(),
                     parentID: nil,
                     parentAccess: input.access,
                     parentOwner: input.ownerID,
-                    parentType: "track"
+                    categoryID: categoryID
                 )
                 preview.primaryInfo = track.name
                 if let artist = input.artist {

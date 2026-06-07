@@ -1,0 +1,116 @@
+#extend("Shared/page"):
+
+    #export("styles"):
+    <link rel="stylesheet" href="/Styles/Shared/editor.css">
+    #endexport
+
+    #export("main"):
+    <form id="editor-form" method="POST" action="#if(previewID):/catalogue/item/#(previewID)#else:/catalogue/new#endif">
+
+        <input type="hidden" name="artwork-id" id="editor-artwork-id" value="" />
+        <input type="hidden" name="artwork-source-url" id="editor-artwork-source-url" value="#(artworkURL)" />
+
+        <input
+            id="editor-title"
+            class="text-input title"
+            name="title"
+            type="text"
+            value="#(title)"
+            placeholder="Title"
+            autocomplete="off"
+            spellcheck="true"
+        />
+
+        <section id="resources-section">
+            <h3>Resources</h3>
+            <input
+                id="editor-url"
+                class="text-input resource-url"
+                name="url"
+                type="url"
+                value="#(url)"
+                placeholder="https://…"
+                autocomplete="off"
+                spellcheck="false"
+            />
+        </section>
+
+        <section id="details-section">
+            <h3>Details</h3>
+            <div class="details-content">
+                <div class="details-inputs">
+                    <input
+                        id="editor-category"
+                        class="text-input"
+                        name="category"
+                        type="text"
+                        value="#(category)"
+                        placeholder="Type (e.g. recipe, running)"
+                        autocomplete="off"
+                        spellcheck="false"
+                        list="category-suggestions"
+                    />
+                    <datalist id="category-suggestions">
+                        #for(cat in categories):
+                        <option value="#(cat)"></option>
+                        #endfor
+                    </datalist>
+                    <input
+                        id="editor-subtitle"
+                        class="text-input"
+                        name="subtitle"
+                        type="text"
+                        value="#(subtitle)"
+                        placeholder="Description (optional)"
+                        autocomplete="off"
+                        spellcheck="true"
+                    />
+                </div>
+
+                <figure id="artwork-placeholder" class="image-picker #if(!artworkURL):empty#endif">
+                    <img id="artwork-image" src="#(artworkURL)" alt="Artwork" />
+                    <span>#extend("Icons/gallery")</span>
+                    <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
+                </figure>
+            </div>
+        </section>
+
+        #if(error):
+            <p class="editor-error">#unsafeHTML(error)</p>
+        #endif
+
+        #extend("Notes/notes-editor")
+
+        <p id="autofill-status" class="system-info" hidden></p>
+
+        <div class="editor-actions">
+            #if(!previewID):
+                <button id="editor-preview" class="link" type="button">Preview</button>
+            #endif
+            <div>
+                <input type="hidden" name="access" value="#(access)" />
+                <button class="primary" type="submit">Save</button>
+            </div>
+        </div>
+    </form>
+
+    #if(!previewID):
+    <form id="preview-form" method="post" action="/catalogue/new/preview" target="_blank" hidden>
+        <input type="hidden" name="title" id="preview-title" />
+        <input type="hidden" name="subtitle" id="preview-subtitle" />
+        <input type="hidden" name="artworkURL" id="preview-artwork-url" />
+        <input type="hidden" name="url" id="preview-url" />
+        <input type="hidden" name="notes" id="preview-notes" />
+    </form>
+    #endif
+    #endexport
+
+    #export("scripts"):
+    <script src="/Scripts/Shared/persistence.js"></script>
+    <script src="/Scripts/Media/media.js"></script>
+    <script src="/Scripts/Notes/notes-editor.js"></script>
+    <script src="/Scripts/Catalogue/catalogue-editor.js"></script>
+    <script src="/Scripts/Catalogue/catalogue-item-editor.js"></script>
+    #endexport
+
+#endextend

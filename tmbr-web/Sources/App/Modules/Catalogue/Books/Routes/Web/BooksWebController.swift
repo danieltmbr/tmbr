@@ -160,7 +160,7 @@ struct BooksWebController: RouteCollection {
         }
 
         let noteViewModels = submitted.notes.map {
-            BookEditorViewModel.NoteViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
+            NoteEditorViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
         }
 
         let csrf = UUID().uuidString
@@ -195,7 +195,7 @@ struct BooksWebController: RouteCollection {
         }
         do {
             let book = try await request.commands.books.fetch(bookID, for: .write)
-            return try await NotesWebController.createNote(attachmentID: book.$preview.id, on: request)
+            return try await request.createNoteResponse(attachmentID: book.$preview.id)
         } catch {
             return Response(status: .unprocessableEntity)
         }

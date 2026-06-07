@@ -7,12 +7,6 @@ import TmbrCore
 
 struct PodcastEditorViewModel: Encodable, Sendable {
 
-    struct NoteViewModel: Encodable, Sendable {
-        let id: String?
-        let body: String
-        let access: Access
-        let language: Language
-    }
 
     private let artworkAspect: String = ""
 
@@ -34,7 +28,7 @@ struct PodcastEditorViewModel: Encodable, Sendable {
 
     private let genre: String
 
-    private let notes: [NoteViewModel]
+    private let notes: [NoteEditorViewModel]
 
     private let releaseDate: String
 
@@ -60,7 +54,7 @@ struct PodcastEditorViewModel: Encodable, Sendable {
         episodeNumber: String = "",
         episodeTitle: String = "",
         genre: String = "",
-        notes: [NoteViewModel] = [],
+        notes: [NoteEditorViewModel] = [],
         releaseDate: String = "",
         resourceURLs: [String] = [],
         seasonNumber: String = "",
@@ -112,7 +106,7 @@ struct PodcastEditorViewModel: Encodable, Sendable {
             episodeNumber: podcast.episodeNumber.map(String.init) ?? "",
             episodeTitle: podcast.episodeTitle,
             genre: podcast.genre ?? "",
-            notes: notes.map { NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) },
+            notes: notes.map { NoteEditorViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) },
             releaseDate: podcast.releaseDate?.formatted(.releaseDate) ?? "",
             resourceURLs: podcast.resourceURLs,
             seasonNumber: podcast.seasonNumber.map(String.init) ?? "",

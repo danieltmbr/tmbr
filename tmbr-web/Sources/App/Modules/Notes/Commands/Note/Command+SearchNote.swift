@@ -18,16 +18,27 @@ extension Command where Self == PlainCommand<NoteQueryPayload, [Note]> {
             let query = Note
                 .query(on: database)
                 .join(Preview.self, on: \Note.$attachment.$id == \Preview.$id)
-                .with(\.$attachment) { $0.with(\.$image) }
+                .with(\.$attachment) { preview in
+                    preview
+                        .with(\.$image)
+                        .with(\.$catalogueCategory)
+                }
                 .with(\.$author)
                 .with(\.$quotes)
-                .filter(Preview.self, \.$parentType ~~? input.types)
                 .filter(\.$language ~~? input.languages.map { $0.compactMap(Language.init(rawValue:)) })
                 .group(.or) { group in
                     let sql = "body ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
                     group.filter(.sql(unsafeRaw: sql))
                 }
                 .sort(\Note.$createdAt, .descending)
+            if let categoryIDs = input.categoryIDs {
+                query.filter(Preview.self, \.$catalogueCategory.$id ~~ categoryIDs)
+            }
+            if let categorySlug = input.categorySlug {
+                query
+                    .join(CatalogueCategory.self, on: \CatalogueCategory.$id == \Preview.$catalogueCategory.$id)
+                    .filter(CatalogueCategory.self, \.$slug == categorySlug)
+            }
             try await permission.grant(query)
             return try await query.all()
         }
