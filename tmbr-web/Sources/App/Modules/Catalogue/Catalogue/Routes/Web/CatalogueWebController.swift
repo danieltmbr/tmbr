@@ -81,7 +81,7 @@ struct CatalogueWebController: RouteCollection {
     }
 
     private func renderEditorWithError(_ request: Request, previewID: UUID, payload: CatalogueNewPayload?, error: String) async throws -> Response {
-        let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
+        let categories = try await request.commands.catalogueCategories.list().map(\.name)
         let artworkURL: String?
         if let raw = payload?.artworkSourceURL, !raw.trimmingCharacters(in: .whitespaces).isEmpty {
             artworkURL = raw
@@ -193,7 +193,7 @@ struct CatalogueWebController: RouteCollection {
     }
 
     private func renderNewWithError(_ request: Request, payload: CatalogueNewPayload?, error: String) async throws -> Response {
-        let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
+        let categories = try await request.commands.catalogueCategories.list().map(\.name)
         let noteViewModels = (payload?.notes ?? []).map {
             NoteEditorViewModel(id: $0.id, body: $0.body, access: $0.access, language: $0.language ?? .en)
         }

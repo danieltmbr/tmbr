@@ -50,7 +50,7 @@ extension Page {
     static var catalogueNew: Self {
         Page(template: .catalogueEditor) { request in
             try await request.permissions.previews.create.grant()
-            let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
+            let categories = try await request.commands.catalogueCategories.list().map(\.name)
             return CatalogueEditorViewModel(categories: categories)
         }
     }
@@ -64,7 +64,7 @@ extension Page {
             async let existingNotes = request.commands.notes.fetchByAttachment(previewID)
             let resolvedPreview = try await preview
             try await request.permissions.previews.edit.grant(resolvedPreview)
-            let categoryNames = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
+            let categoryNames = try await request.commands.catalogueCategories.list().map(\.name)
             let baseURL = request.baseURL
             let artworkURL: String? = resolvedPreview.image.map { "\(baseURL)/gallery/data/\($0.thumbnailKey)" }
             let notes = try await existingNotes
