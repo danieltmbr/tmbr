@@ -61,48 +61,32 @@ extension Page {
             return CatalogueNewViewModel(categories: categories)
         }
     }
-}
 
-// MARK: - Preview
-
-private struct CataloguePreviewPayload: Content {
-    let title: String
-    let subtitle: String?
-    let artworkURL: String?
-    let url: String?
-    let notes: String
-}
-
-extension Template where Model == CatalogueItemViewModel {
-    static let cataloguePreview = Template(name: "Previews/preview")
-}
-
-extension Page {
-    static var cataloguePreview: Self {
-        Page(template: .cataloguePreview) { request in
-            try await request.permissions.previews.create.grant()
-            let payload = try request.content.decode(CataloguePreviewPayload.self)
-            let formatter = MarkdownFormatter.html
-            let notes: [NoteViewModel] = payload.notes.isEmpty ? [] : [
-                NoteViewModel(
-                    id: UUID(),
-                    body: formatter.format(payload.notes),
-                    created: Date.now.formatted(.publishDate)
-                )
-            ]
-            let resource: Hyperlink? = payload.url.flatMap { urlString in
-                guard !urlString.isEmpty, let url = URL(string: urlString) else { return nil }
-                return Hyperlink(label: url.host ?? urlString, url: url)
+    static var catalogueItemEditor: Self {
+        Page(template: .catalogueEditor) { request in
+            guard let previewID = request.parameters.get("previewID", as: UUID.self) else {
+                throw Abort(.badRequest)
             }
-            return CatalogueItemViewModel(
-                title: "Preview: \(payload.title)",
-                subtitle: payload.subtitle,
-                artwork: payload.artworkURL.flatMap { url in
-                    url.isEmpty ? nil : ImageViewModel(previewURL: url)
-                },
-                notes: notes,
-                resources: resource.map { [$0] } ?? []
+            async let preview = request.commands.previews.fetch(previewID, for: .write)
+            async let existingNotes = request.commands.notes.fetchByAttachment(previewID)
+            let resolvedPreview = try await preview
+            try await request.permissions.previews.edit.grant(resolvedPreview)
+            let categoryNames = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
+            let baseURL = request.baseURL
+            let artworkURL: String? = resolvedPreview.image.map { "\(baseURL)/gallery/data/\($0.thumbnailKey)" }
+            let notes = try await existingNotes
+            return CatalogueNewViewModel(
+                previewID: previewID,
+                url: resolvedPreview.externalLinks.first,
+                title: resolvedPreview.primaryInfo,
+                subtitle: resolvedPreview.secondaryInfo,
+                artworkURL: artworkURL,
+                category: resolvedPreview.catalogueCategory?.name ?? "",
+                access: resolvedPreview.parentAccess,
+                categories: categoryNames,
+                notes: notes.map { CatalogueNewViewModel.NoteViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) }
             )
         }
     }
 }
+

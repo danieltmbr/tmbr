@@ -2,18 +2,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('editor-form');
     if (!form) return;
 
-    const urlInput       = document.getElementById('editor-url');
-    const titleInput     = document.getElementById('editor-title');
-    const subtitleInput  = document.getElementById('editor-subtitle');
-    const categoryInput  = document.getElementById('editor-category');
-    const statusEl       = document.getElementById('autofill-status');
+    const isNew = form.action.endsWith('/new');
+
+    const urlInput         = document.getElementById('editor-url');
+    const titleInput       = document.getElementById('editor-title');
+    const subtitleInput    = document.getElementById('editor-subtitle');
+    const categoryInput    = document.getElementById('editor-category');
+    const statusEl         = document.getElementById('autofill-status');
     const resourcesSection = document.getElementById('resources-section');
     const detailsSection   = document.getElementById('details-section');
     const notesSection     = document.getElementById('notes-section');
-
-    const persistence = new PersistenceController();
-    const storageKey  = 'editor:catalogue:new';
-    const metadata    = new MetadataController({ endpoint: '/catalogue/new/metadata' });
 
     const artwork = new ArtworkController(
         {
@@ -23,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
             imageEl:          document.getElementById('artwork-image'),
             clearButton:      document.getElementById('artwork-clear'),
         },
-        { onChange: () => saveDraft(), onOpenGallery: null }
+        { onChange: () => isNew && saveDraft(), onOpenGallery: null }
     );
     artwork.init();
 
@@ -31,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (notesSection) {
         notesController = new NotesController(
             { section: notesSection },
-            { onInput: () => saveDraft(), onAccessChange: () => saveDraft() }
+            { onInput: () => isNew && saveDraft(), onAccessChange: () => isNew && saveDraft() }
         );
         notesController.init();
     }
@@ -41,7 +39,21 @@ document.addEventListener('DOMContentLoaded', () => {
         { uploads: new UploadsController(), artwork, notes: notesController }
     ).init();
 
-    // ─── State ───────────────────────────────────────────────────────────────
+    form.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+        e.preventDefault();
+        const focusable = Array.from(form.querySelectorAll('input:not([type="hidden"]), textarea')).filter(el => !el.disabled);
+        const idx = focusable.indexOf(e.target);
+        if (idx !== -1 && idx < focusable.length - 1) focusable[idx + 1].focus();
+    });
+
+    if (!isNew) return;
+
+    // ─── Create-only: draft persistence & URL autofill ────────────────────────
+
+    const persistence = new PersistenceController();
+    const storageKey  = 'editor:catalogue:new';
+    const metadata    = new MetadataController({ endpoint: '/catalogue/new/metadata' });
 
     function getState() {
         return {
@@ -72,8 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (saved) setState(saved);
     }
 
-    // ─── Autofill ─────────────────────────────────────────────────────────────
-
     const autofill = {
         async fetchAndApply(url) {
             if (!url) return;
@@ -90,8 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // ─── Preview ──────────────────────────────────────────────────────────────
-
     function fillPreview() {
         const pf = document.getElementById('preview-form');
         if (!pf) return;
@@ -105,20 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('editor-preview')?.addEventListener('click', fillPreview);
-
-    // ─── Init ─────────────────────────────────────────────────────────────────
-
-    retryPendingMetadata(autofill);
-    loadDraft();
-
-    urlInput?.addEventListener('input', saveDraft);
-    urlInput?.addEventListener('change', () => autofill.fetchAndApply(urlInput.value.trim()));
-    urlInput?.addEventListener('blur',   () => autofill.fetchAndApply(urlInput.value.trim()));
-    titleInput?.addEventListener('input',    saveDraft);
-    subtitleInput?.addEventListener('input', saveDraft);
-    categoryInput?.addEventListener('input', saveDraft);
-    categoryInput?.addEventListener('change', checkCategoryHint);
-    categoryInput?.addEventListener('blur', checkCategoryHint);
 
     function checkCategoryHint() {
         const reserved = new Set(['song', 'songs', 'album', 'albums', 'book', 'books', 'movie', 'movies', 'podcast', 'podcasts', 'playlist', 'playlists', 'music']);
@@ -134,13 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    form.addEventListener('keydown', (e) => {
-        if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
-        e.preventDefault();
-        const focusable = Array.from(form.querySelectorAll('input:not([type="hidden"]), textarea')).filter(el => !el.disabled);
-        const idx = focusable.indexOf(e.target);
-        if (idx !== -1 && idx < focusable.length - 1) focusable[idx + 1].focus();
-    });
+    retryPendingMetadata(autofill);
+    loadDraft();
+
+    urlInput?.addEventListener('input', saveDraft);
+    urlInput?.addEventListener('change', () => autofill.fetchAndApply(urlInput.value.trim()));
+    urlInput?.addEventListener('blur',   () => autofill.fetchAndApply(urlInput.value.trim()));
+    titleInput?.addEventListener('input',    saveDraft);
+    subtitleInput?.addEventListener('input', saveDraft);
+    categoryInput?.addEventListener('input', saveDraft);
+    categoryInput?.addEventListener('change', checkCategoryHint);
+    categoryInput?.addEventListener('blur',   checkCategoryHint);
 
     form.addEventListener('submit', () => {
         persistence.markPendingClear(storageKey);

@@ -110,11 +110,7 @@
     <script src="/Scripts/Media/media.js"></script>
     <script src="/Scripts/Notes/notes-editor.js"></script>
     <script src="/Scripts/Catalogue/catalogue-editor.js"></script>
-    #if(previewID):
-    <script src="/Scripts/Catalogue/catalogue-item-edit.js"></script>
-    #else:
-    <script src="/Scripts/Catalogue/catalogue-new.js"></script>
-    #endif
+    <script src="/Scripts/Catalogue/catalogue-item-editor.js"></script>
     #endexport
 
 #endextend
