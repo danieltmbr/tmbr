@@ -1,8 +1,10 @@
 <footer id="footer" class="invisible">
     <nav>
-    <a href="#" role="button" id="notification-toggle" title="Enable push notifications">
-        #extend("Icons/notification")
-    </a>
+    <span id="notification-bell-wrapper">
+        <a href="#" role="button" id="notification-toggle" title="Enable push notifications">
+            #extend("Icons/notification")
+        </a>
+    </span>
     <!--
     <a href="https://www.threads.net/@danieltmbr" target="_blank" title="danieltmbr on Threads">
         #extend("Icons/threads")

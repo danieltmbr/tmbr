@@ -26,4 +26,25 @@ struct PushNotification: Encodable, Sendable {
             url: url
         )
     }
+
+    init(note: Note, preview: Preview) throws {
+        guard note.id != nil else {
+            throw Abort(.internalServerError, reason: "Unidentified note")
+        }
+        let categoryName = preview.catalogueCategory?.name ?? "catalogue item"
+        let urlString: String
+        if let route = preview.catalogueCategory?.route, let parentID = preview.parentID {
+            urlString = "\(Environment.webApp.startURL)/\(route)/\(parentID)"
+        } else {
+            urlString = Environment.webApp.startURL
+        }
+        guard let url = URL(string: urlString) else {
+            throw Abort(.internalServerError, reason: "Invalid note URL")
+        }
+        self.init(
+            title: "New \(categoryName) note",
+            body: preview.primaryInfo,
+            url: url
+        )
+    }
 }

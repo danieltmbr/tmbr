@@ -17,29 +17,33 @@ struct CreateNoteInput: Decodable {
 }
 
 struct CreateNoteCommand: Command {
-    
+
     typealias Input = CreateNoteInput
-    
+
     typealias Output = Note
-    
+
     private let attachPermission: AuthPermissionResolver<AttachNotePermissionInput>
 
     private let createPermission: AuthPermissionResolver<Void>
 
     private let database: Database
-    
+
     private let fetchPreview: CommandResolver<FetchParameters<PreviewID>, Preview>
+
+    private let notify: CommandResolver<Note, Void>
 
     init(
         attachPermission: AuthPermissionResolver<AttachNotePermissionInput>,
         createPermission: AuthPermissionResolver<Void>,
         database: Database,
-        fetchPreview: CommandResolver<FetchParameters<PreviewID>, Preview>
+        fetchPreview: CommandResolver<FetchParameters<PreviewID>, Preview>,
+        notify: CommandResolver<Note, Void>
     ) {
         self.attachPermission = attachPermission
         self.createPermission = createPermission
         self.database = database
         self.fetchPreview = fetchPreview
+        self.notify = notify
     }
 
     func execute(_ input: CreateNoteInput) async throws -> Note {
@@ -54,7 +58,15 @@ struct CreateNoteCommand: Command {
         )
         try await attachPermission(note, to: preview)
         try await note.save(on: database)
+        notifyIfPublic(note)
         return note
+    }
+
+    private func notifyIfPublic(_ note: Note) {
+        guard note.access == .public else { return }
+        Task.detached {
+            try await notify(note)
+        }
     }
 }
 
@@ -66,7 +78,8 @@ extension CommandFactory<CreateNoteInput, Note> {
                 attachPermission: request.permissions.notes.attach,
                 createPermission: request.permissions.notes.create,
                 database: request.commandDB,
-                fetchPreview: request.commands.previews.fetch
+                fetchPreview: request.commands.previews.fetch,
+                notify: request.commands.notifications.note
             )
             .logged(logger: request.logger)
         }

@@ -1,26 +1,24 @@
 import Foundation
 import Vapor
 import Core
-import Logging
 import Fluent
 import AuthKit
 import TmbrCore
 
 extension Command where Self == PlainCommand<Post, Void> {
-    
+
     static func notification(
-        database: Database,
         permission: AuthPermissionResolver<Post>,
-        service: NotificationService?
+        filteredSend: CommandResolver<FilteredNotificationInput, Void>
     ) -> Self {
         PlainCommand { post in
             try await permission.grant(post)
-            let allSubs = try await WebPushSubscription.query(on: database).all()
-            let postLang = post.language.rawValue
-            let subs = allSubs.filter {
-                $0.languages.isEmpty || $0.languages.split(separator: "|").contains(Substring(postLang))
-            }
-            try await service?.notify(subscriptions: subs, content: PushNotification(post: post))
+            try await filteredSend(FilteredNotificationInput(
+                notification: PushNotification(post: post),
+                language: post.language.rawValue,
+                contentType: "post",
+                parentContentType: nil
+            ))
         }
     }
 }
@@ -41,13 +39,12 @@ extension Command where Self == PlainCommand<PostID, Void> {
 }
 
 extension CommandFactory<Post, Void> {
-    
+
     static var postNotification: Self {
         CommandFactory { request in
             .notification(
-                database: request.commandDB,
                 permission: request.permissions.notifications.post,
-                service: request.application.notificationService
+                filteredSend: request.commands.notifications.filteredSend
             )
             .logged(name: "Send Post Notification", logger: request.logger)
         }

@@ -674,6 +674,52 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
     gap: 0.5rem;
 }
 
+#notification-bell-wrapper {
+    position: relative;
+    anchor-name: --notif-bell-anchor;
+}
+
+#notification-panel {
+    position-anchor: --notif-bell-anchor;
+    bottom: anchor(top);
+    left: anchor(center);
+    transform: translateX(-50%);
+    margin-bottom: 0.75rem;
+    min-width: 200px;
+}
+
+.notif-children {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 1.5rem;
+    width: 100%;
+}
+
+.notif-children.open {
+    display: block;
+}
+
+.notif-chevron {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    opacity: 0.6;
+}
+
+.notif-chevron svg {
+    width: 10px;
+    height: 10px;
+}
+
+.notif-chevron:hover {
+    opacity: 1;
+}
+
 /*
  ------------------------------------------------
  Footer

@@ -13,6 +13,10 @@ final class WebPushSubscription: Model, Content, @unchecked Sendable {
     @ID(key: .id)
     var id: UUID?
 
+    /// Pipe-separated content-type tokens (e.g. "post|note:music"). Empty means receive all.
+    @Field(key: "content_types")
+    var contentTypes: String
+
     /// Pipe-separated language codes (e.g. "en|hu"). Empty means receive all languages.
     @Field(key: "languages")
     var languages: String
@@ -22,12 +26,13 @@ final class WebPushSubscription: Model, Content, @unchecked Sendable {
 
     init() {}
 
-    init(id: UUID? = nil, endpoint: String, p256dh: String, auth: String, languages: String = "") {
+    init(id: UUID? = nil, endpoint: String, p256dh: String, auth: String, languages: String = "", contentTypes: String = "post") {
         self.id = id
         self.endpoint = endpoint
         self.p256dh = p256dh
         self.auth = auth
         self.languages = languages
+        self.contentTypes = contentTypes
     }
 
     init(from decoder: any Decoder) throws {
@@ -41,10 +46,12 @@ final class WebPushSubscription: Model, Content, @unchecked Sendable {
         self.auth   = try keys.decode(String.self, forKey: .auth)
         let languageList = (try? container.decode([String].self, forKey: .languages)) ?? []
         self.languages = languageList.joined(separator: "|")
+        let contentTypeList = (try? container.decode([String].self, forKey: .contentTypes)) ?? ["post"]
+        self.contentTypes = contentTypeList.joined(separator: "|")
     }
 
     private enum CodingKeys: String, CodingKey {
-        case endpoint, keys, languages
+        case endpoint, keys, languages, contentTypes
     }
 
     private enum KeysCodingKeys: String, CodingKey {

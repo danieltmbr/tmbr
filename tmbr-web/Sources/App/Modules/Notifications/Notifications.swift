@@ -24,6 +24,7 @@ struct Notifications: Module {
     
     func configure(_ app: Vapor.Application) async throws {
         app.migrations.add(AddWebPushSubscriptionLanguages())
+        app.migrations.add(AddWebPushSubscriptionContentTypes())
         await app.storage.setWithAsyncShutdown(
             ServiceKey.self,
             to: try NotificationService(app: app)
