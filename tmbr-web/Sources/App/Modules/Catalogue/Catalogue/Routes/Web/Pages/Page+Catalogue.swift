@@ -57,18 +57,7 @@ extension FilterItemViewModel {
         value: Song.previewType
     )
 
-    static let en = FilterItemViewModel(icon: "🇬🇧", label: "English", value: Language.en.rawValue)
-    static let hu = FilterItemViewModel(icon: "🇭🇺", label: "Hungarian", value: Language.hu.rawValue)
 }
-
-private let catalogueIcons: [String: String] = [
-    Album.previewType:    "album",
-    Book.previewType:     "book",
-    Movie.previewType:    "movie",
-    Playlist.previewType: "playlist",
-    Podcast.previewType:  "podcast",
-    Song.previewType:     "song",
-]
 
 extension [FilterItemViewModel] {
     static let catalogue: Self = [
@@ -78,8 +67,6 @@ extension [FilterItemViewModel] {
     static let music: Self = [
         .song, .album, .playlist
     ]
-
-    static let languages: Self = [.en, .hu]
 }
 
 extension Template where Model == CatalogueViewModel {
@@ -109,17 +96,14 @@ extension Page {
 
             let typeItems = allCategories.map { cat in
                 FilterItemViewModel(
-                    icon: catalogueIcons[cat.slug] ?? "link",
+                    icon: cat.icon ?? "link",
                     label: cat.name,
                     value: cat.slug
                 ).check(payload.types?.contains(cat.slug) ?? true)
             }
-            let languageItems = [FilterItemViewModel].languages.map {
-                $0.check(payload.languages?.contains($0.value) ?? true)
-            }
 
             return CatalogueViewModel(
-                panels: [.types(typeItems), .languages(languageItems)],
+                panels: [.types(typeItems)],
                 previews: result.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
                     + result.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) },
                 term: payload.term,

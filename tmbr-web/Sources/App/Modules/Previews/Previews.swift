@@ -24,6 +24,7 @@ struct Previews: Module {
         app.migrations.add(CreateContainerEntries())
         app.migrations.add(CreateCatalogueCategories())
         app.migrations.add(MigratePreviewToCategoryID())
+        app.migrations.add(AddRouteAndIconToCatalogueCategories())
 
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)

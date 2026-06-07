@@ -55,8 +55,8 @@ struct CatalogueAPIController: RouteCollection {
     @Sendable
     private func createItem(request: Request) async throws -> PreviewResponse {
         let payload = try request.content.decode(CatalogueNewPayload.self)
-        let user = try request.auth.require(User.self)
-        let userID = try user.requireID()
+        let user = try await request.permissions.previews.create.grant()
+        let userID = user.userID
         let input = CreatePreviewItemInput(
             title: payload.title.trimmingCharacters(in: .whitespaces),
             subtitle: {

@@ -59,8 +59,8 @@ struct CatalogueWebController: RouteCollection {
                 return try await renderNewWithError(request, payload: payload, error: "Title is required.")
             }
 
-            let user = try request.auth.require(User.self)
-            let userID = try user.requireID()
+            let user = try await request.permissions.previews.create.grant()
+            let userID = user.userID
 
             let artworkID = try await resolveArtwork(payload: payload, title: payload.title, on: request)
 

@@ -19,6 +19,12 @@ final class CatalogueCategory: Model, @unchecked Sendable {
     @Enum(key: "kind")
     var kind: Kind
 
+    @OptionalField(key: "route")
+    var route: String?
+
+    @OptionalField(key: "icon")
+    var icon: String?
+
     enum Kind: String, Codable, CaseIterable {
         case catalogue   // model-backed items visible in the feed: song, album, book, movie, playlist, podcast
         case promotable  // shallow placeholder awaiting promotion: track
@@ -27,9 +33,11 @@ final class CatalogueCategory: Model, @unchecked Sendable {
 
     init() {}
 
-    init(slug: String, name: String, kind: Kind) {
+    init(slug: String, name: String, kind: Kind, route: String? = nil, icon: String? = nil) {
         self.slug = slug
         self.name = name
         self.kind = kind
+        self.route = route
+        self.icon = icon
     }
 }

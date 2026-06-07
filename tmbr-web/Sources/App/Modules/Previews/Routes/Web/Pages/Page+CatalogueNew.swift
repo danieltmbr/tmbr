@@ -52,7 +52,7 @@ extension Template where Model == CatalogueNewViewModel {
 extension Page {
     static var catalogueNew: Self {
         Page(template: .catalogueNew) { request in
-            try request.auth.require(User.self)
+            try await request.permissions.previews.create.grant()
             let categories = ((try? await request.commands.catalogueCategories.list()) ?? []).map(\.name)
             return CatalogueNewViewModel(categories: categories)
         }
@@ -76,7 +76,7 @@ extension Template where Model == CatalogueItemViewModel {
 extension Page {
     static var cataloguePreview: Self {
         Page(template: .cataloguePreview) { request in
-            try request.auth.require(User.self)
+            try await request.permissions.previews.create.grant()
             let payload = try request.content.decode(CataloguePreviewPayload.self)
             let formatter = MarkdownFormatter.html
             let notes: [NoteViewModel] = payload.notes.isEmpty ? [] : [

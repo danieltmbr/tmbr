@@ -14,19 +14,32 @@ struct CatalogueQueryMapper: Sendable {
     }
 
     func toPreviewQuery(from payload: CatalogueQueryPayload) -> PreviewQueryInput {
-        PreviewQueryInput(term: payload.term, categoryIDs: selectedCategoryIDs(from: payload.types))
+        PreviewQueryInput(
+            term: payload.term,
+            categoryIDs: selectedCategoryIDs(from: payload.types)
+        )
     }
 
     func toNotesQuery(from payload: CatalogueQueryPayload) -> NoteQueryPayload {
-        NoteQueryPayload(term: payload.term, categoryIDs: selectedCategoryIDs(from: payload.types), languages: payload.languages)
+        NoteQueryPayload(
+            term: payload.term,
+            categoryIDs: selectedCategoryIDs(from: payload.types),
+            languages: payload.languages
+        )
     }
 
     func toQuoteQuery(from payload: CatalogueQueryPayload) -> QuoteQueryPayload {
-        QuoteQueryPayload(term: payload.term, categoryIDs: selectedCategoryIDs(from: payload.types))
+        QuoteQueryPayload(
+            term: payload.term,
+            categoryIDs: selectedCategoryIDs(from: payload.types)
+        )
     }
 
     private func selectedCategoryIDs(from slugs: Set<String>?) -> Set<UUID>? {
-        guard let slugs else { return nil }
+        guard let slugs else {
+            let allIDs = Set(categories.compactMap(\.id))
+            return allIDs.isEmpty ? nil : allIDs
+        }
         let expanded = slugs.flatMap { Self.virtualTypes[$0] ?? [$0] }
         let matched = categories.filter { expanded.contains($0.slug) }.compactMap(\.id)
         return matched.isEmpty ? nil : Set(matched)
