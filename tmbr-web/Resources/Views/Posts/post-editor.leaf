@@ -62,8 +62,8 @@
                 <label class="language-picker">
                     #extend("Icons/globe")
                     <select id="editor-post-language" name="language">
-                        <option value="en" #if(language=="en"){ selected }>en</option>
-                        <option value="hu" #if(language=="hu"){ selected }>hu</option>
+                        <option value="en" #if(language == "en"):selected#endif>en</option>
+                        <option value="hu" #if(language == "hu"):selected#endif>hu</option>
                     </select>
                 </label>
 

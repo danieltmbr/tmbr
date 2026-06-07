@@ -1,3 +1,4 @@
 <script src="/Scripts/Notifications/notifications.js"></script>
 <script src="/Scripts/Shortcuts/shortcuts.js"></script>
+<script src="/Scripts/Shared/filter.js"></script>
 #import("scripts")
