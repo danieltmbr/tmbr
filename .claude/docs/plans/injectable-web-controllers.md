@@ -48,7 +48,7 @@ Factories are defined close to the feature they own (e.g. `Notes/Routes/Web/`) a
 
 ## Current workaround
 
-`NotesWebController.createNote(attachmentID:on:)` — a static method, honest about being a concrete utility but not injectable. Fine for now; replace when this pattern is adopted.
+`request.createNoteResponse(attachmentID:)` — a method, imitating a similar pattern as commands / permissions, but obfuscating the fact it's not injectable. Fine for now; replace when this pattern is adopted.
 
 ## Prior art in the codebase
 
