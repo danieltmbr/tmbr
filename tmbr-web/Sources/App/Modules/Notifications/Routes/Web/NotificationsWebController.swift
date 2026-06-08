@@ -19,7 +19,7 @@ struct NotificationsWebController: RouteCollection {
 
         let options: [PanelOption] = [
             PanelOption(value: "post", label: "Posts", icon: "post", hasChildren: false, children: []),
-            PanelOption(value: "note", label: "Notes", icon: "pencil", hasChildren: true, children: noteChildren),
+            PanelOption(value: "note", label: "Notes", icon: "note", hasChildren: true, children: noteChildren),
         ]
         return try await req.view.render("Panels/notification-panel", PanelContext(options: options))
     }

@@ -192,23 +192,11 @@ class NotificationPreferencesController {
             }
         });
 
-        // Top-level: uncheck children when top is checked
+        // Top-level: sync all children to match parent check state
         this.panel.querySelectorAll('.notif-top').forEach(topCb => {
             const childList = topCb.closest('li.notif-group')?.nextElementSibling;
             topCb.addEventListener('change', () => {
-                if (topCb.checked) {
-                    childList?.querySelectorAll('.notif-child').forEach(cb => { cb.checked = false; });
-                }
-            });
-        });
-
-        // Child: uncheck parent top when child is checked
-        this.panel.querySelectorAll('.notif-child').forEach(childCb => {
-            childCb.addEventListener('change', () => {
-                if (!childCb.checked) return;
-                const group = childCb.closest('.notif-children')?.previousElementSibling;
-                const topCb = group?.querySelector('.notif-top');
-                if (topCb) topCb.checked = false;
+                childList?.querySelectorAll('.notif-child').forEach(cb => { cb.checked = topCb.checked; });
             });
         });
 

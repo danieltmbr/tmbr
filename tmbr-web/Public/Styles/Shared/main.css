@@ -718,10 +718,9 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
 
 .notif-children {
     list-style: none;
-    margin: 0 0 0 1.75rem;
-    padding: 0 0 0 0.75rem;
-    width: calc(100% - 1.75rem);
-    border-left: 2px solid rgba(128, 128, 128, 0.25);
+    margin: 0;
+    padding: 0 0 0 2.5rem;
+    width: 100%;
 }
 
 /*
