@@ -22,7 +22,7 @@ final class Playlist: Model, Previewable, @unchecked Sendable {
     var artwork: Image?
 
     @OptionalField(key: "created_at")
-    var createdAt: Date?
+    var platformCreatedAt: Date?
 
     @Field(key: "description")
     var description: String?

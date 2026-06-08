@@ -6,8 +6,8 @@
         #if(description):
         <p>#(description)</p>
         #endif
-        #if(createdAt):
-        <p class="published-date">Created #(createdAt)</p>
+        #if(platformCreatedAt):
+        <p class="published-date">Created #(platformCreatedAt)</p>
         #endif
         #extend("Catalogue/resources")
     </div>

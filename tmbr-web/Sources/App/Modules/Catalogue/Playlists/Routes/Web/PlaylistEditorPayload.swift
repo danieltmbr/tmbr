@@ -104,7 +104,7 @@ extension PlaylistInput {
         self.init(
             access: payload.access,
             artwork: artworkId ?? payload.artworkId,
-            createdAt: payload.platformCreatedAt,
+            platformCreatedAt: payload.platformCreatedAt,
             description: payload.description,
             resourceURLs: payload.filteredResourceURLs,
             title: payload.title,

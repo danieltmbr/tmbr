@@ -16,14 +16,14 @@ struct PlaylistInput {
 
     fileprivate let title: String
 
-    let createdAt: Date?
+    let platformCreatedAt: Date?
 
     let tracks: [TrackEntry]?
 
     init(
         access: Access,
         artwork: ImageID?,
-        createdAt: Date? = nil,
+        platformCreatedAt: Date? = nil,
         description: String?,
         resourceURLs: [String],
         title: String,
@@ -31,7 +31,7 @@ struct PlaylistInput {
     ) {
         self.access = access
         self.artwork = artwork
-        self.createdAt = createdAt
+        self.platformCreatedAt = platformCreatedAt
         self.description = description
         self.resourceURLs = resourceURLs
         self.title = title
@@ -55,7 +55,7 @@ extension ModelConfiguration where Model == Playlist, Parameters == PlaylistInpu
         ModelConfiguration { playlist, input in
             playlist.access = input.access
             playlist.$artwork.id = input.artwork
-            if let date = input.createdAt { playlist.createdAt = date }
+            if let date = input.platformCreatedAt { playlist.platformCreatedAt = date }
             playlist.description = input.description
             playlist.resourceURLs = input.resourceURLs
             playlist.title = input.title
