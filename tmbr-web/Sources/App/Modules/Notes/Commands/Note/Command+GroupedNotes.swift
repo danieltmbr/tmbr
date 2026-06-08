@@ -6,7 +6,7 @@ import TmbrCore
 
 extension Command where Self == PlainCommand<[PreviewID], [PreviewID: [Note]]> {
 
-    static func fetchNotesByAttachments(database: Database) -> Self {
+    static func grouped(database: Database) -> Self {
         PlainCommand { previewIDs in
             guard !previewIDs.isEmpty else { return [:] }
             let notes = try await Note.query(on: database)
@@ -25,9 +25,9 @@ extension Command where Self == PlainCommand<[PreviewID], [PreviewID: [Note]]> {
 
 extension CommandFactory<[PreviewID], [PreviewID: [Note]]> {
 
-    static var fetchNotesByAttachments: Self {
+    static var grouped: Self {
         CommandFactory { request in
-            .fetchNotesByAttachments(database: request.commandDB)
+            .grouped(database: request.commandDB)
         }
     }
 }

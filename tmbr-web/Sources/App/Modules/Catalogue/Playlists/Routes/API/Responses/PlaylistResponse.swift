@@ -7,6 +7,8 @@ extension PlaylistResponse {
     init(
         playlist: Playlist,
         notes: [Note],
+        trackPreviews: [Preview] = [],
+        trackNotesByID: [PreviewID: [Note]] = [:],
         baseURL: String,
         platform: Platform<PlaylistMetadata> = .playlist
     ) {
@@ -20,7 +22,10 @@ extension PlaylistResponse {
             preview: PreviewResponse(preview: playlist.preview, baseURL: baseURL),
             post: playlist.post.map { PostResponse(post: $0, baseURL: baseURL) },
             resources: playlist.resourceURLs.compactMap(platform.hyperlink),
-            title: playlist.title
+            title: playlist.title,
+            tracks: trackPreviews.enumerated().map { index, preview in
+                TrackItem(preview: preview, position: index + 1, notes: trackNotesByID[preview.id!] ?? [], baseURL: baseURL)
+            }
         )
     }
 }

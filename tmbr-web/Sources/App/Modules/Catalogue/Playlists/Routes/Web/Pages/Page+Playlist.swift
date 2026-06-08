@@ -117,24 +117,18 @@ extension Page {
                 throw Abort(.badRequest)
             }
             async let playlist = request.commands.playlists.fetch(playlistID, for: .read)
-            async let notes = request.commands.notes.query(id: playlistID, of: Playlist.previewType, languages: request.languagePreference)
-            async let entries = request.commands.previews.listContainerEntries(
-                ContainerEntriesInput(containerType: "playlist", containerID: playlistID)
-            )
+            async let playlistNotes = request.commands.notes.query(id: playlistID, of: Playlist.previewType, languages: request.languagePreference)
+            async let trackPreviews = request.commands.previews.listContainerPreviews("playlist", playlistID)
             let resolvedPlaylist = try await playlist
             let allowsNewNote = (try? await request.permissions.playlists.edit.grant(resolvedPlaylist)) != nil
-            let resolvedEntries = try await entries
-            // Only promoted songs can have notes; skip the DB query for unpromoted tracks
-            let promotedPreviewIDs = resolvedEntries.compactMap { entry -> PreviewID? in
-                guard entry.preview.parentID != nil else { return nil }
-                return entry.preview.id
-            }
-            let notesByPreviewID = try await request.commands.notes.fetchNotesByAttachments(promotedPreviewIDs)
-            let tracks = resolvedEntries.map { entry -> TrackViewModel in
-                let notes = entry.preview.parentID != nil
-                    ? (entry.preview.id.flatMap { notesByPreviewID[$0] } ?? []).compactMap { try? NoteViewModel(note: $0) }
-                    : []
-                return TrackViewModel(entry: entry, notes: notes)
+            let resolvedTrackPreviews = try await trackPreviews
+            let trackNotesByID = try await request.commands.notes.grouped(resolvedTrackPreviews.compactMap(\.id))
+            let tracks = resolvedTrackPreviews.enumerated().map { index, preview in
+                TrackViewModel(
+                    preview: preview,
+                    position: index + 1,
+                    notes: (trackNotesByID[preview.id!] ?? []).compactMap { try? NoteViewModel(note: $0) }
+                )
             }
             let csrf: String?
             if allowsNewNote {
@@ -146,7 +140,7 @@ extension Page {
             }
             return try PlaylistViewModel(
                 playlist: resolvedPlaylist,
-                notes: await notes,
+                notes: await playlistNotes,
                 tracks: tracks,
                 baseURL: request.baseURL,
                 allowsNewNote: allowsNewNote,

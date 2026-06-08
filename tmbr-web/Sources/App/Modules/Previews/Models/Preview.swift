@@ -10,6 +10,10 @@ final class Preview: Model, @unchecked Sendable {
     @ID(custom: "id", generatedBy: .user)
     var id: UUID?
     
+    /// The integer ID of the backing catalogue model (e.g. Song, Book, Podcast).
+    /// Nil for shallow promotable items (track) before promotion, and also for orphan/collection items.
+    /// Do NOT use `parentID == nil` as a proxy for "cannot have notes" — use `kind.isShallow` instead,
+    /// because orphan and collection items also have a nil parentID yet can have notes.
     @OptionalField(key: "parent_id")
     private(set) var parentID: Int?
     

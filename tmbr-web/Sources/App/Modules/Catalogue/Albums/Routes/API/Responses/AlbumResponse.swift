@@ -8,6 +8,8 @@ extension AlbumResponse {
     init(
         album: Album,
         notes: [Note],
+        trackPreviews: [Preview] = [],
+        trackNotesByID: [PreviewID: [Note]] = [:],
         baseURL: String,
         platform: Platform<AlbumMetadata> = .album
     ) {
@@ -23,7 +25,10 @@ extension AlbumResponse {
             post: album.post.map { PostResponse(post: $0, baseURL: baseURL) },
             releaseDate: album.releaseDate,
             resources: album.resourceURLs.compactMap(platform.hyperlink),
-            title: album.title
+            title: album.title,
+            tracks: trackPreviews.enumerated().map { index, preview in
+                TrackItem(preview: preview, position: index + 1, notes: trackNotesByID[preview.id!] ?? [], baseURL: baseURL)
+            }
         )
     }
 }

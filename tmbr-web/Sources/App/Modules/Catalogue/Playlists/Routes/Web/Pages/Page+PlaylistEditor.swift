@@ -135,12 +135,12 @@ extension Page {
             }
             async let playlist = request.commands.playlists.fetch(playlistID, for: .write)
             async let notes = request.commands.notes.query(id: playlistID, of: Playlist.previewType)
-            async let entries = request.commands.previews.listContainerEntries(
-                ContainerEntriesInput(containerType: "playlist", containerID: playlistID)
-            )
+            async let trackPreviews = request.commands.previews.listContainerPreviews("playlist", playlistID)
             let csrf = UUID().uuidString
             request.session.data["csrf.editor"] = csrf
-            let tracks = try await entries.map { TrackViewModel(entry: $0) }
+            let tracks = try await trackPreviews.enumerated().map { index, preview in
+                TrackViewModel(preview: preview, position: index + 1)
+            }
             return try await PlaylistEditorViewModel(
                 playlist: playlist,
                 notes: notes,

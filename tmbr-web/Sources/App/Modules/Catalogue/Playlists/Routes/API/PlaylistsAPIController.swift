@@ -17,9 +17,14 @@ struct PlaylistsAPIController: RouteCollection {
             }
             async let playlist = request.commands.playlists.fetch(playlistID, for: .read)
             async let notes = request.commands.notes.query(id: playlistID, of: Playlist.previewType)
+            async let trackPreviews = request.commands.previews.listContainerPreviews("playlist", playlistID)
+            let resolvedTrackPreviews = try await trackPreviews
+            let trackNotesByID = try await request.commands.notes.grouped(resolvedTrackPreviews.compactMap(\.id))
             return try PlaylistResponse(
                 playlist: await playlist,
                 notes: await notes,
+                trackPreviews: resolvedTrackPreviews,
+                trackNotesByID: trackNotesByID,
                 baseURL: request.baseURL
             )
         }

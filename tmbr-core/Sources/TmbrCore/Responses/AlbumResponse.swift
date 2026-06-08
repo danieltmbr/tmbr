@@ -16,6 +16,8 @@ public struct AlbumResponse: Codable, Sendable {
 
     public let owner: UserResponse
 
+    public let tracks: [TrackItem]
+
     public let preview: PreviewResponse
 
     public let post: PostResponse?
@@ -38,7 +40,8 @@ public struct AlbumResponse: Codable, Sendable {
         post: PostResponse?,
         releaseDate: Date?,
         resources: [Hyperlink],
-        title: String
+        title: String,
+        tracks: [TrackItem] = []
     ) {
         self.id = id
         self.access = access
@@ -52,5 +55,6 @@ public struct AlbumResponse: Codable, Sendable {
         self.releaseDate = releaseDate
         self.resources = resources
         self.title = title
+        self.tracks = tracks
     }
 }

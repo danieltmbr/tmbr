@@ -35,9 +35,14 @@ struct AlbumsAPIController: RouteCollection {
             }
             async let album = request.commands.albums.fetch(albumID, for: .read)
             async let notes = request.commands.notes.query(id: albumID, of: Album.previewType)
+            async let trackPreviews = request.commands.previews.listContainerPreviews("album", albumID)
+            let resolvedTrackPreviews = try await trackPreviews
+            let trackNotesByID = try await request.commands.notes.grouped(resolvedTrackPreviews.compactMap(\.id))
             return try AlbumResponse(
                 album: await album,
                 notes: await notes,
+                trackPreviews: resolvedTrackPreviews,
+                trackNotesByID: trackNotesByID,
                 baseURL: request.baseURL
             )
         }

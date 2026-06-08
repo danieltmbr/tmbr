@@ -36,15 +36,14 @@ Image (images)
   └── sourceURL: String?      (original external URL — used for deduplication; see Gallery commands)
 
 Preview (previews)
-  ├── parentID: Int           (polymorphic, not a FK — points to the item's table)
-  ├── parentType: String      ("book", "song", "movie", "podcast")
+  ├── parentID: Int?          (nullable; nil = shallow placeholder; non-nil = backing catalogue model ID)
+  ├── catalogueCategory: CatalogueCategory?   (@OptionalParent — identifies the item type and its kind)
   ├── parentOwner: User       (@Parent, key: "parent_owner")
   ├── parentAccess: Access    (enum)
   ├── primaryInfo: String     (title)
   ├── secondaryInfo: String?  (artist/author)
   ├── image: Image?           (@OptionalParent, key: "image_id")
   └── externalLinks: [String]
-  UNIQUE(parent_type, parent_id)
   ID type: UUID (not Int like other models)
 
 Post (posts)
@@ -66,9 +65,39 @@ Quote (quotes)
 
 ### Why This Structure
 
-Aggregated lists query only the `previews` table — no joins across entity-specific tables. Detail pages use `parentType` + `parentID` to fetch the actual item from its dedicated table.
+Aggregated lists query only the `previews` table — no joins across entity-specific tables. Detail pages use `catalogueCategory` + `parentID` to fetch the actual item from its dedicated table.
 
 Notes and Posts never reference parent entities directly — they hold a Preview FK (`attachment_id`), which provides the parent's type, ID, and owner. This avoids circular dependencies between modules and means Notes/Posts work with any Previewable entity without modification.
+
+### Promotable Items (Shallow Placeholders)
+
+Some catalogue entries are **shallow placeholders** — they have a Preview record but no backing first-class model. The `CatalogueCategory.Kind` enum controls this:
+
+| Kind | Description | `parentID` | Can have Notes? | Example |
+|------|-------------|------------|-----------------|---------|
+| `.catalogue` | Model-backed, appears in feed | non-nil | Yes | Song, Album, Book, Movie, Playlist, Podcast |
+| `.promotable` | Shallow placeholder awaiting promotion | nil → non-nil after promotion | No → Yes after promotion | Track |
+| `.orphan` | User-defined, no backing model | nil | Yes | Recipe, Guide, Link |
+| `.collection` | Display-only grouping | nil | Yes (no use case yet) | Music |
+
+**Key rule: use `catalogueCategory?.kind.isShallow` (not `parentID == nil`) to test whether an item can have notes.** Orphan and collection items also have `parentID == nil` but are not shallow and can accept Notes.
+
+#### Promotable Lifecycle (Track → Song)
+
+1. **Import**: A `Preview` is created with `parentID = nil` and `kind = .promotable`. No Song model exists yet.
+2. **User accesses track**: The app prompts to promote. `POST /api/songs/promote` is called.
+3. **Promotion**: A `Song` model is created with `adoptingPreviewID` set to the track's Preview UUID. `PreviewModelMiddleware` calls `preview.adopt(parentID: songID, categoryID: songCategoryID, ...)` — setting `parentID` to the Song's Int ID and changing the category to "song" (kind = `.catalogue`).
+4. **After promotion**: The same Preview UUID now has a non-nil `parentID` and a `.catalogue` kind. Notes can now be attached.
+
+The `ContainerEntry` for an album/playlist tracklist always points to the same Preview UUID regardless of whether it has been promoted.
+
+#### Deletion Behaviour
+
+When removing a container entry from a tracklist:
+- **`kind == .promotable`** (still shallow): delete the Preview record (ContainerEntry cascades via FK)
+- **`kind != .promotable`** (promoted to Song): delete only the ContainerEntry, preserve the Preview and its backing Song
+
+This logic lives in `Command+DeleteContainerEntries.swift` and `Command+SyncContainerEntries.swift`.
 
 ### Legacy Naming
 

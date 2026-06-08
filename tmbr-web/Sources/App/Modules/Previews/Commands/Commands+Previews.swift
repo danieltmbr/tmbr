@@ -25,6 +25,8 @@ extension Commands {
 
         let listContainerEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]>
 
+        let listContainerPreviews: CommandFactory<ContainerEntriesInput, [Preview]>
+
         let syncContainerEntries: CommandFactory<SyncContainerEntriesInput, Void>
 
         let update: CommandFactory<UpdatePreviewItemInput, Preview>
@@ -38,6 +40,7 @@ extension Commands {
             importTracks: CommandFactory<ImportAlbumTracksInput, Void> = .importAlbumTracks,
             list: CommandFactory<PreviewQueryInput, [Preview]> = .listPreviews,
             listContainerEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]> = .listContainerEntries,
+            listContainerPreviews: CommandFactory<ContainerEntriesInput, [Preview]> = .listContainerPreviews,
             syncContainerEntries: CommandFactory<SyncContainerEntriesInput, Void> = .syncContainerEntries,
             update: CommandFactory<UpdatePreviewItemInput, Preview> = .updatePreviewItem
         ) {
@@ -49,6 +52,7 @@ extension Commands {
             self.importTracks = importTracks
             self.list = list
             self.listContainerEntries = listContainerEntries
+            self.listContainerPreviews = listContainerPreviews
             self.syncContainerEntries = syncContainerEntries
             self.update = update
         }

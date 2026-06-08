@@ -4,29 +4,6 @@ import AuthKit
 import Core
 import TmbrCore
 
-struct TrackViewModel: Encodable, Sendable {
-    let position: Int
-    let title: String
-    let href: String?
-    let previewID: String?
-    let trackURL: String?
-    let notes: [NoteViewModel]
-
-    init(entry: ContainerEntry, notes: [NoteViewModel] = []) {
-        position = entry.position
-        title = entry.preview.primaryInfo
-        trackURL = entry.preview.externalLinks.first
-        self.notes = notes
-        if let parentID = entry.preview.parentID, let route = entry.preview.catalogueCategory?.route {
-            href = "/\(route)/\(parentID)"
-            previewID = nil
-        } else {
-            href = nil
-            previewID = entry.preview.id?.uuidString
-        }
-    }
-}
-
 struct AlbumViewModel: Encodable, Sendable {
 
     private let id: AlbumID
@@ -148,27 +125,22 @@ extension Page {
                 throw Abort(.badRequest)
             }
             async let album = request.commands.albums.fetch(albumID, for: .read)
-            async let notes = request.commands.notes.query(id: albumID, of: Album.previewType, languages: request.languagePreference)
-            async let entries = request.commands.previews.listContainerEntries(
-                ContainerEntriesInput(containerType: "album", containerID: albumID)
-            )
+            async let albumNotes = request.commands.notes.query(id: albumID, of: Album.previewType, languages: request.languagePreference)
+            async let trackPreviews = request.commands.previews.listContainerPreviews("album", albumID)
             let resolvedAlbum = try await album
             let allowsNewNote = (try? await request.permissions.albums.edit.grant(resolvedAlbum)) != nil
-            let resolvedEntries = try await entries
-            let promotedPreviewIDs = resolvedEntries.compactMap { entry -> PreviewID? in
-                guard entry.preview.parentID != nil else { return nil }
-                return entry.preview.id
-            }
-            let notesByPreviewID = try await request.commands.notes.fetchNotesByAttachments(promotedPreviewIDs)
-            let tracks = resolvedEntries.map { entry -> TrackViewModel in
-                let notes = entry.preview.parentID != nil
-                    ? (entry.preview.id.flatMap { notesByPreviewID[$0] } ?? []).compactMap { try? NoteViewModel(note: $0) }
-                    : []
-                return TrackViewModel(entry: entry, notes: notes)
+            let resolvedTrackPreviews = try await trackPreviews
+            let trackNotesByID = try await request.commands.notes.grouped(resolvedTrackPreviews.compactMap(\.id))
+            let tracks = resolvedTrackPreviews.enumerated().map { index, preview in
+                TrackViewModel(
+                    preview: preview,
+                    position: index + 1,
+                    notes: (trackNotesByID[preview.id!] ?? []).compactMap { try? NoteViewModel(note: $0) }
+                )
             }
             return try AlbumViewModel(
                 album: resolvedAlbum,
-                notes: await notes,
+                notes: await albumNotes,
                 tracks: tracks,
                 baseURL: request.baseURL,
                 allowsNewNote: allowsNewNote
