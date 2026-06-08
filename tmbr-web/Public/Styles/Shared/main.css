@@ -674,8 +674,7 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
     gap: 0.5rem;
 }
 
-#notification-bell-wrapper {
-    position: relative;
+#notification-toggle {
     anchor-name: --notif-bell-anchor;
 }
 
@@ -698,6 +697,23 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
     transform: translateX(-50%);
     margin-bottom: 0.75rem;
     min-width: 200px;
+}
+
+.notif-subscribe-row label .notif-icon-off {
+    display: none;
+}
+
+.notif-subscribe-row:has(#notif-subscribed:checked) label .notif-icon-on {
+    display: none;
+}
+
+.notif-subscribe-row:has(#notif-subscribed:checked) label .notif-icon-off {
+    display: inline;
+}
+
+.system-info:has(#notif-subscribed:not(:checked)) .filter-item:not(.notif-subscribe-row) {
+    opacity: 0.4;
+    pointer-events: none;
 }
 
 .notif-children {

@@ -1,14 +1,17 @@
 #if(item.icon == "album"):#extend("Icons/album")#endif
 #if(item.icon == "book"):#extend("Icons/book")#endif
+#if(item.icon == "chevron-down"):#extend("Icons/chevron-down")#endif
 #if(item.icon == "clipboard"):#extend("Icons/clipboard")#endif
 #if(item.icon == "close"):#extend("Icons/close")#endif
 #if(item.icon == "email"):#extend("Icons/email")#endif
 #if(item.icon == "filter"):#extend("Icons/filter")#endif
 #if(item.icon == "gallery"):#extend("Icons/gallery")#endif
 #if(item.icon == "github"):#extend("Icons/github")#endif
+#if(item.icon == "globe"):#extend("Icons/globe")#endif
 #if(item.icon == "instagram"):#extend("Icons/instagram")#endif
 #if(item.icon == "movie"):#extend("Icons/movie")#endif
 #if(item.icon == "notification"):#extend("Icons/notification")#endif
+#if(item.icon == "notification-off"):#extend("Icons/notification-off")#endif
 #if(item.icon == "pencil"):#extend("Icons/pencil")#endif
 #if(item.icon == "playlist"):#extend("Icons/playlist")#endif
 #if(item.icon == "podcast"):#extend("Icons/podcast")#endif

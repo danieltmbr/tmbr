@@ -82,8 +82,7 @@ async function savePreferences(endpoint, languages, contentTypes) {
 // ---------------------------------------------------------------------------
 
 class NotificationPreferencesController {
-    constructor(bellWrapper, bellToggle) {
-        this.bellWrapper = bellWrapper;
+    constructor(bellToggle) {
         this.bellToggle = bellToggle;
         this.panel = null;
         this._push = null;
@@ -97,7 +96,7 @@ class NotificationPreferencesController {
         this.panel = document.createElement('aside');
         this.panel.id = 'notification-panel';
         this.panel.className = 'panel popup';
-        this.bellWrapper.appendChild(this.panel);
+        this.bellToggle.insertAdjacentElement('afterend', this.panel);
         this.bellToggle.addEventListener('click', this._onBellClick);
         this.bellToggle.addEventListener('touchend', this._onBellClick, { passive: false });
     }
@@ -149,7 +148,7 @@ class NotificationPreferencesController {
     }
 
     _handleOutsideClick(e) {
-        if (!this.panel.contains(e.target) && !this.bellWrapper.contains(e.target)) {
+        if (!this.panel.contains(e.target) && !this.bellToggle.contains(e.target)) {
             this._close();
         }
     }
@@ -159,11 +158,10 @@ class NotificationPreferencesController {
         const subscribedCb = this.panel.querySelector('#notif-subscribed');
         if (subscribedCb) subscribedCb.checked = isSubscribed;
 
-        this.panel.querySelectorAll('[data-notif-content]').forEach(el => {
-            el.hidden = !isSubscribed;
-        });
-
-        if (!isSubscribed) return;
+        if (!isSubscribed) {
+            this.panel.querySelectorAll('.notif-top, .notif-child').forEach(cb => { cb.checked = false; });
+            return;
+        }
 
         const storedTypes = (localStorage.getItem('notifContentTypes') ?? '').split('|').filter(Boolean);
         this.panel.querySelectorAll('.notif-top, .notif-child').forEach(cb => {
@@ -271,9 +269,8 @@ class NotificationPreferencesController {
 // ---------------------------------------------------------------------------
 
 async function initialiseNotificationToggle() {
-    const bellWrapper = document.getElementById('notification-bell-wrapper');
     const bellToggle = document.getElementById('notification-toggle');
-    if (!bellWrapper || !bellToggle) return;
+    if (!bellToggle) return;
 
     const push = await checkPushSubscription();
 
@@ -292,7 +289,7 @@ async function initialiseNotificationToggle() {
     bellToggle.title = isSubscribed ? 'Notification preferences' : 'Enable notifications';
     bellToggle.classList.toggle('subscribed', isSubscribed);
 
-    const ctrl = new NotificationPreferencesController(bellWrapper, bellToggle);
+    const ctrl = new NotificationPreferencesController(bellToggle);
     ctrl.init();
 }
 

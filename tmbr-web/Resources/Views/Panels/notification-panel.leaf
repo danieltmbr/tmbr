@@ -1,30 +1,43 @@
 <ul class="system-info">
-    <li class="filter-item">
-        <label for="notif-subscribed">Enable notifications</label>
+    <li class="filter-item notif-subscribe-row">
         <input type="checkbox" id="notif-subscribed">
+        <label for="notif-subscribed">
+            Enable notifications
+            #extend("Icons/notification")
+            #extend("Icons/notification-off")
+        </label>
     </li>
-    <hr data-notif-content hidden>
-    #for(option in options):
-    #if(option.hasChildren):
-    <li class="filter-item notif-group" data-notif-content hidden>
-        <label for="notif-#(option.value)">#(option.label)</label>
-        <input type="checkbox" id="notif-#(option.value)" class="notif-top" value="#(option.value)">
-        <button type="button" class="icon notif-chevron" aria-expanded="false" aria-label="Expand #(option.label)">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <hr>
+    #for(item in options):
+    #if(item.hasChildren):
+    <li class="filter-item notif-group">
+        <input type="checkbox" id="notif-#(item.value)" class="notif-top" value="#(item.value)">
+        <label for="notif-#(item.value)">
+            #(item.label)
+            #extend("Icons/icons")
+        </label>
+        <button type="button" class="icon notif-chevron" aria-expanded="false" aria-label="Expand #(item.label)">
+            #extend("Icons/chevron-down")
         </button>
     </li>
-    <ul class="notif-children" data-notif-content hidden>
-        #for(child in option.children):
+    <ul class="notif-children">
+        #for(item in item.children):
         <li class="filter-item">
-            <label for="notif-#(child.value)">#(child.label)</label>
-            <input type="checkbox" id="notif-#(child.value)" class="notif-child" value="#(child.value)">
+            <input type="checkbox" id="notif-#(item.value)" class="notif-child" value="#(item.value)">
+            <label for="notif-#(item.value)">
+                #(item.label)
+                #extend("Icons/icons")
+            </label>
         </li>
         #endfor
     </ul>
     #else:
-    <li class="filter-item" data-notif-content hidden>
-        <label for="notif-#(option.value)">#(option.label)</label>
-        <input type="checkbox" id="notif-#(option.value)" class="notif-top" value="#(option.value)">
+    <li class="filter-item">
+        <input type="checkbox" id="notif-#(item.value)" class="notif-top" value="#(item.value)">
+        <label for="notif-#(item.value)">
+            #(item.label)
+            #extend("Icons/icons")
+        </label>
     </li>
     #endif
     #endfor

@@ -9,18 +9,17 @@ struct NotificationsWebController: RouteCollection {
 
     private func panel(req: Request) async throws -> View {
         let categories = try await CatalogueCategory.query(on: req.db)
-            .filter(\.$kind ~~ [.collection, .catalogue])
+            .filter(\.$kind ~~ [.collection, .catalogue, .orphan])
+            .sort(\.$name)
             .all()
 
-        // Collections (e.g. music) and top-level catalogue items (book, movie, podcast)
-        // are offered as Note sub-categories.
         let noteChildren: [PanelOption] = categories
-            .filter { $0.kind == .collection || ($0.kind == .catalogue && $0.parentSlug == nil) }
-            .map { PanelOption(value: "note:\($0.slug)", label: $0.name, hasChildren: false, children: []) }
+            .filter { $0.kind == .orphan || $0.kind == .collection || ($0.kind == .catalogue && $0.parentSlug == nil) }
+            .map { PanelOption(value: "note:\($0.slug)", label: $0.name, icon: $0.icon ?? $0.slug, hasChildren: false, children: []) }
 
         let options: [PanelOption] = [
-            PanelOption(value: "post", label: "Posts", hasChildren: false, children: []),
-            PanelOption(value: "note", label: "Notes", hasChildren: true, children: noteChildren),
+            PanelOption(value: "post", label: "Posts", icon: "post", hasChildren: false, children: []),
+            PanelOption(value: "note", label: "Notes", icon: "pencil", hasChildren: true, children: noteChildren),
         ]
         return try await req.view.render("Panels/notification-panel", PanelContext(options: options))
     }
@@ -29,6 +28,7 @@ struct NotificationsWebController: RouteCollection {
 private struct PanelOption: Content {
     let value: String
     let label: String
+    let icon: String
     let hasChildren: Bool
     let children: [PanelOption]
 }
