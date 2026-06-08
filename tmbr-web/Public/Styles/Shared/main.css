@@ -678,18 +678,6 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
     anchor-name: --notification-bell-anchor;
 }
 
-#notification-toggle .notification-icon-off {
-    display: none;
-}
-
-#notification-toggle.subscribed .notification-icon-on {
-    display: none;
-}
-
-#notification-toggle.subscribed .notification-icon-off {
-    display: inline;
-}
-
 #notification-panel {
     position-anchor: --notification-bell-anchor;
     bottom: anchor(top);
@@ -699,16 +687,16 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
     min-width: 200px;
 }
 
-.notification-subscribe-row label .notification-icon-off {
+.notification-subscribe-row label .notification-icon-on {
     display: none;
 }
 
 .notification-subscribe-row:has(#notification-subscribed:checked) label .notification-icon-on {
-    display: none;
+    display: inline;
 }
 
 .notification-subscribe-row:has(#notification-subscribed:checked) label .notification-icon-off {
-    display: inline;
+    display: none;
 }
 
 .system-info:has(#notification-subscribed:not(:checked)) li:not(.notification-subscribe-row) {
@@ -716,11 +704,8 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
     pointer-events: none;
 }
 
-.notification-children {
-    list-style: none;
-    margin: 0;
+#notification-panel .notification-children {
     padding: 0 0 0 2.5rem;
-    width: 100%;
 }
 
 /*

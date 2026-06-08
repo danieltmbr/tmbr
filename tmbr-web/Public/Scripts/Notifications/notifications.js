@@ -176,7 +176,6 @@ class NotificationPreferencesController {
                 const newSub = await subscribeUser(this._push.service);
                 if (newSub) {
                     this._push.subscription = newSub;
-                    this._updateBellIcon(true);
                     this._syncState();
                 } else {
                     subscribedCb.checked = false;
@@ -187,7 +186,6 @@ class NotificationPreferencesController {
                 }
                 this._push.subscription = null;
                 this._snapshot = null;
-                this._updateBellIcon(false);
                 this._syncState();
             }
         });
@@ -234,10 +232,6 @@ class NotificationPreferencesController {
         savePreferences(endpoint, languages, contentTypes);
     }
 
-    _updateBellIcon(isSubscribed) {
-        this.bellToggle.title = isSubscribed ? 'Notification preferences' : 'Enable notifications';
-        this.bellToggle.classList.toggle('subscribed', isSubscribed);
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -256,14 +250,11 @@ async function initialiseNotificationToggle() {
         return;
     }
 
-    const isSubscribed = !!push.subscription;
-    if (isSubscribed) {
+    if (push.subscription) {
         localStorage.setItem('pushEndpoint', push.subscription.endpoint);
     } else {
         localStorage.removeItem('pushEndpoint');
     }
-    bellToggle.title = isSubscribed ? 'Notification preferences' : 'Enable notifications';
-    bellToggle.classList.toggle('subscribed', isSubscribed);
 
     const ctrl = new NotificationPreferencesController(bellToggle);
     ctrl.init();
