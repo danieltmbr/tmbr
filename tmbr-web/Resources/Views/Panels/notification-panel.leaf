@@ -16,9 +16,6 @@
             #(item.label)
             #extend("Icons/icons")
         </label>
-        <button type="button" class="icon notif-chevron" aria-expanded="false" aria-label="Expand #(item.label)">
-            #extend("Icons/chevron-down")
-        </button>
     </li>
     <ul class="notif-children">
         #for(item in item.children):
@@ -41,4 +38,7 @@
     </li>
     #endif
     #endfor
+    <hr>
+    <li data-select-all>Select all</li>
+    <li data-deselect-all>Deselect all</li>
 </ul>

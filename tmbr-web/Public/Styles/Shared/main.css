@@ -711,47 +711,17 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
     display: inline;
 }
 
-.system-info:has(#notif-subscribed:not(:checked)) .filter-item:not(.notif-subscribe-row) {
+.system-info:has(#notif-subscribed:not(:checked)) li:not(.notif-subscribe-row) {
     opacity: 0.4;
     pointer-events: none;
 }
 
 .notif-children {
-    display: none;
     list-style: none;
-    margin: 0;
-    padding: 0 0 0 1.5rem;
-    width: 100%;
-}
-
-.notif-children.open {
-    display: block;
-}
-
-.notif-chevron {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: inherit;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    opacity: 0.6;
-}
-
-.notif-chevron svg {
-    width: 10px;
-    height: 10px;
-    transform: rotate(-90deg);
-    transition: transform 0.15s;
-}
-
-.notif-chevron[aria-expanded="true"] svg {
-    transform: rotate(0deg);
-}
-
-.notif-chevron:hover {
-    opacity: 1;
+    margin: 0 0 0 1.75rem;
+    padding: 0 0 0 0.75rem;
+    width: calc(100% - 1.75rem);
+    border-left: 2px solid rgba(128, 128, 128, 0.25);
 }
 
 /*

@@ -167,14 +167,6 @@ class NotificationPreferencesController {
         this.panel.querySelectorAll('.notif-top, .notif-child').forEach(cb => {
             cb.checked = storedTypes.includes(cb.value);
         });
-
-        // Sync child-list expansion to match which children are checked
-        this.panel.querySelectorAll('.notif-children').forEach(childList => {
-            const hasCheckedChild = !!childList.querySelector('.notif-child:checked');
-            childList.classList.toggle('open', hasCheckedChild);
-            const chevron = childList.previousElementSibling?.querySelector('.notif-chevron');
-            chevron?.setAttribute('aria-expanded', String(hasCheckedChild));
-        });
     }
 
     _bindPanelEvents() {
@@ -200,23 +192,9 @@ class NotificationPreferencesController {
             }
         });
 
-        // Chevron disclosure
-        this.panel.querySelectorAll('.notif-chevron').forEach(btn => {
-            btn.addEventListener('click', e => {
-                e.stopPropagation();
-                const group = btn.closest('li.notif-group');
-                const children = group?.nextElementSibling;
-                if (!children?.classList.contains('notif-children')) return;
-                const expanded = children.classList.toggle('open');
-                btn.setAttribute('aria-expanded', String(expanded));
-            });
-        });
-
         // Top-level: uncheck children when top is checked
         this.panel.querySelectorAll('.notif-top').forEach(topCb => {
-            const group = topCb.closest('li.notif-group');
-            if (!group) return;
-            const childList = group.nextElementSibling;
+            const childList = topCb.closest('li.notif-group')?.nextElementSibling;
             topCb.addEventListener('change', () => {
                 if (topCb.checked) {
                     childList?.querySelectorAll('.notif-child').forEach(cb => { cb.checked = false; });
@@ -228,12 +206,22 @@ class NotificationPreferencesController {
         this.panel.querySelectorAll('.notif-child').forEach(childCb => {
             childCb.addEventListener('change', () => {
                 if (!childCb.checked) return;
-                const childList = childCb.closest('.notif-children');
-                const group = childList?.previousElementSibling;
+                const group = childCb.closest('.notif-children')?.previousElementSibling;
                 const topCb = group?.querySelector('.notif-top');
                 if (topCb) topCb.checked = false;
             });
         });
+
+        this.panel.querySelector('[data-select-all]')
+            ?.addEventListener('click', () => {
+                this.panel.querySelectorAll('.notif-top').forEach(cb => { cb.checked = true; });
+                this.panel.querySelectorAll('.notif-child').forEach(cb => { cb.checked = false; });
+            });
+
+        this.panel.querySelector('[data-deselect-all]')
+            ?.addEventListener('click', () => {
+                this.panel.querySelectorAll('.notif-top, .notif-child').forEach(cb => { cb.checked = false; });
+            });
     }
 
     _currentTypes() {
