@@ -91,10 +91,12 @@ struct AlbumsAPIController: RouteCollection {
             guard let albumID = req.parameters.get("albumID", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid Album ID")
             }
-            try await req.commands.previews.deleteContainerEntries(
-                DeleteContainerEntriesInput(containerType: "album", containerID: albumID)
-            )
-            try await req.commands.albums.delete(albumID)
+            try await req.commands.transaction { commands in
+                try await commands.previews.deleteContainerEntries(
+                    DeleteContainerEntriesInput(containerType: "album", containerID: albumID)
+                )
+                try await commands.albums.delete(albumID)
+            }
             return .noContent
         }
 

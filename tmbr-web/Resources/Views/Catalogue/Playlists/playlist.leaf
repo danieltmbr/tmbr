@@ -7,7 +7,7 @@
         <p>#(description)</p>
         #endif
         #if(createdAt):
-        <p class="published-date">Created #(createdAt)</p>
+        <p class="published-date">Saved #(createdAt)</p>
         #endif
         #extend("Catalogue/resources")
     </div>
@@ -25,6 +25,7 @@
         <div id="sync-banner" hidden>
             <p>Your Apple Music playlist has changed.</p>
             <form method="post" action="#(syncEndpoint)" id="sync-form">
+                <input type="hidden" name="_csrf" value="#(_csrf)" />
                 <button type="submit" class="link">Sync tracklist</button>
             </form>
         </div>

@@ -1,5 +1,4 @@
 import Vapor
-import Fluent
 import Foundation
 import AuthKit
 import Core
@@ -29,6 +28,8 @@ struct PlaylistViewModel: Encodable, Sendable {
 
     private let title: String
 
+    let _csrf: String?
+
     private let tracks: [TrackViewModel]
 
     init(
@@ -43,7 +44,8 @@ struct PlaylistViewModel: Encodable, Sendable {
         resources: [Hyperlink],
         syncEndpoint: String?,
         title: String,
-        tracks: [TrackViewModel] = []
+        tracks: [TrackViewModel] = [],
+        csrf: String? = nil
     ) {
         self.id = id
         self.artwork = artwork
@@ -57,6 +59,7 @@ struct PlaylistViewModel: Encodable, Sendable {
         self.syncEndpoint = syncEndpoint
         self.title = title
         self.tracks = tracks
+        self._csrf = csrf
     }
 
     init(
@@ -65,6 +68,7 @@ struct PlaylistViewModel: Encodable, Sendable {
         tracks: [TrackViewModel],
         baseURL: String,
         allowsNewNote: Bool,
+        csrf: String? = nil,
         platform: Platform<PlaylistMetadata> = .playlist
     ) throws {
         let playlistID = try playlist.requireID()
@@ -87,7 +91,8 @@ struct PlaylistViewModel: Encodable, Sendable {
             resources: resources,
             syncEndpoint: syncEndpoint,
             title: playlist.title,
-            tracks: tracks
+            tracks: tracks,
+            csrf: csrf
         )
     }
 }
@@ -111,33 +116,27 @@ extension Page {
             let allowsNewNote = (try? await request.permissions.playlists.edit.grant(resolvedPlaylist)) != nil
             let resolvedEntries = try await entries
             let trackPreviewIDs = resolvedEntries.compactMap { $0.preview.id }
-            let trackNotesByPreviewID = try await fetchTrackNotes(for: trackPreviewIDs, on: request)
+            let notesByPreviewID = try await request.commands.notes.fetchTrackNotes(trackPreviewIDs)
             let tracks = resolvedEntries.map { entry -> TrackViewModel in
-                let entryNotes = entry.preview.id.flatMap { trackNotesByPreviewID[$0] } ?? []
-                return TrackViewModel(entry: entry, notes: entryNotes)
+                let entryNotes = entry.preview.id.flatMap { notesByPreviewID[$0] } ?? []
+                return TrackViewModel(entry: entry, notes: entryNotes.compactMap { try? NoteViewModel(note: $0) })
+            }
+            let csrf: String?
+            if allowsNewNote {
+                let token = UUID().uuidString
+                request.session.data["csrf.sync"] = token
+                csrf = token
+            } else {
+                csrf = nil
             }
             return try PlaylistViewModel(
                 playlist: resolvedPlaylist,
                 notes: await notes,
                 tracks: tracks,
                 baseURL: request.baseURL,
-                allowsNewNote: allowsNewNote
+                allowsNewNote: allowsNewNote,
+                csrf: csrf
             )
         }
     }
-}
-
-private func fetchTrackNotes(for previewIDs: [UUID], on request: Request) async throws -> [UUID: [NoteViewModel]] {
-    guard !previewIDs.isEmpty else { return [:] }
-    let notes = try await Note.query(on: request.commandDB)
-        .group(.or) { group in previewIDs.forEach { group.filter(\.$attachment.$id == $0) } }
-        .with(\.$attachment)
-        .sort(\Note.$createdAt, .descending)
-        .all()
-    var result: [UUID: [NoteViewModel]] = [:]
-    for note in notes {
-        guard let vm = try? NoteViewModel(note: note) else { continue }
-        result[note.$attachment.id, default: []].append(vm)
-    }
-    return result
 }

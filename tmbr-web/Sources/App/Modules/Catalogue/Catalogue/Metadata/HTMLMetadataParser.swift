@@ -1,14 +1,20 @@
 import Foundation
 
+struct ParsedHTMLMetadata {
+    let tags: [String: String]
+    let multiTags: [String: [String]]
+    let json: [String: Any]
+}
+
 struct HTMLMetadataParser {
 
-    func parse(html: String) -> (tags: [String: String], multiTags: [String: [String]], json: [String: Any]) {
+    func parse(html: String) -> ParsedHTMLMetadata {
         let head = head(from: html) ?? html
         let multiByProperty = matchAll(in: head, key: "property")
         let multiByName = matchAll(in: head, key: "name")
         let multiTags = multiByProperty.merging(multiByName) { current, new in current + new }
         let tags = multiTags.compactMapValues { $0.first }
-        return (tags, multiTags, parseJSONLD(from: html))
+        return ParsedHTMLMetadata(tags: tags, multiTags: multiTags, json: parseJSONLD(from: html))
     }
 
     // MARK: - Helpers

@@ -51,8 +51,9 @@ struct PlaylistsWebController: RouteCollection {
     private func trackSearch(_ request: Request) async throws -> [TrackPickerItem] {
         let query = try? request.query.get(String.self, at: "q")
         let result = try await request.commands.songs.search(query)
+        var seen = Set<UUID>()
         return (result.previews + result.noteMatches).compactMap { preview in
-            guard let id = preview.id else { return nil }
+            guard let id = preview.id, seen.insert(id).inserted else { return nil }
             return TrackPickerItem(
                 previewID: id,
                 title: preview.primaryInfo,
@@ -225,11 +226,21 @@ struct PlaylistsWebController: RouteCollection {
         return response
     }
 
+    private struct SyncTracksPayload: Decodable {
+        let _csrf: String?
+    }
+
     @Sendable
     private func syncTracks(_ request: Request) async throws -> Response {
         guard let playlistID = request.parameters.get("playlistID", as: Int.self) else {
             return Response(status: .badRequest)
         }
+        let payload = try? request.content.decode(SyncTracksPayload.self)
+        guard let submittedCSRF = payload?._csrf,
+              submittedCSRF == request.session.data["csrf.sync"] else {
+            throw Abort(.forbidden, reason: "Invalid form token. Please reload the page and try again.")
+        }
+        request.session.data["csrf.sync"] = nil
         let playlist = try await request.commands.playlists.fetch(playlistID, for: .write)
         let platform = Platform<PlaylistMetadata>.playlist
         let appleMusicURL = playlist.resourceURLs

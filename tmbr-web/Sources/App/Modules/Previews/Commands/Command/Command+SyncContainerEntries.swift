@@ -32,20 +32,8 @@ extension Command where Self == PlainCommand<SyncContainerEntriesInput, Void> {
                 throw Abort(.internalServerError, reason: "Track category not found")
             }
 
-            // Build a URL→previewID map from the user's existing songs to avoid duplicates
-            var existingSongsByURL: [String: UUID] = [:]
-            if let songCategory = try await CatalogueCategory.query(on: database)
-                .filter(\.$slug == "song").first(),
-               let songCategoryID = songCategory.id {
-                let songPreviews = try await Preview.query(on: database)
-                    .filter(\Preview.$catalogueCategory.$id == songCategoryID)
-                    .filter(\Preview.$parentOwner.$id == input.ownerID)
-                    .all()
-                for preview in songPreviews {
-                    guard let id = preview.id else { continue }
-                    for link in preview.externalLinks { existingSongsByURL[link] = id }
-                }
-            }
+            let findCmd: PlainCommand<FindSongPreviewsByURLInput, [String: PreviewID]> = .findSongPreviewsByURL(database: database)
+            let existingSongsByURL = try await findCmd(FindSongPreviewsByURLInput(ownerID: input.ownerID))
 
             // Determine desired previewIDs in order
             var desiredPreviewIDs: [UUID] = []

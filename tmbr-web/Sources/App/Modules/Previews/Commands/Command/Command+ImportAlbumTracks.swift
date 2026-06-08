@@ -33,30 +33,14 @@ struct ImportAlbumTracksInput: Sendable {
 extension Command where Self == PlainCommand<ImportAlbumTracksInput, Void> {
     static func importAlbumTracks(database: Database) -> Self {
         PlainCommand { input in
-            async let trackCategoryQuery = CatalogueCategory.query(on: database)
-                .filter(\.$slug == "track").first()
-            async let songCategoryQuery = CatalogueCategory.query(on: database)
-                .filter(\.$slug == "song").first()
-
-            guard let trackCategory = try await trackCategoryQuery,
+            guard let trackCategory = try await CatalogueCategory.query(on: database)
+                .filter(\.$slug == "track").first(),
                   let categoryID = trackCategory.id else {
                 throw Abort(.internalServerError, reason: "Track category not found in catalogue_categories")
             }
 
-            // Build a URL→previewID map from the user's existing songs to avoid duplicates
-            var existingByURL: [String: UUID] = [:]
-            if let songCategoryID = try await songCategoryQuery?.id {
-                let songPreviews = try await Preview.query(on: database)
-                    .filter(\Preview.$catalogueCategory.$id == songCategoryID)
-                    .filter(\Preview.$parentOwner.$id == input.ownerID)
-                    .all()
-                for preview in songPreviews {
-                    guard let id = preview.id else { continue }
-                    for link in preview.externalLinks {
-                        existingByURL[link] = id
-                    }
-                }
-            }
+            let findCmd: PlainCommand<FindSongPreviewsByURLInput, [String: PreviewID]> = .findSongPreviewsByURL(database: database)
+            let existingByURL = try await findCmd(FindSongPreviewsByURLInput(ownerID: input.ownerID))
 
             for (index, track) in input.tracks.enumerated() {
                 let previewID: UUID

@@ -1,5 +1,4 @@
 import Vapor
-import Fluent
 import Foundation
 import AuthKit
 import Core
@@ -157,10 +156,10 @@ extension Page {
             let allowsNewNote = (try? await request.permissions.albums.edit.grant(resolvedAlbum)) != nil
             let resolvedEntries = try await entries
             let trackPreviewIDs = resolvedEntries.compactMap { $0.preview.id }
-            let trackNotesByPreviewID = try await fetchTrackNotes(for: trackPreviewIDs, on: request)
+            let notesByPreviewID = try await request.commands.notes.fetchTrackNotes(trackPreviewIDs)
             let tracks = resolvedEntries.map { entry -> TrackViewModel in
-                let entryNotes = entry.preview.id.flatMap { trackNotesByPreviewID[$0] } ?? []
-                return TrackViewModel(entry: entry, notes: entryNotes)
+                let entryNotes = entry.preview.id.flatMap { notesByPreviewID[$0] } ?? []
+                return TrackViewModel(entry: entry, notes: entryNotes.compactMap { try? NoteViewModel(note: $0) })
             }
             return try AlbumViewModel(
                 album: resolvedAlbum,
@@ -171,19 +170,4 @@ extension Page {
             )
         }
     }
-}
-
-private func fetchTrackNotes(for previewIDs: [UUID], on request: Request) async throws -> [UUID: [NoteViewModel]] {
-    guard !previewIDs.isEmpty else { return [:] }
-    let notes = try await Note.query(on: request.commandDB)
-        .group(.or) { group in previewIDs.forEach { group.filter(\.$attachment.$id == $0) } }
-        .with(\.$attachment)
-        .sort(\Note.$createdAt, .descending)
-        .all()
-    var result: [UUID: [NoteViewModel]] = [:]
-    for note in notes {
-        guard let vm = try? NoteViewModel(note: note) else { continue }
-        result[note.$attachment.id, default: []].append(vm)
-    }
-    return result
 }

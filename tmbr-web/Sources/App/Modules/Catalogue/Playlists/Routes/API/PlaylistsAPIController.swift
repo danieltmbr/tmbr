@@ -73,10 +73,12 @@ struct PlaylistsAPIController: RouteCollection {
             guard let playlistID = req.parameters.get("playlistID", as: Int.self) else {
                 throw Abort(.badRequest, reason: "Invalid Playlist ID")
             }
-            try await req.commands.previews.deleteContainerEntries(
-                DeleteContainerEntriesInput(containerType: "playlist", containerID: playlistID)
-            )
-            try await req.commands.playlists.delete(playlistID)
+            try await req.commands.transaction { commands in
+                try await commands.previews.deleteContainerEntries(
+                    DeleteContainerEntriesInput(containerType: "playlist", containerID: playlistID)
+                )
+                try await commands.playlists.delete(playlistID)
+            }
             return .noContent
         }
 

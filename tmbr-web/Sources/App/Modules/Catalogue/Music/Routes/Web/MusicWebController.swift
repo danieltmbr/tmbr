@@ -45,7 +45,7 @@ struct MusicWebController: RouteCollection {
             let playlist = try await request.commands.playlists.metadata(url)
             return MusicMetadataResponse(
                 artist: nil,
-                artwork: playlist.artwork,
+                artwork: playlist.artwork?.resized ?? playlist.artwork?.original,
                 description: playlist.description,
                 genre: nil,
                 musicType: "playlist",

@@ -8,14 +8,14 @@ extension MetadataExtractor where M == PlaylistMetadata {
             throw MetadataExtractionError.invalidType(expected: "music.playlist", actual: metadata.type)
         }
 
-        let originalArtwork = metadata.tags["og:image"]
-        let artwork = originalArtwork.flatMap { urlString -> String? in
+        let original = metadata.tags["og:image"]
+        let resized = original.flatMap { urlString -> String? in
             guard var url = URL(string: urlString) else { return nil }
             url.deleteLastPathComponent()
             url.appendPathComponent("1000x1000.jpg")
             return url.absoluteString
         }
-        let artworkFallback = artwork != originalArtwork ? originalArtwork : nil
+        let artwork: MetadataArtwork? = original != nil ? MetadataArtwork(resized: resized, original: original) : nil
 
         // Apple Music playlists embed JSON-LD in a block tagged id="schema:music-playlist".
         // User-created playlists omit this block; songs appear in repeated music:song meta tags instead.
@@ -45,7 +45,6 @@ extension MetadataExtractor where M == PlaylistMetadata {
 
         return PlaylistMetadata(
             artwork: artwork,
-            artworkFallback: artworkFallback,
             description: metadata.tags["og:description"],
             title: metadata.tags["og:title"] ?? metadata.tags["apple:title"],
             tracks: tracks?.isEmpty == false ? tracks : nil

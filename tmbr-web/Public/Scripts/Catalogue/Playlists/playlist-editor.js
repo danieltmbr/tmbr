@@ -170,9 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyMetadata(data) {
         if (!titleInput.value && data.title) titleInput.value = data.title;
         if (!descriptionInput.value && data.description) descriptionInput.value = data.description;
-        if (data.artwork && artwork.isEmpty()) {
-            artwork.setExternalURL(data.artwork);
-            if (artworkFallbackInput && data.artworkFallback) artworkFallbackInput.value = data.artworkFallback;
+        const resizedURL = data.artwork?.resized;
+        if (resizedURL && artwork.isEmpty()) {
+            artwork.setExternalURL(resizedURL);
+            if (artworkFallbackInput && data.artwork.original) artworkFallbackInput.value = data.artwork.original;
         }
         if (Array.isArray(data.tracks) && data.tracks.length > 0 && tracklistJsonInput) {
             tracklistJsonInput.value = JSON.stringify(data.tracks);
