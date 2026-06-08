@@ -106,12 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tracklistEl) return;
         const existing = tracklistEl.querySelector(`[data-preview-id="${item.previewID}"]`);
         if (existing) return;
-        const li = document.createElement('li');
+        const template = document.getElementById('editor-track-item-template');
+        const li = template.content.cloneNode(true).firstElementChild;
         li.dataset.previewId = item.previewID;
         li.dataset.trackName = item.title;
         if (item.url) li.dataset.trackUrl = item.url;
-        li.innerHTML = `<span>${item.title}${item.subtitle ? ` <small>${item.subtitle}</small>` : ''}</span>` +
-            `<button type="button" class="icon track-remove" aria-label="Remove track">&times;</button>`;
+        li.querySelector('span').textContent = item.title;
         li.querySelector('.track-remove').addEventListener('click', () => removeTrack(li));
         tracklistEl.appendChild(li);
         serializeTracklist();
@@ -139,11 +139,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const res = await fetch(`/playlists/tracks/search?q=${encodeURIComponent(q)}`);
                     if (!res.ok) return;
                     const items = await res.json();
-                    trackResultsEl.innerHTML = '';
+                    trackResultsEl.replaceChildren();
                     if (!items.length) { trackResultsEl.hidden = true; return; }
+                    const resultTemplate = document.getElementById('editor-track-result-template');
                     items.slice(0, 10).forEach(item => {
-                        const li = document.createElement('li');
-                        li.textContent = item.title + (item.subtitle ? ` — ${item.subtitle}` : '');
+                        const li = resultTemplate.content.cloneNode(true).firstElementChild;
+                        li.querySelector('span').textContent = item.title;
+                        const small = li.querySelector('small');
+                        if (item.subtitle) {
+                            small.textContent = ` — ${item.subtitle}`;
+                            small.hidden = false;
+                        }
                         li.addEventListener('click', () => addTrackToList(item));
                         trackResultsEl.appendChild(li);
                     });

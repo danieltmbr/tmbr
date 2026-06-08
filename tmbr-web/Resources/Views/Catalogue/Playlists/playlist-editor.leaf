@@ -52,6 +52,15 @@
             />
             <ul id="editor-track-results" hidden></ul>
         </div>
+        <template id="editor-track-item-template">
+            <li>
+                <span></span>
+                <button type="button" class="icon track-remove" aria-label="Remove track">&times;</button>
+            </li>
+        </template>
+        <template id="editor-track-result-template">
+            <li><span></span><small hidden></small></li>
+        </template>
     </section>
     #endif
     #endexport
