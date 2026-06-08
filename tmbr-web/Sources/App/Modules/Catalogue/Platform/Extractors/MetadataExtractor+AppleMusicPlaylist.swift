@@ -43,8 +43,12 @@ extension MetadataExtractor where M == PlaylistMetadata {
             }
         }
 
+        let createdAt = playlistJSON?["dateCreated"] as? String
+            ?? playlistJSON?["datePublished"] as? String
+
         return PlaylistMetadata(
             artwork: artwork,
+            createdAt: createdAt,
             description: metadata.tags["og:description"],
             title: metadata.tags["og:title"] ?? metadata.tags["apple:title"],
             tracks: tracks?.isEmpty == false ? tracks : nil

@@ -36,7 +36,7 @@ extension Page {
                     url.isEmpty ? nil : ImageViewModel(previewURL: url)
                 },
                 allowsNewNote: false,
-                addedAt: nil,
+                createdAt: nil,
                 description: payload.description,
                 metadataEndpoint: nil,
                 notes: notes,

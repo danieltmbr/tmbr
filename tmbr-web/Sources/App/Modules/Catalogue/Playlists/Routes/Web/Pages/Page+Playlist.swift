@@ -12,7 +12,7 @@ struct PlaylistViewModel: Encodable, Sendable {
 
     private let allowsNewNote: Bool
 
-    private let addedAt: String?
+    private let createdAt: String?
 
     private let description: String?
 
@@ -38,7 +38,7 @@ struct PlaylistViewModel: Encodable, Sendable {
         id: PlaylistID,
         artwork: ImageViewModel?,
         allowsNewNote: Bool,
-        addedAt: String?,
+        createdAt: String?,
         description: String?,
         metadataEndpoint: String?,
         notes: [NoteViewModel],
@@ -53,7 +53,7 @@ struct PlaylistViewModel: Encodable, Sendable {
         self.id = id
         self.artwork = artwork
         self.allowsNewNote = allowsNewNote
-        self.addedAt = addedAt
+        self.createdAt = createdAt
         self.description = description
         self.metadataEndpoint = metadataEndpoint
         self.notes = notes
@@ -91,7 +91,7 @@ struct PlaylistViewModel: Encodable, Sendable {
                 ImageViewModel(image: $0, baseURL: baseURL)
             },
             allowsNewNote: allowsNewNote,
-            addedAt: playlist.createdAt.map { $0.formatted(.releaseDate) },
+            createdAt: playlist.createdAt.map { $0.formatted(.releaseDate) },
             description: playlist.description,
             metadataEndpoint: metadataEndpoint,
             notes: try notes.map { try NoteViewModel(note: $0, isEditable: allowsNewNote) },

@@ -172,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const artworkFallbackInput = document.getElementById('editor-artwork-fallback-url');
+    const platformCreatedAtInput = document.getElementById('editor-platform-created-at');
 
     function applyMetadata(data) {
         if (!titleInput.value && data.title) titleInput.value = data.title;
@@ -181,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
             artwork.setExternalURL(resizedURL);
             if (artworkFallbackInput && data.artwork.original) artworkFallbackInput.value = data.artwork.original;
         }
+        if (platformCreatedAtInput && data.createdAt) platformCreatedAtInput.value = data.createdAt;
         if (Array.isArray(data.tracks) && data.tracks.length > 0 && tracklistJsonInput) {
             tracklistJsonInput.value = JSON.stringify(data.tracks);
         }
