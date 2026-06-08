@@ -1,7 +1,7 @@
 <ul class="system-info">
-    <li class="filter-item notif-subscribe-row">
-        <input type="checkbox" id="notif-subscribed">
-        <label for="notif-subscribed">
+    <li class="filter-item notification-subscribe-row">
+        <input type="checkbox" id="notification-subscribed">
+        <label for="notification-subscribed">
             Enable notifications
             #extend("Icons/notification")
             #extend("Icons/notification-off")
@@ -10,18 +10,18 @@
     <hr>
     #for(item in options):
     #if(item.hasChildren):
-    <li class="filter-item notif-group">
-        <input type="checkbox" id="notif-#(item.value)" class="notif-top" value="#(item.value)">
-        <label for="notif-#(item.value)">
+    <li class="filter-item notification-group">
+        <input type="checkbox" id="notification-#(item.value)" class="notification-top" value="#(item.value)">
+        <label for="notification-#(item.value)">
             #(item.label)
             #extend("Icons/icons")
         </label>
     </li>
-    <ul class="notif-children">
+    <ul class="notification-children">
         #for(item in item.children):
         <li class="filter-item">
-            <input type="checkbox" id="notif-#(item.value)" class="notif-child" value="#(item.value)">
-            <label for="notif-#(item.value)">
+            <input type="checkbox" id="notification-#(item.value)" class="notification-child" value="#(item.value)">
+            <label for="notification-#(item.value)">
                 #(item.label)
                 #extend("Icons/icons")
             </label>
@@ -30,8 +30,8 @@
     </ul>
     #else:
     <li class="filter-item">
-        <input type="checkbox" id="notif-#(item.value)" class="notif-top" value="#(item.value)">
-        <label for="notif-#(item.value)">
+        <input type="checkbox" id="notification-#(item.value)" class="notification-top" value="#(item.value)">
+        <label for="notification-#(item.value)">
             #(item.label)
             #extend("Icons/icons")
         </label>

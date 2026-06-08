@@ -675,23 +675,23 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
 }
 
 #notification-toggle {
-    anchor-name: --notif-bell-anchor;
+    anchor-name: --notification-bell-anchor;
 }
 
-#notification-toggle .notif-icon-off {
+#notification-toggle .notification-icon-off {
     display: none;
 }
 
-#notification-toggle.subscribed .notif-icon-on {
+#notification-toggle.subscribed .notification-icon-on {
     display: none;
 }
 
-#notification-toggle.subscribed .notif-icon-off {
+#notification-toggle.subscribed .notification-icon-off {
     display: inline;
 }
 
 #notification-panel {
-    position-anchor: --notif-bell-anchor;
+    position-anchor: --notification-bell-anchor;
     bottom: anchor(top);
     left: anchor(center);
     transform: translateX(-50%);
@@ -699,24 +699,24 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
     min-width: 200px;
 }
 
-.notif-subscribe-row label .notif-icon-off {
+.notification-subscribe-row label .notification-icon-off {
     display: none;
 }
 
-.notif-subscribe-row:has(#notif-subscribed:checked) label .notif-icon-on {
+.notification-subscribe-row:has(#notification-subscribed:checked) label .notification-icon-on {
     display: none;
 }
 
-.notif-subscribe-row:has(#notif-subscribed:checked) label .notif-icon-off {
+.notification-subscribe-row:has(#notification-subscribed:checked) label .notification-icon-off {
     display: inline;
 }
 
-.system-info:has(#notif-subscribed:not(:checked)) li:not(.notif-subscribe-row) {
+.system-info:has(#notification-subscribed:not(:checked)) li:not(.notification-subscribe-row) {
     opacity: 0.4;
     pointer-events: none;
 }
 
-.notif-children {
+.notification-children {
     list-style: none;
     margin: 0;
     padding: 0 0 0 2.5rem;

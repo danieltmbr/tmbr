@@ -155,22 +155,22 @@ class NotificationPreferencesController {
 
     _syncState() {
         const isSubscribed = !!this._push.subscription;
-        const subscribedCb = this.panel.querySelector('#notif-subscribed');
+        const subscribedCb = this.panel.querySelector('#notification-subscribed');
         if (subscribedCb) subscribedCb.checked = isSubscribed;
 
         if (!isSubscribed) {
-            this.panel.querySelectorAll('.notif-top, .notif-child').forEach(cb => { cb.checked = false; });
+            this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => { cb.checked = false; });
             return;
         }
 
         const storedTypes = (localStorage.getItem('notifContentTypes') ?? '').split('|').filter(Boolean);
-        this.panel.querySelectorAll('.notif-top, .notif-child').forEach(cb => {
+        this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => {
             cb.checked = storedTypes.includes(cb.value);
         });
     }
 
     _bindPanelEvents() {
-        const subscribedCb = this.panel.querySelector('#notif-subscribed');
+        const subscribedCb = this.panel.querySelector('#notification-subscribed');
         subscribedCb?.addEventListener('change', async () => {
             if (subscribedCb.checked) {
                 const newSub = await subscribeUser(this._push.service);
@@ -193,28 +193,28 @@ class NotificationPreferencesController {
         });
 
         // Top-level: sync all children to match parent check state
-        this.panel.querySelectorAll('.notif-top').forEach(topCb => {
-            const childList = topCb.closest('li.notif-group')?.nextElementSibling;
+        this.panel.querySelectorAll('.notification-top').forEach(topCb => {
+            const childList = topCb.closest('li.notification-group')?.nextElementSibling;
             topCb.addEventListener('change', () => {
-                childList?.querySelectorAll('.notif-child').forEach(cb => { cb.checked = topCb.checked; });
+                childList?.querySelectorAll('.notification-child').forEach(cb => { cb.checked = topCb.checked; });
             });
         });
 
         this.panel.querySelector('[data-select-all]')
             ?.addEventListener('click', () => {
-                this.panel.querySelectorAll('.notif-top').forEach(cb => { cb.checked = true; });
-                this.panel.querySelectorAll('.notif-child').forEach(cb => { cb.checked = false; });
+                this.panel.querySelectorAll('.notification-top').forEach(cb => { cb.checked = true; });
+                this.panel.querySelectorAll('.notification-child').forEach(cb => { cb.checked = false; });
             });
 
         this.panel.querySelector('[data-deselect-all]')
             ?.addEventListener('click', () => {
-                this.panel.querySelectorAll('.notif-top, .notif-child').forEach(cb => { cb.checked = false; });
+                this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => { cb.checked = false; });
             });
     }
 
     _currentTypes() {
         const types = [];
-        this.panel.querySelectorAll('.notif-top:checked, .notif-child:checked').forEach(cb => {
+        this.panel.querySelectorAll('.notification-top:checked, .notification-child:checked').forEach(cb => {
             types.push(cb.value);
         });
         return types.sort().join('|');
