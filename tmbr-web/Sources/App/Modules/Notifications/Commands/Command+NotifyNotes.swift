@@ -10,7 +10,7 @@ extension Command where Self == PlainCommand<Note, Void> {
     static func noteNotification(
         database: Database,
         permission: AuthPermissionResolver<Note>,
-        filteredSend: CommandResolver<FilteredNotificationInput, Void>
+        content: CommandResolver<FilteredNotificationInput, Void>
     ) -> Self {
         PlainCommand { note in
             try await permission.grant(note)
@@ -18,7 +18,7 @@ extension Command where Self == PlainCommand<Note, Void> {
             try await preview.$catalogueCategory.load(on: database)
             let categorySlug    = preview.catalogueCategory.map { "note:\($0.slug)" }
             let parentSlug      = preview.catalogueCategory?.parentSlug.map { "note:\($0)" }
-            try await filteredSend(FilteredNotificationInput(
+            try await content(FilteredNotificationInput(
                 notification: PushNotification(note: note, preview: preview),
                 language: note.language.rawValue,
                 contentType: categorySlug,
@@ -35,7 +35,7 @@ extension CommandFactory<Note, Void> {
             .noteNotification(
                 database: request.commandDB,
                 permission: request.permissions.notifications.note,
-                filteredSend: request.commands.notifications.filteredSend
+                content: request.commands.notifications.content
             )
             .logged(name: "Send Note Notification", logger: request.logger)
         }

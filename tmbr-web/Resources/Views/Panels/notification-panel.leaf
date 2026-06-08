@@ -1,0 +1,31 @@
+<ul class="system-info">
+    <li class="filter-item">
+        <label for="notif-subscribed">Enable notifications</label>
+        <input type="checkbox" id="notif-subscribed">
+    </li>
+    <hr data-notif-content hidden>
+    #for(option in options):
+    #if(option.hasChildren):
+    <li class="filter-item notif-group" data-notif-content hidden>
+        <label for="notif-#(option.value)">#(option.label)</label>
+        <input type="checkbox" id="notif-#(option.value)" class="notif-top" value="#(option.value)">
+        <button type="button" class="icon notif-chevron" aria-expanded="false" aria-label="Expand #(option.label)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+    </li>
+    <ul class="notif-children" data-notif-content hidden>
+        #for(child in option.children):
+        <li class="filter-item">
+            <label for="notif-#(child.value)">#(child.label)</label>
+            <input type="checkbox" id="notif-#(child.value)" class="notif-child" value="#(child.value)">
+        </li>
+        #endfor
+    </ul>
+    #else:
+    <li class="filter-item" data-notif-content hidden>
+        <label for="notif-#(option.value)">#(option.label)</label>
+        <input type="checkbox" id="notif-#(option.value)" class="notif-top" value="#(option.value)">
+    </li>
+    #endif
+    #endfor
+</ul>

@@ -9,11 +9,11 @@ extension Command where Self == PlainCommand<Post, Void> {
 
     static func notification(
         permission: AuthPermissionResolver<Post>,
-        filteredSend: CommandResolver<FilteredNotificationInput, Void>
+        content: CommandResolver<FilteredNotificationInput, Void>
     ) -> Self {
         PlainCommand { post in
             try await permission.grant(post)
-            try await filteredSend(FilteredNotificationInput(
+            try await content(FilteredNotificationInput(
                 notification: PushNotification(post: post),
                 language: post.language.rawValue,
                 contentType: "post",
@@ -44,7 +44,7 @@ extension CommandFactory<Post, Void> {
         CommandFactory { request in
             .notification(
                 permission: request.permissions.notifications.post,
-                filteredSend: request.commands.notifications.filteredSend
+                content: request.commands.notifications.content
             )
             .logged(name: "Send Post Notification", logger: request.logger)
         }

@@ -58,15 +58,11 @@ struct CreateNoteCommand: Command {
         )
         try await attachPermission(note, to: preview)
         try await note.save(on: database)
-        notifyIfPublic(note)
-        return note
-    }
-
-    private func notifyIfPublic(_ note: Note) {
-        guard note.access == .public else { return }
-        Task.detached {
-            try await notify(note)
+        if note.access == .public {
+            let notify = self.notify
+            Task.detached { try? await notify(note) }
         }
+        return note
     }
 }
 

@@ -2,7 +2,8 @@
     <nav>
     <span id="notification-bell-wrapper">
         <a href="#" role="button" id="notification-toggle" title="Enable push notifications">
-            #extend("Icons/notification")
+            <span class="notif-icon-on">#extend("Icons/notification")</span>
+            <span class="notif-icon-off">#extend("Icons/notification-off")</span>
         </a>
     </span>
     <!--

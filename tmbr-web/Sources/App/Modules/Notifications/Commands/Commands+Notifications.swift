@@ -9,7 +9,7 @@ extension Commands {
 extension Commands {
     struct Notifications: CommandCollection, Sendable {
 
-        let filteredSend: CommandFactory<FilteredNotificationInput, Void>
+        let content: CommandFactory<FilteredNotificationInput, Void>
 
         let note: CommandFactory<Note, Void>
 
@@ -20,13 +20,13 @@ extension Commands {
         let send: CommandFactory<PushNotification, Void>
 
         init(
-            filteredSend: CommandFactory<FilteredNotificationInput, Void> = .filteredSend,
+            content: CommandFactory<FilteredNotificationInput, Void> = .content,
             note: CommandFactory<Note, Void> = .noteNotification,
             post: CommandFactory<Post, Void> = .postNotification,
             postByID: CommandFactory<PostID, Void> = .postNotificationByID,
             send: CommandFactory<PushNotification, Void> = .send
         ) {
-            self.filteredSend = filteredSend
+            self.content = content
             self.note = note
             self.post = post
             self.postByID = postByID

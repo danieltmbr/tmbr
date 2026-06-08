@@ -12,18 +12,7 @@ struct NotificationsAPIController: RouteCollection {
     private struct PreferencesUpdate: Content {
         let endpoint: String
         let languages: [String]
-        let contentTypes: [String]
-    }
-
-    private struct ContentOption: Content, Sendable {
-        let value: String
-        let label: String
-        let icon: String
-        var children: [ContentOption]?
-    }
-
-    private struct ContentOptionsResponse: Content, Sendable {
-        let options: [ContentOption]
+        let contentTypes: [String]?
     }
 
     func boot(routes: RoutesBuilder) throws {
@@ -37,31 +26,6 @@ struct NotificationsAPIController: RouteCollection {
                 throw Abort(.serviceUnavailable, reason: "Notification service not configured")
             }
             return WebPushOptions(vapid: service.vapidKeyID)
-        }
-
-        // GET /api/notifications/web-push/content-options
-        webPushRoute.get("content-options") { req async throws -> ContentOptionsResponse in
-            let categories = try await CatalogueCategory.query(on: req.db)
-                .filter(\.$kind ~~ [.collection, .catalogue])
-                .all()
-
-            // Collections (e.g. music) become Note children; standalone catalogue
-            // items (book, movie, podcast) with no parent also become Note children.
-            let noteChildren: [ContentOption] = categories
-                .filter { $0.kind == .collection || ($0.kind == .catalogue && $0.parentSlug == nil) }
-                .map { category in
-                    ContentOption(
-                        value: "note:\(category.slug)",
-                        label: category.name,
-                        icon: category.icon ?? category.slug
-                    )
-                }
-
-            let options: [ContentOption] = [
-                ContentOption(value: "post", label: "Posts", icon: "post"),
-                ContentOption(value: "note", label: "Notes", icon: "note", children: noteChildren),
-            ]
-            return ContentOptionsResponse(options: options)
         }
 
         // POST /api/notifications/web-push/subscription
@@ -78,7 +42,9 @@ struct NotificationsAPIController: RouteCollection {
                 .filter(\.$endpoint == update.endpoint)
                 .first() {
                 sub.languages = update.languages.joined(separator: "|")
-                sub.contentTypes = update.contentTypes.joined(separator: "|")
+                if let contentTypes = update.contentTypes {
+                    sub.contentTypes = contentTypes.joined(separator: "|")
+                }
                 try await sub.save(on: req.db)
             }
             return .ok
@@ -107,9 +73,9 @@ struct NotificationsAPIController: RouteCollection {
             guard let post = try await Post.find(postID, on: req.db) else {
                 throw Abort(.notFound, reason: "Post not found")
             }
-            let filteredSend = req.commands.notifications.filteredSend
+            let content = req.commands.notifications.content
             Task.detached {
-                try await filteredSend(FilteredNotificationInput(
+                try? await content(FilteredNotificationInput(
                     notification: PushNotification(post: post),
                     language: post.language.rawValue,
                     contentType: "post",

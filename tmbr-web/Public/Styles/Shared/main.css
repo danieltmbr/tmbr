@@ -679,6 +679,18 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
     anchor-name: --notif-bell-anchor;
 }
 
+#notification-toggle .notif-icon-off {
+    display: none;
+}
+
+#notification-toggle.subscribed .notif-icon-on {
+    display: none;
+}
+
+#notification-toggle.subscribed .notif-icon-off {
+    display: inline;
+}
+
 #notification-panel {
     position-anchor: --notif-bell-anchor;
     bottom: anchor(top);
@@ -714,6 +726,12 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
 .notif-chevron svg {
     width: 10px;
     height: 10px;
+    transform: rotate(-90deg);
+    transition: transform 0.15s;
+}
+
+.notif-chevron[aria-expanded="true"] svg {
+    transform: rotate(0deg);
 }
 
 .notif-chevron:hover {

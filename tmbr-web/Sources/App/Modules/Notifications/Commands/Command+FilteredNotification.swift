@@ -16,7 +16,7 @@ struct FilteredNotificationInput: Sendable {
 
 extension Command where Self == PlainCommand<FilteredNotificationInput, Void> {
 
-    static func filteredSend(
+    static func content(
         database: Database,
         service: NotificationService?
     ) -> Self {
@@ -35,6 +35,7 @@ extension Command where Self == PlainCommand<FilteredNotificationInput, Void> {
                     guard sub.contentTypes.isEmpty
                         || types.contains(ct)
                         || input.parentContentType.map({ types.contains($0) }) ?? false
+                        || types.contains(where: { ct.hasPrefix($0 + ":") })
                     else { return false }
                 }
                 return true
@@ -46,13 +47,13 @@ extension Command where Self == PlainCommand<FilteredNotificationInput, Void> {
 
 extension CommandFactory<FilteredNotificationInput, Void> {
 
-    static var filteredSend: Self {
+    static var content: Self {
         CommandFactory { request in
-            .filteredSend(
+            .content(
                 database: request.commandDB,
                 service: request.application.notificationService
             )
-            .logged(name: "Send Filtered Notification", logger: request.logger)
+            .logged(name: "Send Content Notification", logger: request.logger)
         }
     }
 }

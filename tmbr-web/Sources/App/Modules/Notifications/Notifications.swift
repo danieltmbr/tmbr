@@ -35,6 +35,7 @@ struct Notifications: Module {
     
     func boot(_ routes: RoutesBuilder) async throws {
         try routes.register(collection: NotificationsAPIController())
+        try routes.register(collection: NotificationsWebController())
         routes
             .grouped(RecoverMiddleware())
             .get("notifications", page: Page(template: .notifications))
