@@ -8,16 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const syncBanner = document.getElementById('sync-banner');
     if (!syncBanner) return;
 
-    // Collect the current tracklist URLs from data attributes
+    const metadataEndpoint = tracksSection.dataset.metadataEndpoint;
+    if (!metadataEndpoint) return;
+
     const currentURLs = Array.from(
         tracksSection.querySelectorAll('li[data-track-url]')
     ).map(li => li.dataset.trackUrl);
-
-    // Find the Apple Music URL from the resources section
-    const appleMusicLink = document.querySelector('a[href*="music.apple.com"]');
-    if (!appleMusicLink) return;
-
-    const metadataEndpoint = '/playlists/metadata?url=' + encodeURIComponent(appleMusicLink.href);
 
     fetch(metadataEndpoint)
         .then(res => res.ok ? res.json() : null)

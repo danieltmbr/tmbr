@@ -105,7 +105,7 @@ struct PlaylistsWebController: RouteCollection {
                                 access: payload.access,
                                 artist: nil,
                                 ownerID: preview.ownerID,
-                                tracks: tracks,
+                                tracks: tracks.map { TrackMetadata(name: $0.name, url: $0.url) },
                                 containerType: "playlist"
                             )
                         )
@@ -243,13 +243,11 @@ struct PlaylistsWebController: RouteCollection {
         request.session.data["csrf.sync"] = nil
         let playlist = try await request.commands.playlists.fetch(playlistID, for: .write)
         let platform = Platform<PlaylistMetadata>.playlist
-        let appleMusicURL = playlist.resourceURLs
-            .compactMap { URL(string: $0) }
-            .first { platform.name(for: $0) != nil && $0.absoluteString.contains("music.apple.com") }
-        guard let appleMusicURL else {
-            throw Abort(.badRequest, reason: "No Apple Music URL found for this playlist")
+        let platformURL = playlist.resourceURLs.compactMap { URL(string: $0) }.first { platform.name(for: $0) != nil }
+        guard let platformURL else {
+            throw Abort(.badRequest, reason: "No streaming URL found for this playlist")
         }
-        let metadata = try await request.commands.playlists.metadata(appleMusicURL)
+        let metadata = try await request.commands.playlists.metadata(platformURL)
         guard let tracks = metadata.tracks, !tracks.isEmpty else {
             return request.redirect(to: "/playlists/\(playlistID)")
         }

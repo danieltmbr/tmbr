@@ -4,7 +4,6 @@ import Vapor
 struct TrackMetadata: Codable, Sendable {
     let name: String
     let url: String?
-    var previewID: UUID? = nil
 }
 
 struct AlbumMetadata: Encodable, AsyncResponseEncodable, Sendable {

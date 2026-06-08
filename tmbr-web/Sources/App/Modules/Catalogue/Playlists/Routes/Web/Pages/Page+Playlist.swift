@@ -12,9 +12,11 @@ struct PlaylistViewModel: Encodable, Sendable {
 
     private let allowsNewNote: Bool
 
-    private let createdAt: String?
+    private let addedAt: String?
 
     private let description: String?
+
+    private let metadataEndpoint: String?
 
     private let notes: [NoteViewModel]
 
@@ -36,8 +38,9 @@ struct PlaylistViewModel: Encodable, Sendable {
         id: PlaylistID,
         artwork: ImageViewModel?,
         allowsNewNote: Bool,
-        createdAt: String?,
+        addedAt: String?,
         description: String?,
+        metadataEndpoint: String?,
         notes: [NoteViewModel],
         notesEndpoint: String,
         post: PostItemViewModel?,
@@ -50,8 +53,9 @@ struct PlaylistViewModel: Encodable, Sendable {
         self.id = id
         self.artwork = artwork
         self.allowsNewNote = allowsNewNote
-        self.createdAt = createdAt
+        self.addedAt = addedAt
         self.description = description
+        self.metadataEndpoint = metadataEndpoint
         self.notes = notes
         self.notesEndpoint = notesEndpoint
         self.post = post
@@ -72,19 +76,24 @@ struct PlaylistViewModel: Encodable, Sendable {
         platform: Platform<PlaylistMetadata> = .playlist
     ) throws {
         let playlistID = try playlist.requireID()
-        let resolvedPlatform = platform
-        let resources = playlist.resourceURLs.compactMap(resolvedPlatform.hyperlink)
-        // Expose sync endpoint to the detail page only for owners when an Apple Music URL is present
-        let hasAppleMusicURL = resources.contains(where: { $0.urlString.contains("music.apple.com") })
-        let syncEndpoint = allowsNewNote && hasAppleMusicURL ? "/playlists/\(playlistID)/sync-tracks" : nil
+        let resources = playlist.resourceURLs.compactMap(platform.hyperlink)
+        let platformURL: URL? = allowsNewNote
+            ? playlist.resourceURLs.compactMap { URL(string: $0) }.first(where: { platform.name(for: $0) != nil })
+            : nil
+        let syncEndpoint: String? = platformURL != nil ? "/playlists/\(playlistID)/sync-tracks" : nil
+        let metadataEndpoint: String? = platformURL.map { url in
+            let encoded = url.absoluteString.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed) ?? url.absoluteString
+            return "/playlists/metadata?url=\(encoded)"
+        }
         self.init(
             id: playlistID,
             artwork: playlist.artwork.flatMap {
                 ImageViewModel(image: $0, baseURL: baseURL)
             },
             allowsNewNote: allowsNewNote,
-            createdAt: playlist.createdAt.map { $0.formatted(.releaseDate) },
+            addedAt: playlist.createdAt.map { $0.formatted(.releaseDate) },
             description: playlist.description,
+            metadataEndpoint: metadataEndpoint,
             notes: try notes.map { try NoteViewModel(note: $0, isEditable: allowsNewNote) },
             notesEndpoint: "/playlists/\(playlistID)/notes",
             post: try playlist.post.map(PostItemViewModel.init),
@@ -115,11 +124,17 @@ extension Page {
             let resolvedPlaylist = try await playlist
             let allowsNewNote = (try? await request.permissions.playlists.edit.grant(resolvedPlaylist)) != nil
             let resolvedEntries = try await entries
-            let trackPreviewIDs = resolvedEntries.compactMap { $0.preview.id }
-            let notesByPreviewID = try await request.commands.notes.fetchTrackNotes(trackPreviewIDs)
+            // Only promoted songs can have notes; skip the DB query for unpromoted tracks
+            let promotedPreviewIDs = resolvedEntries.compactMap { entry -> PreviewID? in
+                guard entry.preview.parentID != nil else { return nil }
+                return entry.preview.id
+            }
+            let notesByPreviewID = try await request.commands.notes.fetchNotesByAttachments(promotedPreviewIDs)
             let tracks = resolvedEntries.map { entry -> TrackViewModel in
-                let entryNotes = entry.preview.id.flatMap { notesByPreviewID[$0] } ?? []
-                return TrackViewModel(entry: entry, notes: entryNotes.compactMap { try? NoteViewModel(note: $0) })
+                let notes = entry.preview.parentID != nil
+                    ? (entry.preview.id.flatMap { notesByPreviewID[$0] } ?? []).compactMap { try? NoteViewModel(note: $0) }
+                    : []
+                return TrackViewModel(entry: entry, notes: notes)
             }
             let csrf: String?
             if allowsNewNote {

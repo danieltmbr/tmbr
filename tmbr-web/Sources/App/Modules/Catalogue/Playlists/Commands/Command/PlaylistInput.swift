@@ -16,7 +16,7 @@ struct PlaylistInput {
 
     fileprivate let title: String
 
-    let tracks: [TrackMetadata]?
+    let tracks: [TrackEntry]?
 
     init(
         access: Access,
@@ -24,7 +24,7 @@ struct PlaylistInput {
         description: String?,
         resourceURLs: [String],
         title: String,
-        tracks: [TrackMetadata]? = nil
+        tracks: [TrackEntry]? = nil
     ) {
         self.access = access
         self.artwork = artwork

@@ -44,10 +44,10 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         resourceURLs.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
     }
 
-    var tracks: [TrackMetadata]? {
+    var tracks: [TrackEntry]? {
         guard let raw = tracklistJSONRaw, !raw.isEmpty,
               let data = raw.data(using: .utf8) else { return nil }
-        return try? JSONDecoder().decode([TrackMetadata].self, from: data)
+        return try? JSONDecoder().decode([TrackEntry].self, from: data)
     }
 
     enum CodingKeys: String, CodingKey {

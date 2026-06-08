@@ -8,7 +8,7 @@ import TmbrCore
 struct SyncContainerEntriesInput: Sendable {
     let containerType: String
     let containerID: Int
-    let tracks: [TrackMetadata]
+    let tracks: [TrackEntry]
     let access: Access
     let ownerID: UserID
 }
