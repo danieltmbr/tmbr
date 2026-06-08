@@ -28,7 +28,6 @@
         rows="3"
     >#(description)</textarea>
     <input id="editor-tracklist-json" type="hidden" name="tracklist-json" value="" />
-    #if(tracks):
     <section id="editor-tracklist-section">
         <h4>Tracklist</h4>
         <ol id="editor-tracklist" class="tracklist">
@@ -63,7 +62,6 @@
             <li><span></span><small hidden></small></li>
         </template>
     </section>
-    #endif
     #endexport
 
     #export("editor-image-picker"):

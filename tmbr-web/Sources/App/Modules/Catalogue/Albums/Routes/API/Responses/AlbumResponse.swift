@@ -26,8 +26,9 @@ extension AlbumResponse {
             releaseDate: album.releaseDate,
             resources: album.resourceURLs.compactMap(platform.hyperlink),
             title: album.title,
-            tracks: trackPreviews.enumerated().map { index, preview in
-                TrackItem(preview: preview, position: index + 1, notes: trackNotesByID[preview.id!] ?? [], baseURL: baseURL)
+            tracks: trackPreviews.enumerated().compactMap { index, preview in
+                guard let id = preview.id else { return nil }
+                return TrackItem(preview: preview, position: index + 1, notes: trackNotesByID[id] ?? [], baseURL: baseURL)
             }
         )
     }

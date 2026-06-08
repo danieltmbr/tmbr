@@ -46,7 +46,8 @@ struct SyncContainerEntriesCommand: Command {
             throw Abort(.internalServerError, reason: "Track category not found")
         }
 
-        let existingSongsByURL = try await findSongPreviewsByURL(FindSongPreviewsByURLInput(ownerID: input.ownerID))
+        let trackURLs = input.tracks.compactMap(\.url)
+        let existingSongsByURL = try await findSongPreviewsByURL(FindSongPreviewsByURLInput(ownerID: input.ownerID, urls: trackURLs))
 
         // Determine desired previewIDs in order
         var desiredPreviewIDs: [UUID] = []

@@ -123,11 +123,12 @@ extension Page {
             let allowsNewNote = (try? await request.permissions.playlists.edit.grant(resolvedPlaylist)) != nil
             let resolvedTrackPreviews = try await trackPreviews
             let trackNotesByID = try await request.commands.notes.grouped(resolvedTrackPreviews.compactMap(\.id))
-            let tracks = resolvedTrackPreviews.enumerated().map { index, preview in
-                TrackViewModel(
+            let tracks = resolvedTrackPreviews.enumerated().compactMap { index, preview -> TrackViewModel? in
+                guard let id = preview.id else { return nil }
+                return TrackViewModel(
                     preview: preview,
                     position: index + 1,
-                    notes: (trackNotesByID[preview.id!] ?? []).compactMap { try? NoteViewModel(note: $0) }
+                    notes: (trackNotesByID[id] ?? []).compactMap { try? NoteViewModel(note: $0) }
                 )
             }
             let csrf: String?

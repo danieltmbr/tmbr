@@ -23,8 +23,9 @@ extension PlaylistResponse {
             post: playlist.post.map { PostResponse(post: $0, baseURL: baseURL) },
             resources: playlist.resourceURLs.compactMap(platform.hyperlink),
             title: playlist.title,
-            tracks: trackPreviews.enumerated().map { index, preview in
-                TrackItem(preview: preview, position: index + 1, notes: trackNotesByID[preview.id!] ?? [], baseURL: baseURL)
+            tracks: trackPreviews.enumerated().compactMap { index, preview in
+                guard let id = preview.id else { return nil }
+                return TrackItem(preview: preview, position: index + 1, notes: trackNotesByID[id] ?? [], baseURL: baseURL)
             }
         )
     }
