@@ -9,12 +9,12 @@ struct NotificationsWebController: RouteCollection {
 
     private func panel(req: Request) async throws -> View {
         let categories = try await CatalogueCategory.query(on: req.db)
-            .filter(\.$kind ~~ [.collection, .catalogue, .orphan])
+            .filter(\.$kind ~~ [.virtual, .entry, .orphan])
             .sort(\.$name)
             .all()
 
         let noteChildren: [PanelOption] = categories
-            .filter { $0.kind == .orphan || $0.kind == .collection || ($0.kind == .catalogue && $0.parentSlug == nil) }
+            .filter { $0.kind == .orphan || $0.kind == .virtual || ($0.kind == .entry && $0.parentSlug == nil) }
             .map { PanelOption(value: "note:\($0.slug)", label: $0.name, icon: $0.icon ?? $0.slug, hasChildren: false, children: []) }
 
         let options: [PanelOption] = [

@@ -75,19 +75,19 @@ Some catalogue entries are **shallow placeholders** — they have a Preview reco
 
 | Kind | Description | `parentID` | Can have Notes? | Example |
 |------|-------------|------------|-----------------|---------|
-| `.catalogue` | Model-backed, appears in feed | non-nil | Yes | Song, Album, Book, Movie, Playlist, Podcast |
+| `.entry` | Model-backed, appears in feed | non-nil | Yes | Song, Album, Book, Movie, Playlist, Podcast |
 | `.promotable` | Shallow placeholder awaiting promotion | nil → non-nil after promotion | No → Yes after promotion | Track |
 | `.orphan` | User-defined, no backing model | nil | Yes | Recipe, Guide, Link |
-| `.collection` | Display-only grouping | nil | Yes (no use case yet) | Music |
+| `.virtual` | Display-only grouping | nil | Yes (no use case yet) | Music |
 
-**Key rule: use `catalogueCategory?.kind.isShallow` (not `parentID == nil`) to test whether an item can have notes.** Orphan and collection items also have `parentID == nil` but are not shallow and can accept Notes.
+**Key rule: use `catalogueCategory?.kind.isShallow` (not `parentID == nil`) to test whether an item can have notes.** Orphan and virtual items also have `parentID == nil` but are not shallow and can accept Notes.
 
 #### Promotable Lifecycle (Track → Song)
 
 1. **Import**: A `Preview` is created with `parentID = nil` and `kind = .promotable`. No Song model exists yet.
 2. **User accesses track**: The app prompts to promote. `POST /api/songs/promote` is called.
-3. **Promotion**: A `Song` model is created with `adoptingPreviewID` set to the track's Preview UUID. `PreviewModelMiddleware` calls `preview.adopt(parentID: songID, categoryID: songCategoryID, ...)` — setting `parentID` to the Song's Int ID and changing the category to "song" (kind = `.catalogue`).
-4. **After promotion**: The same Preview UUID now has a non-nil `parentID` and a `.catalogue` kind. Notes can now be attached.
+3. **Promotion**: A `Song` model is created with `adoptingPreviewID` set to the track's Preview UUID. `PreviewModelMiddleware` calls `preview.adopt(parentID: songID, categoryID: songCategoryID, ...)` — setting `parentID` to the Song's Int ID and changing the category to "song" (kind = `.entry`).
+4. **After promotion**: The same Preview UUID now has a non-nil `parentID` and a `.entry` kind. Notes can now be attached.
 
 The `ContainerEntry` for an album/playlist tracklist always points to the same Preview UUID regardless of whether it has been promoted.
 
