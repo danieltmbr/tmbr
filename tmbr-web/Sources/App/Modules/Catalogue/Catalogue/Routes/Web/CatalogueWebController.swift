@@ -68,7 +68,7 @@ struct CatalogueWebController: RouteCollection {
                         let u = payload.url?.trimmingCharacters(in: .whitespaces) ?? ""
                         return u.isEmpty ? nil : u
                     }(),
-                    categorySlug: payload.category
+                    categoryName: payload.category
                 )
             )
             let syncEntries = payload.notes.map { SyncNoteEntry(id: $0.noteID, body: $0.body, access: $0.access, deleted: $0.deleted ?? false) }
@@ -146,7 +146,7 @@ struct CatalogueWebController: RouteCollection {
                             let u = payload.url?.trimmingCharacters(in: .whitespaces) ?? ""
                             return u.isEmpty ? nil : u
                         }(),
-                        categorySlug: payload.category,
+                        categoryName: payload.category,
                         ownerID: userID
                     )
                 )

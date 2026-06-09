@@ -11,7 +11,7 @@ struct UpdatePreviewItemInput: Sendable {
     let subtitle: String?
     let artworkID: ImageID?
     let externalLink: String?
-    let categorySlug: String
+    let categoryName: String
 }
 
 struct UpdatePreviewItemCommand: Command {
@@ -19,14 +19,17 @@ struct UpdatePreviewItemCommand: Command {
     typealias Input = UpdatePreviewItemInput
     typealias Output = Preview
 
-    private let findCategory: CommandResolver<String, CatalogueCategory>
+    private let findCategory: CommandResolver<String, CatalogueCategory?>
+    private let createCategory: CommandResolver<String, CatalogueCategory>
     private let database: Database
 
     init(
-        findCategory: CommandResolver<String, CatalogueCategory>,
+        findCategory: CommandResolver<String, CatalogueCategory?>,
+        createCategory: CommandResolver<String, CatalogueCategory>,
         database: Database
     ) {
         self.findCategory = findCategory
+        self.createCategory = createCategory
         self.database = database
     }
 
@@ -34,7 +37,21 @@ struct UpdatePreviewItemCommand: Command {
         guard let preview = try await Preview.find(input.previewID, on: database) else {
             throw Abort(.notFound)
         }
-        let category = try await findCategory(input.categorySlug)
+        let slug = input.categoryName
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .components(separatedBy: .whitespaces)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        guard !slug.isEmpty else {
+            throw Abort(.badRequest, reason: "Category name is required")
+        }
+        let category: CatalogueCategory
+        if let existing = try await findCategory(slug) {
+            category = existing
+        } else {
+            category = try await createCategory(input.categoryName)
+        }
         preview.primaryInfo = input.title
         preview.secondaryInfo = input.subtitle
         preview.externalLinks = [input.externalLink].compactMap { $0 }
@@ -54,6 +71,7 @@ extension CommandFactory<UpdatePreviewItemInput, Preview> {
         CommandFactory { request in
             UpdatePreviewItemCommand(
                 findCategory: request.commands.catalogueCategories.find,
+                createCategory: request.commands.catalogueCategories.create,
                 database: request.commandDB
             )
             .logged(name: "Update preview item", logger: request.logger)

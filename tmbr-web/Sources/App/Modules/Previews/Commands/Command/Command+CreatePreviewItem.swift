@@ -11,7 +11,7 @@ struct CreatePreviewItemInput: Sendable {
     let access: Access
     let artworkID: ImageID?
     let externalLink: String?
-    let categorySlug: String
+    let categoryName: String
     let ownerID: UserID
 }
 
@@ -20,19 +20,36 @@ struct CreatePreviewItemCommand: Command {
     typealias Input = CreatePreviewItemInput
     typealias Output = Preview
 
-    private let findCategory: CommandResolver<String, CatalogueCategory>
+    private let findCategory: CommandResolver<String, CatalogueCategory?>
+    private let createCategory: CommandResolver<String, CatalogueCategory>
     private let database: Database
 
     init(
-        findCategory: CommandResolver<String, CatalogueCategory>,
+        findCategory: CommandResolver<String, CatalogueCategory?>,
+        createCategory: CommandResolver<String, CatalogueCategory>,
         database: Database
     ) {
         self.findCategory = findCategory
+        self.createCategory = createCategory
         self.database = database
     }
 
     func execute(_ input: CreatePreviewItemInput) async throws -> Preview {
-        let category = try await findCategory(input.categorySlug)
+        let slug = input.categoryName
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+            .components(separatedBy: .whitespaces)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        guard !slug.isEmpty else {
+            throw Abort(.badRequest, reason: "Category name is required")
+        }
+        let category: CatalogueCategory
+        if let existing = try await findCategory(slug) {
+            category = existing
+        } else {
+            category = try await createCategory(input.categoryName)
+        }
         let preview = Preview(
             id: UUID(),
             parentID: nil,
@@ -58,6 +75,7 @@ extension CommandFactory<CreatePreviewItemInput, Preview> {
         CommandFactory { request in
             CreatePreviewItemCommand(
                 findCategory: request.commands.catalogueCategories.find,
+                createCategory: request.commands.catalogueCategories.create,
                 database: request.commandDB
             )
             .logged(name: "Create preview item", logger: request.logger)

@@ -35,12 +35,12 @@ struct ImportAlbumTracksCommand: Command {
     typealias Input = ImportAlbumTracksInput
     typealias Output = Void
 
-    private let findCategory: CommandResolver<String, CatalogueCategory>
+    private let findCategory: CommandResolver<String, CatalogueCategory?>
     private let findSongPreviewsByURL: CommandResolver<FindSongPreviewsByURLInput, [String: Preview]>
     private let database: Database
 
     init(
-        findCategory: CommandResolver<String, CatalogueCategory>,
+        findCategory: CommandResolver<String, CatalogueCategory?>,
         findSongPreviewsByURL: CommandResolver<FindSongPreviewsByURLInput, [String: Preview]>,
         database: Database
     ) {
@@ -50,7 +50,10 @@ struct ImportAlbumTracksCommand: Command {
     }
 
     func execute(_ input: ImportAlbumTracksInput) async throws {
-        let categoryID = try await findCategory("track").requireID()
+        guard let category = try await findCategory("track"),
+              let categoryID = category.id else {
+            throw Abort(.internalServerError, reason: "Catalogue category 'track' not found")
+        }
 
         let trackURLs = input.tracks.compactMap(\.url)
         let existingByURL = try await findSongPreviewsByURL(FindSongPreviewsByURLInput(ownerID: input.ownerID, urls: trackURLs))

@@ -1,4 +1,5 @@
 import Foundation
+import Vapor
 import Core
 import Fluent
 import AuthKit
@@ -15,11 +16,11 @@ struct FindSongPreviewsByURLCommand: Command {
     typealias Input = FindSongPreviewsByURLInput
     typealias Output = [String: Preview]
 
-    private let findCategory: CommandResolver<String, CatalogueCategory>
+    private let findCategory: CommandResolver<String, CatalogueCategory?>
     private let database: Database
 
     init(
-        findCategory: CommandResolver<String, CatalogueCategory>,
+        findCategory: CommandResolver<String, CatalogueCategory?>,
         database: Database
     ) {
         self.findCategory = findCategory
@@ -28,7 +29,10 @@ struct FindSongPreviewsByURLCommand: Command {
 
     func execute(_ input: FindSongPreviewsByURLInput) async throws -> [String: Preview] {
         guard !input.urls.isEmpty else { return [:] }
-        let songCategoryID = try await findCategory("song").requireID()
+        guard let songCategory = try await findCategory("song"),
+              let songCategoryID = songCategory.id else {
+            throw Abort(.internalServerError, reason: "Catalogue category 'song' not found")
+        }
         let urlSet = Set(input.urls)
         let previews = try await Preview.query(on: database)
             .filter(\.$catalogueCategory.$id == songCategoryID)
