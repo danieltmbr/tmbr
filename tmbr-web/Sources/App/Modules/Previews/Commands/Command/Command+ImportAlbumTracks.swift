@@ -35,23 +35,22 @@ struct ImportAlbumTracksCommand: Command {
     typealias Input = ImportAlbumTracksInput
     typealias Output = Void
 
-    private let findSongPreviewsByURL: CommandResolver<FindSongPreviewsByURLInput, [String: PreviewID]>
+    private let findCategory: CommandResolver<String, CatalogueCategory>
+    private let findSongPreviewsByURL: CommandResolver<FindSongPreviewsByURLInput, [String: Preview]>
     private let database: Database
 
     init(
-        findSongPreviewsByURL: CommandResolver<FindSongPreviewsByURLInput, [String: PreviewID]>,
+        findCategory: CommandResolver<String, CatalogueCategory>,
+        findSongPreviewsByURL: CommandResolver<FindSongPreviewsByURLInput, [String: Preview]>,
         database: Database
     ) {
+        self.findCategory = findCategory
         self.findSongPreviewsByURL = findSongPreviewsByURL
         self.database = database
     }
 
     func execute(_ input: ImportAlbumTracksInput) async throws {
-        guard let trackCategory = try await CatalogueCategory.query(on: database)
-            .filter(\.$slug == "track").first(),
-              let categoryID = trackCategory.id else {
-            throw Abort(.internalServerError, reason: "Track category not found in catalogue_categories")
-        }
+        let categoryID = try await findCategory("track").requireID()
 
         let trackURLs = input.tracks.compactMap(\.url)
         let existingByURL = try await findSongPreviewsByURL(FindSongPreviewsByURLInput(ownerID: input.ownerID, urls: trackURLs))
@@ -59,7 +58,7 @@ struct ImportAlbumTracksCommand: Command {
         for (index, track) in input.tracks.enumerated() {
             let previewID: UUID
             if let url = track.url, let existing = existingByURL[url] {
-                previewID = existing
+                previewID = try existing.requireID()
             } else {
                 let preview = Preview(
                     id: UUID(),
@@ -92,6 +91,7 @@ extension CommandFactory<ImportAlbumTracksInput, Void> {
     static var importAlbumTracks: Self {
         CommandFactory { request in
             ImportAlbumTracksCommand(
+                findCategory: request.commands.catalogueCategories.find,
                 findSongPreviewsByURL: request.commands.previews.findSongPreviewsByURL,
                 database: request.commandDB
             )

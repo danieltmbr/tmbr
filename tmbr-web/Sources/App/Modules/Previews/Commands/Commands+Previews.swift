@@ -15,7 +15,7 @@ extension Commands {
 
         let fetch: CommandFactory<FetchParameters<PreviewID>, Preview>
 
-        let findSongPreviewsByURL: CommandFactory<FindSongPreviewsByURLInput, [String: PreviewID]>
+        let findSongPreviewsByURL: CommandFactory<FindSongPreviewsByURLInput, [String: Preview]>
 
         let fetchContainerEntry: CommandFactory<ContainerEntryInput, ContainerEntry>
 
@@ -33,7 +33,7 @@ extension Commands {
             create: CommandFactory<CreatePreviewItemInput, Preview> = .createPreviewItem,
             deleteContainerEntries: CommandFactory<DeleteContainerEntriesInput, Void> = .deleteContainerEntries,
             fetch: CommandFactory<FetchParameters<PreviewID>, Preview> = .fetchPreview,
-            findSongPreviewsByURL: CommandFactory<FindSongPreviewsByURLInput, [String: PreviewID]> = .findSongPreviewsByURL,
+            findSongPreviewsByURL: CommandFactory<FindSongPreviewsByURLInput, [String: Preview]> = .findSongPreviewsByURL,
             fetchContainerEntry: CommandFactory<ContainerEntryInput, ContainerEntry> = .fetchContainerEntry,
             importTracks: CommandFactory<ImportAlbumTracksInput, Void> = .importAlbumTracks,
             list: CommandFactory<PreviewQueryInput, [Preview]> = .listPreviews,

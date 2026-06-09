@@ -69,7 +69,7 @@ struct CatalogueAPIController: RouteCollection {
                 let u = payload.url?.trimmingCharacters(in: .whitespaces) ?? ""
                 return u.isEmpty ? nil : u
             }(),
-            categoryName: payload.category,
+            categorySlug: payload.category,
             ownerID: userID
         )
         let preview = try await request.commands.previews.create(input)
