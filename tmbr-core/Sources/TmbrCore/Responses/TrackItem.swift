@@ -14,22 +14,17 @@ public struct TrackItem: Codable, Sendable {
 
     public let trackURL: String?
 
-    /// Notes on the promoted song. Empty for tracks that have not yet been promoted.
-    public let notes: [NoteResponse]
-
     public init(
         position: Int,
         title: String,
         href: String?,
         previewID: String,
-        trackURL: String?,
-        notes: [NoteResponse]
+        trackURL: String?
     ) {
         self.position = position
         self.title = title
         self.href = href
         self.previewID = previewID
         self.trackURL = trackURL
-        self.notes = notes
     }
 }

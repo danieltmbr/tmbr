@@ -9,7 +9,6 @@ extension AlbumResponse {
         album: Album,
         notes: [Note],
         trackPreviews: [Preview] = [],
-        trackNotesByID: [PreviewID: [Note]] = [:],
         baseURL: String,
         platform: Platform<AlbumMetadata> = .album
     ) {
@@ -27,8 +26,7 @@ extension AlbumResponse {
             resources: album.resourceURLs.compactMap(platform.hyperlink),
             title: album.title,
             tracks: trackPreviews.enumerated().compactMap { index, preview in
-                guard let id = preview.id else { return nil }
-                return TrackItem(preview: preview, position: index + 1, notes: trackNotesByID[id] ?? [], baseURL: baseURL)
+                TrackItem(preview: preview, position: index + 1)
             }
         )
     }

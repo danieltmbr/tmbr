@@ -6,13 +6,11 @@ struct TrackViewModel: Encodable, Sendable {
     let href: String?
     let previewID: String?
     let trackURL: String?
-    let notes: [NoteViewModel]
 
-    init(preview: Preview, position: Int, notes: [NoteViewModel] = []) {
+    init(preview: Preview, position: Int) {
         self.position = position
         title = preview.primaryInfo
         trackURL = preview.externalLinks.first
-        self.notes = notes
         if let parentID = preview.parentID, let route = preview.catalogueCategory?.route {
             href = "/\(route)/\(parentID)"
             previewID = preview.id?.uuidString
@@ -28,6 +26,5 @@ struct TrackViewModel: Encodable, Sendable {
         self.href = nil
         self.previewID = nil
         self.trackURL = url
-        self.notes = []
     }
 }

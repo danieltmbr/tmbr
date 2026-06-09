@@ -8,7 +8,6 @@ extension PlaylistResponse {
         playlist: Playlist,
         notes: [Note],
         trackPreviews: [Preview] = [],
-        trackNotesByID: [PreviewID: [Note]] = [:],
         baseURL: String,
         platform: Platform<PlaylistMetadata> = .playlist
     ) {
@@ -24,8 +23,7 @@ extension PlaylistResponse {
             resources: playlist.resourceURLs.compactMap(platform.hyperlink),
             title: playlist.title,
             tracks: trackPreviews.enumerated().compactMap { index, preview in
-                guard let id = preview.id else { return nil }
-                return TrackItem(preview: preview, position: index + 1, notes: trackNotesByID[id] ?? [], baseURL: baseURL)
+                TrackItem(preview: preview, position: index + 1)
             }
         )
     }

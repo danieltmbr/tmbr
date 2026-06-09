@@ -42,14 +42,6 @@
                 #else:
                 #(track.title)
                 #endif
-                #if(track.notes):
-                <details class="track-notes">
-                    <summary>Notes</summary>
-                    #for(note in track.notes):
-                    #extend("Notes/note-item")
-                    #endfor
-                </details>
-                #endif
             </li>
             #endfor
         </ol>

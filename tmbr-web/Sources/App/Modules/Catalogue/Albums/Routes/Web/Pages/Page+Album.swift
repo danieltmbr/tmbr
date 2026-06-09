@@ -130,14 +130,8 @@ extension Page {
             let resolvedAlbum = try await album
             let allowsNewNote = (try? await request.permissions.albums.edit.grant(resolvedAlbum)) != nil
             let resolvedTrackPreviews = try await trackPreviews
-            let trackNotesByID = try await request.commands.notes.grouped(resolvedTrackPreviews.compactMap(\.id))
             let tracks = resolvedTrackPreviews.enumerated().compactMap { index, preview -> TrackViewModel? in
-                guard let id = preview.id else { return nil }
-                return TrackViewModel(
-                    preview: preview,
-                    position: index + 1,
-                    notes: (trackNotesByID[id] ?? []).compactMap { try? NoteViewModel(note: $0) }
-                )
+                TrackViewModel(preview: preview, position: index + 1)
             }
             return try AlbumViewModel(
                 album: resolvedAlbum,

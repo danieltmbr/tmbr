@@ -21,8 +21,6 @@ extension Commands {
 
         let fetchByAttachment: CommandFactory<PreviewID, [Note]>
 
-        let grouped: CommandFactory<[PreviewID], [PreviewID: [Note]]>
-
         let query: CommandFactory<QueryNotesInput, [Note]>
 
         let search: CommandFactory<NoteQueryPayload, [Note]>
@@ -36,7 +34,6 @@ extension Commands {
             edit: CommandFactory<EditNoteInput, Note> = .editNote,
             fetch: CommandFactory<NoteID, Note> = .fetchNote,
             fetchByAttachment: CommandFactory<PreviewID, [Note]> = .fetchNotesByAttachment,
-            grouped: CommandFactory<[PreviewID], [PreviewID: [Note]]> = .grouped,
             query: CommandFactory<QueryNotesInput, [Note]> = .queryNotes,
             search: CommandFactory<NoteQueryPayload, [Note]> = .searchNote,
             sync: CommandFactory<SyncNotesInput, [Note]> = .syncNotes
@@ -47,7 +44,6 @@ extension Commands {
             self.edit = edit
             self.fetch = fetch
             self.fetchByAttachment = fetchByAttachment
-            self.grouped = grouped
             self.query = query
             self.search = search
             self.sync = sync
