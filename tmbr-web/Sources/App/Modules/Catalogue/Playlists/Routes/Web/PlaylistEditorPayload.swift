@@ -13,6 +13,10 @@ struct PlaylistEditorPayload: Decodable, Sendable {
 
     private let artworkSourceURLRaw: String?
 
+    private let artworkFallbackURLRaw: String?
+
+    private let platformCreatedAtRaw: String?
+
     let description: String?
 
     let notes: [NotePayload]
@@ -33,6 +37,16 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         return raw
     }
 
+    var artworkFallbackURL: String? {
+        guard let raw = artworkFallbackURLRaw, !raw.isEmpty else { return nil }
+        return raw
+    }
+
+    var platformCreatedAt: Date? {
+        guard let raw = platformCreatedAtRaw, !raw.isEmpty else { return nil }
+        return ISO8601DateFormatter().date(from: raw)
+    }
+
     var filteredResourceURLs: [String] {
         resourceURLs.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
     }
@@ -48,6 +62,8 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         case access
         case artworkIdRaw = "artwork-id"
         case artworkSourceURLRaw = "artwork-source-url"
+        case artworkFallbackURLRaw = "artwork-fallback-url"
+        case platformCreatedAtRaw = "platform-created-at"
         case description
         case notes
         case tracklistJSONRaw = "tracklist-json"
@@ -60,6 +76,8 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         access: Access = .private,
         artworkIdRaw: String? = nil,
         artworkSourceURLRaw: String? = nil,
+        artworkFallbackURLRaw: String? = nil,
+        platformCreatedAtRaw: String? = nil,
         description: String? = nil,
         notes: [NotePayload] = [],
         tracklistJSONRaw: String? = nil,
@@ -70,6 +88,8 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         self.access = access
         self.artworkIdRaw = artworkIdRaw
         self.artworkSourceURLRaw = artworkSourceURLRaw
+        self.artworkFallbackURLRaw = artworkFallbackURLRaw
+        self.platformCreatedAtRaw = platformCreatedAtRaw
         self.description = description
         self.notes = notes
         self.tracklistJSONRaw = tracklistJSONRaw
@@ -84,6 +104,7 @@ extension PlaylistInput {
         self.init(
             access: payload.access,
             artwork: artworkId ?? payload.artworkId,
+            platformCreatedAt: payload.platformCreatedAt,
             description: payload.description,
             resourceURLs: payload.filteredResourceURLs,
             title: payload.title,

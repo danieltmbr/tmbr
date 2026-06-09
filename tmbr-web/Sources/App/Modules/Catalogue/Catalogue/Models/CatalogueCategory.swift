@@ -51,3 +51,11 @@ final class CatalogueCategory: Model, @unchecked Sendable {
         self.parentSlug = parentSlug
     }
 }
+
+extension CatalogueCategory.Kind {
+    /// True for shallow placeholder items (currently: track) that cannot own Notes
+    /// and are expected to be promoted to a first-class catalogue item.
+    /// Use this instead of checking `preview.parentID != nil` — orphan and collection items
+    /// also have a nil parentID but are not shallow and can have notes.
+    var isShallow: Bool { self == .promotable }
+}

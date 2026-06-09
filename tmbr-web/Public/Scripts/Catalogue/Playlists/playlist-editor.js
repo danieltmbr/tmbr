@@ -2,11 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('editor-form');
     if (!form) return;
 
-    const idInput            = document.getElementById('editor-id');
-    const titleInput         = document.getElementById('editor-title');
-    const descriptionInput   = document.getElementById('editor-description');
-    const tracklistJsonInput = document.getElementById('editor-tracklist-json');
-    const statusEl           = document.getElementById('autofill-status');
+    const idInput             = document.getElementById('editor-id');
+    const titleInput          = document.getElementById('editor-title');
+    const descriptionInput    = document.getElementById('editor-description');
+    const tracklistJsonInput  = document.getElementById('editor-tracklist-json');
+    const tracklistSection    = document.getElementById('editor-tracklist-section');
+    const tracklistEl         = document.getElementById('editor-tracklist');
+    const statusEl            = document.getElementById('autofill-status');
 
     const resourcesSection = document.getElementById('resources-section');
     const detailsSection   = document.getElementById('details-section');
@@ -36,6 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
         onOpenGallery: () => imagePicker.open('image'),
     });
     artwork.init();
+    if (tracklistSection && tracklistEl && tracklistEl.children.length > 0) {
+        tracklistSection.hidden = false;
+        if (tracklistJsonInput && !tracklistJsonInput.value) {
+            const tracks = Array.from(tracklistEl.children).map(li => ({
+                name: li.dataset.trackName || '',
+                ...(li.dataset.trackUrl ? { url: li.dataset.trackUrl } : {}),
+            }));
+            tracklistJsonInput.value = JSON.stringify(tracks);
+        }
+    }
 
     const notes = new NotesController(
         { section: notesSection },
@@ -58,18 +70,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getState() {
         return {
-            title:              titleInput?.value || '',
-            description:        descriptionInput?.value || '',
-            notes:              notes.getNotes(),
-            resourceURLs:       resourceInputs.getValues(),
-            artworkId:          artwork.getArtworkId(),
+            title:               titleInput?.value || '',
+            description:         descriptionInput?.value || '',
+            notes:               notes.getNotes(),
+            resourceURLs:        resourceInputs.getValues(),
+            artworkId:           artwork.getArtworkId(),
             artworkThumbnailUrl: artwork.getThumbnailUrl(),
-            artworkExternalURL: artwork.getExternalURL(),
+            artworkExternalURL:  artwork.getExternalURL(),
+            tracklistJson:       tracklistJsonInput?.value || '',
         };
     }
 
     function setState(state) {
         if (!state || typeof state !== 'object') return;
+        if (state.tracklistJson && tracklistJsonInput) tracklistJsonInput.value = state.tracklistJson;
         if (typeof state.title === 'string' && !titleInput.value) titleInput.value = state.title;
         if (typeof state.description === 'string' && !descriptionInput.value) descriptionInput.value = state.description;
         if (Array.isArray(state.notes)) notes.setNotes(state.notes, true);
@@ -77,6 +91,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (artwork.isEmpty()) {
             if (state.artworkId) artwork.setArtwork(state.artworkId, state.artworkThumbnailUrl);
             else if (state.artworkExternalURL) artwork.setExternalURL(state.artworkExternalURL);
+        }
+        if (state.tracklistJson && tracklistEl) {
+            try {
+                const tracks = JSON.parse(state.tracklistJson);
+                if (Array.isArray(tracks) && tracks.length > 0) {
+                    tracklistEl.replaceChildren();
+                    tracks.forEach(track => {
+                        const li = document.createElement('li');
+                        li.dataset.trackName = track.name || '';
+                        if (track.url) li.dataset.trackUrl = track.url;
+                        const span = document.createElement('span');
+                        span.textContent = track.name || '';
+                        li.appendChild(span);
+                        tracklistEl.appendChild(li);
+                    });
+                    if (tracklistSection) tracklistSection.hidden = false;
+                } else {
+                    tracklistEl.replaceChildren();
+                    if (tracklistSection) tracklistSection.hidden = true;
+                }
+            } catch {}
         }
     }
 
@@ -87,12 +122,41 @@ document.addEventListener('DOMContentLoaded', () => {
         if (saved) setState(saved);
     }
 
+    const artworkFallbackInput = document.getElementById('editor-artwork-fallback-url');
+    const platformCreatedAtInput = document.getElementById('editor-platform-created-at');
+
     function applyMetadata(data) {
         if (!titleInput.value && data.title) titleInput.value = data.title;
         if (!descriptionInput.value && data.description) descriptionInput.value = data.description;
-        if (data.artwork && artwork.isEmpty()) artwork.setExternalURL(data.artwork);
-        if (Array.isArray(data.tracks) && data.tracks.length > 0 && tracklistJsonInput) {
-            tracklistJsonInput.value = JSON.stringify(data.tracks);
+        const resizedURL = data.artwork?.resized;
+        if (resizedURL && artwork.isEmpty()) {
+            artwork.setExternalURL(resizedURL);
+            const fallbackURL = data.artwork?.original;
+            if (artworkFallbackInput && fallbackURL) {
+                artworkFallbackInput.value = fallbackURL;
+                artwork.imageEl.addEventListener('error', () => {
+                    artwork.setExternalURL(fallbackURL);
+                    artworkFallbackInput.value = '';
+                    saveDraft();
+                }, { once: true });
+            }
+        }
+        if (platformCreatedAtInput && data.createdAt) platformCreatedAtInput.value = data.createdAt;
+        if (Array.isArray(data.tracks) && data.tracks.length > 0) {
+            if (tracklistJsonInput) tracklistJsonInput.value = JSON.stringify(data.tracks);
+            if (tracklistEl) {
+                tracklistEl.replaceChildren();
+                data.tracks.forEach(track => {
+                    const li = document.createElement('li');
+                    li.dataset.trackName = track.name;
+                    if (track.url) li.dataset.trackUrl = track.url;
+                    const span = document.createElement('span');
+                    span.textContent = track.name;
+                    li.appendChild(span);
+                    tracklistEl.appendChild(li);
+                });
+                if (tracklistSection) tracklistSection.hidden = false;
+            }
         }
     }
 
@@ -104,7 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
         set('preview-description',  descriptionInput?.value || '');
         set('preview-artwork-url',  artwork.getThumbnailUrl());
         set('preview-resource-urls', resourceInputs.getValues().join('\n'));
-        set('preview-notes',        notes.getValues().join('\n\n'));
+        set('preview-notes',          notes.getValues().join('\n\n'));
+        set('preview-tracklist-json', tracklistJsonInput?.value || '');
         pf.submit();
     }
 
@@ -138,6 +203,20 @@ document.addEventListener('DOMContentLoaded', () => {
     new ShortcutsController([ShortcutsController.login, ShortcutsController.preview(() => fillPreview())]).init();
 
     document.getElementById('editor-preview')?.addEventListener('click', () => fillPreview());
+
+    function clearForm() {
+        if (!confirm('Clear all form data?')) return;
+        titleInput.value = '';
+        descriptionInput.value = '';
+        artwork.clear();
+        if (tracklistEl) tracklistEl.replaceChildren();
+        if (tracklistJsonInput) tracklistJsonInput.value = '';
+        if (tracklistSection) tracklistSection.hidden = true;
+        resourceInputs.clear();
+        notes.setNotes([], true);
+        persistence.clear(storageKey);
+    }
+    document.getElementById('editor-clear')?.addEventListener('click', clearForm);
 
     form.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;

@@ -110,6 +110,10 @@
             disabled
         />
         <input id="editor-album-tracklist-json" type="hidden" name="tracklist-json" value="" disabled />
+        <section id="editor-album-tracklist-section" hidden>
+            <h4>Tracklist</h4>
+            <ol id="editor-album-tracklist" class="tracklist"></ol>
+        </section>
     </div>
 
     <div class="music-type-fields" data-music-type="playlist" hidden>
@@ -124,6 +128,10 @@
             disabled
         ></textarea>
         <input id="editor-playlist-tracklist-json" type="hidden" name="tracklist-json" value="" disabled />
+        <section id="editor-playlist-tracklist-section" hidden>
+            <h4>Tracklist</h4>
+            <ol id="editor-playlist-tracklist" class="tracklist"></ol>
+        </section>
     </div>
     #endexport
 

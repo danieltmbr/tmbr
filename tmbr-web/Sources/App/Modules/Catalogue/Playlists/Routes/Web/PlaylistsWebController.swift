@@ -30,6 +30,7 @@ struct PlaylistsWebController: RouteCollection {
         recoveringRoute.post(":playlistID", use: updatePlaylist)
 
         recoveringRoute.post(":playlistID", "notes", use: createNote)
+        recoveringRoute.post(":playlistID", "sync-tracks", use: syncTracks)
     }
 
     @Sendable
@@ -125,10 +126,21 @@ struct PlaylistsWebController: RouteCollection {
         }
 
         let alt = payload.title.isEmpty ? "Playlist artwork" : payload.title
-        let newImage = try await req.commands.gallery.addFromURL(
-            ImageURLPayload(url: artworkURL, alt: alt)
-        )
-        return try newImage.requireID()
+        do {
+            let newImage = try await req.commands.gallery.addFromURL(
+                ImageURLPayload(url: artworkURL, alt: alt)
+            )
+            return try newImage.requireID()
+        } catch {
+            guard let fallbackURL = payload.artworkFallbackURL else { throw error }
+            if let existingImage = try await req.commands.gallery.lookup(fallbackURL) {
+                return try existingImage.requireID()
+            }
+            let fallbackImage = try await req.commands.gallery.addFromURL(
+                ImageURLPayload(url: fallbackURL, alt: alt)
+            )
+            return try fallbackImage.requireID()
+        }
     }
 
     private func renderEditorWithError(
@@ -177,6 +189,50 @@ struct PlaylistsWebController: RouteCollection {
         let response = try await view.encodeResponse(for: req)
         req.session.data["csrf.editor"] = csrf
         return response
+    }
+
+    private struct SyncTracksPayload: Decodable {
+        let _csrf: String?
+    }
+
+    @Sendable
+    private func syncTracks(_ request: Request) async throws -> Response {
+        guard let playlistID = request.parameters.get("playlistID", as: Int.self) else {
+            return Response(status: .badRequest)
+        }
+        let payload = try? request.content.decode(SyncTracksPayload.self)
+        guard let submittedCSRF = payload?._csrf,
+              submittedCSRF == request.session.data["csrf.sync"] else {
+            throw Abort(.forbidden, reason: "Invalid form token. Please reload the page and try again.")
+        }
+        request.session.data["csrf.sync"] = nil
+        let playlist = try await request.commands.playlists.fetch(playlistID, for: .write)
+        let platform = Platform<PlaylistMetadata>.playlist
+        let platformURL = playlist.resourceURLs.compactMap { URL(string: $0) }.first { platform.name(for: $0) != nil }
+        guard let platformURL else {
+            throw Abort(.badRequest, reason: "No streaming URL found for this playlist")
+        }
+        let metadata = try await request.commands.playlists.metadata(platformURL)
+        guard let tracks = metadata.tracks, !tracks.isEmpty else {
+            return request.redirect(to: "/playlists/\(playlistID)")
+        }
+        try await request.commands.transaction { commands in
+            let preview = try await commands.previews.fetch(playlist.$preview.id, for: .write)
+            try await commands.previews.deleteContainerEntries(
+                DeleteContainerEntriesInput(containerType: "playlist", containerID: playlistID)
+            )
+            try await commands.previews.importTracks(
+                ImportAlbumTracksInput(
+                    albumID: playlistID,
+                    access: playlist.access,
+                    artist: nil,
+                    ownerID: preview.ownerID,
+                    tracks: tracks,
+                    containerType: "playlist"
+                )
+            )
+        }
+        return request.redirect(to: "/playlists/\(playlistID)")
     }
 
     @Sendable

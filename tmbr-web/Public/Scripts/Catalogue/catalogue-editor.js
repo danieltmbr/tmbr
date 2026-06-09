@@ -390,6 +390,16 @@ class ResourceInputsController {
         }
     }
 
+    clear() {
+        this.getInputs().forEach(input => {
+            this.detachListener(input);
+            input.remove();
+        });
+        const newInput = this.createInput();
+        this.section.appendChild(newInput);
+        this.attachListener(newInput);
+    }
+
     attachListener(input) {
         input.addEventListener('input', this._onInput);
         input.addEventListener('change', this._onChange);

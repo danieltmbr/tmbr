@@ -15,46 +15,52 @@ struct CreatePreviewItemInput: Sendable {
     let ownerID: UserID
 }
 
-extension Command where Self == PlainCommand<CreatePreviewItemInput, Preview> {
+struct CreatePreviewItemCommand: Command {
 
-    static func createPreviewItem(database: Database) -> Self {
-        PlainCommand { input in
-            let name = input.categoryName.trimmingCharacters(in: .whitespacesAndNewlines)
-            let slug = name
-                .lowercased()
-                .components(separatedBy: .whitespaces)
-                .filter { !$0.isEmpty }
-                .joined(separator: " ")
-            let resolvedSlug = slug.isEmpty ? "link" : slug
-            let resolvedName = name.isEmpty ? "Link" : name
+    typealias Input = CreatePreviewItemInput
+    typealias Output = Preview
 
-            let category: CatalogueCategory
-            if let existing = try await CatalogueCategory.query(on: database)
-                .filter(\.$slug == resolvedSlug)
-                .first() {
-                category = existing
-            } else {
-                category = CatalogueCategory(slug: resolvedSlug, name: resolvedName, kind: .orphan)
-                try await category.create(on: database)
-            }
+    private let findCategory: CommandResolver<String, CatalogueCategory?>
+    private let createCategory: CommandResolver<String, CatalogueCategory>
+    private let database: Database
 
-            let preview = Preview(
-                id: UUID(),
-                parentID: nil,
-                parentAccess: input.access,
-                parentOwner: input.ownerID,
-                categoryID: category.id
-            )
-            preview.primaryInfo = input.title
-            preview.secondaryInfo = input.subtitle
-            preview.externalLinks = [input.externalLink].compactMap { $0 }
-            if let artworkID = input.artworkID {
-                preview.$image.id = artworkID
-            }
-            try await preview.save(on: database)
-            preview.$catalogueCategory.value = category
-            return preview
+    init(
+        findCategory: CommandResolver<String, CatalogueCategory?>,
+        createCategory: CommandResolver<String, CatalogueCategory>,
+        database: Database
+    ) {
+        self.findCategory = findCategory
+        self.createCategory = createCategory
+        self.database = database
+    }
+
+    func execute(_ input: CreatePreviewItemInput) async throws -> Preview {
+        let slug = input.categoryName.categorySlug
+        guard !slug.isEmpty else {
+            throw Abort(.badRequest, reason: "Category name is required")
         }
+        let category: CatalogueCategory
+        if let existing = try await findCategory(slug) {
+            category = existing
+        } else {
+            category = try await createCategory(input.categoryName)
+        }
+        let preview = Preview(
+            id: UUID(),
+            parentID: nil,
+            parentAccess: input.access,
+            parentOwner: input.ownerID,
+            categoryID: category.id
+        )
+        preview.primaryInfo = input.title
+        preview.secondaryInfo = input.subtitle
+        preview.externalLinks = [input.externalLink].compactMap { $0 }
+        if let artworkID = input.artworkID {
+            preview.$image.id = artworkID
+        }
+        try await preview.save(on: database)
+        preview.$catalogueCategory.value = category
+        return preview
     }
 }
 
@@ -62,7 +68,11 @@ extension CommandFactory<CreatePreviewItemInput, Preview> {
 
     static var createPreviewItem: Self {
         CommandFactory { request in
-            .createPreviewItem(database: request.commandDB)
+            CreatePreviewItemCommand(
+                findCategory: request.commands.catalogueCategories.find,
+                createCategory: request.commands.catalogueCategories.create,
+                database: request.commandDB
+            )
             .logged(name: "Create preview item", logger: request.logger)
         }
     }

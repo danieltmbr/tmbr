@@ -4,25 +4,6 @@ import AuthKit
 import Core
 import TmbrCore
 
-struct TrackViewModel: Encodable, Sendable {
-    let position: Int
-    let title: String
-    let href: String?
-    let previewID: String?
-
-    init(entry: ContainerEntry) {
-        position = entry.position
-        title = entry.preview.primaryInfo
-        if let parentID = entry.preview.parentID, let route = entry.preview.catalogueCategory?.route {
-            href = "/\(route)/\(parentID)"
-            previewID = nil
-        } else {
-            href = nil
-            previewID = entry.preview.id?.uuidString
-        }
-    }
-}
-
 struct AlbumViewModel: Encodable, Sendable {
 
     private let id: AlbumID
@@ -144,16 +125,17 @@ extension Page {
                 throw Abort(.badRequest)
             }
             async let album = request.commands.albums.fetch(albumID, for: .read)
-            async let notes = request.commands.notes.query(id: albumID, of: Album.previewType, languages: request.languagePreference)
-            async let entries = request.commands.previews.listContainerEntries(
-                ContainerEntriesInput(containerType: "album", containerID: albumID)
-            )
+            async let albumNotes = request.commands.notes.query(id: albumID, of: Album.previewType, languages: request.languagePreference)
+            async let trackPreviews = request.commands.previews.listContainerPreviews("album", albumID)
             let resolvedAlbum = try await album
             let allowsNewNote = (try? await request.permissions.albums.edit.grant(resolvedAlbum)) != nil
-            let tracks = try await entries.map(TrackViewModel.init)
+            let resolvedTrackPreviews = try await trackPreviews
+            let tracks = resolvedTrackPreviews.enumerated().compactMap { index, preview -> TrackViewModel? in
+                TrackViewModel(preview: preview, position: index + 1)
+            }
             return try AlbumViewModel(
                 album: resolvedAlbum,
-                notes: await notes,
+                notes: await albumNotes,
                 tracks: tracks,
                 baseURL: request.baseURL,
                 allowsNewNote: allowsNewNote

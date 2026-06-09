@@ -6,6 +6,9 @@
         #if(description):
         <p>#(description)</p>
         #endif
+        #if(platformCreatedAt):
+        <p class="published-date">Created #(platformCreatedAt)</p>
+        #endif
         #extend("Catalogue/resources")
     </div>
     #if(artwork):
@@ -17,11 +20,18 @@
 
     #export("detail-body"):
     #if(tracks):
-    <section id="tracks-section">
+    <section id="tracks-section" #if(syncEndpoint):data-sync-endpoint="#(syncEndpoint)" data-metadata-endpoint="#(metadataEndpoint)"#endif>
         <h3>Tracklist</h3>
+        <div id="sync-banner" hidden>
+            <p>Your playlist tracklist has changed.</p>
+            <form method="post" action="#(syncEndpoint)" id="sync-form">
+                <input type="hidden" name="_csrf" value="#(_csrf)" />
+                <button type="submit" class="link">Sync tracklist</button>
+            </form>
+        </div>
         <ol class="tracklist">
             #for(track in tracks):
-            <li>
+            <li #if(track.trackURL):data-track-url="#(track.trackURL)"#endif>
                 #if(track.href):
                 <a href="#(track.href)">#(track.title)</a>
                 #elseif(allowsNewNote):
@@ -36,6 +46,12 @@
             #endfor
         </ol>
     </section>
+    #endif
+    #endexport
+
+    #export("detail-scripts"):
+    #if(syncEndpoint):
+    <script src="/Scripts/Catalogue/Playlists/playlist-detail.js"></script>
     #endif
     #endexport
 

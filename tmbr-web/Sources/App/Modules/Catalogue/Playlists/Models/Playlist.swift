@@ -21,6 +21,9 @@ final class Playlist: Model, Previewable, @unchecked Sendable {
     @OptionalParent(key: "artwork_id")
     var artwork: Image?
 
+    @OptionalField(key: "created_at")
+    var platformCreatedAt: Date?
+
     @Field(key: "description")
     var description: String?
 

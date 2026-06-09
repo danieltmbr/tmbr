@@ -12,7 +12,11 @@ struct PlaylistViewModel: Encodable, Sendable {
 
     private let allowsNewNote: Bool
 
+    private let platformCreatedAt: String?
+
     private let description: String?
+
+    private let metadataEndpoint: String?
 
     private let notes: [NoteViewModel]
 
@@ -22,7 +26,11 @@ struct PlaylistViewModel: Encodable, Sendable {
 
     private let resources: [Hyperlink]
 
+    private let syncEndpoint: String?
+
     private let title: String
+
+    let _csrf: String?
 
     private let tracks: [TrackViewModel]
 
@@ -30,24 +38,32 @@ struct PlaylistViewModel: Encodable, Sendable {
         id: PlaylistID,
         artwork: ImageViewModel?,
         allowsNewNote: Bool,
+        platformCreatedAt: String?,
         description: String?,
+        metadataEndpoint: String?,
         notes: [NoteViewModel],
         notesEndpoint: String,
         post: PostItemViewModel?,
         resources: [Hyperlink],
+        syncEndpoint: String?,
         title: String,
-        tracks: [TrackViewModel] = []
+        tracks: [TrackViewModel] = [],
+        csrf: String? = nil
     ) {
         self.id = id
         self.artwork = artwork
         self.allowsNewNote = allowsNewNote
+        self.platformCreatedAt = platformCreatedAt
         self.description = description
+        self.metadataEndpoint = metadataEndpoint
         self.notes = notes
         self.notesEndpoint = notesEndpoint
         self.post = post
         self.resources = resources
+        self.syncEndpoint = syncEndpoint
         self.title = title
         self.tracks = tracks
+        self._csrf = csrf
     }
 
     init(
@@ -56,22 +72,36 @@ struct PlaylistViewModel: Encodable, Sendable {
         tracks: [TrackViewModel],
         baseURL: String,
         allowsNewNote: Bool,
+        csrf: String? = nil,
         platform: Platform<PlaylistMetadata> = .playlist
     ) throws {
         let playlistID = try playlist.requireID()
+        let resources = playlist.resourceURLs.compactMap(platform.hyperlink)
+        let platformURL: URL? = allowsNewNote
+            ? playlist.resourceURLs.compactMap { URL(string: $0) }.first(where: { platform.name(for: $0) != nil })
+            : nil
+        let syncEndpoint: String? = platformURL != nil ? "/playlists/\(playlistID)/sync-tracks" : nil
+        let metadataEndpoint: String? = platformURL.map { url in
+            let encoded = url.absoluteString.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed) ?? url.absoluteString
+            return "/playlists/metadata?url=\(encoded)"
+        }
         self.init(
             id: playlistID,
             artwork: playlist.artwork.flatMap {
                 ImageViewModel(image: $0, baseURL: baseURL)
             },
             allowsNewNote: allowsNewNote,
+            platformCreatedAt: playlist.platformCreatedAt.map { $0.formatted(.releaseDate) },
             description: playlist.description,
+            metadataEndpoint: metadataEndpoint,
             notes: try notes.map { try NoteViewModel(note: $0, isEditable: allowsNewNote) },
             notesEndpoint: "/playlists/\(playlistID)/notes",
             post: try playlist.post.map(PostItemViewModel.init),
-            resources: playlist.resourceURLs.compactMap(platform.hyperlink),
+            resources: resources,
+            syncEndpoint: syncEndpoint,
             title: playlist.title,
-            tracks: tracks
+            tracks: tracks,
+            csrf: csrf
         )
     }
 }
@@ -87,19 +117,29 @@ extension Page {
                 throw Abort(.badRequest)
             }
             async let playlist = request.commands.playlists.fetch(playlistID, for: .read)
-            async let notes = request.commands.notes.query(id: playlistID, of: Playlist.previewType, languages: request.languagePreference)
-            async let entries = request.commands.previews.listContainerEntries(
-                ContainerEntriesInput(containerType: "playlist", containerID: playlistID)
-            )
+            async let playlistNotes = request.commands.notes.query(id: playlistID, of: Playlist.previewType, languages: request.languagePreference)
+            async let trackPreviews = request.commands.previews.listContainerPreviews("playlist", playlistID)
             let resolvedPlaylist = try await playlist
             let allowsNewNote = (try? await request.permissions.playlists.edit.grant(resolvedPlaylist)) != nil
-            let tracks = try await entries.map(TrackViewModel.init)
+            let resolvedTrackPreviews = try await trackPreviews
+            let tracks = resolvedTrackPreviews.enumerated().compactMap { index, preview -> TrackViewModel? in
+                TrackViewModel(preview: preview, position: index + 1)
+            }
+            let csrf: String?
+            if allowsNewNote {
+                let token = UUID().uuidString
+                request.session.data["csrf.sync"] = token
+                csrf = token
+            } else {
+                csrf = nil
+            }
             return try PlaylistViewModel(
                 playlist: resolvedPlaylist,
-                notes: await notes,
+                notes: await playlistNotes,
                 tracks: tracks,
                 baseURL: request.baseURL,
-                allowsNewNote: allowsNewNote
+                allowsNewNote: allowsNewNote,
+                csrf: csrf
             )
         }
     }

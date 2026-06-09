@@ -8,8 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const genreInput          = document.getElementById('editor-genre');
     const releaseDateInput    = document.getElementById('editor-release-date');
     const releaseDateISOInput = document.getElementById('editor-release-date-iso');
-    const tracklistJsonInput  = document.getElementById('editor-tracklist-json');
-    const statusEl            = document.getElementById('autofill-status');
+    const tracklistJsonInput   = document.getElementById('editor-tracklist-json');
+    const tracklistSection     = document.getElementById('editor-tracklist-section');
+    const tracklistEl          = document.getElementById('editor-tracklist');
+    const statusEl             = document.getElementById('autofill-status');
 
     const resourcesSection = document.getElementById('resources-section');
     const detailsSection   = document.getElementById('details-section');
@@ -39,6 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
         onOpenGallery: () => imagePicker.open('image'),
     });
     artwork.init();
+    if (tracklistSection && tracklistEl && tracklistEl.children.length > 0) {
+        tracklistSection.hidden = false;
+        if (tracklistJsonInput && !tracklistJsonInput.value) {
+            const tracks = Array.from(tracklistEl.children).map(li => ({
+                name: li.dataset.trackName || '',
+                ...(li.dataset.trackUrl ? { url: li.dataset.trackUrl } : {}),
+            }));
+            tracklistJsonInput.value = JSON.stringify(tracks);
+        }
+    }
 
     const notes = new NotesController(
         { section: notesSection },
@@ -71,11 +83,15 @@ document.addEventListener('DOMContentLoaded', () => {
             artworkId:          artwork.getArtworkId(),
             artworkThumbnailUrl: artwork.getThumbnailUrl(),
             artworkExternalURL: artwork.getExternalURL(),
+            tracklistJson:      tracklistJsonInput?.value || '',
         };
     }
 
     function setState(state) {
         if (!state || typeof state !== 'object') return;
+        // Pre-set the hidden input immediately so any saveDraft() triggered
+        // by artwork/notes restorations below captures the correct tracklist value.
+        if (state.tracklistJson && tracklistJsonInput) tracklistJsonInput.value = state.tracklistJson;
         if (typeof state.title === 'string' && !titleInput.value) titleInput.value = state.title;
         if (typeof state.artist === 'string' && !artistInput.value) artistInput.value = state.artist;
         if (typeof state.genre === 'string' && !genreInput.value) genreInput.value = state.genre;
@@ -85,6 +101,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (artwork.isEmpty()) {
             if (state.artworkId) artwork.setArtwork(state.artworkId, state.artworkThumbnailUrl);
             else if (state.artworkExternalURL) artwork.setExternalURL(state.artworkExternalURL);
+        }
+        if (state.tracklistJson && tracklistEl) {
+            try {
+                const tracks = JSON.parse(state.tracklistJson);
+                if (Array.isArray(tracks) && tracks.length > 0) {
+                    tracklistEl.replaceChildren();
+                    tracks.forEach(track => {
+                        const li = document.createElement('li');
+                        li.dataset.trackName = track.name || '';
+                        if (track.url) li.dataset.trackUrl = track.url;
+                        const span = document.createElement('span');
+                        span.textContent = track.name || '';
+                        li.appendChild(span);
+                        tracklistEl.appendChild(li);
+                    });
+                    if (tracklistSection) tracklistSection.hidden = false;
+                } else {
+                    tracklistEl.replaceChildren();
+                    if (tracklistSection) tracklistSection.hidden = true;
+                }
+            } catch {}
         }
     }
 
@@ -101,8 +138,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!genreInput.value && data.genre) genreInput.value = data.genre;
         if (data.releaseDate) releaseDateInput.value = data.releaseDate.substring(0, 10);
         if (data.artwork && artwork.isEmpty()) artwork.setExternalURL(data.artwork);
-        if (Array.isArray(data.tracks) && data.tracks.length > 0 && tracklistJsonInput) {
-            tracklistJsonInput.value = JSON.stringify(data.tracks);
+        if (Array.isArray(data.tracks) && data.tracks.length > 0) {
+            if (tracklistJsonInput) tracklistJsonInput.value = JSON.stringify(data.tracks);
+            if (tracklistEl) {
+                tracklistEl.replaceChildren();
+                data.tracks.forEach(track => {
+                    const li = document.createElement('li');
+                    li.dataset.trackName = track.name;
+                    if (track.url) li.dataset.trackUrl = track.url;
+                    const span = document.createElement('span');
+                    span.textContent = track.name;
+                    li.appendChild(span);
+                    tracklistEl.appendChild(li);
+                });
+                if (tracklistSection) tracklistSection.hidden = false;
+            }
         }
     }
 
@@ -116,7 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
         set('preview-release-date', releaseDateInput?.value || '');
         set('preview-artwork-url',  artwork.getThumbnailUrl());
         set('preview-resource-urls', resourceInputs.getValues().join('\n'));
-        set('preview-notes',        notes.getValues().join('\n\n'));
+        set('preview-notes',         notes.getValues().join('\n\n'));
+        set('preview-tracklist-json', tracklistJsonInput?.value || '');
         pf.submit();
     }
 
@@ -153,6 +204,22 @@ document.addEventListener('DOMContentLoaded', () => {
     new ShortcutsController([ShortcutsController.login, ShortcutsController.preview(() => fillPreview())]).init();
 
     document.getElementById('editor-preview')?.addEventListener('click', () => fillPreview());
+
+    function clearForm() {
+        if (!confirm('Clear all form data?')) return;
+        titleInput.value = '';
+        artistInput.value = '';
+        genreInput.value = '';
+        releaseDateInput.value = '';
+        artwork.clear();
+        if (tracklistEl) tracklistEl.replaceChildren();
+        if (tracklistJsonInput) tracklistJsonInput.value = '';
+        if (tracklistSection) tracklistSection.hidden = true;
+        resourceInputs.clear();
+        notes.setNotes([], true);
+        persistence.clear(storageKey);
+    }
+    document.getElementById('editor-clear')?.addEventListener('click', clearForm);
 
     form.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;

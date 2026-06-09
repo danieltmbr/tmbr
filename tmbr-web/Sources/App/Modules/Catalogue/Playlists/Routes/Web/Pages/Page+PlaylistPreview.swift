@@ -10,6 +10,12 @@ private struct PlaylistPreviewPayload: Content {
     let artworkURL: String?
     let resourceURLs: String?
     let notes: String
+    let tracklistJSON: String?
+
+    enum CodingKeys: String, CodingKey {
+        case title, description, artworkURL, resourceURLs, notes
+        case tracklistJSON = "tracklist-json"
+    }
 }
 
 extension Page {
@@ -30,18 +36,27 @@ extension Page {
                 .split(separator: "\n", omittingEmptySubsequences: true)
                 .map(String.init)
                 .compactMap(platform.hyperlink)
+            let tracks: [TrackViewModel] = payload.tracklistJSON
+                .flatMap { $0.data(using: .utf8) }
+                .flatMap { try? JSONDecoder().decode([TrackMetadata].self, from: $0) }
+                .map { $0.enumerated().map { TrackViewModel(name: $1.name, position: $0 + 1, url: $1.url) } }
+                ?? []
             return PlaylistViewModel(
                 id: 0,
                 artwork: payload.artworkURL.flatMap { url in
                     url.isEmpty ? nil : ImageViewModel(previewURL: url)
                 },
                 allowsNewNote: false,
+                platformCreatedAt: nil,
                 description: payload.description,
+                metadataEndpoint: nil,
                 notes: notes,
                 notesEndpoint: "",
                 post: nil,
                 resources: resources,
-                title: "Preview: \(payload.title)"
+                syncEndpoint: nil,
+                title: "Preview: \(payload.title)",
+                tracks: tracks
             )
         }
     }

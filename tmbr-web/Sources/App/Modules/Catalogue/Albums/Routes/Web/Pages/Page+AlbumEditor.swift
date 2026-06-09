@@ -36,6 +36,8 @@ struct AlbumEditorViewModel: Encodable, Sendable {
 
     private let title: String
 
+    private let tracks: [TrackViewModel]
+
     let _csrf: String?
 
     private let error: String?
@@ -54,6 +56,7 @@ struct AlbumEditorViewModel: Encodable, Sendable {
         resourceURLs: [String] = [],
         submit: Form.Submit,
         title: String = "",
+        tracks: [TrackViewModel] = [],
         csrf: String? = nil,
         error: String? = nil
     ) {
@@ -70,6 +73,7 @@ struct AlbumEditorViewModel: Encodable, Sendable {
         self.resourceURLs = resourceURLs
         self.submit = submit
         self.title = title
+        self.tracks = tracks
         self._csrf = csrf
         self.error = error
     }
@@ -77,6 +81,7 @@ struct AlbumEditorViewModel: Encodable, Sendable {
     init(
         album: Album,
         notes: [Note],
+        tracks: [TrackViewModel] = [],
         baseURL: String,
         csrf: String?
     ) throws {
@@ -105,6 +110,7 @@ struct AlbumEditorViewModel: Encodable, Sendable {
                 label: "Save"
             ),
             title: album.title,
+            tracks: tracks,
             csrf: csrf
         )
     }
@@ -135,11 +141,16 @@ extension Page {
             }
             async let album = request.commands.albums.fetch(albumID, for: .write)
             async let notes = request.commands.notes.query(id: albumID, of: Album.previewType)
+            async let trackPreviews = request.commands.previews.listContainerPreviews("album", albumID)
             let csrf = UUID().uuidString
             request.session.data["csrf.editor"] = csrf
+            let tracks = try await trackPreviews.enumerated().map { index, preview in
+                TrackViewModel(preview: preview, position: index + 1)
+            }
             return try await AlbumEditorViewModel(
                 album: album,
                 notes: notes,
+                tracks: tracks,
                 baseURL: request.baseURL,
                 csrf: csrf
             )

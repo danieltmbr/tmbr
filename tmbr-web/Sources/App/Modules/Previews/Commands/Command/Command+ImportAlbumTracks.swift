@@ -30,15 +30,39 @@ struct ImportAlbumTracksInput: Sendable {
     }
 }
 
-extension Command where Self == PlainCommand<ImportAlbumTracksInput, Void> {
-    static func importAlbumTracks(database: Database) -> Self {
-        PlainCommand { input in
-            guard let trackCategory = try await CatalogueCategory.query(on: database)
-                .filter(\.$slug == "track")
-                .first(), let categoryID = trackCategory.id else {
-                throw Abort(.internalServerError, reason: "Track category not found in catalogue_categories")
-            }
-            for (index, track) in input.tracks.enumerated() {
+struct ImportAlbumTracksCommand: Command {
+
+    typealias Input = ImportAlbumTracksInput
+    typealias Output = Void
+
+    private let findCategory: CommandResolver<String, CatalogueCategory?>
+    private let findSongPreviewsByURL: CommandResolver<FindSongPreviewsByURLInput, [String: Preview]>
+    private let database: Database
+
+    init(
+        findCategory: CommandResolver<String, CatalogueCategory?>,
+        findSongPreviewsByURL: CommandResolver<FindSongPreviewsByURLInput, [String: Preview]>,
+        database: Database
+    ) {
+        self.findCategory = findCategory
+        self.findSongPreviewsByURL = findSongPreviewsByURL
+        self.database = database
+    }
+
+    func execute(_ input: ImportAlbumTracksInput) async throws {
+        guard let category = try await findCategory("track"),
+              let categoryID = category.id else {
+            throw Abort(.internalServerError, reason: "Catalogue category 'track' not found")
+        }
+
+        let trackURLs = input.tracks.compactMap(\.url)
+        let existingByURL = try await findSongPreviewsByURL(FindSongPreviewsByURLInput(ownerID: input.ownerID, urls: trackURLs))
+
+        for (index, track) in input.tracks.enumerated() {
+            let previewID: UUID
+            if let url = track.url, let existing = existingByURL[url] {
+                previewID = try existing.requireID()
+            } else {
                 let preview = Preview(
                     id: UUID(),
                     parentID: nil,
@@ -52,15 +76,16 @@ extension Command where Self == PlainCommand<ImportAlbumTracksInput, Void> {
                 }
                 preview.externalLinks = [track.url].compactMap { $0 }
                 try await preview.save(on: database)
-
-                let entry = ContainerEntry(
-                    containerType: input.containerType,
-                    containerID: input.albumID,
-                    previewID: try preview.requireID(),
-                    position: index + 1
-                )
-                try await entry.save(on: database)
+                previewID = try preview.requireID()
             }
+
+            let entry = ContainerEntry(
+                containerType: input.containerType,
+                containerID: input.albumID,
+                previewID: previewID,
+                position: index + 1
+            )
+            try await entry.save(on: database)
         }
     }
 }
@@ -68,7 +93,11 @@ extension Command where Self == PlainCommand<ImportAlbumTracksInput, Void> {
 extension CommandFactory<ImportAlbumTracksInput, Void> {
     static var importAlbumTracks: Self {
         CommandFactory { request in
-            .importAlbumTracks(database: request.commandDB)
+            ImportAlbumTracksCommand(
+                findCategory: request.commands.catalogueCategories.find,
+                findSongPreviewsByURL: request.commands.previews.findSongPreviewsByURL,
+                database: request.commandDB
+            )
         }
     }
 }
