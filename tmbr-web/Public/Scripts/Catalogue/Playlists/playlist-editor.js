@@ -65,11 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
             artworkId:          artwork.getArtworkId(),
             artworkThumbnailUrl: artwork.getThumbnailUrl(),
             artworkExternalURL: artwork.getExternalURL(),
+            tracklistJson:      tracklistJsonInput?.value || '',
         };
     }
 
     function setState(state) {
         if (!state || typeof state !== 'object') return;
+        // Pre-set the hidden input immediately so any saveDraft() triggered
+        // by artwork/notes restorations below captures the correct tracklist value.
+        if (state.tracklistJson && tracklistJsonInput) tracklistJsonInput.value = state.tracklistJson;
         if (typeof state.title === 'string' && !titleInput.value) titleInput.value = state.title;
         if (typeof state.description === 'string' && !descriptionInput.value) descriptionInput.value = state.description;
         if (Array.isArray(state.notes)) notes.setNotes(state.notes, true);
@@ -77,6 +81,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (artwork.isEmpty()) {
             if (state.artworkId) artwork.setArtwork(state.artworkId, state.artworkThumbnailUrl);
             else if (state.artworkExternalURL) artwork.setExternalURL(state.artworkExternalURL);
+        }
+        if (state.tracklistJson && tracklistEl && tracklistEl.children.length === 0) {
+            try {
+                const savedTracks = JSON.parse(state.tracklistJson);
+                if (Array.isArray(savedTracks) && savedTracks.length > 0) {
+                    const template = document.getElementById('editor-track-item-template');
+                    savedTracks.forEach(track => {
+                        const li = template.content.cloneNode(true).firstElementChild;
+                        li.dataset.trackName = track.name || '';
+                        if (track.url) li.dataset.trackUrl = track.url;
+                        if (track.previewID) li.dataset.previewId = track.previewID;
+                        li.querySelector('span').textContent = track.name || '';
+                        li.querySelector('.track-remove').addEventListener('click', () => removeTrack(li));
+                        tracklistEl.appendChild(li);
+                    });
+                    serializeTracklist();
+                }
+            } catch {}
         }
     }
 
@@ -180,11 +202,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const resizedURL = data.artwork?.resized;
         if (resizedURL && artwork.isEmpty()) {
             artwork.setExternalURL(resizedURL);
-            if (artworkFallbackInput && data.artwork.original) artworkFallbackInput.value = data.artwork.original;
+            const fallbackURL = data.artwork?.original;
+            if (artworkFallbackInput && fallbackURL) {
+                artworkFallbackInput.value = fallbackURL;
+                artwork.imageEl.addEventListener('error', () => {
+                    artwork.setExternalURL(fallbackURL);
+                    artworkFallbackInput.value = '';
+                    saveDraft();
+                }, { once: true });
+            }
         }
         if (platformCreatedAtInput && data.createdAt) platformCreatedAtInput.value = data.createdAt;
-        if (Array.isArray(data.tracks) && data.tracks.length > 0 && tracklistJsonInput) {
-            tracklistJsonInput.value = JSON.stringify(data.tracks);
+        if (Array.isArray(data.tracks) && data.tracks.length > 0) {
+            if (tracklistEl && tracklistEl.children.length === 0) {
+                const template = document.getElementById('editor-track-item-template');
+                data.tracks.forEach(track => {
+                    const li = template.content.cloneNode(true).firstElementChild;
+                    li.dataset.trackName = track.name;
+                    if (track.url) li.dataset.trackUrl = track.url;
+                    li.querySelector('span').textContent = track.name;
+                    li.querySelector('.track-remove').addEventListener('click', () => removeTrack(li));
+                    tracklistEl.appendChild(li);
+                });
+                serializeTracklist();
+            } else if (tracklistJsonInput && !tracklistJsonInput.value) {
+                tracklistJsonInput.value = JSON.stringify(data.tracks);
+            }
         }
     }
 
@@ -196,7 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
         set('preview-description',  descriptionInput?.value || '');
         set('preview-artwork-url',  artwork.getThumbnailUrl());
         set('preview-resource-urls', resourceInputs.getValues().join('\n'));
-        set('preview-notes',        notes.getValues().join('\n\n'));
+        set('preview-notes',         notes.getValues().join('\n\n'));
+        set('preview-tracklist-json', tracklistJsonInput?.value || '');
         pf.submit();
     }
 

@@ -21,4 +21,13 @@ struct TrackViewModel: Encodable, Sendable {
             previewID = preview.id?.uuidString
         }
     }
+
+    init(name: String, position: Int, url: String? = nil) {
+        self.position = position
+        self.title = name
+        self.href = nil
+        self.previewID = nil
+        self.trackURL = url
+        self.notes = []
+    }
 }

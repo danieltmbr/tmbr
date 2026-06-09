@@ -79,6 +79,7 @@
         <input type="hidden" name="artworkURL" id="preview-artwork-url" />
         <input type="hidden" name="resourceURLs" id="preview-resource-urls" />
         <input type="hidden" name="notes" id="preview-notes" />
+        <input type="hidden" name="tracklist-json" id="preview-tracklist-json" />
     </form>
     #endexport
 

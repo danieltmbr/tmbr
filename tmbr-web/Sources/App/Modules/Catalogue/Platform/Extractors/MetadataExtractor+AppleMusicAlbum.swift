@@ -25,7 +25,7 @@ extension MetadataExtractor where M == AlbumMetadata {
         let genre = (albumJSON?["genre"] as? [String])?.first
             ?? albumJSON?["genre"] as? String
 
-        let tracks: [TrackMetadata]? = (albumJSON?["tracks"] as? [[String: Any]])?.compactMap { track in
+        let tracks: [TrackMetadata]? = (albumJSON?["track"] as? [[String: Any]])?.compactMap { track in
             guard let name = track["name"] as? String else { return nil }
             return TrackMetadata(name: name, url: track["url"] as? String)
         }
