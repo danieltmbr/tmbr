@@ -43,17 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
             genre:          document.getElementById('editor-song-genre'),
         },
         album: {
-            group:          document.querySelector('[data-music-type="album"]'),
-            artist:         document.getElementById('editor-album-artist'),
-            releaseDate:    document.getElementById('editor-album-release-date'),
-            releaseDateISO: document.getElementById('editor-album-release-date-iso'),
-            genre:          document.getElementById('editor-album-genre'),
-            tracklistJson:  document.getElementById('editor-album-tracklist-json'),
+            group:             document.querySelector('[data-music-type="album"]'),
+            artist:            document.getElementById('editor-album-artist'),
+            releaseDate:       document.getElementById('editor-album-release-date'),
+            releaseDateISO:    document.getElementById('editor-album-release-date-iso'),
+            genre:             document.getElementById('editor-album-genre'),
+            tracklistJson:     document.getElementById('editor-album-tracklist-json'),
+            tracklistSection:  document.getElementById('editor-album-tracklist-section'),
+            tracklistEl:       document.getElementById('editor-album-tracklist'),
         },
         playlist: {
-            group:          document.querySelector('[data-music-type="playlist"]'),
-            description:    document.getElementById('editor-playlist-description'),
-            tracklistJson:  document.getElementById('editor-playlist-tracklist-json'),
+            group:             document.querySelector('[data-music-type="playlist"]'),
+            description:       document.getElementById('editor-playlist-description'),
+            tracklistJson:     document.getElementById('editor-playlist-tracklist-json'),
+            tracklistSection:  document.getElementById('editor-playlist-tracklist-section'),
+            tracklistEl:       document.getElementById('editor-playlist-tracklist'),
         },
     };
 
@@ -124,6 +128,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if ((type === 'album' || type === 'playlist') && f.tracklistJson) {
             if (Array.isArray(data.tracks) && data.tracks.length > 0) {
                 f.tracklistJson.value = JSON.stringify(data.tracks);
+                if (f.tracklistEl) {
+                    f.tracklistEl.replaceChildren();
+                    data.tracks.forEach(track => {
+                        const li = document.createElement('li');
+                        li.dataset.trackName = track.name;
+                        if (track.url) li.dataset.trackUrl = track.url;
+                        const span = document.createElement('span');
+                        span.textContent = track.name;
+                        li.appendChild(span);
+                        f.tracklistEl.appendChild(li);
+                    });
+                    if (f.tracklistSection) f.tracklistSection.hidden = false;
+                }
             }
         }
         if (type === 'playlist' && f.description && !f.description.value && data.description) {
@@ -194,9 +211,47 @@ document.addEventListener('DOMContentLoaded', () => {
         if (a.artist && !fields.album.artist?.value) fields.album.artist.value = a.artist;
         if (a.releaseDate && !fields.album.releaseDate?.value) fields.album.releaseDate.value = a.releaseDate;
         if (a.genre && !fields.album.genre?.value) fields.album.genre.value = a.genre;
-        if (a.tracklistJson && fields.album.tracklistJson) fields.album.tracklistJson.value = a.tracklistJson;
+        if (a.tracklistJson && fields.album.tracklistJson) {
+            fields.album.tracklistJson.value = a.tracklistJson;
+            if (fields.album.tracklistEl && fields.album.tracklistEl.children.length === 0) {
+                try {
+                    const tracks = JSON.parse(a.tracklistJson);
+                    if (Array.isArray(tracks) && tracks.length > 0) {
+                        tracks.forEach(track => {
+                            const li = document.createElement('li');
+                            li.dataset.trackName = track.name || '';
+                            if (track.url) li.dataset.trackUrl = track.url;
+                            const span = document.createElement('span');
+                            span.textContent = track.name || '';
+                            li.appendChild(span);
+                            fields.album.tracklistEl.appendChild(li);
+                        });
+                        if (fields.album.tracklistSection) fields.album.tracklistSection.hidden = false;
+                    }
+                } catch {}
+            }
+        }
         if (p.description && !fields.playlist.description?.value) fields.playlist.description.value = p.description;
-        if (p.tracklistJson && fields.playlist.tracklistJson) fields.playlist.tracklistJson.value = p.tracklistJson;
+        if (p.tracklistJson && fields.playlist.tracklistJson) {
+            fields.playlist.tracklistJson.value = p.tracklistJson;
+            if (fields.playlist.tracklistEl && fields.playlist.tracklistEl.children.length === 0) {
+                try {
+                    const tracks = JSON.parse(p.tracklistJson);
+                    if (Array.isArray(tracks) && tracks.length > 0) {
+                        tracks.forEach(track => {
+                            const li = document.createElement('li');
+                            li.dataset.trackName = track.name || '';
+                            if (track.url) li.dataset.trackUrl = track.url;
+                            const span = document.createElement('span');
+                            span.textContent = track.name || '';
+                            li.appendChild(span);
+                            fields.playlist.tracklistEl.appendChild(li);
+                        });
+                        if (fields.playlist.tracklistSection) fields.playlist.tracklistSection.hidden = false;
+                    }
+                } catch {}
+            }
+        }
     }
 
     function saveDraft() { persistence.save(storageKey, getState()); }

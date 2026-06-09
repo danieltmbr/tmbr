@@ -43,6 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
     artwork.init();
     if (tracklistSection && tracklistEl && tracklistEl.children.length > 0) {
         tracklistSection.hidden = false;
+        if (tracklistJsonInput && !tracklistJsonInput.value) {
+            const tracks = Array.from(tracklistEl.children).map(li => ({
+                name: li.dataset.trackName || '',
+                ...(li.dataset.trackUrl ? { url: li.dataset.trackUrl } : {}),
+            }));
+            tracklistJsonInput.value = JSON.stringify(tracks);
+        }
     }
 
     const notes = new NotesController(
@@ -95,10 +102,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (state.artworkId) artwork.setArtwork(state.artworkId, state.artworkThumbnailUrl);
             else if (state.artworkExternalURL) artwork.setExternalURL(state.artworkExternalURL);
         }
-        if (state.tracklistJson && tracklistEl && tracklistEl.children.length === 0) {
+        if (state.tracklistJson && tracklistEl) {
             try {
                 const tracks = JSON.parse(state.tracklistJson);
                 if (Array.isArray(tracks) && tracks.length > 0) {
+                    tracklistEl.replaceChildren();
                     tracks.forEach(track => {
                         const li = document.createElement('li');
                         li.dataset.trackName = track.name || '';
@@ -109,7 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         tracklistEl.appendChild(li);
                     });
                     if (tracklistSection) tracklistSection.hidden = false;
-                    if (tracklistJsonInput) tracklistJsonInput.value = state.tracklistJson;
+                } else {
+                    tracklistEl.replaceChildren();
+                    if (tracklistSection) tracklistSection.hidden = true;
                 }
             } catch {}
         }
@@ -130,7 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.artwork && artwork.isEmpty()) artwork.setExternalURL(data.artwork);
         if (Array.isArray(data.tracks) && data.tracks.length > 0) {
             if (tracklistJsonInput) tracklistJsonInput.value = JSON.stringify(data.tracks);
-            if (tracklistEl && tracklistEl.children.length === 0) {
+            if (tracklistEl) {
+                tracklistEl.replaceChildren();
                 data.tracks.forEach(track => {
                     const li = document.createElement('li');
                     li.dataset.trackName = track.name;
@@ -193,6 +204,22 @@ document.addEventListener('DOMContentLoaded', () => {
     new ShortcutsController([ShortcutsController.login, ShortcutsController.preview(() => fillPreview())]).init();
 
     document.getElementById('editor-preview')?.addEventListener('click', () => fillPreview());
+
+    function clearForm() {
+        if (!confirm('Clear all form data?')) return;
+        titleInput.value = '';
+        artistInput.value = '';
+        genreInput.value = '';
+        releaseDateInput.value = '';
+        artwork.clear();
+        if (tracklistEl) tracklistEl.replaceChildren();
+        if (tracklistJsonInput) tracklistJsonInput.value = '';
+        if (tracklistSection) tracklistSection.hidden = true;
+        resourceInputs.clear();
+        notes.setNotes([], true);
+        persistence.clear(storageKey);
+    }
+    document.getElementById('editor-clear')?.addEventListener('click', clearForm);
 
     form.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
