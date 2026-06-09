@@ -37,12 +37,7 @@ struct UpdatePreviewItemCommand: Command {
         guard let preview = try await Preview.find(input.previewID, on: database) else {
             throw Abort(.notFound)
         }
-        let slug = input.categoryName
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-            .components(separatedBy: .whitespaces)
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
+        let slug = input.categoryName.categorySlug
         guard !slug.isEmpty else {
             throw Abort(.badRequest, reason: "Category name is required")
         }

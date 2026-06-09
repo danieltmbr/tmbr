@@ -32,16 +32,11 @@ extension Command where Self == PlainCommand<String, CatalogueCategory> {
 
     static func createCategory(database: Database) -> Self {
         PlainCommand { name in
-            let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-            let slug = trimmed
-                .lowercased()
-                .components(separatedBy: .whitespaces)
-                .filter { !$0.isEmpty }
-                .joined(separator: " ")
+            let slug = name.categorySlug
             guard !slug.isEmpty else {
                 throw Abort(.badRequest, reason: "Category name is required")
             }
-            let category = CatalogueCategory(slug: slug, name: trimmed, kind: .orphan)
+            let category = CatalogueCategory(slug: slug, name: name.trimmingCharacters(in: .whitespacesAndNewlines), kind: .orphan)
             try await category.create(on: database)
             return category
         }
