@@ -30,6 +30,8 @@ struct CreateNoteCommand: Command {
 
     private let fetchPreview: CommandResolver<FetchParameters<PreviewID>, Preview>
 
+    private let logger: Logger
+
     private let notify: CommandResolver<Note, Void>
 
     init(
@@ -37,12 +39,14 @@ struct CreateNoteCommand: Command {
         createPermission: AuthPermissionResolver<Void>,
         database: Database,
         fetchPreview: CommandResolver<FetchParameters<PreviewID>, Preview>,
+        logger: Logger,
         notify: CommandResolver<Note, Void>
     ) {
         self.attachPermission = attachPermission
         self.createPermission = createPermission
         self.database = database
         self.fetchPreview = fetchPreview
+        self.logger = logger
         self.notify = notify
     }
 
@@ -60,7 +64,14 @@ struct CreateNoteCommand: Command {
         try await note.save(on: database)
         if note.access == .public {
             let notify = self.notify
-            Task.detached { try? await notify(note) }
+            let logger = self.logger
+            Task.detached {
+                do {
+                    try await notify(note)
+                } catch {
+                    logger.error("Note notification failed: \(error)")
+                }
+            }
         }
         return note
     }
@@ -75,6 +86,7 @@ extension CommandFactory<CreateNoteInput, Note> {
                 createPermission: request.permissions.notes.create,
                 database: request.commandDB,
                 fetchPreview: request.commands.previews.fetch,
+                logger: request.logger,
                 notify: request.commands.notifications.note
             )
             .logged(logger: request.logger)

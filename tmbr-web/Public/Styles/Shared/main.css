@@ -679,12 +679,36 @@ main > section > nav > form input[type="search"]:not(:placeholder-shown) {
 }
 
 #notification-panel {
-    position-anchor: --notification-bell-anchor;
-    bottom: anchor(top);
-    left: anchor(center);
-    transform: translateX(-50%);
-    margin-bottom: 0.75rem;
     min-width: 200px;
+}
+
+@supports (anchor-name: --test) {
+    #notification-panel {
+        position-anchor: --notification-bell-anchor;
+        bottom: anchor(top);
+        left: anchor(center);
+        transform: translateX(-50%);
+        margin-bottom: 0.75rem;
+    }
+}
+
+@supports not (anchor-name: --test) {
+    #notification-panel {
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-bottom: 0.75rem;
+    }
+}
+
+.notification-separator {
+    height: 1px;
+    background: currentColor;
+    opacity: 0.2;
+    padding: 0;
+    pointer-events: none;
+    cursor: default;
+    margin: 1rem 0;
 }
 
 .notification-subscribe-row label .notification-icon-on {
@@ -725,6 +749,7 @@ footer {
 }
 
 footer > nav {
+    position: relative;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -733,7 +758,7 @@ footer > nav {
 
     width: 100%;
     max-width: 600px;
-    
+
     margin-bottom: 1.5em;
 }
 

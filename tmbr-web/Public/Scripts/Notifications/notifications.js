@@ -49,7 +49,7 @@ async function subscribeUser(service) {
             body: JSON.stringify({ ...subscription.toJSON(), languages, contentTypes: ['post'] })
         });
         localStorage.setItem('pushEndpoint', subscription.endpoint);
-        localStorage.setItem('notifContentTypes', 'post');
+        localStorage.setItem('notificationContentTypes', 'post');
         return subscription;
     } catch (error) {
         console.error('Subscription failed:', error);
@@ -64,17 +64,18 @@ async function unsubscribeUser(service, subscription) {
         body: JSON.stringify(subscription)
     });
     localStorage.removeItem('pushEndpoint');
-    localStorage.removeItem('notifContentTypes');
+    localStorage.removeItem('notificationContentTypes');
     return subscription.unsubscribe();
 }
 
 async function savePreferences(endpoint, languages, contentTypes) {
-    await fetch('/api/notifications/web-push/subscription', {
+    const response = await fetch('/api/notifications/web-push/subscription', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ endpoint, languages, contentTypes }),
         keepalive: true
     });
+    if (!response.ok) throw new Error(`Preferences save failed: ${response.status}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -112,7 +113,7 @@ class NotificationPreferencesController {
         e.preventDefault();
         e.stopPropagation();
         if (this.panel.classList.contains('open')) {
-            this._close();
+            await this._close();
         } else {
             await this._open();
         }
@@ -141,10 +142,10 @@ class NotificationPreferencesController {
         }, 0);
     }
 
-    _close() {
+    async _close() {
         this.panel.classList.remove('open');
         document.removeEventListener('click', this._onOutsideClick);
-        this._applyIfChanged();
+        await this._applyIfChanged();
     }
 
     _handleOutsideClick(e) {
@@ -159,14 +160,32 @@ class NotificationPreferencesController {
         if (subscribedCb) subscribedCb.checked = isSubscribed;
 
         if (!isSubscribed) {
-            this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => { cb.checked = false; });
+            this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => {
+                cb.checked = false;
+                cb.indeterminate = false;
+            });
             return;
         }
 
-        const storedTypes = (localStorage.getItem('notifContentTypes') ?? '').split('|').filter(Boolean);
+        const storedTypes = (localStorage.getItem('notificationContentTypes') ?? '').split('|').filter(Boolean);
         this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => {
             cb.checked = storedTypes.includes(cb.value);
+            cb.indeterminate = false;
         });
+        // If parent isn't explicitly stored (e.g. "note"), derive its state from children
+        this.panel.querySelectorAll('.notification-top').forEach(topCb => {
+            if (!topCb.checked) this._updateParentState(topCb);
+        });
+    }
+
+    _updateParentState(topCb) {
+        const childList = topCb.closest('li.notification-group')?.nextElementSibling;
+        if (!childList) return;
+        const children = [...childList.querySelectorAll('.notification-child')];
+        if (children.length === 0) return;
+        const checkedCount = children.filter(cb => cb.checked).length;
+        topCb.checked = checkedCount === children.length;
+        topCb.indeterminate = checkedCount > 0 && checkedCount < children.length;
     }
 
     _bindPanelEvents() {
@@ -194,19 +213,36 @@ class NotificationPreferencesController {
         this.panel.querySelectorAll('.notification-top').forEach(topCb => {
             const childList = topCb.closest('li.notification-group')?.nextElementSibling;
             topCb.addEventListener('change', () => {
+                topCb.indeterminate = false;
                 childList?.querySelectorAll('.notification-child').forEach(cb => { cb.checked = topCb.checked; });
+            });
+        });
+
+        // Children: update parent indeterminate state on change
+        this.panel.querySelectorAll('.notification-child').forEach(childCb => {
+            childCb.addEventListener('change', () => {
+                const topCb = childCb.closest('ul.notification-children')
+                    ?.previousElementSibling
+                    ?.querySelector('.notification-top');
+                if (topCb) this._updateParentState(topCb);
             });
         });
 
         this.panel.querySelector('[data-select-all]')
             ?.addEventListener('click', () => {
-                this.panel.querySelectorAll('.notification-top').forEach(cb => { cb.checked = true; });
+                this.panel.querySelectorAll('.notification-top').forEach(cb => {
+                    cb.checked = true;
+                    cb.indeterminate = false;
+                });
                 this.panel.querySelectorAll('.notification-child').forEach(cb => { cb.checked = false; });
             });
 
         this.panel.querySelector('[data-deselect-all]')
             ?.addEventListener('click', () => {
-                this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => { cb.checked = false; });
+                this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => {
+                    cb.checked = false;
+                    cb.indeterminate = false;
+                });
             });
     }
 
@@ -218,7 +254,7 @@ class NotificationPreferencesController {
         return types.sort().join('|');
     }
 
-    _applyIfChanged() {
+    async _applyIfChanged() {
         if (!this._push?.subscription) return;
         const current = this._currentTypes();
         if (current === this._snapshot) return;
@@ -228,8 +264,16 @@ class NotificationPreferencesController {
         const langCookie = document.cookie.split(';').find(c => c.trim().startsWith('lang_pref='));
         const languages = langCookie ? (langCookie.split('=')[1] || '').split('|').filter(Boolean) : [];
 
-        localStorage.setItem('notifContentTypes', current);
-        savePreferences(endpoint, languages, contentTypes);
+        const previous = this._snapshot;
+        this._snapshot = current;
+        localStorage.setItem('notificationContentTypes', current);
+        try {
+            await savePreferences(endpoint, languages, contentTypes);
+        } catch (error) {
+            console.error('Failed to save notification preferences:', error);
+            this._snapshot = previous;
+            localStorage.setItem('notificationContentTypes', previous ?? '');
+        }
     }
 
 }

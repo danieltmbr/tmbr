@@ -74,13 +74,18 @@ struct NotificationsAPIController: RouteCollection {
                 throw Abort(.notFound, reason: "Post not found")
             }
             let content = req.commands.notifications.content
+            let logger = req.logger
             Task.detached {
-                try? await content(FilteredNotificationInput(
-                    notification: PushNotification(post: post),
-                    language: post.language.rawValue,
-                    contentType: "post",
-                    parentContentType: nil
-                ))
+                do {
+                    try await content(FilteredNotificationInput(
+                        notification: PushNotification(post: post),
+                        language: post.language.rawValue,
+                        contentType: "post",
+                        parentContentType: nil
+                    ))
+                } catch {
+                    logger.error("Post notification failed: \(error)")
+                }
             }
             return .ok
         }

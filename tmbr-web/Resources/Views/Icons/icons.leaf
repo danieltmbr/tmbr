@@ -10,6 +10,7 @@
 #if(item.icon == "globe"):#extend("Icons/globe")#endif
 #if(item.icon == "instagram"):#extend("Icons/instagram")#endif
 #if(item.icon == "movie"):#extend("Icons/movie")#endif
+#if(item.icon == "note"):#extend("Icons/note")#endif
 #if(item.icon == "notification"):#extend("Icons/notification")#endif
 #if(item.icon == "notification-off"):#extend("Icons/notification-off")#endif
 #if(item.icon == "pencil"):#extend("Icons/pencil")#endif

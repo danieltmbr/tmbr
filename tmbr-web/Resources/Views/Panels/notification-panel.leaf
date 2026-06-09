@@ -7,7 +7,7 @@
             #extend("Icons/notification-off")
         </label>
     </li>
-    <hr>
+    <li role="separator" class="notification-separator"></li>
     #for(item in options):
     #if(item.hasChildren):
     <li class="filter-item notification-group">
@@ -38,7 +38,7 @@
     </li>
     #endif
     #endfor
-    <hr>
+    <li role="separator" class="notification-separator"></li>
     <li data-select-all>Select all</li>
     <li data-deselect-all>Deselect all</li>
 </ul>
