@@ -34,8 +34,6 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
 
     private let title: String
 
-    private let tracks: [TrackViewModel]
-
     let _csrf: String?
 
     private let error: String?
@@ -53,7 +51,6 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
         resourceURLs: [String] = [],
         submit: Form.Submit,
         title: String = "",
-        tracks: [TrackViewModel] = [],
         csrf: String? = nil,
         error: String? = nil
     ) {
@@ -69,7 +66,6 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
         self.resourceURLs = resourceURLs
         self.submit = submit
         self.title = title
-        self.tracks = tracks
         self._csrf = csrf
         self.error = error
     }
@@ -77,7 +73,6 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
     init(
         playlist: Playlist,
         notes: [Note],
-        tracks: [TrackViewModel] = [],
         baseURL: String,
         csrf: String?
     ) throws {
@@ -104,7 +99,6 @@ struct PlaylistEditorViewModel: Encodable, Sendable {
                 label: "Save"
             ),
             title: playlist.title,
-            tracks: tracks,
             csrf: csrf
         )
     }
@@ -135,16 +129,11 @@ extension Page {
             }
             async let playlist = request.commands.playlists.fetch(playlistID, for: .write)
             async let notes = request.commands.notes.query(id: playlistID, of: Playlist.previewType)
-            async let trackPreviews = request.commands.previews.listContainerPreviews("playlist", playlistID)
             let csrf = UUID().uuidString
             request.session.data["csrf.editor"] = csrf
-            let tracks = try await trackPreviews.enumerated().map { index, preview in
-                TrackViewModel(preview: preview, position: index + 1)
-            }
             return try await PlaylistEditorViewModel(
                 playlist: playlist,
                 notes: notes,
-                tracks: tracks,
                 baseURL: request.baseURL,
                 csrf: csrf
             )

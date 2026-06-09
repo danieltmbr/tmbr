@@ -18,7 +18,7 @@ struct PlaylistInput {
 
     let platformCreatedAt: Date?
 
-    let tracks: [TrackEntry]?
+    let tracks: [TrackMetadata]?
 
     init(
         access: Access,
@@ -27,7 +27,7 @@ struct PlaylistInput {
         description: String?,
         resourceURLs: [String],
         title: String,
-        tracks: [TrackEntry]? = nil
+        tracks: [TrackMetadata]? = nil
     ) {
         self.access = access
         self.artwork = artwork

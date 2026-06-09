@@ -24,7 +24,6 @@ struct PlaylistsWebController: RouteCollection {
         recoveringRoute.post("new", use: createPlaylist)
 
         playlistsRoute.get("metadata", use: metadata)
-        playlistsRoute.get("tracks", "search", use: trackSearch)
         recoveringRoute.post("preview", page: .playlistPreview)
 
         recoveringRoute.get(":playlistID", "edit", page: .editPlaylist)
@@ -38,29 +37,6 @@ struct PlaylistsWebController: RouteCollection {
     private func metadata(_ request: Request) async throws -> PlaylistMetadata {
         let url = try request.query.get(String.self, at: "url")
         return try await request.commands.playlists.metadata(url)
-    }
-
-    private struct TrackPickerItem: Content, Sendable {
-        let previewID: UUID
-        let title: String
-        let subtitle: String?
-        let url: String?
-    }
-
-    @Sendable
-    private func trackSearch(_ request: Request) async throws -> [TrackPickerItem] {
-        let query = try? request.query.get(String.self, at: "q")
-        let result = try await request.commands.songs.search(query)
-        var seen = Set<UUID>()
-        return (result.previews + result.noteMatches).compactMap { preview in
-            guard let id = preview.id, seen.insert(id).inserted else { return nil }
-            return TrackPickerItem(
-                previewID: id,
-                title: preview.primaryInfo,
-                subtitle: preview.secondaryInfo,
-                url: preview.externalLinks.first
-            )
-        }
     }
 
     @Sendable
@@ -105,7 +81,7 @@ struct PlaylistsWebController: RouteCollection {
                                 access: payload.access,
                                 artist: nil,
                                 ownerID: preview.ownerID,
-                                tracks: tracks.map { TrackMetadata(name: $0.name, url: $0.url) },
+                                tracks: tracks,
                                 containerType: "playlist"
                             )
                         )
@@ -124,17 +100,6 @@ struct PlaylistsWebController: RouteCollection {
                     _ = try await commands.notes.sync(
                         SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
                     )
-                    if let tracks = playlistInput.tracks {
-                        try await commands.previews.syncContainerEntries(
-                            SyncContainerEntriesInput(
-                                containerType: "playlist",
-                                containerID: playlistID,
-                                tracks: tracks,
-                                access: payload.access,
-                                ownerID: preview.ownerID
-                            )
-                        )
-                    }
                 }
 
                 return playlist

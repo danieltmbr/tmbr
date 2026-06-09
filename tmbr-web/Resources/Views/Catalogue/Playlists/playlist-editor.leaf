@@ -27,41 +27,6 @@
         spellcheck="true"
         rows="3"
     >#(description)</textarea>
-    <input id="editor-tracklist-json" type="hidden" name="tracklist-json" value="" />
-    <section id="editor-tracklist-section">
-        <h4>Tracklist</h4>
-        <ol id="editor-tracklist" class="tracklist">
-            #for(track in tracks):
-            <li
-                data-preview-id="#(track.previewID)"
-                data-track-url="#(track.trackURL)"
-                data-track-name="#(track.title)"
-            >
-                <span>#(track.title)</span>
-                <button type="button" class="icon track-remove" aria-label="Remove track">&times;</button>
-            </li>
-            #endfor
-        </ol>
-        <div id="editor-track-search">
-            <input
-                id="editor-track-query"
-                class="text-input"
-                type="search"
-                placeholder="Search your songs to add…"
-                autocomplete="off"
-            />
-            <ul id="editor-track-results" hidden></ul>
-        </div>
-        <template id="editor-track-item-template">
-            <li>
-                <span></span>
-                <button type="button" class="icon track-remove" aria-label="Remove track">&times;</button>
-            </li>
-        </template>
-        <template id="editor-track-result-template">
-            <li><span></span><small hidden></small></li>
-        </template>
-    </section>
     #endexport
 
     #export("editor-image-picker"):
@@ -79,7 +44,6 @@
         <input type="hidden" name="artworkURL" id="preview-artwork-url" />
         <input type="hidden" name="resourceURLs" id="preview-resource-urls" />
         <input type="hidden" name="notes" id="preview-notes" />
-        <input type="hidden" name="tracklist-json" id="preview-tracklist-json" />
     </form>
     #endexport
 

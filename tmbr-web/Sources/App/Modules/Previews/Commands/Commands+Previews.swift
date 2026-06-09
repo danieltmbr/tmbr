@@ -27,8 +27,6 @@ extension Commands {
 
         let listContainerPreviews: CommandFactory<ContainerEntriesInput, [Preview]>
 
-        let syncContainerEntries: CommandFactory<SyncContainerEntriesInput, Void>
-
         let update: CommandFactory<UpdatePreviewItemInput, Preview>
 
         init(
@@ -41,7 +39,6 @@ extension Commands {
             list: CommandFactory<PreviewQueryInput, [Preview]> = .listPreviews,
             listContainerEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]> = .listContainerEntries,
             listContainerPreviews: CommandFactory<ContainerEntriesInput, [Preview]> = .listContainerPreviews,
-            syncContainerEntries: CommandFactory<SyncContainerEntriesInput, Void> = .syncContainerEntries,
             update: CommandFactory<UpdatePreviewItemInput, Preview> = .updatePreviewItem
         ) {
             self.create = create
@@ -53,7 +50,6 @@ extension Commands {
             self.list = list
             self.listContainerEntries = listContainerEntries
             self.listContainerPreviews = listContainerPreviews
-            self.syncContainerEntries = syncContainerEntries
             self.update = update
         }
     }
