@@ -2,10 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('editor-form');
     if (!form) return;
 
-    const idInput            = document.getElementById('editor-id');
-    const titleInput         = document.getElementById('editor-title');
-    const descriptionInput   = document.getElementById('editor-description');
-    const statusEl           = document.getElementById('autofill-status');
+    const idInput             = document.getElementById('editor-id');
+    const titleInput          = document.getElementById('editor-title');
+    const descriptionInput    = document.getElementById('editor-description');
+    const tracklistJsonInput  = document.getElementById('editor-tracklist-json');
+    const tracklistSection    = document.getElementById('editor-tracklist-section');
+    const tracklistEl         = document.getElementById('editor-tracklist');
+    const statusEl            = document.getElementById('autofill-status');
 
     const resourcesSection = document.getElementById('resources-section');
     const detailsSection   = document.getElementById('details-section');
@@ -35,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
         onOpenGallery: () => imagePicker.open('image'),
     });
     artwork.init();
+    if (tracklistSection && tracklistEl && tracklistEl.children.length > 0) {
+        tracklistSection.hidden = false;
+    }
 
     const notes = new NotesController(
         { section: notesSection },
@@ -57,18 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getState() {
         return {
-            title:              titleInput?.value || '',
-            description:        descriptionInput?.value || '',
-            notes:              notes.getNotes(),
-            resourceURLs:       resourceInputs.getValues(),
-            artworkId:          artwork.getArtworkId(),
+            title:               titleInput?.value || '',
+            description:         descriptionInput?.value || '',
+            notes:               notes.getNotes(),
+            resourceURLs:        resourceInputs.getValues(),
+            artworkId:           artwork.getArtworkId(),
             artworkThumbnailUrl: artwork.getThumbnailUrl(),
-            artworkExternalURL: artwork.getExternalURL(),
+            artworkExternalURL:  artwork.getExternalURL(),
+            tracklistJson:       tracklistJsonInput?.value || '',
         };
     }
 
     function setState(state) {
         if (!state || typeof state !== 'object') return;
+        if (state.tracklistJson && tracklistJsonInput) tracklistJsonInput.value = state.tracklistJson;
         if (typeof state.title === 'string' && !titleInput.value) titleInput.value = state.title;
         if (typeof state.description === 'string' && !descriptionInput.value) descriptionInput.value = state.description;
         if (Array.isArray(state.notes)) notes.setNotes(state.notes, true);
@@ -76,6 +84,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (artwork.isEmpty()) {
             if (state.artworkId) artwork.setArtwork(state.artworkId, state.artworkThumbnailUrl);
             else if (state.artworkExternalURL) artwork.setExternalURL(state.artworkExternalURL);
+        }
+        if (state.tracklistJson && tracklistEl && tracklistEl.children.length === 0) {
+            try {
+                const tracks = JSON.parse(state.tracklistJson);
+                if (Array.isArray(tracks) && tracks.length > 0) {
+                    tracks.forEach(track => {
+                        const li = document.createElement('li');
+                        li.dataset.trackName = track.name || '';
+                        if (track.url) li.dataset.trackUrl = track.url;
+                        const span = document.createElement('span');
+                        span.textContent = track.name || '';
+                        li.appendChild(span);
+                        tracklistEl.appendChild(li);
+                    });
+                    if (tracklistSection) tracklistSection.hidden = false;
+                }
+            } catch {}
         }
     }
 
@@ -106,6 +131,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         if (platformCreatedAtInput && data.createdAt) platformCreatedAtInput.value = data.createdAt;
+        if (Array.isArray(data.tracks) && data.tracks.length > 0) {
+            if (tracklistJsonInput) tracklistJsonInput.value = JSON.stringify(data.tracks);
+            if (tracklistEl && tracklistEl.children.length === 0) {
+                data.tracks.forEach(track => {
+                    const li = document.createElement('li');
+                    li.dataset.trackName = track.name;
+                    if (track.url) li.dataset.trackUrl = track.url;
+                    const span = document.createElement('span');
+                    span.textContent = track.name;
+                    li.appendChild(span);
+                    tracklistEl.appendChild(li);
+                });
+                if (tracklistSection) tracklistSection.hidden = false;
+            }
+        }
     }
 
     function fillPreview() {
@@ -116,7 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
         set('preview-description',  descriptionInput?.value || '');
         set('preview-artwork-url',  artwork.getThumbnailUrl());
         set('preview-resource-urls', resourceInputs.getValues().join('\n'));
-        set('preview-notes',         notes.getValues().join('\n\n'));
+        set('preview-notes',          notes.getValues().join('\n\n'));
+        set('preview-tracklist-json', tracklistJsonInput?.value || '');
         pf.submit();
     }
 

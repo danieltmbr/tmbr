@@ -27,6 +27,15 @@
         spellcheck="true"
         rows="3"
     >#(description)</textarea>
+    <input id="editor-tracklist-json" type="hidden" name="tracklist-json" value="" />
+    <section id="editor-tracklist-section" hidden>
+        <h4>Tracklist</h4>
+        <ol id="editor-tracklist" class="tracklist">
+            #for(track in tracks):
+            <li data-track-name="#(track.title)"><span>#(track.title)</span></li>
+            #endfor
+        </ol>
+    </section>
     #endexport
 
     #export("editor-image-picker"):
@@ -44,6 +53,7 @@
         <input type="hidden" name="artworkURL" id="preview-artwork-url" />
         <input type="hidden" name="resourceURLs" id="preview-resource-urls" />
         <input type="hidden" name="notes" id="preview-notes" />
+        <input type="hidden" name="tracklist-json" id="preview-tracklist-json" />
     </form>
     #endexport
 
