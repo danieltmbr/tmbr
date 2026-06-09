@@ -32,8 +32,8 @@ struct CatalogueQueryMapper: Sendable {
 
     private func selectedCategoryIDs(from slugs: Set<String>?) -> Set<Int>? {
         guard let slugs else {
-            // nil = all selected: exclude collection categories (they have no direct preview assignments)
-            let leafIDs = Set(categories.filter { $0.kind != .collection }.compactMap(\.id))
+            // nil = all selected: exclude virtual categories (they have no direct preview assignments)
+            let leafIDs = Set(categories.filter { $0.kind != .virtual }.compactMap(\.id))
             return leafIDs.isEmpty ? nil : leafIDs
         }
         // Expand collection slugs to their child category slugs

@@ -27,10 +27,10 @@ final class CatalogueCategory: Model, @unchecked Sendable {
     var parentSlug: String?
 
     enum Kind: String, Codable, CaseIterable {
-        case catalogue   // model-backed items visible in the feed: song, album, book, movie, playlist, podcast
+        case entry       // model-backed items visible in the feed: song, album, book, movie, playlist, podcast
         case promotable  // shallow placeholder awaiting promotion: track
         case orphan      // user-defined, no backing model: recipe, guide, link, …
-        case collection  // display-only grouping of related catalogue types, e.g. music → song/album/playlist
+        case virtual     // display-only grouping of related catalogue types, e.g. music → song/album/playlist
     }
 
     init() {}
@@ -55,7 +55,7 @@ final class CatalogueCategory: Model, @unchecked Sendable {
 extension CatalogueCategory.Kind {
     /// True for shallow placeholder items (currently: track) that cannot own Notes
     /// and are expected to be promoted to a first-class catalogue item.
-    /// Use this instead of checking `preview.parentID != nil` — orphan and collection items
+    /// Use this instead of checking `preview.parentID != nil` — orphan and virtual items
     /// also have a nil parentID but are not shallow and can have notes.
     var isShallow: Bool { self == .promotable }
 }
