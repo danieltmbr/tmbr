@@ -1,8 +1,7 @@
-const bell = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 13.7608 14.8321"><g><rect height="14.8321" opacity="0" width="13.7608" x="0" y="0"/><path d="M1.26404 11.8851L12.1277 11.8851C12.9143 11.8851 13.3917 11.4613 13.3917 10.8323C13.3917 10.1072 12.709 9.47127 12.0835 8.88223C11.6469 8.47723 11.5045 7.61713 11.4442 6.85003C11.3753 4.16215 10.6311 2.2943 8.80874 1.60365C8.5013 0.712091 7.74421 0.00158197 6.69585 0.00158197C5.64749 0.00158197 4.89041 0.712091 4.58297 1.60365C2.76064 2.2943 2.01638 4.16215 1.94027 6.85003C1.88719 7.61713 1.7376 8.47723 1.30816 8.88223C0.675529 9.47127 0 10.1072 0 10.8323C0 11.4613 0.47742 11.8851 1.26404 11.8851ZM6.69585 14.8321C7.94425 14.8321 8.85638 13.9389 8.93548 12.911L4.45623 12.911C4.52812 13.9389 5.44746 14.8321 6.69585 14.8321Z" fill="currentColor"/></g></svg>'
+// ---------------------------------------------------------------------------
+// Push helpers
+// ---------------------------------------------------------------------------
 
-const bellCrossed = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 15.4472 15.4716"><g><rect height="15.4716" opacity="0" width="15.4472" x="0" y="0"/><path d="M7.53903 15.1518C6.29064 15.1518 5.37851 14.2587 5.29941 13.2307L9.77866 13.2307C9.70676 14.2587 8.78743 15.1518 7.53903 15.1518ZM10.0869 12.2048L2.10722 12.2048C1.3206 12.2048 0.843179 11.781 0.843179 11.1521C0.843179 10.427 1.52591 9.79102 2.15134 9.20197C2.58798 8.79697 2.73037 7.93688 2.78345 7.16978C2.80449 6.42665 2.87661 5.74621 3.01069 5.13863ZM9.65192 1.9234C11.4742 2.61404 12.2185 4.4819 12.2946 7.16978C12.3477 7.93688 12.4973 8.79697 12.9267 9.20197C13.5594 9.79102 14.2349 10.427 14.2349 11.1521C14.2349 11.4243 14.1455 11.6581 13.9799 11.8355L4.54699 2.4092C4.80594 2.20967 5.09863 2.04752 5.42614 1.9234C5.73358 1.03184 6.49067 0.321328 7.53903 0.321328C8.58739 0.321328 9.34448 1.03184 9.65192 1.9234Z" fill="currentColor"/><path d="M1.07732 1.93816L13.5145 14.3578C13.7534 14.5967 14.1433 14.5967 14.3734 14.3578C14.6035 14.1189 14.6123 13.7378 14.3734 13.4989L1.94497 1.0793C1.70609 0.840409 1.3162 0.840409 1.07732 1.0793C0.847219 1.30939 0.847219 1.70806 1.07732 1.93816Z" fill="currentColor"/></g></svg>'
-
-// Load VAPID config from backend
 async function loadVAPIDKey() {
     const httpResponse = await fetch(`/api/notifications/web-push/vapid`);
     const webPushOptions = await httpResponse.json();
@@ -12,18 +11,14 @@ async function loadVAPIDKey() {
     return webPushOptions.vapid;
 }
 
-// Register the service worker and subscribe the user.
 async function registerServiceWorker() {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
         try {
             const registration = await navigator.serviceWorker.register("/service-worker.mjs", { type: "module" });
-            console.log('Service Worker registered:', registration);
             return registration;
         } catch (error) {
             console.error('Service Worker registration failed:', error);
         }
-    } else {
-        console.error('Push messaging is not supported');
     }
     return null;
 }
@@ -34,15 +29,12 @@ async function checkPushSubscription() {
     return { service, subscription };
 }
 
-// Subscribe user to push notifications.
 async function subscribeUser(service) {
-    // Request notification permission from the user.
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
         alert('Notifications permission not granted');
         return null;
     }
-    
     try {
         const applicationServerKey = await loadVAPIDKey();
         const subscription = await service.pushManager.subscribe({
@@ -54,9 +46,10 @@ async function subscribeUser(service) {
         await fetch('/api/notifications/web-push/subscription', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...subscription.toJSON(), languages })
+            body: JSON.stringify({ ...subscription.toJSON(), languages, contentTypes: ['post'] })
         });
         localStorage.setItem('pushEndpoint', subscription.endpoint);
+        localStorage.setItem('notificationContentTypes', 'post');
         return subscription;
     } catch (error) {
         console.error('Subscription failed:', error);
@@ -64,7 +57,6 @@ async function subscribeUser(service) {
     }
 }
 
-// Unsubscribe user from push notifications.
 async function unsubscribeUser(service, subscription) {
     await fetch('/api/notifications/web-push/subscription', {
         method: 'DELETE',
@@ -72,71 +64,249 @@ async function unsubscribeUser(service, subscription) {
         body: JSON.stringify(subscription)
     });
     localStorage.removeItem('pushEndpoint');
+    localStorage.removeItem('notificationContentTypes');
     return subscription.unsubscribe();
 }
 
-// Toggle push notification subscription when bell icon is clicked.
-async function togglePushSubscription() {
-    console.log('Toggle push notifications.');
-    const push = await checkPushSubscription();
-
-    if (!push.service) {
-        location.href = 'https://tmbr.me/notifications';
-    } else if (push.subscription) {
-        const result = await unsubscribeUser(push.service, push.subscription);
-        if (result) {
-            console.log('Unsubscribed from push notifications.');
-            updateNotificationToggle(false);
-        }
-    } else {
-        const newSub = await subscribeUser(push.service);
-        if (newSub) {
-            console.log('Subscribed to push notifications.');
-            updateNotificationToggle(true);
-        }
-    }
+async function savePreferences(endpoint, languages, contentTypes) {
+    const response = await fetch('/api/notifications/web-push/subscription', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint, languages, contentTypes }),
+        keepalive: true
+    });
+    if (!response.ok) throw new Error(`Preferences save failed: ${response.status}`);
 }
 
-function updateNotificationToggle(isSubscribed) {
-    const notificationToggle = document.getElementById('notification-toggle');
-    if (!notificationToggle) return;
-    
-    if (isSubscribed) {
-        notificationToggle.title = 'Disable notifications';
-        notificationToggle.innerHTML = bellCrossed;
-    } else {
-        notificationToggle.title = 'Enable notifications';
-        notificationToggle.innerHTML = bell;
+// ---------------------------------------------------------------------------
+// NotificationPreferencesController
+// ---------------------------------------------------------------------------
+
+class NotificationPreferencesController {
+    constructor(bellToggle) {
+        this.bellToggle = bellToggle;
+        this.panel = null;
+        this._push = null;
+        this._panelLoaded = false;
+        this._snapshot = null;
+        this._onBellClick = this._handleBellClick.bind(this);
+        this._onOutsideClick = this._handleOutsideClick.bind(this);
     }
+
+    init() {
+        this.panel = document.createElement('aside');
+        this.panel.id = 'notification-panel';
+        this.panel.className = 'panel popup';
+        this.bellToggle.insertAdjacentElement('afterend', this.panel);
+        this.bellToggle.addEventListener('click', this._onBellClick);
+        this.bellToggle.addEventListener('touchend', this._onBellClick, { passive: false });
+    }
+
+    destroy() {
+        this.bellToggle.removeEventListener('click', this._onBellClick);
+        this.bellToggle.removeEventListener('touchend', this._onBellClick);
+        document.removeEventListener('click', this._onOutsideClick);
+        this.panel?.remove();
+    }
+
+    async _handleBellClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.panel.classList.contains('open')) {
+            await this._close();
+        } else {
+            await this._open();
+        }
+    }
+
+    async _open() {
+        this._push = await checkPushSubscription();
+        if (!this._push.service) {
+            location.href = '/notifications';
+            return;
+        }
+        if (this._push.subscription) {
+            localStorage.setItem('pushEndpoint', this._push.subscription.endpoint);
+        }
+        if (!this._panelLoaded) {
+            const res = await fetch('/notifications/panel');
+            this.panel.innerHTML = await res.text();
+            this._bindPanelEvents();
+            this._panelLoaded = true;
+        }
+        this._syncState();
+        this._snapshot = this._currentTypes();
+        this.panel.classList.add('open');
+        setTimeout(() => {
+            document.addEventListener('click', this._onOutsideClick);
+        }, 0);
+    }
+
+    async _close() {
+        this.panel.classList.remove('open');
+        document.removeEventListener('click', this._onOutsideClick);
+        await this._applyIfChanged();
+    }
+
+    _handleOutsideClick(e) {
+        if (!this.panel.contains(e.target) && !this.bellToggle.contains(e.target)) {
+            this._close();
+        }
+    }
+
+    _syncState() {
+        const isSubscribed = !!this._push.subscription;
+        const subscribedCb = this.panel.querySelector('#notification-subscribed');
+        if (subscribedCb) subscribedCb.checked = isSubscribed;
+
+        if (!isSubscribed) {
+            this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => {
+                cb.checked = false;
+                cb.indeterminate = false;
+            });
+            return;
+        }
+
+        const storedTypes = (localStorage.getItem('notificationContentTypes') ?? '').split('|').filter(Boolean);
+        this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => {
+            cb.checked = storedTypes.includes(cb.value);
+            cb.indeterminate = false;
+        });
+        // If parent isn't explicitly stored (e.g. "note"), derive its state from children
+        this.panel.querySelectorAll('.notification-top').forEach(topCb => {
+            if (!topCb.checked) this._updateParentState(topCb);
+        });
+    }
+
+    _updateParentState(topCb) {
+        const childList = topCb.closest('li.notification-group')?.nextElementSibling;
+        if (!childList) return;
+        const children = [...childList.querySelectorAll('.notification-child')];
+        if (children.length === 0) return;
+        const checkedCount = children.filter(cb => cb.checked).length;
+        topCb.checked = checkedCount === children.length;
+        topCb.indeterminate = checkedCount > 0 && checkedCount < children.length;
+    }
+
+    _bindPanelEvents() {
+        const subscribedCb = this.panel.querySelector('#notification-subscribed');
+        subscribedCb?.addEventListener('change', async () => {
+            if (subscribedCb.checked) {
+                const newSub = await subscribeUser(this._push.service);
+                if (newSub) {
+                    this._push.subscription = newSub;
+                    this._syncState();
+                } else {
+                    subscribedCb.checked = false;
+                }
+            } else {
+                if (this._push.subscription) {
+                    await unsubscribeUser(this._push.service, this._push.subscription);
+                }
+                this._push.subscription = null;
+                this._snapshot = null;
+                this._syncState();
+            }
+        });
+
+        // Top-level: sync all children to match parent check state
+        this.panel.querySelectorAll('.notification-top').forEach(topCb => {
+            const childList = topCb.closest('li.notification-group')?.nextElementSibling;
+            topCb.addEventListener('change', () => {
+                topCb.indeterminate = false;
+                childList?.querySelectorAll('.notification-child').forEach(cb => { cb.checked = topCb.checked; });
+            });
+        });
+
+        // Children: update parent indeterminate state on change
+        this.panel.querySelectorAll('.notification-child').forEach(childCb => {
+            childCb.addEventListener('change', () => {
+                const topCb = childCb.closest('ul.notification-children')
+                    ?.previousElementSibling
+                    ?.querySelector('.notification-top');
+                if (topCb) this._updateParentState(topCb);
+            });
+        });
+
+        this.panel.querySelector('[data-select-all]')
+            ?.addEventListener('click', () => {
+                this.panel.querySelectorAll('.notification-top').forEach(cb => {
+                    cb.checked = true;
+                    cb.indeterminate = false;
+                });
+                this.panel.querySelectorAll('.notification-child').forEach(cb => { cb.checked = false; });
+            });
+
+        this.panel.querySelector('[data-deselect-all]')
+            ?.addEventListener('click', () => {
+                this.panel.querySelectorAll('.notification-top, .notification-child').forEach(cb => {
+                    cb.checked = false;
+                    cb.indeterminate = false;
+                });
+            });
+    }
+
+    _currentTypes() {
+        const types = [];
+        this.panel.querySelectorAll('.notification-top:checked, .notification-child:checked').forEach(cb => {
+            types.push(cb.value);
+        });
+        return types.sort().join('|');
+    }
+
+    async _applyIfChanged() {
+        if (!this._push?.subscription) return;
+        const current = this._currentTypes();
+        if (current === this._snapshot) return;
+
+        const endpoint = this._push.subscription.endpoint;
+        const contentTypes = current.split('|').filter(Boolean);
+        const langCookie = document.cookie.split(';').find(c => c.trim().startsWith('lang_pref='));
+        const languages = langCookie ? (langCookie.split('=')[1] || '').split('|').filter(Boolean) : [];
+
+        const previous = this._snapshot;
+        this._snapshot = current;
+        localStorage.setItem('notificationContentTypes', current);
+        try {
+            await savePreferences(endpoint, languages, contentTypes);
+        } catch (error) {
+            console.error('Failed to save notification preferences:', error);
+            this._snapshot = previous;
+            localStorage.setItem('notificationContentTypes', previous ?? '');
+        }
+    }
+
 }
+
+// ---------------------------------------------------------------------------
+// Boot
+// ---------------------------------------------------------------------------
 
 async function initialiseNotificationToggle() {
-    const notificationToggle = document.getElementById('notification-toggle');
+    const bellToggle = document.getElementById('notification-toggle');
+    if (!bellToggle) return;
+
     const push = await checkPushSubscription();
 
     if (!push.service) {
-        notificationToggle.role = '';
-        notificationToggle.href = '/notifications';
-    } else {
-        if (push.subscription) {
-            localStorage.setItem('pushEndpoint', push.subscription.endpoint);
-        } else {
-            localStorage.removeItem('pushEndpoint');
-        }
-        const handler = async event => {
-          event.preventDefault();
-          event.stopPropagation();
-          await togglePushSubscription();
-        };
-        notificationToggle?.addEventListener('click', handler);
-        notificationToggle?.addEventListener('touchend', handler, { passive: false });
-        updateNotificationToggle(!!push.subscription);
+        bellToggle.role = '';
+        bellToggle.href = '/notifications';
+        return;
     }
+
+    if (push.subscription) {
+        localStorage.setItem('pushEndpoint', push.subscription.endpoint);
+    } else {
+        localStorage.removeItem('pushEndpoint');
+    }
+
+    const ctrl = new NotificationPreferencesController(bellToggle);
+    ctrl.init();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
     await initialiseNotificationToggle();
     await new Promise(requestAnimationFrame);
-    const footer = document.getElementById('footer')
-    footer.classList.remove('invisible')
+    const footer = document.getElementById('footer');
+    footer.classList.remove('invisible');
 });

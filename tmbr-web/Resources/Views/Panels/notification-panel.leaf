@@ -1,0 +1,44 @@
+<ul class="system-info">
+    <li class="filter-item notification-subscribe-row">
+        <input type="checkbox" id="notification-subscribed">
+        <label for="notification-subscribed">
+            Enable notifications
+            #extend("Icons/notification")
+            #extend("Icons/notification-off")
+        </label>
+    </li>
+    <li role="separator" class="notification-separator"></li>
+    #for(item in options):
+    #if(item.hasChildren):
+    <li class="filter-item notification-group">
+        <input type="checkbox" id="notification-#(item.value)" class="notification-top" value="#(item.value)">
+        <label for="notification-#(item.value)">
+            #(item.label)
+            #extend("Icons/icons")
+        </label>
+    </li>
+    <ul class="notification-children">
+        #for(item in item.children):
+        <li class="filter-item">
+            <input type="checkbox" id="notification-#(item.value)" class="notification-child" value="#(item.value)">
+            <label for="notification-#(item.value)">
+                #(item.label)
+                #extend("Icons/icons")
+            </label>
+        </li>
+        #endfor
+    </ul>
+    #else:
+    <li class="filter-item">
+        <input type="checkbox" id="notification-#(item.value)" class="notification-top" value="#(item.value)">
+        <label for="notification-#(item.value)">
+            #(item.label)
+            #extend("Icons/icons")
+        </label>
+    </li>
+    #endif
+    #endfor
+    <li role="separator" class="notification-separator"></li>
+    <li data-select-all>Select all</li>
+    <li data-deselect-all>Deselect all</li>
+</ul>

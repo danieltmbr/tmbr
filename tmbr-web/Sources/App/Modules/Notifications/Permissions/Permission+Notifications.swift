@@ -28,3 +28,15 @@ extension AuthPermission<Post> {
         }
     }
 }
+
+extension AuthPermission<Note> {
+    /// Permission to send notifications about a note to all subscribers.
+    ///
+    static var noteNotification: AuthPermission<Note> {
+        AuthPermission<Note>(
+            "Only its author can send push notification updates about a note."
+        ) { user, note in
+            note.$author.id == user.userID || user.role == .admin
+        }
+    }
+}

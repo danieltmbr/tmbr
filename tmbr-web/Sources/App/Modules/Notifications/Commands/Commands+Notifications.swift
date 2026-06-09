@@ -8,21 +8,29 @@ extension Commands {
 
 extension Commands {
     struct Notifications: CommandCollection, Sendable {
-        
-        let send: CommandFactory<PushNotification, Void>
-        
+
+        let content: CommandFactory<FilteredNotificationInput, Void>
+
+        let note: CommandFactory<Note, Void>
+
         let post: CommandFactory<Post, Void>
-        
+
         let postByID: CommandFactory<PostID, Void>
-        
+
+        let send: CommandFactory<PushNotification, Void>
+
         init(
-            send: CommandFactory<PushNotification, Void> = .send,
+            content: CommandFactory<FilteredNotificationInput, Void> = .content,
+            note: CommandFactory<Note, Void> = .noteNotification,
             post: CommandFactory<Post, Void> = .postNotification,
-            postByID: CommandFactory<PostID, Void> = .postNotificationByID
+            postByID: CommandFactory<PostID, Void> = .postNotificationByID,
+            send: CommandFactory<PushNotification, Void> = .send
         ) {
-            self.send = send
+            self.content = content
+            self.note = note
             self.post = post
             self.postByID = postByID
+            self.send = send
         }
     }
 }

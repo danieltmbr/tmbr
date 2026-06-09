@@ -1,4 +1,0 @@
-#if(filter.iconName == "song"):#extend("Icons/song")#endif
-#if(filter.iconName == "book"):#extend("Icons/book")#endif
-#if(filter.iconName == "movie"):#extend("Icons/movie")#endif
-#if(filter.iconName == "podcast"):#extend("Icons/podcast")#endif

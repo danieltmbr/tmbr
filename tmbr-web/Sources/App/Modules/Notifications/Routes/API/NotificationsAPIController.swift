@@ -3,17 +3,23 @@ import Fluent
 import WebPush
 
 struct NotificationsAPIController: RouteCollection {
-    
+
     /// A wrapper for the VAPID key that Vapor can encode.
     private struct WebPushOptions: Content, Hashable, Sendable {
         var vapid: VAPID.Key.ID
     }
-    
+
+    private struct PreferencesUpdate: Content {
+        let endpoint: String
+        let languages: [String]
+        let contentTypes: [String]?
+    }
+
     func boot(routes: RoutesBuilder) throws {
-        
+
         let notificationsRoute = routes.grouped("api", "notifications")
         let webPushRoute = notificationsRoute.grouped("web-push")
-        
+
         // GET /api/notifications/web-push/vapid
         webPushRoute.get("vapid") { req async throws -> WebPushOptions in
             guard let service = req.application.notificationService else {
@@ -21,25 +27,24 @@ struct NotificationsAPIController: RouteCollection {
             }
             return WebPushOptions(vapid: service.vapidKeyID)
         }
-        
+
         // POST /api/notifications/web-push/subscription
         webPushRoute.post("subscription") { req async throws -> HTTPStatus in
             let subscription = try req.content.decode(WebPushSubscription.self)
             try await subscription.save(on: req.db)
             return .created
         }
-        
+
         // PATCH /api/notifications/web-push/subscription
         webPushRoute.patch("subscription") { req async throws -> HTTPStatus in
-            struct LanguageUpdate: Content {
-                let endpoint: String
-                let languages: [String]
-            }
-            let update = try req.content.decode(LanguageUpdate.self)
+            let update = try req.content.decode(PreferencesUpdate.self)
             if let sub = try await WebPushSubscription.query(on: req.db)
                 .filter(\.$endpoint == update.endpoint)
                 .first() {
                 sub.languages = update.languages.joined(separator: "|")
+                if let contentTypes = update.contentTypes {
+                    sub.contentTypes = contentTypes.joined(separator: "|")
+                }
                 try await sub.save(on: req.db)
             }
             return .ok
@@ -55,10 +60,9 @@ struct NotificationsAPIController: RouteCollection {
             }
             return .ok
         }
-        
-        // POST /api/notifications/notify/:postID
+
+        // GET /api/notifications/notify/:postID  (admin, bearer-token gated)
         notificationsRoute.get("notify", ":postID") { req async throws -> HTTPStatus in
-            // TODO: Use the command here and remove the notifyApiKey
             guard let key = Environment.webPush.notifyApiKey, !key.isEmpty,
                   req.headers.bearerAuthorization?.token == key else {
                 throw Abort(.unauthorized)
@@ -69,17 +73,22 @@ struct NotificationsAPIController: RouteCollection {
             guard let post = try await Post.find(postID, on: req.db) else {
                 throw Abort(.notFound, reason: "Post not found")
             }
+            let content = req.commands.notifications.content
+            let logger = req.logger
             Task.detached {
-                let notificationService = req.application.notificationService
-                let allSubs = try await WebPushSubscription.query(on: req.db).all()
-                let postLang = post.language.rawValue
-                let subs = allSubs.filter {
-                    $0.languages.isEmpty || $0.languages.split(separator: "|").contains(Substring(postLang))
+                do {
+                    try await content(FilteredNotificationInput(
+                        notification: PushNotification(post: post),
+                        language: post.language.rawValue,
+                        contentType: "post",
+                        parentContentType: nil
+                    ))
+                } catch {
+                    logger.error("Post notification failed: \(error)")
                 }
-                try await notificationService?.notify(subscriptions: subs, content: PushNotification(post: post))
             }
             return .ok
         }
     }
-    
+
 }

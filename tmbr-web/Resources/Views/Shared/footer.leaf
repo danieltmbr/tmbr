@@ -1,6 +1,6 @@
 <footer id="footer" class="invisible">
     <nav>
-    <a href="#" role="button" id="notification-toggle" title="Enable push notifications">
+    <a href="#" role="button" id="notification-toggle" title="Notification preferences">
         #extend("Icons/notification")
     </a>
     <!--
