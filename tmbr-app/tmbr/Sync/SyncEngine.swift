@@ -51,6 +51,56 @@ final class SyncEngine {
 
     // MARK: - Push
 
+    // MARK: - Load more (older history)
+
+    /// Fetches one page of posts older than the oldest currently stored post.
+    /// Returns `true` if even older posts remain.
+    @discardableResult
+    func fetchOlderPosts() async throws -> Bool {
+        let descriptor = FetchDescriptor<PostRecord>(
+            sortBy: [SortDescriptor(\PostRecord.createdAt, order: .forward)]
+        )
+        guard let oldest = (try? modelContext.fetch(descriptor))?.first?.createdAt else {
+            return false
+        }
+        let cursor = ISO8601DateFormatter().string(from: oldest)
+        let query = PageQuery(cursor: cursor, limit: 50)
+        let loader = authState.loader(for: BasicRequest<PageQuery, PageResult<PostResponse>>.query(
+            baseURL: baseURL, path: "/api/posts"
+        ))
+        let page = try await loader.load(from: query)
+        mergePosts(page.items)
+        return page.hasMore
+    }
+
+    /// Fetches one page of catalogue items older than the oldest currently stored item, across all types.
+    /// Returns `true` if even older items remain in any type.
+    @discardableResult
+    func fetchOlderCatalogueItems() async throws -> Bool {
+        let descriptor = FetchDescriptor<CatalogueItemRecord>(
+            sortBy: [SortDescriptor(\CatalogueItemRecord.lastFetchedAt, order: .forward)]
+        )
+        guard let oldest = (try? modelContext.fetch(descriptor))?.first?.lastFetchedAt else {
+            return false
+        }
+        let cursor = ISO8601DateFormatter().string(from: oldest)
+        let query = PageQuery(cursor: cursor, limit: 50)
+
+        async let songs    = authState.loader(for: BasicRequest<PageQuery, PageResult<SongResponse>>.query(baseURL: baseURL, path: "/api/songs")).load(from: query)
+        async let albums   = authState.loader(for: BasicRequest<PageQuery, PageResult<AlbumResponse>>.query(baseURL: baseURL, path: "/api/albums")).load(from: query)
+        async let books    = authState.loader(for: BasicRequest<PageQuery, PageResult<BookResponse>>.query(baseURL: baseURL, path: "/api/books")).load(from: query)
+        async let movies   = authState.loader(for: BasicRequest<PageQuery, PageResult<MovieResponse>>.query(baseURL: baseURL, path: "/api/movies")).load(from: query)
+        async let podcasts = authState.loader(for: BasicRequest<PageQuery, PageResult<PodcastResponse>>.query(baseURL: baseURL, path: "/api/podcasts")).load(from: query)
+        async let playlists = authState.loader(for: BasicRequest<PageQuery, PageResult<PlaylistResponse>>.query(baseURL: baseURL, path: "/api/playlists")).load(from: query)
+
+        let (s, al, b, mv, po, pl) = try await (songs, albums, books, movies, podcasts, playlists)
+        upsertCatalogueItems(songs: s.items, albums: al.items, books: b.items, movies: mv.items, podcasts: po.items, playlists: pl.items)
+
+        return s.hasMore || al.hasMore || b.hasMore || mv.hasMore || po.hasMore || pl.hasMore
+    }
+
+    // MARK: - Push
+
     func pushPendingNotes() async throws {
         let descriptor = FetchDescriptor<NoteRecord>(
             predicate: #Predicate { $0.syncStateRaw != "synced" }
@@ -285,6 +335,39 @@ final class SyncEngine {
                     attachmentSubtitle: response.attachment.secondaryInfo,
                     attachmentCategoryType: response.attachment.source.type,
                     attachmentSourceID: response.attachment.source.id
+                )
+                modelContext.insert(record)
+            }
+        }
+    }
+
+    /// Insert/update posts without deleting records absent from the response.
+    /// Used for load-more where the response is a partial page, not the full dataset.
+    private func mergePosts(_ responses: [PostResponse]) {
+        let allSynced = (try? modelContext.fetch(FetchDescriptor<PostRecord>())) ?? []
+        let existing = Dictionary(
+            uniqueKeysWithValues: allSynced.compactMap { r in r.serverID.map { ($0, r) } }
+        )
+        for response in responses {
+            guard let responseID = response.id else { continue }
+            if let record = existing[responseID] {
+                guard record.syncState == .synced else { continue }
+                record.title = response.title
+                record.content = response.content
+                record.stateRaw = response.state.rawValue
+                record.languageRaw = response.language.rawValue
+                record.createdAt = response.createdAt
+                record.publishedAt = response.publishedAt
+            } else {
+                let record = PostRecord(
+                    serverID: responseID,
+                    title: response.title,
+                    content: response.content,
+                    stateRaw: response.state.rawValue,
+                    languageRaw: response.language.rawValue,
+                    createdAt: response.createdAt,
+                    publishedAt: response.publishedAt,
+                    syncState: .synced
                 )
                 modelContext.insert(record)
             }

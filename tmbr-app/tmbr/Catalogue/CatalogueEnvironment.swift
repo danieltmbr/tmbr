@@ -5,4 +5,5 @@ extension EnvironmentValues {
     @Entry var createNote: CreateNoteAction = CreateNoteAction()
     @Entry var updateNote: UpdateNoteAction = UpdateNoteAction()
     @Entry var deleteNote: DeleteNoteAction = DeleteNoteAction()
+    @Entry var loadMoreCatalogueItems: LoadMoreCatalogueItemsAction = LoadMoreCatalogueItemsAction()
 }
