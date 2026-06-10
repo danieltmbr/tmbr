@@ -3,6 +3,7 @@ import Core
 import Fluent
 import AuthKit
 import TmbrCore
+import Foundation
 
 struct CatalogueAPIController: RouteCollection {
     
@@ -20,6 +21,9 @@ struct CatalogueAPIController: RouteCollection {
         catalogue.post("item", ":previewID", "notes", use: createItemNote)
         catalogue.post("new", use: createItem)
         catalogue.get("new", "metadata", use: metadata)
+
+        // GET /api/catalogue/orphans — paginated orphan items for native app sync
+        catalogue.grouped(AppleSignInAuthenticator()).get("orphans", use: listOrphans)
 
         let quotes = catalogue.grouped("quotes")
         quotes.get(use: quoteList)
@@ -91,6 +95,25 @@ struct CatalogueAPIController: RouteCollection {
     }
 
     // MARK: - Catalogue list handlers
+
+    @Sendable
+    private func listOrphans(request: Request) async throws -> PageResult<PreviewResponse> {
+        let user = try request.auth.require(User.self)
+        let userID = try user.requireID()
+        let pageQuery = try request.query.decode(PageQuery.self)
+        let limit = pageQuery.limit ?? 50
+        let input = ListOrphansInput(
+            ownerID: userID,
+            since: pageQuery.since,
+            before: pageQuery.cursorDate,
+            limit: limit + 1
+        )
+        let previews = try await request.commands.previews.listOrphans(input)
+        let baseURL = request.baseURL
+        return makePage(from: previews, limit: limit, cursorDate: { $0.createdAt }) {
+            $0.map { PreviewResponse(preview: $0, baseURL: baseURL) }
+        }
+    }
 
     @Sendable
     private func list(request: Request) async throws -> [PreviewResponse] {

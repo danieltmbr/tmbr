@@ -17,6 +17,27 @@ struct AlbumsAPIController: RouteCollection {
 
         let albumsRoute = routes.grouped("api", "albums")
 
+        // GET /api/albums — paginated list of the authenticated user's albums
+        albumsRoute.grouped(AppleSignInAuthenticator()).get { request async throws -> PageResult<AlbumResponse> in
+            let user = try request.auth.require(User.self)
+            let userID = try user.requireID()
+            let pageQuery = try request.query.decode(PageQuery.self)
+            let limit = pageQuery.limit ?? 50
+            let input = ListCatalogueItemInput(
+                ownerID: userID,
+                since: pageQuery.since,
+                before: pageQuery.cursorDate,
+                limit: limit + 1
+            )
+            let albums = try await request.commands.albums.list(input)
+            let previewIDs = albums.map { $0.$preview.id }
+            let notesByPreviewID = try await batchLoadNotes(for: previewIDs, authorID: userID, on: request.commandDB)
+            let baseURL = request.baseURL
+            return makePage(from: albums, limit: limit, cursorDate: { $0.preview.createdAt }) {
+                $0.map { album in AlbumResponse(album: album, notes: notesByPreviewID[album.$preview.id] ?? [], baseURL: baseURL) }
+            }
+        }
+
         // GET /api/albums/lookup?url=...
         albumsRoute.get("lookup") { request async throws -> AlbumLookupResponse in
             let url = try request.query.get(String.self, at: "url")

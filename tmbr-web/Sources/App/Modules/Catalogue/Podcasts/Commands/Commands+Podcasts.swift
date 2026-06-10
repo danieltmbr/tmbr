@@ -18,6 +18,8 @@ extension Commands {
 
         let fetch: CommandFactory<FetchParameters<PodcastID>, Podcast>
 
+        let list: CommandFactory<ListCatalogueItemInput, [Podcast]>
+
         let lookup: CommandFactory<String, Podcast?>
 
         let metadata: CommandFactory<URL, PodcastMetadata>
@@ -29,6 +31,7 @@ extension Commands {
             delete: CommandFactory<PodcastID, Void> = .delete(\.podcasts),
             edit: CommandFactory<EditPodcastInput, Podcast> = .editPodcast,
             fetch: CommandFactory<FetchParameters<PodcastID>, Podcast> = .fetchPodcast,
+            list: CommandFactory<ListCatalogueItemInput, [Podcast]> = .listPodcasts,
             lookup: CommandFactory<String, Podcast?> = .lookupPodcast,
             metadata: CommandFactory<URL, PodcastMetadata> = .fetchPodcastMetadata,
             search: CommandFactory<String?, PodcastSearchResult> = .searchPodcasts
@@ -37,6 +40,7 @@ extension Commands {
             self.delete = delete
             self.edit = edit
             self.fetch = fetch
+            self.list = list
             self.lookup = lookup
             self.metadata = metadata
             self.search = search

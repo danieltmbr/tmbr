@@ -3,6 +3,7 @@ import AuthKit
 import Fluent
 import Core
 import TmbrCore
+import Foundation
 
 struct PostsAPIController: RouteCollection {
     
@@ -11,10 +12,21 @@ struct PostsAPIController: RouteCollection {
         let postsRoute = routes.grouped("api", "posts")
         let protectedRoutes = postsRoute.grouped(AppleSignInAuthenticator())
         
-        // GET /api/posts — supports ?languages[]=en&languages[]=hu
-        postsRoute.get { req async throws -> [Post] in
-            let query = try req.query.decode(PostQueryPayload.self)
-            return try await req.commands.posts.list(query)
+        // GET /api/posts — paginated, supports ?since=&cursor=&limit=
+        // Language filtering uses the request's Accept-Language preference.
+        postsRoute.get { req async throws -> PageResult<PostResponse> in
+            let pageQuery = try req.query.decode(PageQuery.self)
+            let limit = pageQuery.limit ?? 50
+            let input = ListPostsPagedInput(
+                since: pageQuery.since,
+                before: pageQuery.cursorDate,
+                limit: limit + 1
+            )
+            let posts = try await req.commands.posts.listPaged(input)
+            let baseURL = req.baseURL
+            return makePage(from: posts, limit: limit, cursorDate: { $0.createdAt }) {
+                $0.map { PostResponse(post: $0, baseURL: baseURL) }
+            }
         }
         
         // GET /api/posts/:postID

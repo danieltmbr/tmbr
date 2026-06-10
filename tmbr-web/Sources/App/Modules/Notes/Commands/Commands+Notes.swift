@@ -25,6 +25,8 @@ extension Commands {
 
         let search: CommandFactory<NoteQueryPayload, [Note]>
 
+        let list: CommandFactory<ListNotesInput, [Note]>
+
         let sync: CommandFactory<SyncNotesInput, [Note]>
 
         init(
@@ -34,6 +36,7 @@ extension Commands {
             edit: CommandFactory<EditNoteInput, Note> = .editNote,
             fetch: CommandFactory<NoteID, Note> = .fetchNote,
             fetchByAttachment: CommandFactory<PreviewID, [Note]> = .fetchNotesByAttachment,
+            list: CommandFactory<ListNotesInput, [Note]> = .listNotes,
             query: CommandFactory<QueryNotesInput, [Note]> = .queryNotes,
             search: CommandFactory<NoteQueryPayload, [Note]> = .searchNote,
             sync: CommandFactory<SyncNotesInput, [Note]> = .syncNotes
@@ -44,6 +47,7 @@ extension Commands {
             self.edit = edit
             self.fetch = fetch
             self.fetchByAttachment = fetchByAttachment
+            self.list = list
             self.query = query
             self.search = search
             self.sync = sync

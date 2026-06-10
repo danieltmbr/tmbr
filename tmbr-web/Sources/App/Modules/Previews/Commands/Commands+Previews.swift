@@ -27,6 +27,8 @@ extension Commands {
 
         let listContainerPreviews: CommandFactory<ContainerEntriesInput, [Preview]>
 
+        let listOrphans: CommandFactory<ListOrphansInput, [Preview]>
+
         let update: CommandFactory<UpdatePreviewItemInput, Preview>
 
         init(
@@ -39,6 +41,7 @@ extension Commands {
             list: CommandFactory<PreviewQueryInput, [Preview]> = .listPreviews,
             listContainerEntries: CommandFactory<ContainerEntriesInput, [ContainerEntry]> = .listContainerEntries,
             listContainerPreviews: CommandFactory<ContainerEntriesInput, [Preview]> = .listContainerPreviews,
+            listOrphans: CommandFactory<ListOrphansInput, [Preview]> = .listOrphans,
             update: CommandFactory<UpdatePreviewItemInput, Preview> = .updatePreviewItem
         ) {
             self.create = create
@@ -50,6 +53,7 @@ extension Commands {
             self.list = list
             self.listContainerEntries = listContainerEntries
             self.listContainerPreviews = listContainerPreviews
+            self.listOrphans = listOrphans
             self.update = update
         }
     }
