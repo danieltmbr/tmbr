@@ -29,7 +29,9 @@ struct CatalogueTab: View {
                     ContentUnavailableView("Loading…", systemImage: "arrow.trianglehead.2.clockwise")
                 } else {
                     ForEach(items) { item in
-                        CatalogueItemRow(item: item)
+                        NavigationLink(destination: CatalogueItemDetailView(item: item)) {
+                            CatalogueItemRow(item: item)
+                        }
                     }
                 }
             }

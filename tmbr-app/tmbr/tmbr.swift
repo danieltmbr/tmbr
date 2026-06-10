@@ -59,7 +59,7 @@ struct tmbr: App {
         }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .active, authState.isSignedIn else { return }
-            Task { try? await syncEngine.syncDelta() }
+            Task { try? await syncEngine.runSync() }
         }
     }
 }

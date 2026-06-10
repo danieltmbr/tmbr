@@ -3,12 +3,10 @@ import SwiftData
 import TmbrCore
 import ApiKit
 
-/// Orchestrates delta sync between the backend API and the local SwiftData store.
+/// Orchestrates sync between the backend API and the local SwiftData store.
 ///
-/// Data flow: network response → upsert into ModelContext → @Query in views auto-updates.
-/// Nothing goes to the UI directly from the network.
-///
-/// Push logic (Stage 4) is scaffolded here as no-ops so the model compiles.
+/// Data flow (pull): network response → upsert into ModelContext → @Query in views auto-updates.
+/// Data flow (push): SwiftData record (.pendingCreate/.pendingUpdate/.pendingDelete) → HTTP call → mark .synced.
 @MainActor
 final class SyncEngine {
 
@@ -30,25 +28,117 @@ final class SyncEngine {
 
     // MARK: - Public interface
 
-    /// Fast path: called on every launch and `scenePhase → .active`.
-    /// Pushes pending local changes first, then fetches only items newer than `lastSyncAt`.
+    /// Full cycle: push pending local changes, then delta-pull from server.
+    /// Called on every foreground activation and explicit refresh.
+    func runSync() async throws {
+        try await pushPendingPosts()
+        try await pushPendingNotes()
+        try await syncDelta()
+    }
+
+    /// Pull-only delta sync. Fetches items newer than `lastSyncAt`.
     func syncDelta() async throws {
         let since = lastSyncAt
-        // Stage 4: try await pushPending()
         try await fetchAll(since: since)
         lastSyncAt = .now
     }
 
-    /// Slow path: fetches all history regardless of last sync. Used for full sync from Settings.
+    /// Pull-only full sync. Fetches all history regardless of last sync.
     func syncFull() async throws {
         try await fetchAll(since: nil)
         lastSyncAt = .now
     }
 
-    // MARK: - Stage 4 scaffolding
+    // MARK: - Push
 
-    func pushPending() async throws {
-        // Implemented in Stage 4
+    func pushPendingNotes() async throws {
+        let descriptor = FetchDescriptor<NoteRecord>(
+            predicate: #Predicate { $0.syncStateRaw != "synced" }
+        )
+        let pending = (try? modelContext.fetch(descriptor)) ?? []
+        for record in pending {
+            try await pushNote(record)
+        }
+    }
+
+    func pushPendingPosts() async throws {
+        let descriptor = FetchDescriptor<PostRecord>(
+            predicate: #Predicate { $0.syncStateRaw != "synced" }
+        )
+        let pending = (try? modelContext.fetch(descriptor)) ?? []
+        for record in pending {
+            try await pushPost(record)
+        }
+    }
+
+    private func pushNote(_ record: NoteRecord) async throws {
+        let input = NoteInput(
+            body: record.body,
+            access: Access(rawValue: record.accessRaw) ?? .private,
+            language: Language(rawValue: record.languageRaw) ?? .en
+        )
+        switch record.syncState {
+        case .pendingCreate:
+            guard let previewID = record.attachmentPreviewID else { return }
+            let loader = authState.loader(for: BasicRequest<NoteInput, NoteResponse>.post(
+                baseURL: baseURL, path: "/api/catalogue/item/\(previewID)/notes"
+            ))
+            let response = try await loader.load(from: input)
+            record.serverID = response.id
+            record.syncState = .synced
+        case .pendingUpdate:
+            guard let serverID = record.serverID else { return }
+            let loader = authState.loader(for: BasicRequest<NoteInput, NoteResponse>.put(
+                baseURL: baseURL, path: "/api/notes/\(serverID)"
+            ))
+            _ = try await loader.load(from: input)
+            record.syncState = .synced
+        case .pendingDelete:
+            if let serverID = record.serverID {
+                let loader = authState.loader(for: BasicRequest<Void, NoContent>.delete(
+                    baseURL: baseURL, path: "/api/notes/\(serverID)"
+                ))
+                _ = try await loader.load()
+            }
+            modelContext.delete(record)
+        case .synced:
+            break
+        }
+    }
+
+    private func pushPost(_ record: PostRecord) async throws {
+        let input = PostInput(
+            title: record.title,
+            body: record.content,
+            state: PostState(rawValue: record.stateRaw) ?? .draft,
+            language: Language(rawValue: record.languageRaw) ?? .en
+        )
+        switch record.syncState {
+        case .pendingCreate:
+            let loader = authState.loader(for: BasicRequest<PostInput, PostResponse>.post(
+                baseURL: baseURL, path: "/api/posts"
+            ))
+            let response = try await loader.load(from: input)
+            record.serverID = response.id
+            record.syncState = .synced
+        case .pendingUpdate:
+            guard let serverID = record.serverID else { return }
+            let loader = authState.loader(for: BasicRequest<PostInput, PostResponse>.put(
+                baseURL: baseURL, path: "/api/posts/\(serverID)"
+            ))
+            _ = try await loader.load(from: input)
+            record.syncState = .synced
+        case .pendingDelete:
+            if let serverID = record.serverID {
+                let loader = authState.loader(for: BasicRequest<Void, NoContent>.delete(
+                    baseURL: baseURL, path: "/api/posts/\(serverID)"
+                ))
+                _ = try await loader.load()
+            }
+            modelContext.delete(record)
+        case .synced:
+            break
+        }
     }
 
     // MARK: - Parallel fetch
@@ -460,4 +550,24 @@ private extension PlaylistRecord {
         self.playlistDescription = playlist.description
         self.accessRaw = playlist.access.rawValue; self.detailFetchedAt = .now
     }
+}
+
+// MARK: - Push payload types
+
+private struct NoteInput: Encodable, Sendable {
+    let body: String
+    let access: Access
+    let language: Language
+}
+
+private struct PostInput: Encodable, Sendable {
+    let title: String
+    let body: String       // "body" matches the backend PostPayload field name
+    let state: PostState
+    let language: Language
+}
+
+/// Response type for endpoints that return HTTP 204 No Content.
+private struct NoContent: Decodable, Sendable {
+    init(from decoder: any Decoder) throws {}
 }

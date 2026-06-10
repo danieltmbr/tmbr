@@ -8,7 +8,7 @@ final class CatalogueModel {
     private(set) var isSyncing = false
     private(set) var syncError: Error?
 
-    private let syncEngine: SyncEngine
+    let syncEngine: SyncEngine
 
     init(syncEngine: SyncEngine) {
         self.syncEngine = syncEngine
@@ -20,7 +20,7 @@ final class CatalogueModel {
         syncError = nil
         defer { isSyncing = false }
         do {
-            try await syncEngine.syncDelta()
+            try await syncEngine.runSync()
         } catch {
             syncError = error
         }
