@@ -20,7 +20,7 @@ struct PodcastsAPIController: RouteCollection {
         // GET /api/podcasts — paginated list of the authenticated user's podcasts
         podcastsRoute.get { request async throws -> PageResult<PodcastResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
-            let limit = pageQuery.limit ?? 50
+            let limit = pageQuery.limit
             let input = ListCatalogueItemInput(
                 before: pageQuery.cursorDate,
                 limit: limit + 1,

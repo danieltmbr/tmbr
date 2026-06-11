@@ -20,7 +20,7 @@ struct BooksAPIController: RouteCollection {
         // GET /api/books — paginated list of the authenticated user's books
         booksRoute.get { request async throws -> PageResult<BookResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
-            let limit = pageQuery.limit ?? 50
+            let limit = pageQuery.limit
             let input = ListCatalogueItemInput(
                 before: pageQuery.cursorDate,
                 limit: limit + 1,

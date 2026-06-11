@@ -16,7 +16,7 @@ struct PostsAPIController: RouteCollection {
         // Language filtering uses the request's Accept-Language preference.
         postsRoute.get { req async throws -> PageResult<PostResponse> in
             let pageQuery = try req.query.decode(PageQuery.self)
-            let limit = pageQuery.limit ?? 50
+            let limit = pageQuery.limit
             let input = ListPostsPagedInput(
                 since: pageQuery.since,
                 before: pageQuery.cursorDate,

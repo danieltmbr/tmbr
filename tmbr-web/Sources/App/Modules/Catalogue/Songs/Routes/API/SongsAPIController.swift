@@ -20,7 +20,7 @@ struct SongsAPIController: RouteCollection {
         // GET /api/songs — paginated list of the authenticated user's songs
         songsRoute.get { request async throws -> PageResult<SongResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
-            let limit = pageQuery.limit ?? 50
+            let limit = pageQuery.limit
             let input = ListCatalogueItemInput(
                 before: pageQuery.cursorDate,
                 limit: limit + 1,

@@ -98,7 +98,7 @@ struct CatalogueAPIController: RouteCollection {
     @Sendable
     private func listOrphans(request: Request) async throws -> PageResult<PreviewResponse> {
         let pageQuery = try request.query.decode(PageQuery.self)
-        let limit = pageQuery.limit ?? 50
+        let limit = pageQuery.limit
         let input = PreviewQueryInput(kind: .orphan, since: pageQuery.since, before: pageQuery.cursorDate, limit: limit + 1)
         let previews = try await request.commands.previews.list(input)
         let baseURL = request.baseURL
