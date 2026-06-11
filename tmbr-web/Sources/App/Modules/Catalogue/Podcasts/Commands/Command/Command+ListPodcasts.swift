@@ -26,7 +26,7 @@ extension CommandFactory<ListCatalogueItemInput, [Podcast]> {
 
     static var listPodcasts: Self {
         CommandFactory { request in
-            .listPodcasts(database: request.commandDB, permission: request.permissions.podcasts.list)
+            .listPodcasts(database: request.commandDB, permission: request.permissions.podcasts.query)
             .logged(name: "List podcasts", logger: request.logger)
         }
     }

@@ -28,7 +28,7 @@ extension CommandFactory<BatchFetchNotesInput, [PreviewID: [Note]]> {
 
     static var batchFetchNotes: Self {
         CommandFactory { request in
-            .batchFetchNotes(database: request.commandDB, permission: request.permissions.notes.list)
+            .batchFetchNotes(database: request.commandDB, permission: request.permissions.notes.query)
             .logged(name: "Batch fetch notes", logger: request.logger)
         }
     }

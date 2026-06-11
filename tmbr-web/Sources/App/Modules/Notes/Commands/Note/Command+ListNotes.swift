@@ -34,7 +34,7 @@ extension CommandFactory<ListNotesInput, [Note]> {
 
     static var listNotes: Self {
         CommandFactory { request in
-            .listNotes(database: request.commandDB, permission: request.permissions.notes.list)
+            .listNotes(database: request.commandDB, permission: request.permissions.notes.query)
             .logged(name: "List notes", logger: request.logger)
         }
     }

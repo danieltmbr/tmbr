@@ -38,7 +38,7 @@ extension CommandFactory<ListOrphansInput, [Preview]> {
 
     static var listOrphans: Self {
         CommandFactory { request in
-            .listOrphans(database: request.commandDB, permission: request.permissions.previews.list)
+            .listOrphans(database: request.commandDB, permission: request.permissions.previews.query)
             .logged(name: "List orphans", logger: request.logger)
         }
     }
