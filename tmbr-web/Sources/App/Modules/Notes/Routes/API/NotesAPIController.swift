@@ -8,19 +8,6 @@ struct NotesAPIController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
         let notes = routes.grouped("api", "notes")
-        let protected = notes.grouped(AppleSignInAuthenticator())
-
-        // GET /api/notes — returns the authenticated user's notes, paginated
-        protected.get { request async throws -> PageResult<NoteResponse> in
-            let pageQuery = try request.query.decode(PageQuery.self)
-            let limit = pageQuery.limit ?? 50
-            let input = ListNotesInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: limit + 1)
-            let notes = try await request.commands.notes.list(input)
-            let baseURL = request.baseURL
-            return makePage(from: notes, limit: limit, cursorDate: { $0.createdAt }) {
-                $0.map { NoteResponse(note: $0, baseURL: baseURL) }
-            }
-        }
 
         notes.put(":noteID", use: edit)
         notes.delete(":noteID", use: delete)
