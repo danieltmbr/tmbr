@@ -23,7 +23,7 @@ struct MoviesAPIController: RouteCollection {
             let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
             let movies = try await request.commands.movies.list(input)
             let previewIDs = movies.map { $0.$preview.id }
-            let notesByPreviewID = try await request.commands.notes.batchFetch(previewIDs)
+            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
             let baseURL = request.baseURL
             return PageResult(from: movies, limit: input.limit) { movie in
                 MovieResponse(movie: movie, baseURL: baseURL, notes: notesByPreviewID[movie.$preview.id] ?? [])

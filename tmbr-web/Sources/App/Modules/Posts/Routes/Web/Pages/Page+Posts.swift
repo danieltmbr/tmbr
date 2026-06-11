@@ -60,7 +60,7 @@ extension Page {
     static var posts: Self {
         Page(template: .posts) { req in
             let query = try req.query.decode(PostQueryPayload.self)
-            let posts = try await req.commands.posts.list(query)
+            let posts = try await req.commands.posts.list(ListPostsInput(query: query, page: nil))
             let compose = ComposePopupViewModel(req.permissions.compose(.standard))
             return PostsViewModel(panels: [], posts: posts, term: query.term, compose: compose)
         }

@@ -3,13 +3,13 @@ import Fluent
 import AuthKit
 import TmbrCore
 
-struct BatchFetchNotesInput: Sendable {
+struct GroupedNotesInput: Sendable {
     let previewIDs: [PreviewID]
 }
 
-extension Command where Self == PlainCommand<BatchFetchNotesInput, [PreviewID: [Note]]> {
+extension Command where Self == PlainCommand<GroupedNotesInput, [PreviewID: [Note]]> {
 
-    static func batchFetchNotes(database: Database, permission: BasePermissionResolver<QueryBuilder<Note>>) -> Self {
+    static func groupedNotes(database: Database, permission: BasePermissionResolver<QueryBuilder<Note>>) -> Self {
         PlainCommand { input in
             guard !input.previewIDs.isEmpty else { return [:] }
             let query = Note.query(on: database)
@@ -24,19 +24,19 @@ extension Command where Self == PlainCommand<BatchFetchNotesInput, [PreviewID: [
     }
 }
 
-extension CommandFactory<BatchFetchNotesInput, [PreviewID: [Note]]> {
+extension CommandFactory<GroupedNotesInput, [PreviewID: [Note]]> {
 
-    static var batchFetchNotes: Self {
+    static var groupedNotes: Self {
         CommandFactory { request in
-            .batchFetchNotes(database: request.commandDB, permission: request.permissions.notes.query)
-            .logged(name: "Batch fetch notes", logger: request.logger)
+            .groupedNotes(database: request.commandDB, permission: request.permissions.notes.query)
+            .logged(name: "Grouped notes", logger: request.logger)
         }
     }
 }
 
-extension CommandResolver where Input == BatchFetchNotesInput {
+extension CommandResolver where Input == GroupedNotesInput {
     @Sendable
     func callAsFunction(_ previewIDs: [PreviewID]) async throws -> Output {
-        try await self.callAsFunction(BatchFetchNotesInput(previewIDs: previewIDs))
+        try await self.callAsFunction(GroupedNotesInput(previewIDs: previewIDs))
     }
 }

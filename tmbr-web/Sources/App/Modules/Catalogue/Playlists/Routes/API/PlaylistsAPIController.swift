@@ -16,7 +16,7 @@ struct PlaylistsAPIController: RouteCollection {
             let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
             let playlists = try await request.commands.playlists.list(input)
             let previewIDs = playlists.map { $0.$preview.id }
-            let notesByPreviewID = try await request.commands.notes.batchFetch(previewIDs)
+            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
             let baseURL = request.baseURL
             return PageResult(from: playlists, limit: input.limit) { playlist in
                 PlaylistResponse(playlist: playlist, notes: notesByPreviewID[playlist.$preview.id] ?? [], baseURL: baseURL)

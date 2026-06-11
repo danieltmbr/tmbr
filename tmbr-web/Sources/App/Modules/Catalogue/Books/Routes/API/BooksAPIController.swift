@@ -23,7 +23,7 @@ struct BooksAPIController: RouteCollection {
             let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
             let books = try await request.commands.books.list(input)
             let previewIDs = books.map { $0.$preview.id }
-            let notesByPreviewID = try await request.commands.notes.batchFetch(previewIDs)
+            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
             let baseURL = request.baseURL
             return PageResult(from: books, limit: input.limit) { book in
                 BookResponse(book: book, baseURL: baseURL, notes: notesByPreviewID[book.$preview.id] ?? [])

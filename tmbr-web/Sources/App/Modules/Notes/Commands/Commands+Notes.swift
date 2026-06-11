@@ -9,7 +9,7 @@ extension Commands {
 extension Commands {
     struct Notes: CommandCollection, Sendable {
 
-        let batchFetch: CommandFactory<BatchFetchNotesInput, [PreviewID: [Note]]>
+        let grouped: CommandFactory<GroupedNotesInput, [PreviewID: [Note]]>
 
         let batchCreate: CommandFactory<BatchCreateNoteInput, [Note]>
 
@@ -30,7 +30,7 @@ extension Commands {
         let sync: CommandFactory<SyncNotesInput, [Note]>
 
         init(
-            batchFetch: CommandFactory<BatchFetchNotesInput, [PreviewID: [Note]]> = .batchFetchNotes,
+            grouped: CommandFactory<GroupedNotesInput, [PreviewID: [Note]]> = .groupedNotes,
             batchCreate: CommandFactory<BatchCreateNoteInput, [Note]> = .createNotes,
             create: CommandFactory<CreateNoteInput, Note> = .createNote,
             delete: CommandFactory<NoteID, Void> = .deleteNote,
@@ -41,7 +41,7 @@ extension Commands {
             search: CommandFactory<NoteQueryPayload, [Note]> = .searchNote,
             sync: CommandFactory<SyncNotesInput, [Note]> = .syncNotes
         ) {
-            self.batchFetch = batchFetch
+            self.grouped = grouped
             self.batchCreate = batchCreate
             self.create = create
             self.delete = delete

@@ -23,7 +23,7 @@ struct PodcastsAPIController: RouteCollection {
             let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
             let podcasts = try await request.commands.podcasts.list(input)
             let previewIDs = podcasts.map { $0.$preview.id }
-            let notesByPreviewID = try await request.commands.notes.batchFetch(previewIDs)
+            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
             let baseURL = request.baseURL
             return PageResult(from: podcasts, limit: input.limit) { podcast in
                 PodcastResponse(podcast: podcast, baseURL: baseURL, notes: notesByPreviewID[podcast.$preview.id] ?? [])
