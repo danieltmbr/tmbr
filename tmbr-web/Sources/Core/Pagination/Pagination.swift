@@ -23,8 +23,8 @@ public extension PageQuery {
 
 /// Builds a `PageResult<T>` from raw model results.
 ///
-/// Pass `limit + 1` results. This trims to `limit`, detects `hasMore`, and computes
-/// `nextCursor` from the last item's date. All list endpoints use this helper.
+/// Pass `limit + 1` results. This trims to `limit` and computes `nextCursor`
+/// from the last item's date. All list endpoints use this helper.
 ///
 /// - Parameters:
 ///   - models:     Raw query results (`limit + 1` items).
@@ -39,8 +39,7 @@ public func makePage<M: Sendable, T: Codable & Sendable>(
     cursorDate: (M) -> Date?,
     mapping: ([M]) -> [T]
 ) -> PageResult<T> {
-    let hasMore = models.count > limit
     let items = Array(models.prefix(limit))
-    let nextCursor = hasMore ? items.last.flatMap { cursorDate($0) }.map { iso8601Formatter.string(from: $0) } : nil
-    return PageResult(items: mapping(items), hasMore: hasMore, nextCursor: nextCursor)
+    let nextCursor = models.count > limit ? items.last.flatMap { cursorDate($0) }.map { iso8601Formatter.string(from: $0) } : nil
+    return PageResult(items: mapping(items), nextCursor: nextCursor)
 }
