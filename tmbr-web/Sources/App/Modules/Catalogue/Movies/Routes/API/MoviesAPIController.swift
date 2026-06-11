@@ -21,12 +21,20 @@ struct MoviesAPIController: RouteCollection {
         moviesRoute.grouped(AppleSignInAuthenticator()).get { request async throws -> PageResult<MovieResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
             let limit = pageQuery.limit ?? 50
-            let input = ListCatalogueItemInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: limit + 1)
+            let input = ListCatalogueItemInput(
+                before: pageQuery.cursorDate,
+                limit: limit + 1,
+                since: pageQuery.since
+            )
             let movies = try await request.commands.movies.list(input)
             let previewIDs = movies.map { $0.$preview.id }
-            let notesByPreviewID = try await request.commands.notes.batchFetch(BatchFetchNotesInput(previewIDs: previewIDs))
+            let notesByPreviewID = try await request.commands.notes.batchFetch(previewIDs)
             let baseURL = request.baseURL
-            return makePage(from: movies, limit: limit, cursorDate: { $0.preview.createdAt }) {
+            return makePage(
+                from: movies,
+                limit: limit,
+                cursorDate: { $0.preview.createdAt
+                }) {
                 $0.map { movie in MovieResponse(movie: movie, baseURL: baseURL, notes: notesByPreviewID[movie.$preview.id] ?? []) }
             }
         }

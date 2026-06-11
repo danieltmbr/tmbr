@@ -21,10 +21,14 @@ struct SongsAPIController: RouteCollection {
         songsRoute.grouped(AppleSignInAuthenticator()).get { request async throws -> PageResult<SongResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
             let limit = pageQuery.limit ?? 50
-            let input = ListCatalogueItemInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: limit + 1)
+            let input = ListCatalogueItemInput(
+                before: pageQuery.cursorDate,
+                limit: limit + 1,
+                since: pageQuery.since
+            )
             let songs = try await request.commands.songs.list(input)
             let previewIDs = songs.map { $0.$preview.id }
-            let notesByPreviewID = try await request.commands.notes.batchFetch(BatchFetchNotesInput(previewIDs: previewIDs))
+            let notesByPreviewID = try await request.commands.notes.batchFetch(previewIDs)
             let baseURL = request.baseURL
             return makePage(from: songs, limit: limit, cursorDate: { $0.preview.createdAt }) {
                 $0.map { song in SongResponse(song: song, notes: notesByPreviewID[song.$preview.id] ?? [], baseURL: baseURL) }

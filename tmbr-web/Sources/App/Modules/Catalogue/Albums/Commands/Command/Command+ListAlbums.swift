@@ -5,7 +5,10 @@ import AuthKit
 
 extension Command where Self == PlainCommand<ListCatalogueItemInput, [Album]> {
 
-    static func listAlbums(database: Database, permission: BasePermissionResolver<QueryBuilder<Album>>) -> Self {
+    static func listAlbums(
+        database: Database,
+        permission: BasePermissionResolver<QueryBuilder<Album>>
+    ) -> Self {
         PlainCommand { input in
             let query = Album.query(on: database)
                 .join(Preview.self, on: \Album.$preview.$id == \Preview.$id)
@@ -14,8 +17,12 @@ extension Command where Self == PlainCommand<ListCatalogueItemInput, [Album]> {
                 .with(\.$artwork)
                 .with(\.$owner)
                 .with(\.$post)
-            if let since = input.since { query.filter(Preview.self, \Preview.$createdAt > since) }
-            if let before = input.before { query.filter(Preview.self, \Preview.$createdAt < before) }
+            if let since = input.since {
+                query.filter(Preview.self, \Preview.$createdAt > since)
+            }
+            if let before = input.before {
+                query.filter(Preview.self, \Preview.$createdAt < before)
+            }
             try await permission.grant(query)
             return try await query.limit(input.limit).all()
         }

@@ -2,13 +2,20 @@ import Foundation
 
 /// Shared pagination input for all per-type catalogue list commands.
 struct ListCatalogueItemInput: Sendable {
-    let since: Date?
+        
     let before: Date?
+    
     let limit: Int
+    
+    let since: Date?
 
-    init(since: Date? = nil, before: Date? = nil, limit: Int = 50) {
-        self.since = since
+    init(
+        before: Date? = nil,
+        limit: Int = 50,
+        since: Date? = nil
+    ) {
         self.before = before
         self.limit = limit
+        self.since = since
     }
 }

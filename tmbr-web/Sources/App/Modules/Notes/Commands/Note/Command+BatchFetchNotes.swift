@@ -33,3 +33,10 @@ extension CommandFactory<BatchFetchNotesInput, [PreviewID: [Note]]> {
         }
     }
 }
+
+extension CommandResolver where Input == BatchFetchNotesInput {
+    @Sendable
+    func callAsFunction(_ previewIDs: [PreviewID]) async throws -> Output {
+        try await self.callAsFunction(BatchFetchNotesInput(previewIDs: previewIDs))
+    }
+}

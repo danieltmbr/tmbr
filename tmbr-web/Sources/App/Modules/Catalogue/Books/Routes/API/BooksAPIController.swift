@@ -21,10 +21,14 @@ struct BooksAPIController: RouteCollection {
         booksRoute.grouped(AppleSignInAuthenticator()).get { request async throws -> PageResult<BookResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
             let limit = pageQuery.limit ?? 50
-            let input = ListCatalogueItemInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: limit + 1)
+            let input = ListCatalogueItemInput(
+                before: pageQuery.cursorDate,
+                limit: limit + 1,
+                since: pageQuery.since
+            )
             let books = try await request.commands.books.list(input)
             let previewIDs = books.map { $0.$preview.id }
-            let notesByPreviewID = try await request.commands.notes.batchFetch(BatchFetchNotesInput(previewIDs: previewIDs))
+            let notesByPreviewID = try await request.commands.notes.batchFetch(previewIDs)
             let baseURL = request.baseURL
             return makePage(from: books, limit: limit, cursorDate: { $0.preview.createdAt }) {
                 $0.map { book in BookResponse(book: book, baseURL: baseURL, notes: notesByPreviewID[book.$preview.id] ?? []) }
