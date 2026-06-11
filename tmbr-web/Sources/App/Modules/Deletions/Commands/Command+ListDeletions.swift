@@ -1,13 +1,24 @@
 import Foundation
 import Fluent
 import Core
+import TmbrCore
 
-extension Command where Self == PlainCommand<Date?, [Deletion]> {
+struct ListDeletionsInput: Sendable {
+    let since: Date?
+    let userID: UserID
+}
+
+extension Command where Self == PlainCommand<ListDeletionsInput, [Deletion]> {
 
     static func listDeletions(database: Database) -> Self {
-        PlainCommand { since in
-            var query = Deletion.query(on: database).sort(\.$deletedAt, .ascending)
-            if let since {
+        PlainCommand { input in
+            var query = Deletion.query(on: database)
+                .group(.or) {
+                    $0.filter(\.$ownerID == input.userID)
+                    $0.filter(\.$access == Access.public.rawValue)
+                }
+                .sort(\.$deletedAt, .ascending)
+            if let since = input.since {
                 query = query.filter(\.$deletedAt > since)
             }
             return try await query.all()
@@ -15,7 +26,7 @@ extension Command where Self == PlainCommand<Date?, [Deletion]> {
     }
 }
 
-extension CommandFactory<Date?, [Deletion]> {
+extension CommandFactory<ListDeletionsInput, [Deletion]> {
 
     static var listDeletions: Self {
         CommandFactory { request in

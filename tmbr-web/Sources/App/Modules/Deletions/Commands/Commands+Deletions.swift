@@ -8,9 +8,9 @@ extension Commands {
 extension Commands {
     struct Deletions: CommandCollection, Sendable {
 
-        let list: CommandFactory<Date?, [Deletion]>
+        let list: CommandFactory<ListDeletionsInput, [Deletion]>
 
-        init(list: CommandFactory<Date?, [Deletion]> = .listDeletions) {
+        init(list: CommandFactory<ListDeletionsInput, [Deletion]> = .listDeletions) {
             self.list = list
         }
     }

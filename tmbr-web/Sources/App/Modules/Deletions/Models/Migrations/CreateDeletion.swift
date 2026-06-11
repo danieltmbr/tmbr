@@ -8,6 +8,8 @@ struct CreateDeletion: AsyncMigration {
             .id()
             .field("type", .string, .required)
             .field("item_id", .string, .required)
+            .field("owner_id", .int, .required)
+            .field("access", .string, .required)
             .field("deleted_at", .datetime, .required)
             .create()
 
@@ -17,11 +19,17 @@ struct CreateDeletion: AsyncMigration {
                 .on(Deletion.schema)
                 .column("deleted_at")
                 .run()
+            try await sqlDB
+                .create(index: "deletions_owner_id_index")
+                .on(Deletion.schema)
+                .column("owner_id")
+                .run()
         }
     }
 
     func revert(on database: Database) async throws {
         if let sqlDB = database as? SQLDatabase {
+            try await sqlDB.drop(index: "deletions_owner_id_index").run()
             try await sqlDB.drop(index: "deletions_deleted_at_index").run()
         }
         try await database.schema(Deletion.schema).delete()

@@ -29,7 +29,7 @@ Orphan items are identified in `PreviewResponse` by `category != nil` (only set 
 
 ---
 
-## Stage 1 — Backend: Shared Pagination Contract + Per-Type List Endpoints
+## Stage 1 — Backend: Shared Pagination Contract + Per-Type List Endpoints ✅
 
 **PR scope**: `tmbr-core` + `tmbr-web`
 
@@ -40,115 +40,145 @@ Orphan items are identified in `PreviewResponse` by `category != nil` (only set 
 ```swift
 // Query parameters for any paginated endpoint
 public struct PageQuery: Codable, Sendable {
-    public let since: Date?    // delta sync: items created/modified after this date
-    public let cursor: String? // load-more: opaque cursor from the previous Page.nextCursor
-    public let limit: Int?     // max items (default 50, max 100)
+    public let since: Date?    // delta sync: items created after this date (forward in time)
+    public let cursor: String? // load-more: opaque cursor from the previous PageResult.nextCursor
+    public let limit: Int      // max items per page (default 50)
 }
 
 // Standard paginated response wrapper
-public struct Page<T: Codable & Sendable>: Codable, Sendable {
+// nextCursor == nil signals end of data (no hasMore field — infer from cursor)
+public struct PageResult<T: Codable & Sendable>: Codable, Sendable {
     public let items: [T]
-    public let hasMore: Bool
-    public let nextCursor: String?  // ISO8601 date of last item; nil when hasMore == false
+    public let nextCursor: String?  // ISO8601 createdAt of the last item; nil when no more pages
+}
+
+// Protocol for any model with a stable creation timestamp (used for cursor extraction)
+public protocol Timestamped {
+    var createdAt: Date { get }
+}
+
+// Tombstone record — one row per deleted Note, CatalogueItem (Preview), or Post
+public enum DeletionType: String, Codable, Sendable {
+    case note
+    case catalogueItem  // maps to a Preview deletion on the backend
+    case post
+}
+
+public struct DeletionRecord: Codable, Sendable {
+    public let type: DeletionType
+    public let itemID: String   // UUID string for notes/catalogueItems; Int string for posts
+    public let deletedAt: Date
 }
 ```
 
 `since` and `cursor` serve different purposes:
-- `since` = "give me everything newer than my last sync" (delta sync, goes forward)
+- `since` = "give me everything created after my last sync" (delta sync, goes forward)
 - `cursor` = "give me the next page of older items" (load-more, goes backward)
 
-`nextCursor` is opaque from the client's perspective — the server computes it, the client sends it back as `cursor` on the next request.
+`nextCursor` is opaque from the client's perspective — the server computes it from the last item's `createdAt`, the client sends it back as `cursor` on the next request.
 
 ### Vapor Convention (tmbr-web)
 
-Shared helpers so all endpoints follow the same pattern:
+All endpoints share these building blocks:
 
 ```swift
-// Shared Fluent extension — applies since/cursor/limit, detects hasMore
-extension QueryBuilder where Model: Model {
-    func paginate(_ query: PageQuery, sortedBy field: KeyPath<...>) async throws -> (results: [Model], hasMore: Bool, nextCursor: String?)
+// tmbr-web/Sources/Core/Pagination/
+
+// TimestampedModel — Fluent model with a Date createdAt column; enables query.page()
+public protocol TimestampedModel: Timestamped, Model {
+    static var createdAtPath: KeyPath<Self, FieldProperty<Self, Date>> { get }
 }
 
-// Convenience initializer for building Page<T> response
-extension Page {
-    init(from paginationResult: ..., mapping transform: ([Model]) -> [T])
+// PageInput — internal to tmbr-web; carries decoded cursor/since/limit for query assembly
+public struct PageInput: Sendable {
+    public let since: Date?
+    public let before: Date?   // decoded from PageQuery.cursor via PageQuery.cursorDate
+    public let limit: Int
+}
+
+// QueryBuilder extensions — apply since/before/limit+1 in one call
+public extension QueryBuilder where Model: TimestampedModel {
+    func page(_ input: PageInput) -> Self  // filters by createdAt, fetches limit+1 for hasMore detection
+}
+// Internal (App module) — same for Previewable models (catalogue items filtered via Preview.$createdAt)
+extension QueryBuilder where Model: Previewable {
+    func page(_ input: PageInput) -> Self
+}
+
+// PageResult builder — trims to limit, extracts nextCursor from last item's createdAt
+public extension PageResult {
+    init<M: Timestamped>(from models: [M], limit: Int, mapping: (M) -> T)
 }
 ```
 
-All list handlers follow this pattern:
+Controller pattern (same across all list endpoints):
 ```swift
-let query = try req.query.decode(PageQuery.self)
-let (models, hasMore, cursor) = try await Model.query(on: req.db)
-    .filter(...)
-    .paginate(query, sortedBy: \.$createdAt)
-return Page(from: (models, hasMore, cursor)) { $0.map { response($0) } }
+let pageQuery = try request.query.decode(PageQuery.self)
+let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
+let models = try await request.commands.things.list(input)
+return PageResult(from: models, limit: input.limit) { ThingResponse(thing: $0) }
 ```
 
-### New and Updated Endpoints
+### Endpoints
 
 **Notes (new API endpoint):**
-- `GET /api/notes` — Bearer auth — returns `Page<NoteResponse>` for the current user's notes, sorted by `createdAt DESC`. Requires new `Command+ListNotes` command.
+- `GET /api/notes` — Bearer auth — returns `PageResult<NoteResponse>` for the current user's notes, sorted by `createdAt DESC`.
 
 **Posts (pagination added):**
-- `GET /api/posts` — update to accept `PageQuery`, return `Page<PostResponse>`
+- `GET /api/posts` — accepts `PageQuery`, returns `PageResult<PostResponse>`. Non-paged web route uses the same `list` command with `page: nil`.
 
 **Catalogue (pagination + orphan filter):**
-- `GET /api/catalogue` — update to accept `PageQuery`. Add `orphanOnly: Bool?` query param. When `orphanOnly=true`, returns only `.orphan` kind items. The native app uses this filter to sync orphan items separately from typed items.
+- `GET /api/catalogue` — accepts `PageQuery`. `orphanOnly=true` returns only `.orphan` kind items.
 
-**Per-type list endpoints (all new):**
+**Deletion tombstones (new):**
+- `GET /api/sync/deletions?since=<ISO8601>` — returns `[DeletionRecord]` for all Notes, catalogue items (Previews), and Posts deleted after `since`. No cursor pagination needed — deletions are sparse and always queried since last sync. When a catalogue item is deleted, its Preview deletion cascades through `DeletionMiddleware<Preview>` and produces a `.catalogueItem` tombstone.
 
-| Endpoint | Response | Notes |
-|----------|----------|-------|
-| `GET /api/songs` | `Page<SongResponse>` | Songs owned by current user |
-| `GET /api/albums` | `Page<AlbumResponse>` | Albums owned by current user |
-| `GET /api/books` | `Page<BookResponse>` | Books owned by current user |
-| `GET /api/movies` | `Page<MovieResponse>` | Movies owned by current user |
-| `GET /api/podcasts` | `Page<PodcastResponse>` | Podcasts owned by current user |
-| `GET /api/playlists` | `Page<PlaylistResponse>` | Playlists owned by current user |
+**Per-type list endpoints:**
 
-These return full domain objects (same data as the existing `GET /api/[type]/:id` but as a paginated list). Notes embedded in each response are the current user's notes only.
+| Endpoint | Response |
+|----------|----------|
+| `GET /api/songs` | `PageResult<SongResponse>` |
+| `GET /api/albums` | `PageResult<AlbumResponse>` |
+| `GET /api/books` | `PageResult<BookResponse>` |
+| `GET /api/movies` | `PageResult<MovieResponse>` |
+| `GET /api/podcasts` | `PageResult<PodcastResponse>` |
+| `GET /api/playlists` | `PageResult<PlaylistResponse>` |
 
-### Files
+All return the owner's items with embedded notes. Sorted by `createdAt DESC` (Preview's `createdAt` for catalogue items).
 
-| Package | File | Change |
-|---------|------|--------|
-| tmbr-core | `PageQuery.swift` | NEW |
-| tmbr-core | `Page.swift` | NEW |
-| tmbr-web | `Shared/Pagination/QueryBuilder+Paginate.swift` | NEW |
-| tmbr-web | `Shared/Pagination/Page+Vapor.swift` | NEW |
-| tmbr-web | `Notes/Commands/Note/Command+ListNotes.swift` | NEW |
-| tmbr-web | `Notes/Commands/Commands+Notes.swift` | add `list` factory |
-| tmbr-web | `Notes/Routes/API/NotesAPIController.swift` | add `GET /api/notes` |
-| tmbr-web | `Posts/Routes/API/PostsAPIController.swift` | add `PageQuery`, return `Page<>` |
-| tmbr-web | `Catalogue/.../CatalogueAPIController.swift` | add `PageQuery` + `orphanOnly` filter |
-| tmbr-web | `Catalogue/Song/Routes/API/SongAPIController.swift` | add `GET /api/songs` list route |
-| tmbr-web | `Catalogue/Album/Routes/API/AlbumAPIController.swift` | add `GET /api/albums` list route |
-| tmbr-web | `Catalogue/Book/Routes/API/BookAPIController.swift` | add `GET /api/books` list route |
-| tmbr-web | `Catalogue/Movie/Routes/API/MovieAPIController.swift` | add `GET /api/movies` list route |
-| tmbr-web | `Catalogue/Podcast/Routes/API/PodcastAPIController.swift` | add `GET /api/podcasts` list route |
-| tmbr-web | `Catalogue/Playlist/Routes/API/PlaylistAPIController.swift` | add `GET /api/playlists` list route |
+### Key Files
+
+| Package | File | Purpose |
+|---------|------|---------|
+| tmbr-core | `Pagination/PageQuery.swift` | Shared query params |
+| tmbr-core | `Pagination/Page.swift` | `PageResult<T>` response wrapper |
+| tmbr-core | `Pagination/Timestamped.swift` | `Timestamped` protocol |
+| tmbr-core | `Enums/DeletionType.swift` | Tombstone type discriminator |
+| tmbr-core | `Responses/DeletionRecord.swift` | Tombstone response DTO |
+| tmbr-web Core | `Pagination/PageInput.swift` | Internal cursor struct |
+| tmbr-web Core | `Pagination/QueryBuilder+Page.swift` | `TimestampedModel` + `page()` extension |
+| tmbr-web Core | `Pagination/Pagination.swift` | `PageResult` Vapor conformance + builder init |
+| tmbr-web App | `Previews/Models/QueryBuilder+Previewable.swift` | `Previewable` overload of `page()` |
+| tmbr-web App | `Deletions/Models/Deletion.swift` | Tombstone Fluent model |
+| tmbr-web App | `Deletions/Models/Middlewares/DeletionMiddleware.swift` | Generic middleware writing tombstones on delete |
+| tmbr-web App | `Deletions/Routes/API/DeletionsAPIController.swift` | `GET /api/sync/deletions` |
+| tmbr-web App | `Deletions/Deletions.swift` | Module — registers migration + middlewares for Note, Preview, Post |
 
 ### Checklist
 
-- [ ] `PageQuery` added to tmbr-core
-- [ ] `Page<T>` added to tmbr-core
-- [ ] `QueryBuilder+Paginate.swift` — shared Fluent pagination helper
-- [ ] `Page+Vapor.swift` — `Page(from:mapping:)` convenience init
-- [ ] `Command+ListNotes.swift` + `Commands+Notes.swift` updated
-- [ ] `GET /api/notes` with Bearer auth, returns `Page<NoteResponse>`
-- [ ] `GET /api/posts` updated to `Page<PostResponse>` with `PageQuery`
-- [ ] `GET /api/catalogue` updated with `PageQuery` + `orphanOnly` filter
-- [ ] `GET /api/songs` list route (pagination, current user filter)
-- [ ] `GET /api/albums` list route
-- [ ] `GET /api/books` list route
-- [ ] `GET /api/movies` list route
-- [ ] `GET /api/podcasts` list route
-- [ ] `GET /api/playlists` list route
-- [ ] Manual test: `GET /api/notes?limit=5` returns correct `Page<NoteResponse>` shape
-- [ ] Manual test: `GET /api/notes?since=<date>` returns only newer notes
-- [ ] Manual test: `GET /api/catalogue?orphanOnly=true` returns only orphan items
-- [ ] Manual test: `GET /api/songs` returns the current user's songs with full data
-- [ ] Existing web frontend unaffected (uses session auth, different middleware path)
+- [x] `PageQuery` added to tmbr-core
+- [x] `PageResult<T>` added to tmbr-core
+- [x] `Timestamped` protocol added to tmbr-core
+- [x] `DeletionType` + `DeletionRecord` added to tmbr-core
+- [x] `PageInput`, `QueryBuilder+Page.swift`, `Pagination.swift` in tmbr-web Core
+- [x] `QueryBuilder+Previewable.swift` — Previewable overload of `page()`
+- [x] `Command+ListNotes.swift` + `Commands+Notes.list` added
+- [x] `GET /api/notes` with Bearer auth, returns `PageResult<NoteResponse>`
+- [x] `GET /api/posts` returns `PageResult<PostResponse>` with `PageQuery`
+- [x] `GET /api/catalogue` with `PageQuery` + `orphanOnly` filter
+- [x] `GET /api/songs`, albums, books, movies, podcasts, playlists (all per-type endpoints)
+- [x] `Deletions` module — `CreateDeletion` migration, `DeletionMiddleware`, `DeletionsAPIController`
+- [x] `GET /api/sync/deletions?since=` endpoint
 
 ---
 
@@ -332,20 +362,21 @@ App opens
   → if signed in: Task { await SyncEngine.syncDelta() }
       push any pending local changes (none in read-only stage)
       in parallel:
-        GET /api/notes?since=lastSyncAt       → upsert NoteRecord + QuoteRecord
-        GET /api/posts?since=lastSyncAt       → upsert PostRecord
-        GET /api/songs?since=lastSyncAt       → upsert SongRecord (full domain data)
-        GET /api/albums?since=lastSyncAt      → upsert AlbumRecord
-        GET /api/books?since=lastSyncAt       → upsert BookRecord
-        GET /api/movies?since=lastSyncAt      → upsert MovieRecord
-        GET /api/podcasts?since=lastSyncAt    → upsert PodcastRecord
-        GET /api/playlists?since=lastSyncAt   → upsert PlaylistRecord
+        GET /api/notes?since=lastSyncAt            → upsert NoteRecord + QuoteRecord
+        GET /api/posts?since=lastSyncAt            → upsert PostRecord
+        GET /api/songs?since=lastSyncAt            → upsert SongRecord (full domain data)
+        GET /api/albums?since=lastSyncAt           → upsert AlbumRecord
+        GET /api/books?since=lastSyncAt            → upsert BookRecord
+        GET /api/movies?since=lastSyncAt           → upsert MovieRecord
+        GET /api/podcasts?since=lastSyncAt         → upsert PodcastRecord
+        GET /api/playlists?since=lastSyncAt        → upsert PlaylistRecord
         GET /api/catalogue?orphanOnly=true&since=lastSyncAt → upsert OrphanRecord
+        GET /api/sync/deletions?since=lastSyncAt   → apply DeletionRecord (delete local records)
       save lastSyncAt = .now to UserDefaults
   → @Query auto-updates as records arrive
 ```
 
-With `since` filtering, most requests return 0 items on a typical launch — 9 small parallel requests total.
+With `since` filtering, most requests return 0 items on a typical launch — 10 small parallel requests total.
 
 **First launch** (`lastSyncAt == nil`): same flow, `since` omitted → fetches the most recent 50 items per type. Older history loads via `syncFull()` in Stage 5.
 
@@ -355,19 +386,27 @@ With `since` filtering, most requests return 0 items on a typical launch — 9 s
 @MainActor final class SyncEngine {  // pure service, not @Observable
     func syncDelta() async throws  // fast, parallel, uses since=lastSyncAt
     func syncFull() async throws   // slow, paginated, fetches all history (Stage 5)
-    
+
     // Pull helpers (each paginates to completion)
     private func fetchNotes(since: Date?) async throws
     private func fetchPosts(since: Date?) async throws
     private func fetchTypedItems(since: Date?) async throws  // all 6 types in parallel
     private func fetchOrphans(since: Date?) async throws
-    
+    private func fetchDeletions(since: Date?) async throws
+
     // Upsert helpers
     private func upsertNotes(_ responses: [NoteResponse])
     private func upsertPosts(_ responses: [PostResponse])
     private func upsertSongs(_ responses: [SongResponse])
     // ... etc per type
     private func upsertOrphans(_ responses: [PreviewResponse])
+
+    // Deletion helper — removes local records matching tombstones
+    private func applyDeletions(_ records: [DeletionRecord])
+    // .note      → delete NoteRecord where serverID == UUID(itemID)
+    // .catalogueItem → delete CatalogueItemRecord where id == UUID(itemID)
+    // .post      → delete PostRecord where serverID == Int(itemID)
+    // Skip records with syncState != .synced (pending local changes take priority)
 }
 ```
 
@@ -377,13 +416,15 @@ With `since` filtering, most requests return 0 items on a typical launch — 9 s
 
 **Upsert logic for notes**: match on `serverID`. If `.synced`, update fields and sync embedded quotes (match by `noteServerID + body`, delete missing). If `syncState != .synced`, skip body/fields but still sync quotes (they are server-owned). Delete notes with `serverID` and `.synced` state absent from response.
 
+**Deletion logic**: `DeletionRecord.itemID` is always a string — parse as `UUID` for notes/catalogueItems, `Int` for posts. Skip records where `syncState != .synced`; a locally-pending record should not be deleted by a server tombstone (the push flow resolves the conflict).
+
 ### PageLoader Pattern
 
-A helper that drives pagination for any `Page<T>` endpoint, used inside SyncEngine:
+A helper that drives pagination for any `PageResult<T>` endpoint, used inside SyncEngine:
 
 ```swift
 func fetchAll<T: Decodable & Sendable>(
-    loader: RequestLoader<BasicRequest<PageQuery, Page<T>>>,
+    loader: RequestLoader<BasicRequest<PageQuery, PageResult<T>>>,
     since: Date?
 ) async throws -> [T] {
     var all: [T] = []
@@ -393,7 +434,7 @@ func fetchAll<T: Decodable & Sendable>(
         let page = try await loader.load(from: query)
         all.append(contentsOf: page.items)
         cursor = page.nextCursor
-    } while page.hasMore
+    } while cursor != nil
     return all
 }
 ```
@@ -461,6 +502,7 @@ tmbr/Catalogue/
     Requests/NotesRequest.swift
     Requests/SongsRequest.swift + AlbumsRequest.swift + ... (one per type)
     Requests/OrphansRequest.swift
+    Requests/DeletionsRequest.swift
 ```
 
 Modified: `tmbr.swift`, `ContentView.swift`, `BlogTab.swift`, `CatalogueTab.swift`
@@ -468,8 +510,9 @@ Modified: `tmbr.swift`, `ContentView.swift`, `BlogTab.swift`, `CatalogueTab.swif
 ### Checklist
 
 - [ ] `SyncEngine.swift` — syncDelta, all fetch/upsert helpers
-- [ ] `PageLoader` helper (fetchAll pagination loop)
+- [ ] `PageLoader` helper (fetchAll pagination loop, terminates on `nextCursor == nil`)
 - [ ] Request files for all 9 sync endpoints
+- [ ] `DeletionsRequest.swift` + `SyncEngine.fetchDeletions()` + `SyncEngine.applyDeletions()`
 - [ ] `BlogModel.swift` + `@Blog.swift` + `BlogEnvironment.swift` + `View+Blog.swift` + `SyncBlogAction.swift`
 - [ ] `CatalogueModel.swift` + `@Catalogue.swift` + `CatalogueEnvironment.swift` + `View+Catalogue.swift` + `SyncCatalogueAction.swift`
 - [ ] `tmbr.swift` — SyncEngine, BlogModel, CatalogueModel created + injected
@@ -482,6 +525,7 @@ Modified: `tmbr.swift`, `ContentView.swift`, `BlogTab.swift`, `CatalogueTab.swif
 - [ ] **Test**: create orphan item on web with note → relaunch → appears in catalogue list
 - [ ] **Test**: airplane mode → relaunch → all cached data visible, no blank screens
 - [ ] **Test**: delta sync only fetches items newer than lastSyncAt (verify via network proxy)
+- [ ] **Test**: delete note on web → relaunch app → note disappears
 
 ---
 
@@ -591,10 +635,12 @@ func runSync() async throws {
 
 **Conflict resolution**: last-write-wins. Server response overwrites `.synced` local records during pull. Records with `syncState != .synced` are preserved until pushed.
 
+**Deletion conflict**: a `DeletionRecord` from the server must NOT delete a local record with `syncState != .synced` — the pending local change takes priority and will resolve on next push.
+
 **Catalogue item identity**:
 - Typed items: identified by `(categoryType, sourceID)` — the type slug + the Int ID
 - Orphan items: identified by `id` (PreviewID UUID) — no backing model ID
 
 **SwiftData concurrency**: all operations on `@MainActor` via `container.mainContext`. Volume doesn't justify background contexts.
 
-**tmbr-core discipline**: any type shared between backend and app (including `PageQuery`, `Page<T>`) goes into tmbr-core before implementation.
+**tmbr-core discipline**: any type shared between backend and app (`PageQuery`, `PageResult<T>`, `Timestamped`, `DeletionType`, `DeletionRecord`, response DTOs) goes into tmbr-core before implementation. Never add Apple-framework-specific types to tmbr-core — it must compile on Linux.
