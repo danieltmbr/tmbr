@@ -22,6 +22,7 @@ func configure(_ app: Application) async throws {
             .previews,
             .notes,
             .posts,
+            .deletions,
             .catalogue
         ]
     )
