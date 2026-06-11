@@ -18,7 +18,7 @@ struct PodcastsAPIController: RouteCollection {
         let podcastsRoute = routes.grouped("api", "podcasts")
 
         // GET /api/podcasts — paginated list of the authenticated user's podcasts
-        podcastsRoute.grouped(AppleSignInAuthenticator()).get { request async throws -> PageResult<PodcastResponse> in
+        podcastsRoute.get { request async throws -> PageResult<PodcastResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
             let limit = pageQuery.limit ?? 50
             let input = ListCatalogueItemInput(

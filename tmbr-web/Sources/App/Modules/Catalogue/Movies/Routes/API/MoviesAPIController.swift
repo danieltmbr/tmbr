@@ -18,7 +18,7 @@ struct MoviesAPIController: RouteCollection {
         let moviesRoute = routes.grouped("api", "movies")
 
         // GET /api/movies — paginated list of the authenticated user's movies
-        moviesRoute.grouped(AppleSignInAuthenticator()).get { request async throws -> PageResult<MovieResponse> in
+        moviesRoute.get { request async throws -> PageResult<MovieResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
             let limit = pageQuery.limit ?? 50
             let input = ListCatalogueItemInput(

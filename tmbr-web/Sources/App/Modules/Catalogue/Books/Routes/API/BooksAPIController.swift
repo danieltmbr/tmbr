@@ -18,7 +18,7 @@ struct BooksAPIController: RouteCollection {
         let booksRoute = routes.grouped("api", "books")
 
         // GET /api/books — paginated list of the authenticated user's books
-        booksRoute.grouped(AppleSignInAuthenticator()).get { request async throws -> PageResult<BookResponse> in
+        booksRoute.get { request async throws -> PageResult<BookResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
             let limit = pageQuery.limit ?? 50
             let input = ListCatalogueItemInput(

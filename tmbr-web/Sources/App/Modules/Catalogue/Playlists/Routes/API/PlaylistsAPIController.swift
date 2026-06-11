@@ -11,7 +11,7 @@ struct PlaylistsAPIController: RouteCollection {
         let playlistsRoute = routes.grouped("api", "playlists")
 
         // GET /api/playlists — paginated list of the authenticated user's playlists
-        playlistsRoute.grouped(AppleSignInAuthenticator()).get { request async throws -> PageResult<PlaylistResponse> in
+        playlistsRoute.get { request async throws -> PageResult<PlaylistResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
             let limit = pageQuery.limit ?? 50
             let input = ListCatalogueItemInput(
