@@ -18,7 +18,7 @@ extension Commands {
 
         let fetch: CommandFactory<FetchParameters<MovieID>, Movie>
 
-        let list: CommandFactory<ListCatalogueItemInput, [Movie]>
+        let list: CommandFactory<PageInput, [Movie]>
 
         let lookup: CommandFactory<String, Movie?>
 
@@ -31,7 +31,7 @@ extension Commands {
             delete: CommandFactory<MovieID, Void> = .delete(\.movies),
             edit: CommandFactory<EditMovieInput, Movie> = .editMovie,
             fetch: CommandFactory<FetchParameters<MovieID>, Movie> = .fetchMovie,
-            list: CommandFactory<ListCatalogueItemInput, [Movie]> = .listMovies,
+            list: CommandFactory<PageInput, [Movie]> = .listMovies,
             lookup: CommandFactory<String, Movie?> = .lookupMovie,
             metadata: CommandFactory<URL, MovieMetadata> = .fetchMovieMetadata,
             search: CommandFactory<String?, MovieSearchResult> = .searchMovies

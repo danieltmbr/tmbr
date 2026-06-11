@@ -18,7 +18,7 @@ extension Commands {
 
         let fetch: CommandFactory<FetchParameters<SongID>, Song>
 
-        let list: CommandFactory<ListCatalogueItemInput, [Song]>
+        let list: CommandFactory<PageInput, [Song]>
 
         let lookup: CommandFactory<String, Song?>
 
@@ -33,7 +33,7 @@ extension Commands {
             delete: CommandFactory<SongID, Void> = .delete(\.songs),
             edit: CommandFactory<EditSongInput, Song> = .editSong,
             fetch: CommandFactory<FetchParameters<SongID>, Song> = .fetchSong,
-            list: CommandFactory<ListCatalogueItemInput, [Song]> = .listSongs,
+            list: CommandFactory<PageInput, [Song]> = .listSongs,
             lookup: CommandFactory<String, Song?> = .lookupSong,
             metadata: CommandFactory<URL, SongMetadata> = .fetchMetadata,
             promote: CommandFactory<UUID, Song> = .promoteSong,

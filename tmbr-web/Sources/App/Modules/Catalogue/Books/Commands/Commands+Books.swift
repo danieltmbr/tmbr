@@ -18,7 +18,7 @@ extension Commands {
 
         let fetch: CommandFactory<FetchParameters<BookID>, Book>
 
-        let list: CommandFactory<ListCatalogueItemInput, [Book]>
+        let list: CommandFactory<PageInput, [Book]>
 
         let lookup: CommandFactory<String, Book?>
 
@@ -31,7 +31,7 @@ extension Commands {
             delete: CommandFactory<BookID, Void> = .delete(\.books),
             edit: CommandFactory<EditBookInput, Book> = .editBook,
             fetch: CommandFactory<FetchParameters<BookID>, Book> = .fetchBook,
-            list: CommandFactory<ListCatalogueItemInput, [Book]> = .listBooks,
+            list: CommandFactory<PageInput, [Book]> = .listBooks,
             lookup: CommandFactory<String, Book?> = .lookupBook,
             metadata: CommandFactory<URL, BookMetadata> = .fetchBookMetadata,
             search: CommandFactory<String?, BookSearchResult> = .searchBooks

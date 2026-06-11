@@ -3,7 +3,7 @@ import Core
 import Fluent
 import AuthKit
 
-extension Command where Self == PlainCommand<ListCatalogueItemInput, [Album]> {
+extension Command where Self == PlainCommand<PageInput, [Album]> {
 
     static func listAlbums(
         database: Database,
@@ -17,19 +17,14 @@ extension Command where Self == PlainCommand<ListCatalogueItemInput, [Album]> {
                 .with(\.$artwork)
                 .with(\.$owner)
                 .with(\.$post)
-            if let since = input.since {
-                query.filter(Preview.self, \Preview.$createdAt > since)
-            }
-            if let before = input.before {
-                query.filter(Preview.self, \Preview.$createdAt < before)
-            }
+            query.page(input)
             try await permission.grant(query)
-            return try await query.limit(input.limit).all()
+            return try await query.all()
         }
     }
 }
 
-extension CommandFactory<ListCatalogueItemInput, [Album]> {
+extension CommandFactory<PageInput, [Album]> {
 
     static var listAlbums: Self {
         CommandFactory { request in

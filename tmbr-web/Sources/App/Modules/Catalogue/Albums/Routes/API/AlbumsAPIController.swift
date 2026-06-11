@@ -20,22 +20,13 @@ struct AlbumsAPIController: RouteCollection {
         // GET /api/albums — paginated list of the authenticated user's albums
         albumsRoute.get { request async throws -> PageResult<AlbumResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
-            let limit = pageQuery.limit
-            let input = ListCatalogueItemInput(
-                before: pageQuery.cursorDate,
-                limit: limit + 1,
-                since: pageQuery.since
-            )
+            let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
             let albums = try await request.commands.albums.list(input)
             let previewIDs = albums.map { $0.$preview.id }
             let notesByPreviewID = try await request.commands.notes.batchFetch(previewIDs)
             let baseURL = request.baseURL
-            return makePage(
-                from: albums,
-                limit: limit,
-                cursorDate: { $0.preview.createdAt
-                }) {
-                $0.map { album in AlbumResponse(album: album, notes: notesByPreviewID[album.$preview.id] ?? [], baseURL: baseURL) }
+            return PageResult(from: albums, limit: input.limit) { album in
+                AlbumResponse(album: album, notes: notesByPreviewID[album.$preview.id] ?? [], baseURL: baseURL)
             }
         }
 

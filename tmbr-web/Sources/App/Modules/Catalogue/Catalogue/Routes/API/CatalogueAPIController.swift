@@ -102,8 +102,8 @@ struct CatalogueAPIController: RouteCollection {
         let input = PreviewQueryInput(kind: .orphan, since: pageQuery.since, before: pageQuery.cursorDate, limit: limit + 1)
         let previews = try await request.commands.previews.list(input)
         let baseURL = request.baseURL
-        return makePage(from: previews, limit: limit, cursorDate: { $0.createdAt }) {
-            $0.map { PreviewResponse(preview: $0, baseURL: baseURL) }
+        return PageResult(from: previews, limit: limit) { preview in
+            PreviewResponse(preview: preview, baseURL: baseURL)
         }
     }
 

@@ -3,7 +3,7 @@ import Core
 import Fluent
 import AuthKit
 
-extension Command where Self == PlainCommand<ListCatalogueItemInput, [Podcast]> {
+extension Command where Self == PlainCommand<PageInput, [Podcast]> {
 
     static func listPodcasts(database: Database, permission: BasePermissionResolver<QueryBuilder<Podcast>>) -> Self {
         PlainCommand { input in
@@ -14,15 +14,14 @@ extension Command where Self == PlainCommand<ListCatalogueItemInput, [Podcast]> 
                 .with(\.$artwork)
                 .with(\.$owner)
                 .with(\.$post)
-            if let since = input.since { query.filter(Preview.self, \Preview.$createdAt > since) }
-            if let before = input.before { query.filter(Preview.self, \Preview.$createdAt < before) }
+            query.page(input)
             try await permission.grant(query)
-            return try await query.limit(input.limit).all()
+            return try await query.all()
         }
     }
 }
 
-extension CommandFactory<ListCatalogueItemInput, [Podcast]> {
+extension CommandFactory<PageInput, [Podcast]> {
 
     static var listPodcasts: Self {
         CommandFactory { request in

@@ -4,44 +4,24 @@ import Core
 import Fluent
 import TmbrCore
 
-struct ListPostsPagedInput: Sendable {
-    let since: Date?
-    let before: Date?
-    let limit: Int
+extension Command where Self == PlainCommand<PageInput, [Post]> {
 
-    init(since: Date? = nil, before: Date? = nil, limit: Int = 50) {
-        self.since = since
-        self.before = before
-        self.limit = limit
-    }
-}
-
-extension Command where Self == PlainCommand<ListPostsPagedInput, [Post]> {
-
-    // preferredLanguages comes from request.languagePreference — same as listPosts
     static func listPostsPaged(database: Database, preferredLanguages: Set<String>?) -> Self {
         PlainCommand { input in
             let languages = preferredLanguages?.compactMap(Language.init(rawValue:))
-            var query = Post.query(on: database)
+            let query = Post.query(on: database)
                 .filter(\.$state == .published)
                 .languages(languages)
                 .sort(\.$createdAt, .descending)
                 .with(\.$author)
                 .with(\.$attachment) { attachment in attachment.with(\.$image) }
-
-            if let since = input.since {
-                query = query.filter(\.$createdAt > since)
-            }
-            if let before = input.before {
-                query = query.filter(\.$createdAt < before)
-            }
-
-            return try await query.limit(input.limit).all()
+            query.page(input)
+            return try await query.all()
         }
     }
 }
 
-extension CommandFactory<ListPostsPagedInput, [Post]> {
+extension CommandFactory<PageInput, [Post]> {
 
     static var listPostsPaged: Self {
         CommandFactory { request in

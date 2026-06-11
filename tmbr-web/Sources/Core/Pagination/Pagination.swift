@@ -21,25 +21,16 @@ public extension PageQuery {
 
 // MARK: - PageResult builder
 
-/// Builds a `PageResult<T>` from raw model results.
-///
-/// Pass `limit + 1` results. This trims to `limit` and computes `nextCursor`
-/// from the last item's date. All list endpoints use this helper.
-///
-/// - Parameters:
-///   - models:     Raw query results (`limit + 1` items).
-///   - limit:      The requested page size.
-///   - cursorDate: Closure that extracts the sort date from a model (used as the next cursor).
-///   - mapping:    Transforms the trimmed `[Model]` into `[T]`.
 private let iso8601Formatter = ISO8601DateFormatter()
 
-public func makePage<M: Sendable, T: Codable & Sendable>(
-    from models: [M],
-    limit: Int,
-    cursorDate: (M) -> Date?,
-    mapping: ([M]) -> [T]
-) -> PageResult<T> {
-    let items = Array(models.prefix(limit))
-    let nextCursor = models.count > limit ? items.last.flatMap { cursorDate($0) }.map { iso8601Formatter.string(from: $0) } : nil
-    return PageResult(items: mapping(items), nextCursor: nextCursor)
+public extension PageResult {
+    /// Builds a paginated response from raw query results fetched with `limit + 1`.
+    /// Trims to `limit`, sets `nextCursor` from the last item's `createdAt` if more exist.
+    init<M: Timestamped>(from models: [M], limit: Int, mapping: (M) -> T) {
+        let trimmed = Array(models.prefix(limit))
+        let nextCursor = models.count > limit
+            ? trimmed.last.map { iso8601Formatter.string(from: $0.createdAt) }
+            : nil
+        self.init(items: trimmed.map(mapping), nextCursor: nextCursor)
+    }
 }

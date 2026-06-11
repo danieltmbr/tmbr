@@ -16,16 +16,11 @@ struct PostsAPIController: RouteCollection {
         // Language filtering uses the request's Accept-Language preference.
         postsRoute.get { req async throws -> PageResult<PostResponse> in
             let pageQuery = try req.query.decode(PageQuery.self)
-            let limit = pageQuery.limit
-            let input = ListPostsPagedInput(
-                since: pageQuery.since,
-                before: pageQuery.cursorDate,
-                limit: limit + 1
-            )
+            let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
             let posts = try await req.commands.posts.listPaged(input)
             let baseURL = req.baseURL
-            return makePage(from: posts, limit: limit, cursorDate: { $0.createdAt }) {
-                $0.map { PostResponse(post: $0, baseURL: baseURL) }
+            return PageResult(from: posts, limit: input.limit) { post in
+                PostResponse(post: post, baseURL: baseURL)
             }
         }
         

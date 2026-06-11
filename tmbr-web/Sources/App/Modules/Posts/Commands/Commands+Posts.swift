@@ -19,7 +19,7 @@ extension Commands {
         
         let list: CommandFactory<PostQueryPayload, [Post]>
 
-        let listPaged: CommandFactory<ListPostsPagedInput, [Post]>
+        let listPaged: CommandFactory<PageInput, [Post]>
 
         init(
             create: CommandFactory<PostPayload, Post> = .createPost,
@@ -27,7 +27,7 @@ extension Commands {
             edit: CommandFactory<EditPostPayload, Post> = .editPost,
             fetch: CommandFactory<FetchParameters<PostID>, Post> = .fetchPost,
             list: CommandFactory<PostQueryPayload, [Post]> = .listPosts,
-            listPaged: CommandFactory<ListPostsPagedInput, [Post]> = .listPostsPaged
+            listPaged: CommandFactory<PageInput, [Post]> = .listPostsPaged
         ) {
             self.create = create
             self.delete = delete

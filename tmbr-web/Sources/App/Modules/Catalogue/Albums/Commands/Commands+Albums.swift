@@ -18,7 +18,7 @@ extension Commands {
 
         let fetch: CommandFactory<FetchParameters<AlbumID>, Album>
 
-        let list: CommandFactory<ListCatalogueItemInput, [Album]>
+        let list: CommandFactory<PageInput, [Album]>
 
         let lookup: CommandFactory<String, Album?>
 
@@ -31,7 +31,7 @@ extension Commands {
             delete: CommandFactory<AlbumID, Void> = .delete(\.albums),
             edit: CommandFactory<EditAlbumInput, Album> = .editAlbum,
             fetch: CommandFactory<FetchParameters<AlbumID>, Album> = .fetchAlbum,
-            list: CommandFactory<ListCatalogueItemInput, [Album]> = .listAlbums,
+            list: CommandFactory<PageInput, [Album]> = .listAlbums,
             lookup: CommandFactory<String, Album?> = .lookupAlbum,
             metadata: CommandFactory<URL, AlbumMetadata> = .fetchMetadata,
             search: CommandFactory<String?, AlbumSearchResult> = .searchAlbums
