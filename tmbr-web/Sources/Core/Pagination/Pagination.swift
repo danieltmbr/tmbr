@@ -31,6 +31,8 @@ public extension PageQuery {
 ///   - limit:      The requested page size.
 ///   - cursorDate: Closure that extracts the sort date from a model (used as the next cursor).
 ///   - mapping:    Transforms the trimmed `[Model]` into `[T]`.
+private let iso8601Formatter = ISO8601DateFormatter()
+
 public func makePage<M: Sendable, T: Codable & Sendable>(
     from models: [M],
     limit: Int,
@@ -39,7 +41,6 @@ public func makePage<M: Sendable, T: Codable & Sendable>(
 ) -> PageResult<T> {
     let hasMore = models.count > limit
     let items = Array(models.prefix(limit))
-    let formatter = ISO8601DateFormatter()
-    let nextCursor = hasMore ? cursorDate(items.last!).map { formatter.string(from: $0) } : nil
+    let nextCursor = hasMore ? items.last.flatMap { cursorDate($0) }.map { iso8601Formatter.string(from: $0) } : nil
     return PageResult(items: mapping(items), hasMore: hasMore, nextCursor: nextCursor)
 }

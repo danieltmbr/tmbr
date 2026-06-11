@@ -2,10 +2,10 @@ import Foundation
 import Vapor
 import Core
 import Fluent
+import AuthKit
 import TmbrCore
 
 struct ListNotesInput: Sendable {
-    let authorID: Int
     let since: Date?
     let before: Date?
     let limit: Int
@@ -13,10 +13,11 @@ struct ListNotesInput: Sendable {
 
 extension Command where Self == PlainCommand<ListNotesInput, [Note]> {
 
-    static func listNotes(database: Database) -> Self {
+    static func listNotes(database: Database, permission: AuthPermissionResolver<Void>) -> Self {
         PlainCommand { input in
+            let user = try await permission.grant()
             var query = Note.query(on: database)
-                .filter(\.$author.$id == input.authorID)
+                .filter(\.$author.$id == user.userID)
                 .sort(\.$createdAt, .descending)
                 .with(\.$attachment) { attachment in
                     attachment.with(\.$image)
@@ -25,7 +26,7 @@ extension Command where Self == PlainCommand<ListNotesInput, [Note]> {
                 .with(\.$quotes)
 
             if let since = input.since {
-                query = query.filter(\.$createdAt >= since)
+                query = query.filter(\.$createdAt > since)
             }
             if let before = input.before {
                 query = query.filter(\.$createdAt < before)
@@ -40,7 +41,7 @@ extension CommandFactory<ListNotesInput, [Note]> {
 
     static var listNotes: Self {
         CommandFactory { request in
-            .listNotes(database: request.commandDB)
+            .listNotes(database: request.commandDB, permission: request.permissions.notes.list)
             .logged(name: "List notes", logger: request.logger)
         }
     }

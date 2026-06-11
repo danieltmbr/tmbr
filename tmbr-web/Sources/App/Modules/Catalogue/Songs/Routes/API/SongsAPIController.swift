@@ -19,19 +19,12 @@ struct SongsAPIController: RouteCollection {
 
         // GET /api/songs — paginated list of the authenticated user's songs
         songsRoute.grouped(AppleSignInAuthenticator()).get { request async throws -> PageResult<SongResponse> in
-            let user = try request.auth.require(User.self)
-            let userID = try user.requireID()
             let pageQuery = try request.query.decode(PageQuery.self)
             let limit = pageQuery.limit ?? 50
-            let input = ListCatalogueItemInput(
-                ownerID: userID,
-                since: pageQuery.since,
-                before: pageQuery.cursorDate,
-                limit: limit + 1
-            )
+            let input = ListCatalogueItemInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: limit + 1)
             let songs = try await request.commands.songs.list(input)
             let previewIDs = songs.map { $0.$preview.id }
-            let notesByPreviewID = try await batchLoadNotes(for: previewIDs, authorID: userID, on: request.commandDB)
+            let notesByPreviewID = try await request.commands.notes.batchFetch(BatchFetchNotesInput(previewIDs: previewIDs))
             let baseURL = request.baseURL
             return makePage(from: songs, limit: limit, cursorDate: { $0.preview.createdAt }) {
                 $0.map { song in SongResponse(song: song, notes: notesByPreviewID[song.$preview.id] ?? [], baseURL: baseURL) }

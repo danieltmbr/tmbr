@@ -1,9 +1,5 @@
 # Offline-First Native App: Multi-Stage Roadmap
 
-> **Upon exiting plan mode**: copy this file to `/Users/danieltmbr/Documents/projects/tmbr/.claude/docs/plans/offline-first-native-app.md` as the canonical living document in the repo.
-
----
-
 ## Vision
 
 The end state is a native app that feels fast and reliable regardless of connectivity:

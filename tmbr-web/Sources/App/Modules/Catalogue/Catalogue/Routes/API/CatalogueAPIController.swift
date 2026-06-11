@@ -3,7 +3,6 @@ import Core
 import Fluent
 import AuthKit
 import TmbrCore
-import Foundation
 
 struct CatalogueAPIController: RouteCollection {
     
@@ -98,16 +97,9 @@ struct CatalogueAPIController: RouteCollection {
 
     @Sendable
     private func listOrphans(request: Request) async throws -> PageResult<PreviewResponse> {
-        let user = try request.auth.require(User.self)
-        let userID = try user.requireID()
         let pageQuery = try request.query.decode(PageQuery.self)
         let limit = pageQuery.limit ?? 50
-        let input = ListOrphansInput(
-            ownerID: userID,
-            since: pageQuery.since,
-            before: pageQuery.cursorDate,
-            limit: limit + 1
-        )
+        let input = ListOrphansInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: limit + 1)
         let previews = try await request.commands.previews.listOrphans(input)
         let baseURL = request.baseURL
         return makePage(from: previews, limit: limit, cursorDate: { $0.createdAt }) {

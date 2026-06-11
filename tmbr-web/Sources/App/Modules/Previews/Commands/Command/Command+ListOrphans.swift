@@ -1,17 +1,15 @@
 import Foundation
-import Vapor
 import Core
 import Fluent
+import AuthKit
 import TmbrCore
 
 struct ListOrphansInput: Sendable {
-    let ownerID: Int
     let since: Date?
     let before: Date?
     let limit: Int
 
-    init(ownerID: Int, since: Date? = nil, before: Date? = nil, limit: Int = 50) {
-        self.ownerID = ownerID
+    init(since: Date? = nil, before: Date? = nil, limit: Int = 50) {
         self.since = since
         self.before = before
         self.limit = limit
@@ -20,10 +18,11 @@ struct ListOrphansInput: Sendable {
 
 extension Command where Self == PlainCommand<ListOrphansInput, [Preview]> {
 
-    static func listOrphans(database: Database) -> Self {
+    static func listOrphans(database: Database, permission: AuthPermissionResolver<Void>) -> Self {
         PlainCommand { input in
+            let user = try await permission.grant()
             var query = Preview.query(on: database)
-                .filter(\.$parentOwner.$id == input.ownerID)
+                .filter(\.$parentOwner.$id == user.userID)
                 .join(CatalogueCategory.self, on: \Preview.$catalogueCategory.$id == \CatalogueCategory.$id)
                 .filter(CatalogueCategory.self, \.$kind == .orphan)
                 .sort(\.$createdAt, .descending)
@@ -46,7 +45,7 @@ extension CommandFactory<ListOrphansInput, [Preview]> {
 
     static var listOrphans: Self {
         CommandFactory { request in
-            .listOrphans(database: request.commandDB)
+            .listOrphans(database: request.commandDB, permission: request.permissions.previews.list)
             .logged(name: "List orphans", logger: request.logger)
         }
     }

@@ -1,13 +1,15 @@
 import Foundation
 import Core
 import Fluent
+import AuthKit
 
 extension Command where Self == PlainCommand<ListCatalogueItemInput, [Song]> {
 
-    static func listSongs(database: Database) -> Self {
+    static func listSongs(database: Database, permission: AuthPermissionResolver<Void>) -> Self {
         PlainCommand { input in
+            let user = try await permission.grant()
             var query = Song.query(on: database)
-                .filter(\.$owner.$id == input.ownerID)
+                .filter(\.$owner.$id == user.userID)
                 .join(Preview.self, on: \Song.$preview.$id == \Preview.$id)
                 .sort(Preview.self, \Preview.$createdAt, .descending)
                 .with(\.$preview) { p in p.with(\.$image) }
@@ -31,7 +33,7 @@ extension CommandFactory<ListCatalogueItemInput, [Song]> {
 
     static var listSongs: Self {
         CommandFactory { request in
-            .listSongs(database: request.commandDB)
+            .listSongs(database: request.commandDB, permission: request.permissions.songs.list)
             .logged(name: "List songs", logger: request.logger)
         }
     }

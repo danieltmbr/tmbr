@@ -27,6 +27,7 @@ extension Command where Self == PlainCommand<ListPostsPagedInput, [Post]> {
                 .languages(languages)
                 .sort(\.$createdAt, .descending)
                 .with(\.$author)
+                .with(\.$attachment) { attachment in attachment.with(\.$image) }
 
             if let since = input.since {
                 query = query.filter(\.$createdAt > since)
