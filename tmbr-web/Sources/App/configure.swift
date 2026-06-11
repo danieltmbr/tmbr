@@ -1,7 +1,10 @@
 import Vapor
 import Core
+import AuthKit
 
 func configure(_ app: Application) async throws {
+    app.middleware.use(AppleSignInTokenParser())
+
     let registry = ModuleRegistry(
         configurations: [
             .logging,

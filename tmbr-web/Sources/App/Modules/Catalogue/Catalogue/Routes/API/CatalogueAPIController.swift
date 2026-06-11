@@ -22,7 +22,7 @@ struct CatalogueAPIController: RouteCollection {
         catalogue.get("new", "metadata", use: metadata)
 
         // GET /api/catalogue/orphans — paginated orphan items for native app sync
-        catalogue.grouped(AppleSignInAuthenticator()).get("orphans", use: listOrphans)
+        catalogue.get("orphans", use: listOrphans)
 
         let quotes = catalogue.grouped("quotes")
         quotes.get(use: quoteList)

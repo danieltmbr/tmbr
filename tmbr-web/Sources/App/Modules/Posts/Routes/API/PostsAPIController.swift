@@ -10,7 +10,7 @@ struct PostsAPIController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         // Group all API routes under /api/posts
         let postsRoute = routes.grouped("api", "posts")
-        let protectedRoutes = postsRoute.grouped(AppleSignInAuthenticator())
+        let protectedRoutes = postsRoute
         
         // GET /api/posts — paginated, supports ?since=&cursor=&limit=
         // Language filtering uses the request's Accept-Language preference.

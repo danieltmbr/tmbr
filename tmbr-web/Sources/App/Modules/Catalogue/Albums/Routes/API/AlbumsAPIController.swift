@@ -18,7 +18,7 @@ struct AlbumsAPIController: RouteCollection {
         let albumsRoute = routes.grouped("api", "albums")
 
         // GET /api/albums — paginated list of the authenticated user's albums
-        albumsRoute.grouped(AppleSignInAuthenticator()).get { request async throws -> PageResult<AlbumResponse> in
+        albumsRoute.get { request async throws -> PageResult<AlbumResponse> in
             let pageQuery = try request.query.decode(PageQuery.self)
             let limit = pageQuery.limit ?? 50
             let input = ListCatalogueItemInput(
