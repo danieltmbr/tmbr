@@ -16,7 +16,7 @@ where M: Model & Previewable {
 
     let edit: AuthPermission<M>
 
-    let list: AuthPermission<Void>
+    let list: Permission<QueryBuilder<M>>
 
     let query: Permission<QueryBuilder<M>>
 
@@ -25,7 +25,7 @@ where M: Model & Previewable {
         create: AuthPermission<Void>,
         delete: AuthPermission<M>,
         edit: AuthPermission<M>,
-        list: AuthPermission<Void> = AuthPermission<Void>(),
+        list: Permission<QueryBuilder<M>>,
         query: Permission<QueryBuilder<M>>
     ) {
         self.access = access

@@ -13,10 +13,8 @@ extension PreviewablePermissionScope<Album> {
             create: .create("You don't have permission to create an album."),
             delete: .delete("Only its owner can delete an album."),
             edit: .edit("Only its owner can edit an album."),
-            query: .query(
-                access: \.$access,
-                owner: \.$owner.$id
-            )
+            list: .listOwned(owner: \.$owner.$id),
+            query: .query(access: \.$access, owner: \.$owner.$id)
         )
     }
 

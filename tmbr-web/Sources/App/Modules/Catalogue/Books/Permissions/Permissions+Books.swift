@@ -13,10 +13,8 @@ extension PreviewablePermissionScope<Book> {
             create: .create("You don't have permission to create a book."),
             delete: .delete("Only its owner can delete a book."),
             edit: .edit("Only its owner can edit a book."),
-            query: .query(
-                access: \.$access,
-                owner: \.$owner.$id
-            )
+            list: .listOwned(owner: \.$owner.$id),
+            query: .query(access: \.$access, owner: \.$owner.$id)
         )
     }
 

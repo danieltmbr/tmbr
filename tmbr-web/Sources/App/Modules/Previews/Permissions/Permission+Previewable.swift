@@ -40,7 +40,7 @@ extension Permission where Input: Previewable {
 }
 
 extension Permission {
-    
+
     static func query<M: Model, A, O>(
         access: KeyPath<M, A>,
         owner: KeyPath<M, O>
@@ -57,6 +57,18 @@ extension Permission {
                     group.filter(owner == userID)
                 }
             }
+        }
+    }
+
+    static func listOwned<M: Model, O>(
+        owner: KeyPath<M, O>
+    ) -> Permission<QueryBuilder<M>>
+    where O: QueryableProperty, O.Model == M, O.Value == UserID,
+          Input == QueryBuilder<M>
+    {
+        Permission { (user: User?, query: Input) in
+            guard let userID = user?.userID else { throw Abort(.unauthorized) }
+            query.filter(owner == userID)
         }
     }
 }

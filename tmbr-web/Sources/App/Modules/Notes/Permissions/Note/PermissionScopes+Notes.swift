@@ -16,7 +16,7 @@ extension PermissionScopes {
 
         let edit: AuthPermission<Note>
 
-        let list: AuthPermission<Void>
+        let list: Permission<QueryBuilder<Note>>
 
         let query: Permission<QueryBuilder<Note>>
 
@@ -25,7 +25,7 @@ extension PermissionScopes {
             create: AuthPermission<Void> = .createNote,
             delete: AuthPermission<Note> = .deleteNote,
             edit: AuthPermission<Note> = .editNote,
-            list: AuthPermission<Void> = AuthPermission<Void>(),
+            list: Permission<QueryBuilder<Note>> = .listOwned(owner: \.$author.$id),
             query: Permission<QueryBuilder<Note>> = .queryNote
         ) {
             self.attach = attach

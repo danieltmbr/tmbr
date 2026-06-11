@@ -18,24 +18,17 @@ struct ListOrphansInput: Sendable {
 
 extension Command where Self == PlainCommand<ListOrphansInput, [Preview]> {
 
-    static func listOrphans(database: Database, permission: AuthPermissionResolver<Void>) -> Self {
+    static func listOrphans(database: Database, permission: BasePermissionResolver<QueryBuilder<Preview>>) -> Self {
         PlainCommand { input in
-            let user = try await permission.grant()
-            var query = Preview.query(on: database)
-                .filter(\.$parentOwner.$id == user.userID)
+            let query = Preview.query(on: database)
                 .join(CatalogueCategory.self, on: \Preview.$catalogueCategory.$id == \CatalogueCategory.$id)
                 .filter(CatalogueCategory.self, \.$kind == .orphan)
                 .sort(\.$createdAt, .descending)
                 .with(\.$image)
                 .with(\.$catalogueCategory)
-
-            if let since = input.since {
-                query = query.filter(\.$createdAt > since)
-            }
-            if let before = input.before {
-                query = query.filter(\.$createdAt < before)
-            }
-
+            if let since = input.since { query.filter(\.$createdAt > since) }
+            if let before = input.before { query.filter(\.$createdAt < before) }
+            try await permission.grant(query)
             return try await query.limit(input.limit).all()
         }
     }

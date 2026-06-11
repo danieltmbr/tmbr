@@ -9,17 +9,16 @@ struct BatchFetchNotesInput: Sendable {
 
 extension Command where Self == PlainCommand<BatchFetchNotesInput, [PreviewID: [Note]]> {
 
-    static func batchFetchNotes(database: Database, permission: AuthPermissionResolver<Void>) -> Self {
+    static func batchFetchNotes(database: Database, permission: BasePermissionResolver<QueryBuilder<Note>>) -> Self {
         PlainCommand { input in
-            let user = try await permission.grant()
             guard !input.previewIDs.isEmpty else { return [:] }
-            let notes = try await Note.query(on: database)
+            let query = Note.query(on: database)
                 .filter(\.$attachment.$id ~~ input.previewIDs)
-                .filter(\.$author.$id == user.userID)
                 .with(\.$attachment) { a in a.with(\.$image) }
                 .with(\.$author)
                 .with(\.$quotes)
-                .all()
+            try await permission.grant(query)
+            let notes = try await query.all()
             return Dictionary(grouping: notes, by: { $0.$attachment.id })
         }
     }

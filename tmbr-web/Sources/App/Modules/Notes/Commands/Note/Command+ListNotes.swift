@@ -13,25 +13,18 @@ struct ListNotesInput: Sendable {
 
 extension Command where Self == PlainCommand<ListNotesInput, [Note]> {
 
-    static func listNotes(database: Database, permission: AuthPermissionResolver<Void>) -> Self {
+    static func listNotes(database: Database, permission: BasePermissionResolver<QueryBuilder<Note>>) -> Self {
         PlainCommand { input in
-            let user = try await permission.grant()
-            var query = Note.query(on: database)
-                .filter(\.$author.$id == user.userID)
+            let query = Note.query(on: database)
                 .sort(\.$createdAt, .descending)
                 .with(\.$attachment) { attachment in
                     attachment.with(\.$image)
                 }
                 .with(\.$author)
                 .with(\.$quotes)
-
-            if let since = input.since {
-                query = query.filter(\.$createdAt > since)
-            }
-            if let before = input.before {
-                query = query.filter(\.$createdAt < before)
-            }
-
+            if let since = input.since { query.filter(\.$createdAt > since) }
+            if let before = input.before { query.filter(\.$createdAt < before) }
+            try await permission.grant(query)
             return try await query.limit(input.limit).all()
         }
     }

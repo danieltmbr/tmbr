@@ -14,7 +14,7 @@ extension PermissionScopes {
 
         let edit: AuthPermission<Preview>
 
-        let list: AuthPermission<Void>
+        let list: Permission<QueryBuilder<Preview>>
 
         let query: Permission<QueryBuilder<Preview>>
 
@@ -22,7 +22,7 @@ extension PermissionScopes {
             access: Permission<Preview> = .accessPreview,
             create: AuthPermission<Void> = .create("You don't have permission to create a catalogue item."),
             edit: AuthPermission<Preview> = .editPreview,
-            list: AuthPermission<Void> = AuthPermission<Void>(),
+            list: Permission<QueryBuilder<Preview>> = .listOwned(owner: \.$parentOwner.$id),
             query: Permission<QueryBuilder<Preview>> = .queryPreview
         ) {
             self.access = access
