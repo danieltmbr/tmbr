@@ -4,13 +4,19 @@ import Foundation
 import AuthKit
 import TmbrCore
 
-protocol Previewable: Model where IDValue == Int {
+protocol Previewable: Model, Timestamped where IDValue == Int {
 
     static var previewType: String { get }
 
     var access: Access { get }
 
     var ownerID: UserID { get }
+
+    var preview: Preview { get }
+}
+
+extension Previewable {
+    var createdAt: Date { preview.createdAt }
 }
 
 final class PreviewModelMiddleware<M: Previewable>: AsyncModelMiddleware {

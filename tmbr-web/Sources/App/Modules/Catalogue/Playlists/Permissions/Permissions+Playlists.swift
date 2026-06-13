@@ -12,10 +12,7 @@ extension PreviewablePermissionScope<Playlist> {
             create: .create("You don't have permission to create a playlist."),
             delete: .delete("Only its owner can delete a playlist."),
             edit: .edit("Only its owner can edit a playlist."),
-            query: .query(
-                access: \.$access,
-                owner: \.$owner.$id
-            )
+            query: .query(access: \.$access, owner: \.$owner.$id)
         )
     }
 }

@@ -17,6 +17,19 @@ struct BooksAPIController: RouteCollection {
 
         let booksRoute = routes.grouped("api", "books")
 
+        // GET /api/books — paginated list of the authenticated user's books
+        booksRoute.get { request async throws -> PageResult<BookResponse> in
+            let pageQuery = try request.query.decode(PageQuery.self)
+            let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
+            let books = try await request.commands.books.list(input)
+            let previewIDs = books.map { $0.$preview.id }
+            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
+            let baseURL = request.baseURL
+            return PageResult(from: books, limit: input.limit) { book in
+                BookResponse(book: book, baseURL: baseURL, notes: notesByPreviewID[book.$preview.id] ?? [])
+            }
+        }
+
         // GET /api/books/lookup?url=
         booksRoute.get("lookup") { request async throws -> BookLookupResponse in
             let url = try request.query.get(String.self, at: "url")

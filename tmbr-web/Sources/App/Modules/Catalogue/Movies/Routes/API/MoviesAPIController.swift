@@ -17,6 +17,19 @@ struct MoviesAPIController: RouteCollection {
 
         let moviesRoute = routes.grouped("api", "movies")
 
+        // GET /api/movies — paginated list of the authenticated user's movies
+        moviesRoute.get { request async throws -> PageResult<MovieResponse> in
+            let pageQuery = try request.query.decode(PageQuery.self)
+            let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
+            let movies = try await request.commands.movies.list(input)
+            let previewIDs = movies.map { $0.$preview.id }
+            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
+            let baseURL = request.baseURL
+            return PageResult(from: movies, limit: input.limit) { movie in
+                MovieResponse(movie: movie, baseURL: baseURL, notes: notesByPreviewID[movie.$preview.id] ?? [])
+            }
+        }
+
         // GET /api/movies/lookup?url=
         moviesRoute.get("lookup") { request async throws -> MovieLookupResponse in
             let url = try request.query.get(String.self, at: "url")

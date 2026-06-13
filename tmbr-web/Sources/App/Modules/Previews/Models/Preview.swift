@@ -1,3 +1,4 @@
+import Core
 import Fluent
 import Vapor
 import Foundation
@@ -38,8 +39,8 @@ final class Preview: Model, @unchecked Sendable {
     @Field(key: "external_links")
     var externalLinks: [String]
 
-    @Timestamp(key: "created_at", on: .create)
-    private(set) var createdAt: Date?
+    @Field(key: "created_at")
+    private(set) var createdAt: Date
 
     @Timestamp(key: "updated_at", on: .update)
     private(set) var updatedAt: Date?
@@ -67,6 +68,11 @@ final class Preview: Model, @unchecked Sendable {
         self.parentAccess = parentAccess
         self.$parentOwner.id = parentOwner
         self.$catalogueCategory.id = categoryID
+        self.createdAt = .now
     }
+}
+
+extension Preview: TimestampedModel {
+    static var createdAtPath: KeyPath<Preview, FieldProperty<Preview, Date>> { \.$createdAt }
 }
 
