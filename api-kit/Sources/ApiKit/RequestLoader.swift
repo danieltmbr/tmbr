@@ -11,7 +11,11 @@ public final class RequestLoader<R: Request>: Sendable {
         request: R,
         session: URLSession = .shared,
         auth: AuthProvider? = nil,
-        decoder: JSONDecoder = JSONDecoder(),
+        decoder: JSONDecoder = {
+            let d = JSONDecoder()
+            d.dateDecodingStrategy = .iso8601
+            return d
+        }(),
         encoder: JSONEncoder = JSONEncoder()
     ) {
         self.request = request

@@ -2,6 +2,6 @@
 
 PRODUCT_BUNDLE_IDENTIFIER = me.tmbr.dev
 APP_DISPLAY_NAME = tmbr dev
-API_BASE_URL = https:$()/$()/10bb-2a01-4b00-bf22-e100-fd4d-5430-b41a-d74.ngrok-free.app
+API_BASE_URL = https:$()/$()/fc24-31-94-4-136.ngrok-free.app
 SIWA_NATIVE_APP_ID = me.tmbr.dev
-WEB_CREDENTIALS_DOMAIN = 10bb-2a01-4b00-bf22-e100-fd4d-5430-b41a-d74.ngrok-free.app
+WEB_CREDENTIALS_DOMAIN = https://fc24-31-94-4-136.ngrok-free.app

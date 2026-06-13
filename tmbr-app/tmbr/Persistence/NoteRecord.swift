@@ -23,8 +23,11 @@ final class NoteRecord {
     var createdAt: Date
     var syncStateRaw: String     // SyncState.rawValue
 
-    // Denormalised attachment — mirrors NoteResponse.attachment (PreviewResponse)
-    var attachmentID: UUID
+    // Denormalised attachment — mirrors NoteResponse.attachment (PreviewResponse).
+    // `attachmentPreviewID` is only set for notes created locally (where the user
+    // picks a CatalogueItemRecord); notes synced from the server leave it nil.
+    // Stage 4 push logic uses it to call POST /api/catalogue/item/:previewID/notes.
+    var attachmentPreviewID: UUID?
     var attachmentTitle: String
     var attachmentSubtitle: String?
     var attachmentCategoryType: String?   // "song" | "book" | "recipe" | etc.
@@ -38,7 +41,7 @@ final class NoteRecord {
         languageRaw: String,
         createdAt: Date = .now,
         syncState: SyncState = .pendingCreate,
-        attachmentID: UUID,
+        attachmentPreviewID: UUID? = nil,
         attachmentTitle: String,
         attachmentSubtitle: String? = nil,
         attachmentCategoryType: String? = nil,
@@ -51,7 +54,7 @@ final class NoteRecord {
         self.languageRaw = languageRaw
         self.createdAt = createdAt
         self.syncStateRaw = syncState.rawValue
-        self.attachmentID = attachmentID
+        self.attachmentPreviewID = attachmentPreviewID
         self.attachmentTitle = attachmentTitle
         self.attachmentSubtitle = attachmentSubtitle
         self.attachmentCategoryType = attachmentCategoryType

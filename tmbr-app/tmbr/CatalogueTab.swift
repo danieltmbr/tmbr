@@ -1,7 +1,20 @@
 import SwiftUI
+import SwiftData
 
 struct CatalogueTab: View {
-    @Environment(AuthState.self) private var authState
+
+    @Query(sort: \CatalogueItemRecord.title)
+    private var items: [CatalogueItemRecord]
+
+    @Catalogue(\.isSyncing)
+    private var isSyncing
+
+    @Environment(\.syncCatalogue)
+    private var syncCatalogue
+
+    @Environment(AuthState.self)
+    private var authState
+
     @State private var showAccount = false
     @State private var showFilter = false
     @State private var showTypePicker = false
@@ -11,61 +24,53 @@ struct CatalogueTab: View {
 
     var body: some View {
         NavigationStack {
-            List(placeholderItems) { item in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(item.primaryInfo)
-                    Text(item.secondaryInfo)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+            List {
+                if items.isEmpty && isSyncing {
+                    ContentUnavailableView("Loading…", systemImage: "arrow.trianglehead.2.clockwise")
+                } else {
+                    ForEach(items) { item in
+                        CatalogueItemRow(item: item)
+                    }
                 }
             }
             .navigationTitle("Catalogue")
             .toolbar {
 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showFilter = true
-                    } label: {
+                    Button { showFilter = true } label: {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
                 }
                 if authState.isSignedIn {
                     ToolbarSpacer(.fixed, placement: .topBarLeading)
                     ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showTypePicker = true
-                        } label: {
+                        Button { showTypePicker = true } label: {
                             Image(systemName: "square.and.pencil")
                         }
                     }
                 }
 #else
                 ToolbarItem(placement: .automatic) {
-                    Button {
-                        showFilter = true
-                    } label: {
+                    Button { showFilter = true } label: {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
                 }
                 if authState.isSignedIn {
                     ToolbarItem(placement: .primaryAction) {
-                        Button {
-                            showTypePicker = true
-                        } label: {
+                        Button { showTypePicker = true } label: {
                             Image(systemName: "square.and.pencil")
                         }
                     }
                 }
 #endif
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showAccount = true
-                    } label: {
+                    Button { showAccount = true } label: {
                         Image(systemName: authState.isSignedIn ? "person.circle.fill" : "person.circle")
                     }
                 }
             }
         }
+        .task { await syncCatalogue() }
         .sheet(isPresented: $showAccount) {
             AccountSheet()
                 .environment(authState)
@@ -87,21 +92,19 @@ struct CatalogueTab: View {
             if type != nil { showEditor = true }
         }
     }
+}
 
-    private struct PreviewItem: Identifiable {
-        let id = UUID()
-        let primaryInfo: String
-        let secondaryInfo: String
+private struct CatalogueItemRow: View {
+    let item: CatalogueItemRecord
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(item.title)
+            if let subtitle = item.subtitle {
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
-
-    private let placeholderItems: [PreviewItem] = [
-        .init(primaryInfo: "The Glow Pt. 2", secondaryInfo: "The Microphones"),
-        .init(primaryInfo: "Parable of the Sower", secondaryInfo: "Octavia Butler"),
-        .init(primaryInfo: "Stranger in the Alps", secondaryInfo: "Phoebe Bridgers"),
-        .init(primaryInfo: "Arrival", secondaryInfo: "Denis Villeneuve"),
-        .init(primaryInfo: "Radiolab", secondaryInfo: "Season 22, Ep. 4"),
-        .init(primaryInfo: "Late Night Playlist", secondaryInfo: "Playlist"),
-        .init(primaryInfo: "Normal People", secondaryInfo: "Sally Rooney"),
-        .init(primaryInfo: "Javelin", secondaryInfo: "Sufjan Stevens"),
-    ]
 }

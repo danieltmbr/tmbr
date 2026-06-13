@@ -1,0 +1,463 @@
+import Foundation
+import SwiftData
+import TmbrCore
+import ApiKit
+
+/// Orchestrates delta sync between the backend API and the local SwiftData store.
+///
+/// Data flow: network response → upsert into ModelContext → @Query in views auto-updates.
+/// Nothing goes to the UI directly from the network.
+///
+/// Push logic (Stage 4) is scaffolded here as no-ops so the model compiles.
+@MainActor
+final class SyncEngine {
+
+    private let authState: AuthState
+    private let modelContext: ModelContext
+    private let baseURL: URL
+
+    private let lastSyncAtKey = "SyncEngine.lastSyncAt"
+    private var lastSyncAt: Date? {
+        get { UserDefaults.standard.object(forKey: lastSyncAtKey) as? Date }
+        set { UserDefaults.standard.set(newValue, forKey: lastSyncAtKey) }
+    }
+
+    init(authState: AuthState, modelContext: ModelContext, baseURL: URL) {
+        self.authState = authState
+        self.modelContext = modelContext
+        self.baseURL = baseURL
+    }
+
+    // MARK: - Public interface
+
+    /// Fast path: called on every launch and `scenePhase → .active`.
+    /// Pushes pending local changes first, then fetches only items newer than `lastSyncAt`.
+    func syncDelta() async throws {
+        let since = lastSyncAt
+        // Stage 4: try await pushPending()
+        try await fetchAll(since: since)
+        lastSyncAt = .now
+    }
+
+    /// Slow path: fetches all history regardless of last sync. Used for full sync from Settings.
+    func syncFull() async throws {
+        try await fetchAll(since: nil)
+        lastSyncAt = .now
+    }
+
+    // MARK: - Stage 4 scaffolding
+
+    func pushPending() async throws {
+        // Implemented in Stage 4
+    }
+
+    // MARK: - Parallel fetch
+
+    private func fetchAll(since: Date?) async throws {
+        async let notes     = fetchNotes(since: since)
+        async let posts     = fetchPosts(since: since)
+        async let songs     = fetchSongs(since: since)
+        async let albums    = fetchAlbums(since: since)
+        async let books     = fetchBooks(since: since)
+        async let movies    = fetchMovies(since: since)
+        async let podcasts  = fetchPodcasts(since: since)
+        async let playlists = fetchPlaylists(since: since)
+        async let orphans   = fetchOrphans(since: since)
+
+        let (n, p, s, al, b, mv, po, pl, or) = try await (
+            notes, posts, songs, albums, books, movies, podcasts, playlists, orphans
+        )
+
+        upsertNotes(n)
+        upsertPosts(p)
+        upsertCatalogueItems(songs: s, albums: al, books: b, movies: mv, podcasts: po, playlists: pl)
+        upsertOrphans(or)
+    }
+
+    // MARK: - Network fetch helpers
+
+    private func fetchAll<T: Decodable & Sendable>(
+        loader: RequestLoader<BasicRequest<PageQuery, PageResult<T>>>,
+        since: Date?
+    ) async throws -> [T] {
+        var all: [T] = []
+        var cursor: String? = nil
+        var hasMore = true
+        while hasMore {
+            let query = PageQuery(since: all.isEmpty ? since : nil, cursor: cursor, limit: 50)
+            let page = try await loader.load(from: query)
+            all.append(contentsOf: page.items)
+            cursor = page.nextCursor
+            hasMore = page.hasMore
+        }
+        return all
+    }
+
+    private func fetchNotes(since: Date?) async throws -> [NoteResponse] {
+        try await fetchAll(
+            loader: authState.loader(for: BasicRequest<PageQuery, PageResult<NoteResponse>>.query(baseURL: baseURL, path: "/api/notes")),
+            since: since
+        )
+    }
+
+    private func fetchPosts(since: Date?) async throws -> [PostResponse] {
+        try await fetchAll(
+            loader: authState.loader(for: BasicRequest<PageQuery, PageResult<PostResponse>>.query(baseURL: baseURL, path: "/api/posts")),
+            since: since
+        )
+    }
+
+    private func fetchSongs(since: Date?) async throws -> [SongResponse] {
+        try await fetchAll(
+            loader: authState.loader(for: BasicRequest<PageQuery, PageResult<SongResponse>>.query(baseURL: baseURL, path: "/api/songs")),
+            since: since
+        )
+    }
+
+    private func fetchAlbums(since: Date?) async throws -> [AlbumResponse] {
+        try await fetchAll(
+            loader: authState.loader(for: BasicRequest<PageQuery, PageResult<AlbumResponse>>.query(baseURL: baseURL, path: "/api/albums")),
+            since: since
+        )
+    }
+
+    private func fetchBooks(since: Date?) async throws -> [BookResponse] {
+        try await fetchAll(
+            loader: authState.loader(for: BasicRequest<PageQuery, PageResult<BookResponse>>.query(baseURL: baseURL, path: "/api/books")),
+            since: since
+        )
+    }
+
+    private func fetchMovies(since: Date?) async throws -> [MovieResponse] {
+        try await fetchAll(
+            loader: authState.loader(for: BasicRequest<PageQuery, PageResult<MovieResponse>>.query(baseURL: baseURL, path: "/api/movies")),
+            since: since
+        )
+    }
+
+    private func fetchPodcasts(since: Date?) async throws -> [PodcastResponse] {
+        try await fetchAll(
+            loader: authState.loader(for: BasicRequest<PageQuery, PageResult<PodcastResponse>>.query(baseURL: baseURL, path: "/api/podcasts")),
+            since: since
+        )
+    }
+
+    private func fetchPlaylists(since: Date?) async throws -> [PlaylistResponse] {
+        try await fetchAll(
+            loader: authState.loader(for: BasicRequest<PageQuery, PageResult<PlaylistResponse>>.query(baseURL: baseURL, path: "/api/playlists")),
+            since: since
+        )
+    }
+
+    private func fetchOrphans(since: Date?) async throws -> [PreviewResponse] {
+        try await fetchAll(
+            loader: authState.loader(for: BasicRequest<PageQuery, PageResult<PreviewResponse>>.query(baseURL: baseURL, path: "/api/catalogue/orphans")),
+            since: since
+        )
+    }
+
+    // MARK: - Upsert helpers
+
+    private func upsertNotes(_ responses: [NoteResponse]) {
+        let serverIDs = Set(responses.map(\.id))
+
+        // Delete synced records absent from the server response
+        let allSynced = (try? modelContext.fetch(FetchDescriptor<NoteRecord>())) ?? []
+        for record in allSynced {
+            guard let sid = record.serverID, record.syncState == .synced else { continue }
+            if !serverIDs.contains(sid) { modelContext.delete(record) }
+        }
+
+        let existing = Dictionary(
+            uniqueKeysWithValues: allSynced.compactMap { r in r.serverID.map { ($0, r) } }
+        )
+
+        for response in responses {
+            if let record = existing[response.id] {
+                guard record.syncState == .synced else { continue }
+                record.body = response.body
+                record.accessRaw = response.access.rawValue
+                record.languageRaw = response.language.rawValue
+                record.createdAt = response.created
+                record.attachmentTitle = response.attachment.primaryInfo
+                record.attachmentSubtitle = response.attachment.secondaryInfo
+                record.attachmentCategoryType = response.attachment.source.type
+                record.attachmentSourceID = response.attachment.source.id
+            } else {
+                let record = NoteRecord(
+                    serverID: response.id,
+                    body: response.body,
+                    accessRaw: response.access.rawValue,
+                    languageRaw: response.language.rawValue,
+                    createdAt: response.created,
+                    syncState: .synced,
+                    attachmentTitle: response.attachment.primaryInfo,
+                    attachmentSubtitle: response.attachment.secondaryInfo,
+                    attachmentCategoryType: response.attachment.source.type,
+                    attachmentSourceID: response.attachment.source.id
+                )
+                modelContext.insert(record)
+            }
+        }
+    }
+
+    private func upsertPosts(_ responses: [PostResponse]) {
+        let serverIDs = Set(responses.compactMap(\.id))
+        let allSynced = (try? modelContext.fetch(FetchDescriptor<PostRecord>())) ?? []
+        for record in allSynced {
+            guard let sid = record.serverID, record.syncState == .synced else { continue }
+            if !serverIDs.contains(sid) { modelContext.delete(record) }
+        }
+        let existing = Dictionary(
+            uniqueKeysWithValues: allSynced.compactMap { r in r.serverID.map { ($0, r) } }
+        )
+        for response in responses {
+            guard let responseID = response.id else { continue }
+            if let record = existing[responseID] {
+                guard record.syncState == .synced else { continue }
+                record.title = response.title
+                record.content = response.content
+                record.stateRaw = response.state.rawValue
+                record.languageRaw = response.language.rawValue
+                record.createdAt = response.createdAt
+                record.publishedAt = response.publishedAt
+            } else {
+                let record = PostRecord(
+                    serverID: responseID,
+                    title: response.title,
+                    content: response.content,
+                    stateRaw: response.state.rawValue,
+                    languageRaw: response.language.rawValue,
+                    createdAt: response.createdAt,
+                    publishedAt: response.publishedAt,
+                    syncState: .synced
+                )
+                modelContext.insert(record)
+            }
+        }
+    }
+
+    private func upsertCatalogueItems(
+        songs: [SongResponse], albums: [AlbumResponse], books: [BookResponse],
+        movies: [MovieResponse], podcasts: [PodcastResponse], playlists: [PlaylistResponse]
+    ) {
+        upsertTyped(songs,     type: "song")     { SongRecord(song: $0) }
+        upsertTyped(albums,    type: "album")    { AlbumRecord(album: $0) }
+        upsertTyped(books,     type: "book")     { BookRecord(book: $0) }
+        upsertTyped(movies,    type: "movie")    { MovieRecord(movie: $0) }
+        upsertTyped(podcasts,  type: "podcast")  { PodcastRecord(podcast: $0) }
+        upsertTyped(playlists, type: "playlist") { PlaylistRecord(playlist: $0) }
+    }
+
+    private func upsertTyped<T: CatalogueItemResponse, R: CatalogueItemRecord>(
+        _ responses: [T],
+        type categoryType: String,
+        make: (T) -> R
+    ) {
+        let all = (try? modelContext.fetch(FetchDescriptor<R>())) ?? []
+        let existing = Dictionary(uniqueKeysWithValues: all.compactMap { r in r.sourceID.map { ($0, r) } })
+        for response in responses {
+            guard let sourceID = response.sourceID else { continue }
+            if let record = existing[sourceID] {
+                response.apply(to: record)
+            } else {
+                let record = make(response)
+                modelContext.insert(record)
+            }
+        }
+    }
+
+    private func upsertOrphans(_ responses: [PreviewResponse]) {
+        let all = (try? modelContext.fetch(FetchDescriptor<OrphanRecord>())) ?? []
+        // Orphans are identified by sourceType (their category slug) + primaryInfo
+        // since they have no backing model Int ID. For simplicity, use primaryInfo as key.
+        let existing = Dictionary(grouping: all, by: \.title).compactMapValues(\.first)
+        for response in responses {
+            if existing[response.primaryInfo] == nil {
+                let record = OrphanRecord(
+                    id: UUID(),
+                    title: response.primaryInfo,
+                    subtitle: response.secondaryInfo,
+                    categoryType: response.source.type,
+                    imageURL: response.image?.url,
+                    thumbnailURL: response.image?.thumbnailUrl
+                )
+                modelContext.insert(record)
+            }
+        }
+    }
+}
+
+// MARK: - Protocol for typed catalogue item upsert
+
+private protocol CatalogueItemResponse {
+    var sourceID: Int? { get }
+    var title: String { get }
+    var subtitle: String? { get }
+    var imageURL: String? { get }
+    var thumbnailURL: String? { get }
+    var genre: String? { get }
+    var releaseDate: Date? { get }
+    func apply(to record: CatalogueItemRecord)
+}
+
+extension SongResponse: CatalogueItemResponse {
+    var sourceID: Int? { id }
+    var subtitle: String? { artist }
+    var imageURL: String? { artwork?.url }
+    var thumbnailURL: String? { artwork?.thumbnailUrl }
+    var genre: String? { genre }
+    var releaseDate: Date? { releaseDate }
+    func apply(to record: CatalogueItemRecord) {
+        record.title = title
+        record.subtitle = artist
+        record.imageURL = artwork?.url
+        record.thumbnailURL = artwork?.thumbnailUrl
+        record.genre = genre
+        record.releaseDate = releaseDate
+        record.accessRaw = access.rawValue
+        record.lastFetchedAt = .now
+        if let r = record as? SongRecord { r.artist = artist; r.albumTitle = album }
+    }
+}
+
+extension AlbumResponse: CatalogueItemResponse {
+    var sourceID: Int? { id }
+    var subtitle: String? { artist }
+    var imageURL: String? { artwork?.url }
+    var thumbnailURL: String? { artwork?.thumbnailUrl }
+    func apply(to record: CatalogueItemRecord) {
+        record.title = title; record.subtitle = artist
+        record.imageURL = artwork?.url; record.thumbnailURL = artwork?.thumbnailUrl
+        record.genre = genre; record.releaseDate = releaseDate
+        record.accessRaw = access.rawValue; record.lastFetchedAt = .now
+        if let r = record as? AlbumRecord { r.artist = artist }
+    }
+}
+
+extension BookResponse: CatalogueItemResponse {
+    var sourceID: Int? { id }
+    var subtitle: String? { author }
+    var imageURL: String? { cover?.url }
+    var thumbnailURL: String? { cover?.thumbnailUrl }
+    func apply(to record: CatalogueItemRecord) {
+        record.title = title; record.subtitle = author
+        record.imageURL = cover?.url; record.thumbnailURL = cover?.thumbnailUrl
+        record.genre = genre; record.releaseDate = releaseDate
+        record.accessRaw = access.rawValue; record.lastFetchedAt = .now
+        if let r = record as? BookRecord { r.author = author }
+    }
+}
+
+extension MovieResponse: CatalogueItemResponse {
+    var sourceID: Int? { id }
+    var subtitle: String? { director }
+    var imageURL: String? { cover?.url }
+    var thumbnailURL: String? { cover?.thumbnailUrl }
+    func apply(to record: CatalogueItemRecord) {
+        record.title = title; record.subtitle = director
+        record.imageURL = cover?.url; record.thumbnailURL = cover?.thumbnailUrl
+        record.genre = genre; record.releaseDate = releaseDate
+        record.accessRaw = access.rawValue; record.lastFetchedAt = .now
+        if let r = record as? MovieRecord { r.director = director }
+    }
+}
+
+extension PodcastResponse: CatalogueItemResponse {
+    var sourceID: Int? { id }
+    var subtitle: String? { nil }
+    var imageURL: String? { artwork?.url }
+    var thumbnailURL: String? { artwork?.thumbnailUrl }
+    func apply(to record: CatalogueItemRecord) {
+        record.title = title
+        record.imageURL = artwork?.url; record.thumbnailURL = artwork?.thumbnailUrl
+        record.genre = genre; record.releaseDate = releaseDate
+        record.accessRaw = access.rawValue; record.lastFetchedAt = .now
+    }
+}
+
+extension PlaylistResponse: CatalogueItemResponse {
+    var sourceID: Int? { id }
+    var subtitle: String? { nil }
+    var imageURL: String? { artwork?.url }
+    var thumbnailURL: String? { artwork?.thumbnailUrl }
+    var genre: String? { nil }
+    var releaseDate: Date? { nil }
+    func apply(to record: CatalogueItemRecord) {
+        record.title = title
+        record.imageURL = artwork?.url; record.thumbnailURL = artwork?.thumbnailUrl
+        record.accessRaw = access.rawValue; record.lastFetchedAt = .now
+    }
+}
+
+// MARK: - CatalogueItemRecord convenience inits for typed responses
+
+private extension SongRecord {
+    convenience init(song: SongResponse) {
+        self.init(id: UUID(), title: song.title, subtitle: song.artist,
+                  categoryType: "song", sourceID: song.id,
+                  imageURL: song.artwork?.url, thumbnailURL: song.artwork?.thumbnailUrl,
+                  syncState: .synced)
+        self.artist = song.artist; self.albumTitle = song.album
+        self.genre = song.genre; self.releaseDate = song.releaseDate
+        self.accessRaw = song.access.rawValue; self.detailFetchedAt = .now
+    }
+}
+
+private extension AlbumRecord {
+    convenience init(album: AlbumResponse) {
+        self.init(id: UUID(), title: album.title, subtitle: album.artist,
+                  categoryType: "album", sourceID: album.id,
+                  imageURL: album.artwork?.url, thumbnailURL: album.artwork?.thumbnailUrl,
+                  syncState: .synced)
+        self.artist = album.artist
+        self.genre = album.genre; self.releaseDate = album.releaseDate
+        self.accessRaw = album.access.rawValue; self.detailFetchedAt = .now
+    }
+}
+
+private extension BookRecord {
+    convenience init(book: BookResponse) {
+        self.init(id: UUID(), title: book.title, subtitle: book.author,
+                  categoryType: "book", sourceID: book.id,
+                  imageURL: book.cover?.url, thumbnailURL: book.cover?.thumbnailUrl,
+                  syncState: .synced)
+        self.author = book.author
+        self.genre = book.genre; self.releaseDate = book.releaseDate
+        self.accessRaw = book.access.rawValue; self.detailFetchedAt = .now
+    }
+}
+
+private extension MovieRecord {
+    convenience init(movie: MovieResponse) {
+        self.init(id: UUID(), title: movie.title, subtitle: movie.director,
+                  categoryType: "movie", sourceID: movie.id,
+                  imageURL: movie.cover?.url, thumbnailURL: movie.cover?.thumbnailUrl,
+                  syncState: .synced)
+        self.director = movie.director
+        self.genre = movie.genre; self.releaseDate = movie.releaseDate
+        self.accessRaw = movie.access.rawValue; self.detailFetchedAt = .now
+    }
+}
+
+private extension PodcastRecord {
+    convenience init(podcast: PodcastResponse) {
+        self.init(id: UUID(), title: podcast.title,
+                  categoryType: "podcast", sourceID: podcast.id,
+                  imageURL: podcast.artwork?.url, thumbnailURL: podcast.artwork?.thumbnailUrl,
+                  syncState: .synced)
+        self.genre = podcast.genre
+        self.accessRaw = podcast.access.rawValue; self.detailFetchedAt = .now
+    }
+}
+
+private extension PlaylistRecord {
+    convenience init(playlist: PlaylistResponse) {
+        self.init(id: UUID(), title: playlist.title,
+                  categoryType: "playlist", sourceID: playlist.id,
+                  imageURL: playlist.artwork?.url, thumbnailURL: playlist.artwork?.thumbnailUrl,
+                  syncState: .synced)
+        self.playlistDescription = playlist.description
+        self.accessRaw = playlist.access.rawValue; self.detailFetchedAt = .now
+    }
+}
