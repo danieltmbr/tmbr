@@ -2,8 +2,9 @@
 #for(preview in previews):
     <a href="#(preview.href)"><li>
         <span>
-            <span class="primary-info">#(preview.primaryInfo)#if(preview.secondaryInfo): #(preview.secondaryInfo)#endif</span>
-            #if(preview.isNoteMatch):<span class="note-badge">[in notes]</span>#endif
+            <span class="primary-info">#(preview.primaryInfo)</span>
+            #if(preview.secondaryInfo): <span class="secondary-info">#(preview.secondaryInfo)</span>#endif
+            #if(preview.isNoteMatch):<span class="note-badge"> [in notes]</span>#endif
         </span>
         <span class="published-date">#(preview.created)</span>
     </li></a>

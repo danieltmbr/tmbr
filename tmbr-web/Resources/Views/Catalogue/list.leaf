@@ -13,8 +13,12 @@
         #endif
     #endexport
     #export("main"):
-        #extend("Shared/signature")
+        <a href="/" alt="Home page">
+            #extend("Shared/signature")
+        </a>
+        #extend("Shared/site-navigation")
         <section>
+            <h1>#(pageTitle)</h1>
             <nav>
                 #extend("Shared/search")
                 #if(panels):#extend("Panels/filter")#endif

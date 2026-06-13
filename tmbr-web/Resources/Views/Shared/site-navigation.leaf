@@ -1,0 +1,4 @@
+<nav class="site-navigation">
+    <a href="/posts">Blog</a>
+    <a href="/catalogue">Catalogue</a>
+</nav>

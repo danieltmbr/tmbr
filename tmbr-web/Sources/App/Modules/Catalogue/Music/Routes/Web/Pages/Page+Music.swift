@@ -17,6 +17,7 @@ extension Page {
             let resolved = try await result
             let typeItems = [FilterItemViewModel].music.map { $0.check(payload.types?.contains($0.value) ?? true) }
             return CatalogueListViewModel(
+                pageTitle: "Music",
                 compose: compose,
                 panels: [.types(typeItems)],
                 term: payload.term,

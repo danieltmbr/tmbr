@@ -132,7 +132,8 @@ main section a span.post-date {
  ------------------------------------------------
  */
 
-body > main > svg {
+body > main > svg,
+body > main > a > svg {
     margin-bottom: 20px;
 }
 
@@ -497,6 +498,29 @@ main > section > ul > a > li span.primary-info {
     text-decoration-thickness: 1px;
 }
 
+main > section > ul > a > li span.secondary-info {
+    text-decoration: none;
+    font-size: 1.4rem;
+    opacity: 0.7;
+    text-decoration: none;
+}
+
+nav.site-navigation {
+    display: flex;
+    gap: 1em;
+    max-width: 600px;
+    width: 100%;
+    font-weight: 500;
+}
+
+nav.site-navigation a {
+    color: inherit;
+}
+
+nav.site-navigation a:hover {
+    color: LinkText;
+}
+
 /*
  ------------------------------------------------
  Panels
@@ -596,7 +620,6 @@ main > section > nav {
     align-items: center;
     width: 100%;
     max-width: 600px;
-    margin-top: 2em;
 }
 
 main > section > nav > form {

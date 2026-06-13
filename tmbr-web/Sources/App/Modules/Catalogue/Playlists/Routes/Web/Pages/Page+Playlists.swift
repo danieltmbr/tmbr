@@ -15,6 +15,7 @@ extension Page {
             let baseURL = req.baseURL
             let resolved = try await result
             return CatalogueListViewModel(
+                pageTitle: "Catalogue",
                 compose: compose,
                 term: term,
                 previews: resolved.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }

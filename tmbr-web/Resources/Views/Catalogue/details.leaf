@@ -1,6 +1,7 @@
 #extend("Shared/page"):
 
     #export("main"):
+        #extend("Shared/site-navigation")
         <article>
             <header>
                 #import("detail-header")
