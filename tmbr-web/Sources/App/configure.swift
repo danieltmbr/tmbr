@@ -22,10 +22,15 @@ func configure(_ app: Application) async throws {
             .previews,
             .notes,
             .posts,
-            .deletions,
             .catalogue
         ]
     )
     try await registry.configure(app)
+
+    app.migrations.add(CreateDeletion())
+    try await app.permissions.add(scope: PermissionScopes.Deletions())
+    try await app.commands.add(collection: Commands.Deletions())
+
     try await registry.boot(app.routes)
+    try app.routes.register(collection: DeletionsAPIController())
 }
