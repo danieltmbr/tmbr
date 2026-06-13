@@ -5,4 +5,5 @@ extension EnvironmentValues {
     @Entry var createPost: CreatePostAction = CreatePostAction()
     @Entry var updatePost: UpdatePostAction = UpdatePostAction()
     @Entry var deletePost: DeletePostAction = DeletePostAction()
+    @Entry var loadMorePosts: LoadMorePostsAction = LoadMorePostsAction()
 }

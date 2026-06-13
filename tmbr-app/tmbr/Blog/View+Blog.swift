@@ -7,5 +7,6 @@ extension View {
             .environment(\.createPost, CreatePostAction(syncEngine: model.syncEngine))
             .environment(\.updatePost, UpdatePostAction(syncEngine: model.syncEngine))
             .environment(\.deletePost, DeletePostAction(syncEngine: model.syncEngine))
+            .environment(\.loadMorePosts, LoadMorePostsAction(model: model))
     }
 }

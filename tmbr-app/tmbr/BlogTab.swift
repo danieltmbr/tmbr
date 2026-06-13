@@ -6,20 +6,16 @@ struct BlogTab: View {
     @Query(sort: \PostRecord.createdAt, order: .reverse)
     private var posts: [PostRecord]
 
-    @Blog(\.isSyncing)
-    private var isSyncing
+    @Blog(\.isSyncing)      private var isSyncing
+    @Blog(\.syncError)      private var syncError
+    @Blog(\.hasMorePosts)   private var hasMorePosts
+    @Blog(\.isLoadingMore)  private var isLoadingMore
 
-    @Environment(\.syncBlog)
-    private var syncBlog
-
-    @Environment(\.deletePost)
-    private var deletePost
-
-    @Environment(AuthState.self)
-    private var authState
-
-    @Environment(\.modelContext)
-    private var modelContext
+    @Environment(\.syncBlog)      private var syncBlog
+    @Environment(\.loadMorePosts) private var loadMorePosts
+    @Environment(\.deletePost)    private var deletePost
+    @Environment(AuthState.self)  private var authState
+    @Environment(\.modelContext)  private var modelContext
 
     @State private var showAccount = false
     @State private var showEditor = false
@@ -28,6 +24,8 @@ struct BlogTab: View {
     var body: some View {
         NavigationStack {
             List {
+                syncErrorBanner
+
                 if posts.isEmpty && isSyncing {
                     ContentUnavailableView("Loading…", systemImage: "arrow.trianglehead.2.clockwise")
                 } else {
@@ -47,8 +45,13 @@ struct BlogTab: View {
                                 .tint(.blue)
                             }
                     }
+
+                    if hasMorePosts {
+                        loadMoreRow
+                    }
                 }
             }
+            .refreshable { await syncBlog() }
             .navigationTitle("Blog")
             .toolbar {
 #if os(iOS)
@@ -86,6 +89,38 @@ struct BlogTab: View {
         .sheet(item: $postToEdit) { post in
             BlogEditorView(post: post)
         }
+    }
+
+    @ViewBuilder private var syncErrorBanner: some View {
+        if let error = syncError {
+            HStack {
+                Image(systemName: "exclamationmark.triangle")
+                    .foregroundStyle(.orange)
+                Text(error.localizedDescription)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Retry") { Task { await syncBlog() } }
+                    .font(.caption)
+            }
+            .listRowBackground(Color.orange.opacity(0.1))
+        }
+    }
+
+    @ViewBuilder private var loadMoreRow: some View {
+        HStack {
+            Spacer()
+            if isLoadingMore {
+                ProgressView()
+            } else {
+                Button("Load Older Posts") {
+                    Task { await loadMorePosts() }
+                }
+                .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+        .task { await loadMorePosts() }
     }
 }
 

@@ -6,14 +6,14 @@ struct CatalogueTab: View {
     @Query(sort: \CatalogueItemRecord.title)
     private var items: [CatalogueItemRecord]
 
-    @Catalogue(\.isSyncing)
-    private var isSyncing
+    @Catalogue(\.isSyncing)     private var isSyncing
+    @Catalogue(\.syncError)     private var syncError
+    @Catalogue(\.hasMoreItems)  private var hasMoreItems
+    @Catalogue(\.isLoadingMore) private var isLoadingMore
 
-    @Environment(\.syncCatalogue)
-    private var syncCatalogue
-
-    @Environment(AuthState.self)
-    private var authState
+    @Environment(\.syncCatalogue)           private var syncCatalogue
+    @Environment(\.loadMoreCatalogueItems)  private var loadMoreCatalogueItems
+    @Environment(AuthState.self)            private var authState
 
     @State private var showAccount = false
     @State private var showFilter = false
@@ -25,6 +25,8 @@ struct CatalogueTab: View {
     var body: some View {
         NavigationStack {
             List {
+                syncErrorBanner
+
                 if items.isEmpty && isSyncing {
                     ContentUnavailableView("Loading…", systemImage: "arrow.trianglehead.2.clockwise")
                 } else {
@@ -33,8 +35,13 @@ struct CatalogueTab: View {
                             CatalogueItemRow(item: item)
                         }
                     }
+
+                    if hasMoreItems {
+                        loadMoreRow
+                    }
                 }
             }
+            .refreshable { await syncCatalogue() }
             .navigationTitle("Catalogue")
             .toolbar {
 #if os(iOS)
@@ -93,6 +100,38 @@ struct CatalogueTab: View {
         .onChange(of: selectedType) { _, type in
             if type != nil { showEditor = true }
         }
+    }
+
+    @ViewBuilder private var syncErrorBanner: some View {
+        if let error = syncError {
+            HStack {
+                Image(systemName: "exclamationmark.triangle")
+                    .foregroundStyle(.orange)
+                Text(error.localizedDescription)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Retry") { Task { await syncCatalogue() } }
+                    .font(.caption)
+            }
+            .listRowBackground(Color.orange.opacity(0.1))
+        }
+    }
+
+    @ViewBuilder private var loadMoreRow: some View {
+        HStack {
+            Spacer()
+            if isLoadingMore {
+                ProgressView()
+            } else {
+                Button("Load Older Items") {
+                    Task { await loadMoreCatalogueItems() }
+                }
+                .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+        .task { await loadMoreCatalogueItems() }
     }
 }
 

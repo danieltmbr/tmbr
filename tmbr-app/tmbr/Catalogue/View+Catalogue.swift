@@ -7,5 +7,6 @@ extension View {
             .environment(\.createNote, CreateNoteAction(syncEngine: model.syncEngine))
             .environment(\.updateNote, UpdateNoteAction(syncEngine: model.syncEngine))
             .environment(\.deleteNote, DeleteNoteAction(syncEngine: model.syncEngine))
+            .environment(\.loadMoreCatalogueItems, LoadMoreCatalogueItemsAction(model: model))
     }
 }
