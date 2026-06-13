@@ -2,6 +2,7 @@ import AuthKit
 import Fluent
 import Vapor
 import Core
+import TmbrCore
 
 struct Posts: Module {
     
@@ -23,6 +24,12 @@ struct Posts: Module {
         app.migrations.add(AddPostLanguage())
         app.migrations.add(FixLanguageFieldValues())
         app.routes.defaultMaxBodySize = ByteCount(value: 1*1024*1024)
+        app.databases.middleware.use(DeletionMiddleware<Post>(
+            deletionType: .post,
+            itemID: { $0.id.map(String.init) },
+            ownerID: { $0.$author.id },
+            access: { $0.state == .published ? .public : .private }
+        ))
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)
     }

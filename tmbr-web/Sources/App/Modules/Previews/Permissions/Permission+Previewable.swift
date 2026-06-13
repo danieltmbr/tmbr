@@ -40,7 +40,7 @@ extension Permission where Input: Previewable {
 }
 
 extension Permission {
-    
+
     static func query<M: Model, A, O>(
         access: KeyPath<M, A>,
         owner: KeyPath<M, O>
@@ -59,5 +59,6 @@ extension Permission {
             }
         }
     }
+
 }
 

@@ -17,6 +17,19 @@ struct AlbumsAPIController: RouteCollection {
 
         let albumsRoute = routes.grouped("api", "albums")
 
+        // GET /api/albums — paginated list of the authenticated user's albums
+        albumsRoute.get { request async throws -> PageResult<AlbumResponse> in
+            let pageQuery = try request.query.decode(PageQuery.self)
+            let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
+            let albums = try await request.commands.albums.list(input)
+            let previewIDs = albums.map { $0.$preview.id }
+            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
+            let baseURL = request.baseURL
+            return PageResult(from: albums, limit: input.limit) { album in
+                AlbumResponse(album: album, notes: notesByPreviewID[album.$preview.id] ?? [], baseURL: baseURL)
+            }
+        }
+
         // GET /api/albums/lookup?url=...
         albumsRoute.get("lookup") { request async throws -> AlbumLookupResponse in
             let url = try request.query.get(String.self, at: "url")

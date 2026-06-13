@@ -17,6 +17,19 @@ struct PodcastsAPIController: RouteCollection {
 
         let podcastsRoute = routes.grouped("api", "podcasts")
 
+        // GET /api/podcasts — paginated list of the authenticated user's podcasts
+        podcastsRoute.get { request async throws -> PageResult<PodcastResponse> in
+            let pageQuery = try request.query.decode(PageQuery.self)
+            let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
+            let podcasts = try await request.commands.podcasts.list(input)
+            let previewIDs = podcasts.map { $0.$preview.id }
+            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
+            let baseURL = request.baseURL
+            return PageResult(from: podcasts, limit: input.limit) { podcast in
+                PodcastResponse(podcast: podcast, baseURL: baseURL, notes: notesByPreviewID[podcast.$preview.id] ?? [])
+            }
+        }
+
         // GET /api/podcasts/lookup?url=
         podcastsRoute.get("lookup") { request async throws -> PodcastLookupResponse in
             let url = try request.query.get(String.self, at: "url")

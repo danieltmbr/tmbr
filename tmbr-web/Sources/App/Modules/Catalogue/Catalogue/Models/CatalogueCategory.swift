@@ -1,5 +1,6 @@
 import Fluent
 import Foundation
+import TmbrCore
 
 final class CatalogueCategory: Model, @unchecked Sendable {
 
@@ -15,7 +16,7 @@ final class CatalogueCategory: Model, @unchecked Sendable {
     var name: String
 
     @Enum(key: "kind")
-    var kind: Kind
+    var kind: CatalogueCategoryKind
 
     @OptionalField(key: "route")
     var route: String?
@@ -26,19 +27,14 @@ final class CatalogueCategory: Model, @unchecked Sendable {
     @OptionalField(key: "parent_slug")
     var parentSlug: String?
 
-    enum Kind: String, Codable, CaseIterable {
-        case entry       // model-backed items visible in the feed: song, album, book, movie, playlist, podcast
-        case promotable  // shallow placeholder awaiting promotion: track
-        case orphan      // user-defined, no backing model: recipe, guide, link, …
-        case virtual     // display-only grouping of related catalogue types, e.g. music → song/album/playlist
-    }
+    typealias Kind = CatalogueCategoryKind
 
     init() {}
 
     init(
         slug: String,
         name: String,
-        kind: Kind,
+        kind: CatalogueCategoryKind,
         route: String? = nil,
         icon: String? = nil,
         parentSlug: String? = nil
@@ -52,10 +48,3 @@ final class CatalogueCategory: Model, @unchecked Sendable {
     }
 }
 
-extension CatalogueCategory.Kind {
-    /// True for shallow placeholder items (currently: track) that cannot own Notes
-    /// and are expected to be promoted to a first-class catalogue item.
-    /// Use this instead of checking `preview.parentID != nil` — orphan and virtual items
-    /// also have a nil parentID but are not shallow and can have notes.
-    var isShallow: Bool { self == .promotable }
-}

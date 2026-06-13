@@ -17,6 +17,19 @@ struct SongsAPIController: RouteCollection {
 
         let songsRoute = routes.grouped("api", "songs")
 
+        // GET /api/songs — paginated list of the authenticated user's songs
+        songsRoute.get { request async throws -> PageResult<SongResponse> in
+            let pageQuery = try request.query.decode(PageQuery.self)
+            let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
+            let songs = try await request.commands.songs.list(input)
+            let previewIDs = songs.map { $0.$preview.id }
+            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
+            let baseURL = request.baseURL
+            return PageResult(from: songs, limit: input.limit) { song in
+                SongResponse(song: song, notes: notesByPreviewID[song.$preview.id] ?? [], baseURL: baseURL)
+            }
+        }
+
         // GET /api/songs/lookup?url=...
         songsRoute.get("lookup") { request async throws -> SongLookupResponse in
             let url = try request.query.get(String.self, at: "url")

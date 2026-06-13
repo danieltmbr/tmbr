@@ -2,6 +2,7 @@ import Vapor
 import Fluent
 import Core
 import AuthKit
+import TmbrCore
 
 struct Previews: Module {
     
@@ -28,6 +29,12 @@ struct Previews: Module {
         app.migrations.add(MigrateCategoryIDToInteger())
         app.migrations.add(AddCollectionKindAndParentSlug())
         app.migrations.add(RenameCatalogueKinds())
+        app.databases.middleware.use(DeletionMiddleware<Preview>(
+            deletionType: .catalogueItem,
+            itemID: { $0.id?.uuidString },
+            ownerID: { $0.$parentOwner.id },
+            access: { $0.parentAccess }
+        ))
 
         try await app.permissions.add(scope: permissions)
         try await app.commands.add(collection: commands)
