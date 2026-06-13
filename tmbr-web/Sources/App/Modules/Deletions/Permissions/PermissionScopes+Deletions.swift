@@ -7,9 +7,9 @@ extension PermissionScopes {
 extension PermissionScopes {
     struct Deletions: PermissionScope, Sendable {
 
-        let list: AuthPermission<Void>
+        let list: Permission<Void>
 
-        init(list: AuthPermission<Void> = .listDeletions) {
+        init(list: Permission<Void> = .listDeletions) {
             self.list = list
         }
     }

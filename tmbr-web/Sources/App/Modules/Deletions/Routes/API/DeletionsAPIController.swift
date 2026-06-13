@@ -7,7 +7,7 @@ struct DeletionsAPIController: RouteCollection {
         routes.get("api", "sync", "deletions") { req async throws -> [DeletionRecord] in
             let user = try await req.permissions.deletions.list()
             let since = try? req.query.decode(DeletionQuery.self).since
-            let input = ListDeletionsInput(since: since, userID: user.userID)
+            let input = ListDeletionsInput(since: since, userID: user?.userID)
             let deletions = try await req.commands.deletions.list(input)
             return deletions.compactMap { deletion -> DeletionRecord? in
                 guard let type = DeletionType(rawValue: deletion.type) else { return nil }
