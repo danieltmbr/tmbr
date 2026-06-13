@@ -13,7 +13,10 @@
             #extend("Shared/signature")
         </a>
 
+        #extend("Shared/site-navigation")
+
         <section>
+            <h1>Catalogue</h1>
             <nav>
                 #extend("Shared/search")
                 #if(panels):#extend("Panels/filter")#endif

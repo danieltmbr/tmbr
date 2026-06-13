@@ -1,6 +1,7 @@
 #extend("Shared/page"):
     
     #export("main"):
+        #extend("Shared/site-navigation")
         <article>
             <h1>#(title)</h1>
             #unsafeHTML(content)
