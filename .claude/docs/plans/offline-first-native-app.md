@@ -131,7 +131,7 @@ return PageResult(from: models, limit: input.limit) { ThingResponse(thing: $0) }
 - `GET /api/catalogue` — accepts `PageQuery`. `orphanOnly=true` returns only `.orphan` kind items.
 
 **Deletion tombstones (new):**
-- `GET /api/sync/deletions?since=<ISO8601>` — returns `[DeletionRecord]` for all Notes, catalogue items (Previews), and Posts deleted after `since`. No cursor pagination needed — deletions are sparse and always queried since last sync. When a catalogue item is deleted, its Preview deletion cascades through `DeletionMiddleware<Preview>` and produces a `.catalogueItem` tombstone.
+- `GET /api/sync/deletions?since=<ISO8601>` — optional auth. Unauthenticated callers receive tombstones for public deletions only; authenticated callers additionally receive their own private deletions. No cursor pagination — deletions are sparse and always queried since last sync. When a catalogue item is deleted, its Preview deletion cascades through `DeletionMiddleware<Preview>` and produces a `.catalogueItem` tombstone. Each tombstone stores `ownerID` and `access` so the endpoint can filter without joining the original table (which no longer exists for a deleted record).
 
 **Per-type list endpoints:**
 
@@ -159,10 +159,13 @@ All return the owner's items with embedded notes. Sorted by `createdAt DESC` (Pr
 | tmbr-web Core | `Pagination/QueryBuilder+Page.swift` | `TimestampedModel` + `page()` extension |
 | tmbr-web Core | `Pagination/Pagination.swift` | `PageResult` Vapor conformance + builder init |
 | tmbr-web App | `Previews/Models/QueryBuilder+Previewable.swift` | `Previewable` overload of `page()` |
-| tmbr-web App | `Deletions/Models/Deletion.swift` | Tombstone Fluent model |
-| tmbr-web App | `Deletions/Models/Middlewares/DeletionMiddleware.swift` | Generic middleware writing tombstones on delete |
-| tmbr-web App | `Deletions/Routes/API/DeletionsAPIController.swift` | `GET /api/sync/deletions` |
-| tmbr-web App | `Deletions/Deletions.swift` | Module — registers migration + middlewares for Note, Preview, Post |
+| tmbr-web App | `Deletions/Models/Deletion.swift` | Tombstone Fluent model (`ownerID`, `access`, `deletedAt`) |
+| tmbr-web App | `Deletions/Models/Middlewares/DeletionMiddleware.swift` | Generic `AsyncModelMiddleware` — writes tombstone after successful delete |
+| tmbr-web App | `Deletions/Routes/API/DeletionsAPIController.swift` | `GET /api/sync/deletions` (optional auth) |
+| tmbr-web App | `Notes/Notes.swift` | Registers `DeletionMiddleware<Note>` |
+| tmbr-web App | `Previews/Previews.swift` | Registers `DeletionMiddleware<Preview>` |
+| tmbr-web App | `Posts/Posts.swift` | Registers `DeletionMiddleware<Post>` |
+| tmbr-web App | `configure.swift` | Adds `CreateDeletion` migration, permissions, commands, route |
 
 ### Checklist
 
@@ -177,8 +180,8 @@ All return the owner's items with embedded notes. Sorted by `createdAt DESC` (Pr
 - [x] `GET /api/posts` returns `PageResult<PostResponse>` with `PageQuery`
 - [x] `GET /api/catalogue` with `PageQuery` + `orphanOnly` filter
 - [x] `GET /api/songs`, albums, books, movies, podcasts, playlists (all per-type endpoints)
-- [x] `Deletions` module — `CreateDeletion` migration, `DeletionMiddleware`, `DeletionsAPIController`
-- [x] `GET /api/sync/deletions?since=` endpoint
+- [x] `Deletions/` folder — `CreateDeletion` migration, `DeletionMiddleware<M>`, `DeletionsAPIController`; wired via `configure.swift` (not a Module — middleware registrations live in Notes/Previews/Posts modules)
+- [x] `GET /api/sync/deletions?since=` endpoint — optional auth, public-only for guests
 
 ---
 
@@ -374,9 +377,17 @@ App opens
         GET /api/sync/deletions?since=lastSyncAt   → apply DeletionRecord (delete local records)
       save lastSyncAt = .now to UserDefaults
   → @Query auto-updates as records arrive
+
+  → if guest AND offlineSyncEnabled (@AppStorage, default false):
+      in parallel (no auth token):
+        GET /api/posts?since=lastSyncAt            → upsert public PostRecords
+        GET /api/sync/deletions?since=lastSyncAt   → apply public DeletionRecords
+      save lastSyncAt = .now
 ```
 
 With `since` filtering, most requests return 0 items on a typical launch — 10 small parallel requests total.
+
+**Guest sync toggle**: stored as `@AppStorage("offlineSyncEnabled")` on the device — no server involvement. Default is **off** (occasional readers shouldn't have all public content proactively stored). The toggle lives in app Settings. When enabled, guests sync public posts and deletions on launch and scene-active; typed catalogue items and notes are not synced for guests (those require auth to be meaningful).
 
 **First launch** (`lastSyncAt == nil`): same flow, `since` omitted → fetches the most recent 50 items per type. Older history loads via `syncFull()` in Stage 5.
 
