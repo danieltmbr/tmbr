@@ -64,7 +64,14 @@ extension Command where Self == PlainCommand<PreviewQueryInput, [Preview]> {
                     group.filter(\.$secondaryInfo, .custom("ILIKE"), "%\(term)%")
                 }
             }
-            if let since = input.since { query.filter(\.$createdAt > since) }
+            // Delta (`since`) matches items created OR whose notes changed since last sync — note
+            // edits bump updatedAt (see NoteModelMiddleware). Load-more (`before`) stays on createdAt.
+            if let since = input.since {
+                query.group(.or) { or in
+                    or.filter(\.$createdAt > since)
+                    or.filter(\.$updatedAt > since)
+                }
+            }
             if let before = input.before { query.filter(\.$createdAt < before) }
             if let limit = input.limit { query.limit(limit) }
             try await permission.grant(query)

@@ -102,8 +102,18 @@ struct CatalogueAPIController: RouteCollection {
         let input = PreviewQueryInput(kind: .orphan, since: pageQuery.since, before: pageQuery.cursorDate, limit: limit + 1)
         let previews = try await request.commands.previews.list(input)
         let baseURL = request.baseURL
+
+        // ?notes=true embeds each orphan's notes (sync needs them; orphans have no per-type endpoint).
+        let includeNotes = (try? request.query.get(Bool.self, at: "notes")) ?? false
+        let notesByPreviewID: [PreviewID: [Note]] = includeNotes
+            ? try await request.commands.notes.grouped(previews.compactMap(\.id))
+            : [:]
+
         return PageResult(from: previews, limit: limit) { preview in
-            PreviewResponse(preview: preview, baseURL: baseURL)
+            let embedded: [NoteResponse]? = includeNotes
+                ? (preview.id.flatMap { notesByPreviewID[$0] } ?? []).map { NoteResponse(note: $0, baseURL: baseURL) }
+                : nil
+            return PreviewResponse(preview: preview, baseURL: baseURL, notes: embedded)
         }
     }
 
