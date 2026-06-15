@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E2497B602FE1302F00D1B325 /* AppCore in Frameworks */ = {isa = PBXBuildFile; productRef = E2497B5F2FE1302F00D1B325 /* AppCore */; };
 		E27B48712FC58690006866D7 /* TmbrCore in Frameworks */ = {isa = PBXBuildFile; productRef = E27B48722FC58690006866D7 /* TmbrCore */; };
 		E27C0B542FC5FE480055C952 /* ApiKit in Frameworks */ = {isa = PBXBuildFile; productRef = E27C0B532FC5FE480055C952 /* ApiKit */; };
 /* End PBXBuildFile section */
@@ -73,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2497B602FE1302F00D1B325 /* AppCore in Frameworks */,
 				E27C0B542FC5FE480055C952 /* ApiKit in Frameworks */,
 				E27B48712FC58690006866D7 /* TmbrCore in Frameworks */,
 			);
@@ -156,6 +158,7 @@
 			packageProductDependencies = (
 				E27B48722FC58690006866D7 /* TmbrCore */,
 				E27C0B532FC5FE480055C952 /* ApiKit */,
+				E2497B5F2FE1302F00D1B325 /* AppCore */,
 			);
 			productName = tmbr;
 			productReference = E27B47882FC4E864006866D7 /* tmbr.app */;
@@ -242,6 +245,7 @@
 			packageReferences = (
 				E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../tmbr-core" */,
 				E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../api-kit" */,
+				E2497B5E2FE1302F00D1B325 /* XCLocalSwiftPackageReference "AppCore" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E27B47892FC4E864006866D7 /* Products */;
@@ -667,6 +671,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		E2497B5E2FE1302F00D1B325 /* XCLocalSwiftPackageReference "AppCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = AppCore;
+		};
 		E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../tmbr-core" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../tmbr-core";
@@ -678,6 +686,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		E2497B5F2FE1302F00D1B325 /* AppCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AppCore;
+		};
 		E27B48722FC58690006866D7 /* TmbrCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../tmbr-core" */;
