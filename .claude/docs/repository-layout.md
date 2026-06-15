@@ -6,8 +6,25 @@
 |---------|------|------------|
 | `tmbr-core` | Shared Codable/Sendable types. No platform-specific deps. | Swift stdlib only |
 | `tmbr-web` | Vapor backend + Leaf frontend | `tmbr-core`, Vapor, Fluent, Leaf |
-| `tmbr-app` | Native SwiftUI app | `tmbr-core`, `api-kit`, SwiftUI, MusicKit |
+| `tmbr-app` | Native SwiftUI apps (three targets — see below) | `tmbr-core`, `api-kit`, `AppCore`, SwiftUI, MusicKit |
 | `api-kit` | Networking infra (RequestLoader, AuthToken) | Swift stdlib only |
+
+## Native App: three targets over one shared core
+
+`tmbr-app` ships **three apps** from one shared local SPM package (`AppCore`). See
+`.claude/docs/native-apps-architecture.md` for the full design.
+
+| Module / target | Role | Can import |
+|---|---|---|
+| `AppCore` (lib) | SwiftData schema, `@Query` views, `@Observable` models, property wrappers, actions. The composition seam lives here as injected closures. | `tmbr-core`, SwiftData, SwiftUI |
+| `AppBackend` (lib) | api-kit request structs + shared pull/push helpers | `AppCore`, `tmbr-core`, `api-kit` |
+| **Author** (target) | Owner app: offline-first, `SyncEngine` backend sync | `AppCore`, `AppBackend` |
+| **Reader** (target) | Public read-only app: on-demand ETag cache | `AppCore`, `AppBackend` |
+| **Personal** (target) | Private consumer app: `.private` CloudKit, no engine | `AppCore` only (no networking) |
+
+**Hard dependency rule:** `AppCore` must import **neither networking (`api-kit`/`URLSession`) nor
+CloudKit.** That isolation is what lets one core serve all three apps; per-app sync is injected as
+closures at the app layer.
 
 ## What Belongs in `tmbr-core`
 
