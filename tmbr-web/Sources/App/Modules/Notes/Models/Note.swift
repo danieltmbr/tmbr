@@ -27,8 +27,8 @@ final class Note: Model, Content, @unchecked Sendable {
     @Field(key: "language")
     var language: Language
 
-    @Timestamp(key: "created_at", on: .create)
-    private(set) var createdAt: Date?
+    @Field(key: "created_at")
+    private(set) var createdAt: Date
 
     @Timestamp(key: "updated_at", on: .update)
     private(set) var updatedAt: Date?
@@ -52,7 +52,12 @@ final class Note: Model, Content, @unchecked Sendable {
         self.access = access
         self.body = body
         self.language = language
+        self.createdAt = .now
     }
+}
+
+extension Note: TimestampedModel {
+    static var createdAtPath: KeyPath<Note, FieldProperty<Note, Date>> { \.$createdAt }
 }
 
 extension Note: LanguageFilterable {

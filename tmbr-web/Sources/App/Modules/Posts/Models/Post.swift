@@ -60,6 +60,10 @@ final class Post: Model, Content, @unchecked Sendable {
     }
 }
 
+extension Post: TimestampedModel {
+    static var createdAtPath: KeyPath<Post, FieldProperty<Post, Date>> { \.$createdAt }
+}
+
 extension Post: LanguageFilterable {
     static var languageKeyPath: KeyPath<Post, FieldProperty<Post, Language>> { \.$language }
 }

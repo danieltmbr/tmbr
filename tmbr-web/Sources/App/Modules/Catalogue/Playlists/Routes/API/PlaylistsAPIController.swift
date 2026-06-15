@@ -10,6 +10,19 @@ struct PlaylistsAPIController: RouteCollection {
 
         let playlistsRoute = routes.grouped("api", "playlists")
 
+        // GET /api/playlists — paginated list of the authenticated user's playlists
+        playlistsRoute.get { request async throws -> PageResult<PlaylistResponse> in
+            let pageQuery = try request.query.decode(PageQuery.self)
+            let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
+            let playlists = try await request.commands.playlists.list(input)
+            let previewIDs = playlists.map { $0.$preview.id }
+            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
+            let baseURL = request.baseURL
+            return PageResult(from: playlists, limit: input.limit) { playlist in
+                PlaylistResponse(playlist: playlist, notes: notesByPreviewID[playlist.$preview.id] ?? [], baseURL: baseURL)
+            }
+        }
+
         // GET /api/playlists/:playlistID
         playlistsRoute.get(":playlistID") { request async throws -> PlaylistResponse in
             guard let playlistID = request.parameters.get("playlistID", as: Int.self) else {

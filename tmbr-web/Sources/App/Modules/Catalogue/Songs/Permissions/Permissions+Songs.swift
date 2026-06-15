@@ -13,10 +13,7 @@ extension PreviewablePermissionScope<Song> {
             create: .create("You don't have permission to create a song."),
             delete: .delete("Only its owner can delete a song."),
             edit: .edit("Only its owner can edit a song."),
-            query: .query(
-                access: \.$access,
-                owner: \.$owner.$id
-            )
+            query: .query(access: \.$access, owner: \.$owner.$id)
         )
     }
 

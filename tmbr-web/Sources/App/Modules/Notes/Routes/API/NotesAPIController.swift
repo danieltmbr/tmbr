@@ -1,5 +1,6 @@
 import Vapor
 import Fluent
+import Core
 import AuthKit
 import TmbrCore
 
@@ -7,6 +8,7 @@ struct NotesAPIController: RouteCollection {
 
     func boot(routes: RoutesBuilder) throws {
         let notes = routes.grouped("api", "notes")
+
         notes.put(":noteID", use: edit)
         notes.delete(":noteID", use: delete)
     }

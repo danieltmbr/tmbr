@@ -21,6 +21,9 @@ struct CatalogueAPIController: RouteCollection {
         catalogue.post("new", use: createItem)
         catalogue.get("new", "metadata", use: metadata)
 
+        // GET /api/catalogue/orphans — paginated orphan items for native app sync
+        catalogue.get("orphans", use: listOrphans)
+
         let quotes = catalogue.grouped("quotes")
         quotes.get(use: quoteList)
         quotes.get("search", use: quoteSearch)
@@ -91,6 +94,18 @@ struct CatalogueAPIController: RouteCollection {
     }
 
     // MARK: - Catalogue list handlers
+
+    @Sendable
+    private func listOrphans(request: Request) async throws -> PageResult<PreviewResponse> {
+        let pageQuery = try request.query.decode(PageQuery.self)
+        let limit = pageQuery.limit
+        let input = PreviewQueryInput(kind: .orphan, since: pageQuery.since, before: pageQuery.cursorDate, limit: limit + 1)
+        let previews = try await request.commands.previews.list(input)
+        let baseURL = request.baseURL
+        return PageResult(from: previews, limit: limit) { preview in
+            PreviewResponse(preview: preview, baseURL: baseURL)
+        }
+    }
 
     @Sendable
     private func list(request: Request) async throws -> [PreviewResponse] {

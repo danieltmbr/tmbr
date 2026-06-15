@@ -3,6 +3,7 @@ import Fluent
 import Core
 import SotoCore
 import AuthKit
+import TmbrCore
 
 struct Notes: Module {
     
@@ -33,7 +34,13 @@ struct Notes: Module {
         app.migrations.add(ChangeNoteIDToUUID())
         app.migrations.add(AddNoteLanguage())
         app.databases.middleware.use(NoteModelMiddleware())
-        
+        app.databases.middleware.use(DeletionMiddleware<Note>(
+            deletionType: .note,
+            itemID: { $0.id?.uuidString },
+            ownerID: { $0.$author.id },
+            access: { $0.access }
+        ))
+
         try await app.permissions.add(scope: notePermissions)
         try await app.permissions.add(scope: quotePermissions)
         
