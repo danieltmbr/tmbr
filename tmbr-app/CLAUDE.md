@@ -52,12 +52,23 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 - `[Domain]Kit` = headless logic (`@Observable` models, no SwiftUI). `[Domain]UI` = controls, property wrappers, actions, styles.
 - Module-level access control enforces feature isolation — internal navigation state is never `public`.
 
+**Three apps, one shared core** (see `.claude/docs/native-apps-architecture.md`)
+- `tmbr-app` ships **three** targets — **Author** (owner, offline-first backend sync), **Reader**
+  (public, read-only ETag cache), **Personal** (private, CloudKit-only) — over one shared local SPM
+  package, `AppCore` (+ `AppBackend` for networking, used by Author + Reader only).
+- **Hard rule: `AppCore` imports neither networking (`api-kit`/`URLSession`) nor CloudKit.** Per-app
+  sync is injected at the app layer as closures (the composition seam), never referenced from the core.
+- Write path: actions → SwiftData + an injected `requestSync` closure. Read/refresh: a per-screen
+  `@Observable` detail model holding an injected refresh-strategy closure. Same env-key, different
+  body per app — that injection point *is* the three-app seam; do not branch on app inside `AppCore`.
+
 **Concurrency**
 - `@MainActor` on all `@Observable` classes and action structs.
 - `nonisolated` on pure-closure action inits.
 
 ## Before Starting
 
+- Native apps architecture (three apps, shared `AppCore`, composition seam) → `.claude/docs/native-apps-architecture.md`
 - SwiftUI architecture (Observable, env injection, property wrappers, actions, styles) → `.claude/docs/swiftui-architecture.md`
 - Navigation pattern (NavigationModel, scoped feature navigation) → `.claude/docs/navigation.md`
 - Networking (RequestLoader, AuthToken, api-kit) → `.claude/docs/networking.md`

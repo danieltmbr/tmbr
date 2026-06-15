@@ -1,15 +1,66 @@
-# Offline-First Native App: Multi-Stage Roadmap
+# Native App: Multi-Stage Roadmap (three apps, one shared core)
+
+> **Architecture:** `.claude/docs/native-apps-architecture.md` is the canonical design (three apps —
+> Reader, Author, Personal — over a shared `AppCore` package). This file is the **staged roadmap**.
 
 ## Vision
 
-The end state is a native app that feels fast and reliable regardless of connectivity:
-
+Each app feels fast and reliable regardless of connectivity, driven by SwiftData via `@Query`:
 - **Instant startup**: cached SwiftData renders before any network request completes
-- **Invisible sync**: delta sync runs in the background; `@Query` in views auto-updates as records arrive
-- **Offline writes**: notes and posts saved locally first, pushed silently when online
-- **No spinners on launch**: the user always sees their data, never a loading screen
+- **No spinners on launch**: the user always sees their data
+- **Author/Personal**: offline writes saved locally first; **Reader**: stale-while-revalidate cache
 
-Each stage below is a self-contained PR that ships a working increment. Later stages depend on earlier ones but each leaves the app in a releasable state.
+## Roadmap structure
+
+| Phase | App | Status |
+|---|---|---|
+| **Stages 1–5** (below) | **Author** (offline-first, backend sync) | **Built** — the original monolithic app *is* the Author app |
+| **Restructure** | Extract `AppCore`/`AppBackend`; re-home app as Author; Reader + Personal target skeletons | Next |
+| **Reader backend** | Public read API (browse/feed + detail JSON) + ETag/`304` in `tmbr-web` | Later |
+| **Reader app** | `CacheLoader` (lazy ETag cache), read-only UI | Later |
+| **Personal app** | `.private` CloudKit container + runtime mirror validation | Later |
+
+The **Stages 1–5 below are the Author app, already built.** They are retained as the reference
+implementation and regression checklist for the extraction. The Domain Primer and Notes Sync Design
+sections that follow are still accurate and apply to all backend-wired apps (Reader + Author).
+
+### Seam & schema (see architecture doc for full rationale)
+
+- **Composition, not a protocol.** Write actions call an injected `requestSync` closure
+  (`syncEngine.runSync()` for Author, `{}` for Personal); read/refresh uses a per-screen
+  `@Observable` detail model holding an injected refresh-strategy closure (`SyncEngine` / `CacheLoader`
+  ETag GET / no-op). `AppCore` imports no networking, no CloudKit.
+- **Normalized schema mirroring the backend** (Author + Personal author catalogue items offline):
+  `PreviewRecord` (unified list driver + note anchor, keyed by server PreviewID) + typed
+  `SongRecord`/etc. linked by `previewID` + `ContainerEntryRecord` for tracks. CloudKit-constrained
+  (decided now, justified by Personal): no `@Attribute(.unique)`, every attribute optional-or-defaulted,
+  link by UUID not `@Relationship`. See `.claude/docs/native-apps-architecture.md` for the full schema.
+  The Stage 2 code blocks below show an earlier flat/subclass shape for historical context only.
+
+---
+
+## Notes Sync Design (updated post-implementation)
+
+This supersedes the "dedicated notes sync" described in Stages 1 and 3 below.
+
+Notes are **never** synced via a standalone endpoint — they are always attached to a catalogue item,
+so they sync **embedded in that item's response**:
+
+- **Typed items** (song/album/…): each per-type response already carries `.notes`.
+- **Orphans**: `GET /api/catalogue/orphans?notes=true` embeds notes. `PreviewResponse` gained an
+  optional `notes` field; the endpoint batch-loads them via the existing `grouped` notes command.
+
+There is **no `GET /api/notes`**. The app upserts notes **per item, scoped by PreviewID**, replacing
+that item's full note set each sync — which also handles note edits and deletes (a removed note is
+simply absent from the embedded array; no note tombstones needed).
+
+**PreviewID reaches the app.** `PreviewResponse.id: PreviewID?` was added so the app uses the server
+PreviewID as `CatalogueItemRecord.id` and can attach/reconcile notes — and so offline note-create can
+POST to `/api/catalogue/item/:previewID/notes` (previously broken: the app only had a random local UUID).
+
+**Delta catches note edits.** A note create/edit/delete bumps its parent `Preview.updatedAt`
+(`NoteModelMiddleware`), and catalogue delta (`since`) matches `createdAt > since OR updatedAt > since`;
+load-more (`before`/cursor) stays on `createdAt`. So an item re-surfaces in delta whenever its notes change.
 
 ---
 
@@ -20,7 +71,7 @@ The backend has three distinct kinds of catalogue item that the native app must 
 | Kind | Examples | Backing model | Notes? | How synced |
 |------|----------|--------------|--------|------------|
 | `.entry` (typed) | Song, Album, Book, Movie, Podcast, Playlist | Yes (SongResponse etc.) | Yes | Per-type list endpoints |
-| `.orphan` | Recipe, Guide, Link, user-defined | No | Yes | `GET /api/catalogue?orphanOnly=true` |
+| `.orphan` | Recipe, Guide, Link, user-defined | No | Yes | `GET /api/catalogue/orphans?notes=true` |
 | `.promotable` | Track (unresolved) | No | **No** | Not synced — shown as part of album/playlist tracks |
 
 **Critical rule** (from memory): use `kind.isShallow` — not `parentID == nil` — to check whether an item can have notes. Orphans have `parentID == nil` but CAN have notes.
@@ -33,7 +84,7 @@ Orphan items are identified in `PreviewResponse` by `category != nil` (only set 
 
 **PR scope**: `tmbr-core` + `tmbr-web`
 
-**Goal**: Establish the reusable pagination types used by every list endpoint. Add all the list endpoints the native app needs for sync. Expose `GET /api/notes` as a Bearer-authenticated endpoint.
+**Goal**: Establish the reusable pagination types used by every list endpoint. Add all the list endpoints the native app needs for sync. (Originally also planned a `GET /api/notes` endpoint — **dropped**; see "Notes Sync Design" above. Notes sync embedded in catalogue items.)
 
 ### Shared Types (tmbr-core)
 
@@ -121,14 +172,14 @@ return PageResult(from: models, limit: input.limit) { ThingResponse(thing: $0) }
 
 ### Endpoints
 
-**Notes (new API endpoint):**
-- `GET /api/notes` — Bearer auth — returns `PageResult<NoteResponse>` for the current user's notes, sorted by `createdAt DESC`.
+**Notes:** no standalone notes endpoint — notes sync embedded in catalogue items (see "Notes Sync
+Design" above). `PUT`/`DELETE /api/notes/:noteID` remain for editing/deleting an existing note.
 
 **Posts (pagination added):**
 - `GET /api/posts` — accepts `PageQuery`, returns `PageResult<PostResponse>`. Non-paged web route uses the same `list` command with `page: nil`.
 
-**Catalogue (pagination + orphan filter):**
-- `GET /api/catalogue` — accepts `PageQuery`. `orphanOnly=true` returns only `.orphan` kind items.
+**Catalogue (orphan list for sync):**
+- `GET /api/catalogue/orphans` — accepts `PageQuery`; `?notes=true` embeds each orphan's notes. Returns `PageResult<PreviewResponse>` (now including `PreviewResponse.id`).
 
 **Deletion tombstones (new):**
 - `GET /api/sync/deletions?since=<ISO8601>` — optional auth. Unauthenticated callers receive tombstones for public deletions only; authenticated callers additionally receive their own private deletions. No cursor pagination — deletions are sparse and always queried since last sync. When a catalogue item is deleted, its Preview deletion cascades through `DeletionMiddleware<Preview>` and produces a `.catalogueItem` tombstone. Each tombstone stores `ownerID` and `access` so the endpoint can filter without joining the original table (which no longer exists for a deleted record).
@@ -176,9 +227,9 @@ All return the owner's items with embedded notes. Sorted by `createdAt DESC` (Pr
 - [x] `PageInput`, `QueryBuilder+Page.swift`, `Pagination.swift` in tmbr-web Core
 - [x] `QueryBuilder+Previewable.swift` — Previewable overload of `page()`
 - [x] `Command+ListNotes.swift` + `Commands+Notes.list` added
-- [x] `GET /api/notes` with Bearer auth, returns `PageResult<NoteResponse>`
+- [x] ~~`GET /api/notes`~~ **dropped** — notes sync embedded in catalogue items (see Notes Sync Design)
 - [x] `GET /api/posts` returns `PageResult<PostResponse>` with `PageQuery`
-- [x] `GET /api/catalogue` with `PageQuery` + `orphanOnly` filter
+- [x] `GET /api/catalogue/orphans` with `PageQuery` + `?notes=true` (embeds orphan notes)
 - [x] `GET /api/songs`, albums, books, movies, podcasts, playlists (all per-type endpoints)
 - [x] `Deletions/` folder — `CreateDeletion` migration, `DeletionMiddleware<M>`, `DeletionsAPIController`; wired via `configure.swift` (not a Module — middleware registrations live in Notes/Previews/Posts modules)
 - [x] `GET /api/sync/deletions?since=` endpoint — optional auth, public-only for guests
@@ -190,6 +241,27 @@ All return the owner's items with embedded notes. Sorted by `createdAt DESC` (Pr
 **PR scope**: `tmbr-app` only (no networking, no sync yet)
 
 **Goal**: SwiftData schema in place, `ModelContainer` wired into the app. Lists still show placeholders. This PR gets the local DB right before anything else depends on it.
+
+### CloudKit Compatibility (required — see Product Identity section)
+
+The schema must satisfy SwiftData's CloudKit private-DB mirroring rules so Product 2 can adopt it
+unchanged:
+
+- **No `@Attribute(.unique)`.** CloudKit does not support unique constraints. Dropped from all five
+  sites (`NoteRecord.clientKey`, `PostRecord.clientKey`, `QuoteRecord.clientKey`,
+  `CatalogueItemRecord.id`, `UserRecord.serverID`). Uniqueness now lives in `SyncEngine`'s upsert
+  (fetch-by-identity before insert) — the single insertion path, run serially on `@MainActor`. A
+  dedup test guards this.
+- **Every stored attribute optional or defaulted.** CloudKit requires it. Non-optional fields get a
+  stored default (e.g. `var title: String = ""`); init-parameter defaults are not sufficient.
+- **Relationships must be optional** — already satisfied: the schema is fully denormalized with no
+  `@Relationship`.
+- **Catalogue flattened** — the typed subclasses were removed in favour of a single
+  `CatalogueItemRecord` (see Product Identity section); SwiftData `@Model` inheritance is both
+  non-compiling and CloudKit-unsafe. The subclass code blocks below are retained for history only.
+
+The `@Attribute(.unique)` annotations in the code blocks below have been removed accordingly; the
+blocks remain otherwise illustrative of the fields each record carries.
 
 ### SwiftData Schema
 
@@ -208,7 +280,7 @@ enum SyncState: String, Codable {
 **NoteRecord**:
 ```swift
 @Model final class NoteRecord {
-    @Attribute(.unique) var clientKey: UUID  // always client-generated; stable local identity
+    var clientKey: UUID = UUID()             // client-generated; stable local identity (no .unique — CloudKit)
     var serverID: UUID?                       // set from NoteResponse.id after first push
     var body: String
     var accessRaw: String                     // Access.rawValue
@@ -230,7 +302,7 @@ enum SyncState: String, Codable {
 **PostRecord**:
 ```swift
 @Model final class PostRecord {
-    @Attribute(.unique) var clientKey: UUID  // stable local identity
+    var clientKey: UUID = UUID()             // stable local identity (no .unique — CloudKit)
     var serverID: Int?                        // nil until server assigns PostID
     var title: String
     var content: String
@@ -247,7 +319,7 @@ enum SyncState: String, Codable {
 **QuoteRecord**:
 ```swift
 @Model final class QuoteRecord {
-    @Attribute(.unique) var clientKey: UUID
+    var clientKey: UUID = UUID()             // no .unique — CloudKit; dedup via upsert
     var body: String
     var noteClientKey: UUID                   // links to NoteRecord.clientKey
     var noteServerID: UUID?                   // set once parent note has a serverID
@@ -268,7 +340,7 @@ The `subtitle` field in the base serves list display for all types. For typed it
 
 ```swift
 @Model class CatalogueItemRecord {
-    @Attribute(.unique) var id: UUID           // PreviewID (stable cross-type identifier)
+    var id: UUID = UUID()                      // PreviewID (stable cross-type identifier; no .unique — CloudKit)
     var title: String                          // PreviewResponse.primaryInfo
     var subtitle: String?                      // PreviewResponse.secondaryInfo — used in list display
     var categoryType: String                   // "song"|"album"|"recipe"|etc. (source.type slug)
@@ -325,7 +397,7 @@ The `subtitle` field in the base serves list display for all types. For typed it
 **UserRecord**:
 ```swift
 @Model final class UserRecord {
-    @Attribute(.unique) var serverID: Int
+    var serverID: Int = 0                     // no .unique — CloudKit; dedup via upsert
     var appleID: String
     var email: String?
     var firstName: String?
@@ -348,6 +420,9 @@ In `tmbr.swift`, create the container with all model types registered. `Catalogu
 - [ ] `UserRecord.swift`
 - [ ] `tmbr.swift` — create `ModelContainer` with all models; inject via `.modelContainer(container)`
 - [ ] App builds and runs on both iOS and macOS targets (placeholders still showing)
+- [ ] CloudKit compatibility: no `@Attribute(.unique)`, all attributes optional-or-defaulted
+- [ ] Spike: SwiftData inheritance round-trips to a `.private` CloudKit store (decides catalogue shape)
+- [ ] Dedup test: upserting the same identity twice yields exactly one record
 
 ---
 
@@ -364,17 +439,17 @@ App opens
   → @Query renders cached SwiftData immediately (no loading state, no spinner)
   → if signed in: Task { await SyncEngine.syncDelta() }
       push any pending local changes (none in read-only stage)
-      in parallel:
-        GET /api/notes?since=lastSyncAt            → upsert NoteRecord + QuoteRecord
+      in parallel (each typed response carries its `.notes`, upserted per item):
         GET /api/posts?since=lastSyncAt            → upsert PostRecord
-        GET /api/songs?since=lastSyncAt            → upsert SongRecord (full domain data)
-        GET /api/albums?since=lastSyncAt           → upsert AlbumRecord
-        GET /api/books?since=lastSyncAt            → upsert BookRecord
-        GET /api/movies?since=lastSyncAt           → upsert MovieRecord
-        GET /api/podcasts?since=lastSyncAt         → upsert PodcastRecord
-        GET /api/playlists?since=lastSyncAt        → upsert PlaylistRecord
-        GET /api/catalogue?orphanOnly=true&since=lastSyncAt → upsert OrphanRecord
+        GET /api/songs?since=lastSyncAt            → upsert CatalogueItemRecord + its notes
+        GET /api/albums?since=lastSyncAt           → upsert CatalogueItemRecord + its notes
+        GET /api/books?since=lastSyncAt            → upsert CatalogueItemRecord + its notes
+        GET /api/movies?since=lastSyncAt           → upsert CatalogueItemRecord + its notes
+        GET /api/podcasts?since=lastSyncAt         → upsert CatalogueItemRecord + its notes
+        GET /api/playlists?since=lastSyncAt        → upsert CatalogueItemRecord + its notes
+        GET /api/catalogue/orphans?notes=true&since=lastSyncAt → upsert orphan CatalogueItemRecord + its notes
         GET /api/sync/deletions?since=lastSyncAt   → apply DeletionRecord (delete local records)
+      (delta `since` matches createdAt OR updatedAt, so items whose notes changed re-surface)
       save lastSyncAt = .now to UserDefaults
   → @Query auto-updates as records arrive
 
@@ -399,18 +474,16 @@ With `since` filtering, most requests return 0 items on a typical launch — 10 
     func syncFull() async throws   // slow, paginated, fetches all history (Stage 5)
 
     // Pull helpers (each paginates to completion)
-    private func fetchNotes(since: Date?) async throws
     private func fetchPosts(since: Date?) async throws
     private func fetchTypedItems(since: Date?) async throws  // all 6 types in parallel
-    private func fetchOrphans(since: Date?) async throws
+    private func fetchOrphans(since: Date?) async throws      // sends ?notes=true
     private func fetchDeletions(since: Date?) async throws
 
-    // Upsert helpers
-    private func upsertNotes(_ responses: [NoteResponse])
+    // Upsert helpers (catalogue is one flat CatalogueItemRecord — see native-apps-architecture.md)
     private func upsertPosts(_ responses: [PostResponse])
-    private func upsertSongs(_ responses: [SongResponse])
-    // ... etc per type
-    private func upsertOrphans(_ responses: [PreviewResponse])
+    private func upsertTyped<T: CatalogueItemResponse>(_ responses: [T], type: String)  // + each item's notes
+    private func upsertOrphans(_ responses: [PreviewResponse])                           // + each orphan's notes
+    private func upsertNotes(_ responses: [NoteResponse], forPreviewID: UUID)            // per-item reconcile
 
     // Deletion helper — removes local records matching tombstones
     private func applyDeletions(_ records: [DeletionRecord])
@@ -421,11 +494,11 @@ With `since` filtering, most requests return 0 items on a typical launch — 10 
 }
 ```
 
-**Upsert logic for typed items**: match on `sourceID + categoryType`. If found and `.synced`, update all fields (including `subtitle` and the semantic subclass field). If not found, create the correct subclass. Notes embedded in type responses (e.g., `SongResponse.notes`) are NOT used here — notes come from the dedicated notes sync which supports delta.
+**Upsert logic for typed items**: match on `sourceID + categoryType`. If found and `.synced`, update all fields; if not found, create a `CatalogueItemRecord` with `id` = the response's `PreviewID`. Notes embedded in the type response (e.g., `SongResponse.notes`) **are** upserted here, per item, scoped by PreviewID — there is no separate notes sync (see "Notes Sync Design" above).
 
-**Upsert logic for orphans**: match on `id` (PreviewID). Orphans get `OrphanRecord`; `subtitle` = `secondaryInfo`.
+**Upsert logic for orphans**: match on `id` (PreviewID). An orphan is a `CatalogueItemRecord` with `sourceID == nil`; `subtitle` = `secondaryInfo`. Its embedded notes (from `?notes=true`) are upserted per item.
 
-**Upsert logic for notes**: match on `serverID`. If `.synced`, update fields and sync embedded quotes (match by `noteServerID + body`, delete missing). If `syncState != .synced`, skip body/fields but still sync quotes (they are server-owned). Delete notes with `serverID` and `.synced` state absent from response.
+**Upsert logic for notes** (per item, scoped by PreviewID — called from the typed/orphan upserts): match on `serverID`. If found and `.synced`, update fields; if not found, create with `attachmentPreviewID` set to the item's PreviewID. Delete this item's `.synced` notes absent from the embedded array (handles server-side note deletes). Records with `syncState != .synced` are preserved until pushed. (Syncing `NoteResponse.quotes` into `QuoteRecord` is not yet implemented.)
 
 **Deletion logic**: `DeletionRecord.itemID` is always a string — parse as `UUID` for notes/catalogueItems, `Int` for posts. Skip records where `syncState != .synced`; a locally-pending record should not be deleted by a server tombstone (the push flow resolves the conflict).
 
@@ -510,9 +583,8 @@ tmbr/Catalogue/
     @Catalogue.swift
     View+Catalogue.swift
     Actions/SyncCatalogueAction.swift
-    Requests/NotesRequest.swift
-    Requests/SongsRequest.swift + AlbumsRequest.swift + ... (one per type)
-    Requests/OrphansRequest.swift
+    Requests/SongsRequest.swift + AlbumsRequest.swift + ... (one per type; each response carries .notes)
+    Requests/OrphansRequest.swift  (sent with ?notes=true; no standalone NotesRequest)
     Requests/DeletionsRequest.swift
 ```
 
