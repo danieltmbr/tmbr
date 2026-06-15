@@ -9,14 +9,25 @@ let package = Package(
         // MUST NOT depend on networking (ApiKit/URLSession) or CloudKit — per-app sync is
         // injected at the app layer as closures. See .claude/docs/native-apps-architecture.md.
         .library(name: "AppCore", targets: ["AppCore"]),
+        // Networking foundation (request loaders + pagination driver) for the backend-wired apps
+        // (Author + Reader). Personal does NOT link this — it is CloudKit-only.
+        .library(name: "AppBackend", targets: ["AppBackend"]),
     ],
     dependencies: [
         .package(path: "../tmbr-core"),
+        .package(path: "../api-kit"),
     ],
     targets: [
         .target(
             name: "AppCore",
             dependencies: [.product(name: "TmbrCore", package: "tmbr-core")]
+        ),
+        .target(
+            name: "AppBackend",
+            dependencies: [
+                .product(name: "TmbrCore", package: "tmbr-core"),
+                .product(name: "ApiKit", package: "api-kit"),
+            ]
         ),
     ]
 )
