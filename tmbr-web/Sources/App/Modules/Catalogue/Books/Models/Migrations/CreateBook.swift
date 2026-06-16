@@ -1,6 +1,6 @@
 import Fluent
 import Foundation
-import AuthKit
+import CoreAuth
 
 struct CreateBook: AsyncMigration {
     func prepare(on database: Database) async throws {

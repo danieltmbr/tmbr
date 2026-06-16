@@ -1,9 +1,9 @@
 import Vapor
-import AuthKit
+import CoreAuth
 import Crypto
 import JWT
 import Foundation
-import Core
+import CoreWeb
 
 
 struct AuthWebController: RouteCollection {

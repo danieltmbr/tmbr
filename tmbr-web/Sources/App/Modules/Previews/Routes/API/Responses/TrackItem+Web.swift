@@ -1,5 +1,5 @@
 import Foundation
-import TmbrCore
+import CoreTmbr
 
 extension TrackItem {
 

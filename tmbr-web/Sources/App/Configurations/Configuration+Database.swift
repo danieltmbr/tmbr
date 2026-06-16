@@ -1,7 +1,7 @@
 import Fluent
 import FluentPostgresDriver
 import Vapor
-import Core
+import CoreWeb
 
 extension Configuration where Self == CoreConfiguration {
     static var database: Self {

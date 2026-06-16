@@ -1,6 +1,6 @@
 import Vapor
 import Foundation
-import TmbrCore
+import CoreTmbr
 
 @dynamicMemberLookup
 struct EditPostPayload: Sendable {

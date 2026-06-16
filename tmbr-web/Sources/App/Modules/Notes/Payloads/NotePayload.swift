@@ -1,6 +1,6 @@
 import Foundation
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 struct NotePayload: Decodable, Sendable {
 

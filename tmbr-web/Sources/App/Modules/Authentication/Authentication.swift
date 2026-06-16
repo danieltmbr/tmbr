@@ -1,10 +1,10 @@
 import Vapor
-import AuthKit
+import CoreAuth
 import Leaf
 import Fluent
 import JWT
 import Crypto
-import Core
+import CoreWeb
 
 struct Authentication: Module {
     

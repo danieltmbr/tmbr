@@ -1,7 +1,7 @@
 import Vapor
-import Core
-import AuthKit
-import TmbrCore
+import CoreWeb
+import CoreAuth
+import CoreTmbr
 
 // MARK: - Payload Types
 

@@ -1,8 +1,8 @@
-import AuthKit
+import CoreAuth
 import Fluent
 import Vapor
-import Core
-import TmbrCore
+import CoreWeb
+import CoreTmbr
 
 struct Posts: Module {
     

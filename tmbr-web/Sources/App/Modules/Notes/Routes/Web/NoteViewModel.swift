@@ -1,7 +1,7 @@
 import Foundation
-import Core
-import AuthKit
-import TmbrCore
+import CoreWeb
+import CoreAuth
+import CoreTmbr
 
 struct NoteViewModel: Encodable, Sendable {
 

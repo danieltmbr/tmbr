@@ -1,9 +1,9 @@
-import Core
+import CoreWeb
 import Foundation
 import Vapor
 import Fluent
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 struct AlbumEditorViewModel: Encodable, Sendable {
 

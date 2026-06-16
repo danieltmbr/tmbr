@@ -1,5 +1,5 @@
 import Foundation
-import Core
+import CoreWeb
 
 extension Commands {
     var catalogue: Commands.Catalogue.Type { Commands.Catalogue.self }

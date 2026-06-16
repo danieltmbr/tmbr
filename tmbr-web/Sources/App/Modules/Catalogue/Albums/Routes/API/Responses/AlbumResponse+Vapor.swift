@@ -1,4 +1,4 @@
-import TmbrCore
+import CoreTmbr
 import Vapor
 
 extension AlbumResponse: @retroactive Content {}

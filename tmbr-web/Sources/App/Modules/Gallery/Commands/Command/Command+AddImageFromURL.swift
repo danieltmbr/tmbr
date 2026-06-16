@@ -1,9 +1,9 @@
 import Foundation
 import Vapor
-import Core
+import CoreWeb
 import Logging
 import Fluent
-import AuthKit
+import CoreAuth
 
 /// Downloads an image from an external URL, validates its content type, stores the file
 /// (plus thumbnail), and saves an `Image` record with `sourceURL` set for deduplication.

@@ -1,6 +1,6 @@
 import Foundation
-import TmbrCore
-import AuthKit
+import CoreTmbr
+import CoreAuth
 
 extension NoteResponse {
 

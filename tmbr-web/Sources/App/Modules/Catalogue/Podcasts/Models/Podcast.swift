@@ -1,8 +1,8 @@
 import Fluent
 import Vapor
 import Foundation
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 final class Podcast: Model, Previewable, @unchecked Sendable {
     

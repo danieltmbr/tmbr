@@ -3,7 +3,7 @@ import VaporTesting
 import Testing
 import Fluent
 import Vapor
-import AuthKit
+import CoreAuth
 
 // MARK: - App lifecycle
 

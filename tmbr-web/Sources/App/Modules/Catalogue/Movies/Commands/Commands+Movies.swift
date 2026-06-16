@@ -1,6 +1,6 @@
 import Foundation
-import Core
-import TmbrCore
+import CoreWeb
+import CoreTmbr
 
 extension Commands {
     var movies: Commands.Movies.Type { Commands.Movies.self }

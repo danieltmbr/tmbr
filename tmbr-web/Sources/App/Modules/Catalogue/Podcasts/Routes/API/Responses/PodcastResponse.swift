@@ -1,7 +1,7 @@
 import Foundation
-import TmbrCore
-import AuthKit
-import Core
+import CoreTmbr
+import CoreAuth
+import CoreWeb
 
 extension PodcastResponse {
 

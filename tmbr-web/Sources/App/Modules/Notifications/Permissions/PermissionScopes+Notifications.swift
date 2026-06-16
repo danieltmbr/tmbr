@@ -1,4 +1,4 @@
-import AuthKit
+import CoreAuth
 
 extension PermissionScopes {
     var notifications: PermissionScopes.Notifications.Type { PermissionScopes.Notifications.self }

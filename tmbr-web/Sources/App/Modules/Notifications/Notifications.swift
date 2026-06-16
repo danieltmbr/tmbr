@@ -1,8 +1,8 @@
 import Fluent
 import Vapor
 import WebPush
-import Core
-import AuthKit
+import CoreWeb
+import CoreAuth
 
 struct Notifications: Module {
     

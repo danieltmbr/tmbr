@@ -1,6 +1,6 @@
 import Foundation
 import Vapor
-import Core
+import CoreWeb
 
 struct FetchPlaylistMetadataCommand: Command {
 

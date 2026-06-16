@@ -1,5 +1,5 @@
 import Vapor
-import Core
+import CoreWeb
 import Foundation
 
 extension Template where Model == CatalogueListViewModel {

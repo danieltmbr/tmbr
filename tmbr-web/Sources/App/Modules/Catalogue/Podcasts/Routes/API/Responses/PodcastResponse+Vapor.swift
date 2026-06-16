@@ -1,4 +1,4 @@
-import TmbrCore
+import CoreTmbr
 import Vapor
 
 extension PodcastResponse: @retroactive Content {}

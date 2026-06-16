@@ -1,8 +1,8 @@
 import Vapor
 import Fluent
 import Foundation
-import Core
-import TmbrCore
+import CoreWeb
+import CoreTmbr
 
 struct GalleryWebController: RouteCollection {
     

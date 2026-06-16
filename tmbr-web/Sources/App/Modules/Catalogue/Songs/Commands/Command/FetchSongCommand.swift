@@ -1,6 +1,6 @@
 import Vapor
-import Core
-import TmbrCore
+import CoreWeb
+import CoreTmbr
 
 extension CommandFactory<FetchParameters<SongID>, Song> {
     

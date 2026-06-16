@@ -1,9 +1,9 @@
 import Foundation
 import Vapor
-import Core
-import AuthKit
+import CoreWeb
+import CoreAuth
 import Fluent
-import TmbrCore
+import CoreTmbr
 
 struct PromoteSongCommand: Command {
 

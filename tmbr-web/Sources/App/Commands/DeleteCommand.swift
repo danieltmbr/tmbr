@@ -2,8 +2,8 @@ import Foundation
 import Vapor
 import Logging
 import Fluent
-import AuthKit
-import Core
+import CoreAuth
+import CoreWeb
 
 public struct DeleteCommand<Item: Model>: Command, Sendable {
     

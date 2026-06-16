@@ -1,9 +1,9 @@
 import Vapor
 import Fluent
-import Core
+import CoreWeb
 import SotoCore
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 struct Notes: Module {
     

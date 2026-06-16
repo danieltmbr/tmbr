@@ -1,8 +1,8 @@
 import Vapor
 import Fluent
 import Foundation
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 struct MoviePayload: Decodable, Sendable {
     

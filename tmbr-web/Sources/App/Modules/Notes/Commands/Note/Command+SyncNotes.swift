@@ -1,10 +1,10 @@
 import Foundation
 import Vapor
-import Core
+import CoreWeb
 import Logging
 import Fluent
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 struct SyncNoteEntry: Sendable {
     let id: NoteID?

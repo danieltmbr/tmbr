@@ -1,6 +1,6 @@
-import TmbrCore
+import CoreTmbr
 import Vapor
-import Core
+import CoreWeb
 
 extension PlaylistResponse {
 

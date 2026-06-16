@@ -1,6 +1,6 @@
 import Vapor
-import Core
-import TmbrCore
+import CoreWeb
+import CoreTmbr
 
 struct MusicAPIController: RouteCollection {
 

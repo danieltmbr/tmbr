@@ -1,4 +1,4 @@
-import TmbrCore
+import CoreTmbr
 import Vapor
 
 extension DeletionRecord: @retroactive Content {}

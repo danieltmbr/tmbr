@@ -1,6 +1,6 @@
 import Fluent
 import Foundation
-import AuthKit
+import CoreAuth
 
 struct CreateMovie: AsyncMigration {
     func prepare(on database: Database) async throws {

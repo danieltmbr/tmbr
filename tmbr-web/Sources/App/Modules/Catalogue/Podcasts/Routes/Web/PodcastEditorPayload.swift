@@ -1,7 +1,7 @@
 import Foundation
 import Vapor
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 struct PodcastEditorPayload: Decodable, Sendable {
 

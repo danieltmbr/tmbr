@@ -1,8 +1,8 @@
 import Foundation
 import Vapor
-import AuthKit
-import Core
-import TmbrCore
+import CoreAuth
+import CoreWeb
+import CoreTmbr
 
 struct AlbumInput {
 

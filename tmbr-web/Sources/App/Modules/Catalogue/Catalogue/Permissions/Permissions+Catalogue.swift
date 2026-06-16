@@ -1,4 +1,4 @@
-import AuthKit
+import CoreAuth
 
 extension PermissionScopes {
     var catalogue: PermissionScopes.Catalogue.Type { PermissionScopes.Catalogue.self }

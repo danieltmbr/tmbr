@@ -1,5 +1,5 @@
 import Foundation
-import TmbrCore
+import CoreTmbr
 
 enum MetadataExtractionError: Error {
     case invalidType(expected: String, actual: String?)

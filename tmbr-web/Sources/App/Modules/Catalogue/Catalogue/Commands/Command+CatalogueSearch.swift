@@ -1,5 +1,5 @@
 import Foundation
-import Core
+import CoreWeb
 
 struct CatalogueSearchResult: Sendable {
     
