@@ -11,6 +11,9 @@
       location = "container:api-kit">
    </FileRef>
    <FileRef
+      location = "container:app-core">
+   </FileRef>
+   <FileRef
       location = "container:tmbr-web">
    </FileRef>
 </Workspace>

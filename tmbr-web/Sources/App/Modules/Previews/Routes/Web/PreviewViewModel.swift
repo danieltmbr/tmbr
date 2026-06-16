@@ -23,7 +23,7 @@ struct PreviewViewModel: Encodable, Sendable {
         } else {
             href = "/catalogue/item/\(preview.id!)"
         }
-        created = (preview.createdAt ?? .now).formatted(.publishDate)
+        created = (preview.createdAt).formatted(.publishDate)
         self.isNoteMatch = isNoteMatch
     }
 }
