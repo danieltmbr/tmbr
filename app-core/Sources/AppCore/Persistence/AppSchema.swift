@@ -6,6 +6,7 @@ import SwiftData
 /// Each app builds its own `ModelContainer` from this list with its own `ModelConfiguration`
 /// (plain on-disk for Author/Reader; `.private` CloudKit for Personal). The schema is the same;
 /// only the container configuration and the injected sync composition differ.
+/// 
 public enum AppSchema {
 
     public static let models: [any PersistentModel.Type] = [

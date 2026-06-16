@@ -10,16 +10,24 @@ import SwiftData
 /// **Track removal honors promotion:** when a container is deleted, only `.promotable`
 /// (unpromoted) members are removed; promoted members survive — matching the backend
 /// `deleteContainerEntries` command.
+/// 
 @Model
 public final class ContainerEntryRecord {
 
     public var clientKey: UUID = UUID()
-
-    public var containerType: String = ""        // "album" | "playlist"
-    public var containerSourceID: Int = 0        // backing album/playlist Int id
-    public var memberPreviewID: UUID = UUID()    // the track member's PreviewID
+    
+    /// "album" | "playlist"
+    public var containerType: String = ""
+    
+    /// backing album/playlist Int id
+    public var containerSourceID: Int = 0
+    
+    /// the track member's PreviewID
+    public var memberPreviewID: UUID = UUID()
+    
     public var position: Int = 0
-    public var syncStateRaw: String = SyncState.synced.rawValue
+    
+    var syncStateRaw: String = SyncState.synced.rawValue
 
     public init(
         clientKey: UUID = UUID(),

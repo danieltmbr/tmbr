@@ -4,6 +4,7 @@ import SwiftData
 /// Rich, typed data for a song — for the detail screen and offline authoring.
 /// Linked to its `PreviewRecord` by `previewID` (a plain UUID link, not a `@Relationship`, so
 /// CloudKit mirroring stays trivial). Mirrors the backend `Song` / `SongResponse`.
+///
 @Model
 public final class SongRecord {
 
@@ -14,14 +15,22 @@ public final class SongRecord {
     public var sourceID: Int?
 
     public var title: String = ""
+
     public var artist: String = ""
+
     public var album: String?
+
     public var genre: String?
+
     public var releaseDate: Date?
+
     public var artworkURL: String?
+
     public var resourceURLs: [String] = []
-    public var accessRaw: String = ""   // Access.rawValue
-    public var syncStateRaw: String = SyncState.synced.rawValue
+
+    var accessRaw: String = ""
+
+    var syncStateRaw: String = SyncState.synced.rawValue
 
     public init(
         previewID: UUID = UUID(),
@@ -33,7 +42,7 @@ public final class SongRecord {
         releaseDate: Date? = nil,
         artworkURL: String? = nil,
         resourceURLs: [String] = [],
-        accessRaw: String = "",
+        access: Access = .private,
         syncState: SyncState = .synced
     ) {
         self.previewID = previewID
@@ -45,12 +54,17 @@ public final class SongRecord {
         self.releaseDate = releaseDate
         self.artworkURL = artworkURL
         self.resourceURLs = resourceURLs
-        self.accessRaw = accessRaw
+        self.accessRaw = access.rawValue
         self.syncStateRaw = syncState.rawValue
     }
 }
 
 public extension SongRecord {
+    var access: Access {
+        get { Access(rawValue: accessRaw) ?? .private }
+        set { accessRaw = newValue.rawValue }
+    }
+
     var syncState: SyncState {
         get { SyncState(rawValue: syncStateRaw) ?? .synced }
         set { syncStateRaw = newValue.rawValue }

@@ -12,6 +12,7 @@ import SwiftData
 /// - An **orphan** is a `PreviewRecord` with no backing per-type record (`sourceID == nil`).
 /// - `id` is the **server PreviewID** (a UUID). No `@Attribute(.unique)` — CloudKit forbids it;
 ///   uniqueness is enforced by upsert (fetch-by-identity before insert).
+///
 @Model
 public final class PreviewRecord {
 
@@ -37,12 +38,13 @@ public final class PreviewRecord {
     /// External resource URLs. Mirrors `PreviewResponse.resources` / `Preview.externalLinks`.
     public var externalLinks: [String] = []
 
-    public var accessRaw: String = ""   // Access.rawValue
+    var accessRaw: String = ""
 
     public var createdAt: Date = Date.now
+
     public var updatedAt: Date?
 
-    public var syncStateRaw: String = SyncState.synced.rawValue
+    var syncStateRaw: String = SyncState.synced.rawValue
 
     public init(
         id: UUID = UUID(),
@@ -52,7 +54,7 @@ public final class PreviewRecord {
         secondaryInfo: String? = nil,
         imageURL: String? = nil,
         externalLinks: [String] = [],
-        accessRaw: String = "",
+        access: Access = .private,
         createdAt: Date = .now,
         updatedAt: Date? = nil,
         syncState: SyncState = .synced
@@ -64,7 +66,7 @@ public final class PreviewRecord {
         self.secondaryInfo = secondaryInfo
         self.imageURL = imageURL
         self.externalLinks = externalLinks
-        self.accessRaw = accessRaw
+        self.accessRaw = access.rawValue
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.syncStateRaw = syncState.rawValue
@@ -72,6 +74,11 @@ public final class PreviewRecord {
 }
 
 public extension PreviewRecord {
+    var access: Access {
+        get { Access(rawValue: accessRaw) ?? .private }
+        set { accessRaw = newValue.rawValue }
+    }
+
     var syncState: SyncState {
         get { SyncState(rawValue: syncStateRaw) ?? .synced }
         set { syncStateRaw = newValue.rawValue }

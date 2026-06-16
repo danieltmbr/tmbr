@@ -10,31 +10,43 @@ import SwiftData
 /// The note anchors to its catalogue item by `attachmentPreviewID` (the server PreviewID) — a plain
 /// UUID link, not a `@Relationship`, so a note can exist before its `PreviewRecord` is synced and so
 /// CloudKit mirroring stays trivial. Push uses it to call `POST /api/catalogue/item/:previewID/notes`.
+///
 @Model
 public final class NoteRecord {
 
     public var clientKey: UUID = UUID()
 
     public var serverID: UUID?
+
     public var body: String = ""
-    public var accessRaw: String = ""               // Access.rawValue
-    public var languageRaw: String = ""             // Language.rawValue
+
+    var accessRaw: String = ""
+
+    var languageRaw: String = ""
+
     public var createdAt: Date = Date.now
-    public var syncStateRaw: String = SyncState.synced.rawValue
+
+    var syncStateRaw: String = SyncState.synced.rawValue
 
     // Denormalised attachment — lets a NoteRecord display/sync without its PreviewRecord present.
     public var attachmentPreviewID: UUID?
+
     public var attachmentTitle: String = ""
+
     public var attachmentSubtitle: String?
-    public var attachmentCategoryType: String?      // "song" | "book" | …
-    public var attachmentSourceID: Int?             // nil for orphan attachments
+
+    /// "song" | "book" | …
+    public var attachmentCategoryType: String?
+
+    /// nil for orphan attachments
+    public var attachmentSourceID: Int?
 
     public init(
         clientKey: UUID = UUID(),
         serverID: UUID? = nil,
         body: String = "",
-        accessRaw: String = "",
-        languageRaw: String = "",
+        access: Access = .private,
+        language: Language? = nil,
         createdAt: Date = .now,
         syncState: SyncState = .pendingCreate,
         attachmentPreviewID: UUID? = nil,
@@ -46,8 +58,8 @@ public final class NoteRecord {
         self.clientKey = clientKey
         self.serverID = serverID
         self.body = body
-        self.accessRaw = accessRaw
-        self.languageRaw = languageRaw
+        self.accessRaw = access.rawValue
+        self.languageRaw = language?.rawValue ?? ""
         self.createdAt = createdAt
         self.syncStateRaw = syncState.rawValue
         self.attachmentPreviewID = attachmentPreviewID
@@ -59,6 +71,16 @@ public final class NoteRecord {
 }
 
 public extension NoteRecord {
+    var access: Access {
+        get { Access(rawValue: accessRaw) ?? .private }
+        set { accessRaw = newValue.rawValue }
+    }
+
+    var language: Language? {
+        get { Language(rawValue: languageRaw) }
+        set { languageRaw = newValue?.rawValue ?? "" }
+    }
+
     var syncState: SyncState {
         get { SyncState(rawValue: syncStateRaw) ?? .synced }
         set { syncStateRaw = newValue.rawValue }

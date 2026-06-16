@@ -3,20 +3,29 @@ import SwiftData
 
 /// Rich, typed data for an album. Tracks are modelled separately via `ContainerEntryRecord`
 /// (mirroring the backend `ContainerEntry`). Linked to its `PreviewRecord` by `previewID`.
+///
 @Model
 public final class AlbumRecord {
 
     public var previewID: UUID = UUID()
+
     public var sourceID: Int?
 
     public var title: String = ""
+
     public var artist: String = ""
+
     public var genre: String?
+
     public var releaseDate: Date?
+
     public var artworkURL: String?
+
     public var resourceURLs: [String] = []
-    public var accessRaw: String = ""
-    public var syncStateRaw: String = SyncState.synced.rawValue
+
+    var accessRaw: String = ""
+
+    var syncStateRaw: String = SyncState.synced.rawValue
 
     public init(
         previewID: UUID = UUID(),
@@ -27,7 +36,7 @@ public final class AlbumRecord {
         releaseDate: Date? = nil,
         artworkURL: String? = nil,
         resourceURLs: [String] = [],
-        accessRaw: String = "",
+        access: Access = .private,
         syncState: SyncState = .synced
     ) {
         self.previewID = previewID
@@ -38,12 +47,17 @@ public final class AlbumRecord {
         self.releaseDate = releaseDate
         self.artworkURL = artworkURL
         self.resourceURLs = resourceURLs
-        self.accessRaw = accessRaw
+        self.accessRaw = access.rawValue
         self.syncStateRaw = syncState.rawValue
     }
 }
 
 public extension AlbumRecord {
+    var access: Access {
+        get { Access(rawValue: accessRaw) ?? .private }
+        set { accessRaw = newValue.rawValue }
+    }
+
     var syncState: SyncState {
         get { SyncState(rawValue: syncStateRaw) ?? .synced }
         set { syncStateRaw = newValue.rawValue }
