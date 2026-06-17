@@ -11,6 +11,13 @@ public struct QueryItemEncoder {
     }
 }
 
+// MARK: - Date formatting
+
+/// Dates in query parameters are serialized as ISO 8601 with fractional seconds to match the backend's
+/// URL-encoded-form date decoder (`.withInternetDateTime, .withFractionalSeconds`). Without this a
+/// `Date` would fall through `Encodable` and serialize as a bare `Double`, which the server rejects.
+private let queryDateStyle = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
+
 // MARK: - Internal encoder
 
 private final class _Storage {
@@ -72,6 +79,10 @@ private struct _KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
     mutating func encode(_ value: UInt64, forKey key: Key) throws { storage.append(name: key.stringValue, value: "\(value)") }
 
     mutating func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
+        if let date = value as? Date {
+            storage.append(name: key.stringValue, value: date.formatted(queryDateStyle))
+            return
+        }
         let sub = _Encoder(codingPath: codingPath + [key], storage: storage)
         try value.encode(to: sub)
     }
@@ -115,6 +126,11 @@ private struct _UnkeyedContainer: UnkeyedEncodingContainer {
     mutating func encode(_ value: UInt64) throws { storage.append(name: name, value: "\(value)"); count += 1 }
 
     mutating func encode<T: Encodable>(_ value: T) throws {
+        if let date = value as? Date {
+            storage.append(name: name, value: date.formatted(queryDateStyle))
+            count += 1
+            return
+        }
         let sub = _Encoder(codingPath: codingPath, storage: storage)
         try value.encode(to: sub)
         count += 1
@@ -159,6 +175,10 @@ private struct _SingleValueContainer: SingleValueEncodingContainer {
     mutating func encode(_ value: UInt64) throws { storage.append(name: key, value: "\(value)") }
 
     mutating func encode<T: Encodable>(_ value: T) throws {
+        if let date = value as? Date {
+            storage.append(name: key, value: date.formatted(queryDateStyle))
+            return
+        }
         let sub = _Encoder(codingPath: codingPath, storage: storage)
         try value.encode(to: sub)
     }
