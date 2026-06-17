@@ -1,10 +1,14 @@
 import SwiftUI
 
-struct MediaTypePickerSheet: View {
+public struct MediaTypePickerSheet: View {
     let onSelect: (CatalogueItemType) -> Void
     @Environment(\.dismiss) private var dismiss
 
-    var body: some View {
+    public init(onSelect: @escaping (CatalogueItemType) -> Void) {
+        self.onSelect = onSelect
+    }
+
+    public var body: some View {
         NavigationStack {
             List(CatalogueItemType.allCases) { type in
                 Button {

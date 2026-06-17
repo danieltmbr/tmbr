@@ -1,9 +1,11 @@
 import SwiftUI
 
-struct SearchTab: View {
+public struct SearchTab: View {
     @State private var searchText = ""
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         NavigationStack {
             Group {
                 if searchText.isEmpty {

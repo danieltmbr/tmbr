@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct CatalogueTab: View {
-    @Environment(AuthState.self) private var authState
-    @State private var showAccount = false
+    @Environment(\.canAuthor) private var canAuthor
+    @Environment(\.accountToolbar) private var accountToolbar
     @State private var showFilter = false
     @State private var showTypePicker = false
     @State private var selectedType: CatalogueItemType?
@@ -23,52 +23,36 @@ struct CatalogueTab: View {
             .toolbar {
 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showFilter = true
-                    } label: {
+                    Button { showFilter = true } label: {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
                 }
-                if authState.isSignedIn {
+                if canAuthor {
                     ToolbarSpacer(.fixed, placement: .topBarLeading)
                     ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showTypePicker = true
-                        } label: {
+                        Button { showTypePicker = true } label: {
                             Image(systemName: "square.and.pencil")
                         }
                     }
                 }
 #else
                 ToolbarItem(placement: .automatic) {
-                    Button {
-                        showFilter = true
-                    } label: {
+                    Button { showFilter = true } label: {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
                 }
-                if authState.isSignedIn {
+                if canAuthor {
                     ToolbarItem(placement: .primaryAction) {
-                        Button {
-                            showTypePicker = true
-                        } label: {
+                        Button { showTypePicker = true } label: {
                             Image(systemName: "square.and.pencil")
                         }
                     }
                 }
 #endif
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showAccount = true
-                    } label: {
-                        Image(systemName: authState.isSignedIn ? "person.circle.fill" : "person.circle")
-                    }
+                    accountToolbar.content()
                 }
             }
-        }
-        .sheet(isPresented: $showAccount) {
-            AccountSheet()
-                .environment(authState)
         }
         .sheet(isPresented: $showFilter) {
             CatalogueFilterSheet(selectedTypes: $filterTypes)

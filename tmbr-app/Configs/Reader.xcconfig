@@ -1,0 +1,6 @@
+#include "Base.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = me.tmbr.reader.dev
+APP_DISPLAY_NAME = tmbr Reader
+API_BASE_URL = https:$()/$()/tmbr.me
+WEB_CREDENTIALS_DOMAIN = tmbr.me
