@@ -12,6 +12,7 @@ struct ReaderApp: App {
     let container: ModelContainer
     
     let blog: BlogModel
+    let catalogue: CatalogueModel
 
     init() {
         do {
@@ -37,12 +38,17 @@ struct ReaderApp: App {
             loadMore: { try await posts.loadMore() },
             lastFetched: userDefaults.object(forKey: lastFetchedKey) as? Date
         )
+
+        let catalogueStore = CatalogueStore(context: container.mainContext)
+        let catalogueFetcher = ReaderCatalogue(baseURL: Self.apiBaseURL, store: catalogueStore)
+        catalogue = CatalogueModel(refresh: { try await catalogueFetcher.refresh() })
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .blog(blog)
+                .catalogue(catalogue)
         }
         .modelContainer(container)
     }
