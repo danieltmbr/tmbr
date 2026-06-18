@@ -1,6 +1,6 @@
 import Foundation
-import Core
-import AuthKit
+import CoreWeb
+import CoreAuth
 import Vapor
 
 extension Permission<Post> {

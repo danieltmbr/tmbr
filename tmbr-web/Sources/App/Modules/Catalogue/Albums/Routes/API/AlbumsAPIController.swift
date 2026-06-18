@@ -1,8 +1,8 @@
 import Vapor
-import AuthKit
+import CoreAuth
 import Fluent
-import Core
-import TmbrCore
+import CoreWeb
+import CoreTmbr
 
 private struct AlbumLookupResponse: Content, Sendable {
     let id: Int

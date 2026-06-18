@@ -1,5 +1,5 @@
 import Foundation
-import Core
+import CoreWeb
 
 extension Commands {
     var quotes: Commands.Quotes.Type { Commands.Quotes.self }

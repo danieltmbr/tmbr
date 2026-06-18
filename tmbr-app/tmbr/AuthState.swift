@@ -1,7 +1,7 @@
 import Foundation
 import AuthenticationServices
-import ApiKit
-import TmbrCore
+import CoreApi
+import CoreTmbr
 
 @Observable
 final class AuthState {
@@ -16,7 +16,11 @@ final class AuthState {
 
     private let signInLoader: RequestLoader<AppleSignInRequest>
 
-    init(session: URLSession, keychain: Keychain, signInLoader: RequestLoader<AppleSignInRequest>) {
+    init(
+        session: URLSession,
+        keychain: Keychain,
+        signInLoader: RequestLoader<AppleSignInRequest>
+    ) {
         let savedToken = keychain.loadToken()
         self.session = session
         self.keychain = keychain

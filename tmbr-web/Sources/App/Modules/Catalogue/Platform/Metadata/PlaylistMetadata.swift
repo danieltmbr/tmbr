@@ -1,5 +1,5 @@
 import Vapor
-import Core
+import CoreWeb
 
 struct PlaylistMetadata: Encodable, AsyncResponseEncodable, Sendable {
     let artwork: MetadataArtwork?

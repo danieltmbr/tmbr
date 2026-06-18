@@ -1,7 +1,7 @@
 import Foundation
-import Core
+import CoreWeb
 import Fluent
-import AuthKit
+import CoreAuth
 
 struct AlbumSearchResult: Sendable {
 

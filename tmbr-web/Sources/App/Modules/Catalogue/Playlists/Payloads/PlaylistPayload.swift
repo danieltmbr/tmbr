@@ -1,7 +1,7 @@
 import Vapor
 import Foundation
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 struct PlaylistPayload: Decodable, Sendable {
 

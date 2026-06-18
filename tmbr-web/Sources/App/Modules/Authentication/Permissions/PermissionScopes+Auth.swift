@@ -1,4 +1,4 @@
-import AuthKit
+import CoreAuth
 
 extension PermissionScopes {
     var auth: PermissionScopes.Auth.Type { PermissionScopes.Auth.self }

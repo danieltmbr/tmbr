@@ -1,7 +1,7 @@
 import Vapor
 import Fluent
-import Core
-import AuthKit
+import CoreWeb
+import CoreAuth
 
 struct Albums: Module {
 

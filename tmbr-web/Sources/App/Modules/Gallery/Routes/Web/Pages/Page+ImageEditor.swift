@@ -1,6 +1,6 @@
-import Core
+import CoreWeb
 import Vapor
-import TmbrCore
+import CoreTmbr
 
 struct ImageEditorViewModel: Encodable, Sendable {
         

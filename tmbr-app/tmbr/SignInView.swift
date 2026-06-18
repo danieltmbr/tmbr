@@ -6,19 +6,28 @@ import OSLog
 private let logger = Logger(subsystem: "me.tmbr", category: "auth")
 
 struct SignInView: View {
-    @Environment(AuthState.self) private var authState
-    @State private var currentNonce: String = ""
+    @Environment(AuthState.self)
+    private var authState
+    
+    @State 
+    private var currentNonce: String = ""
 
     var body: some View {
         VStack(spacing: 24) {
             Spacer()
             Text("tmbr")
                 .font(.largeTitle.bold())
+            
             Spacer()
-            SignInWithAppleButton(.signIn, onRequest: configure, onCompletion: handle)
-                .frame(height: 50)
-                .padding(.horizontal, 40)
-                .padding(.bottom, 60)
+            
+            SignInWithAppleButton(
+                .signIn,
+                onRequest: configure,
+                onCompletion: handle
+            )
+            .frame(height: 50)
+            .padding(.horizontal, 40)
+            .padding(.bottom, 60)
         }
     }
 

@@ -1,8 +1,8 @@
 import Fluent
 import Vapor
 import Foundation
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 protocol Previewable: Model, Timestamped where IDValue == Int {
 

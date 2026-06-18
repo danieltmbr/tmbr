@@ -1,7 +1,7 @@
 import Foundation
-import Core
+import CoreWeb
 import Fluent
-import AuthKit
+import CoreAuth
 
 extension Command where Self == PlainCommand<String, Album?> {
 

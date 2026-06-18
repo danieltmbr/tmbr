@@ -1,7 +1,7 @@
-import AuthKit
+import CoreAuth
 import Foundation
 import Vapor
-import TmbrCore
+import CoreTmbr
 
 struct NoteInput: Decodable {
 

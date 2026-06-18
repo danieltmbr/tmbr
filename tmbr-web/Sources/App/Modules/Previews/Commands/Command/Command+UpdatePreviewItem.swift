@@ -1,9 +1,9 @@
 import Foundation
 import Vapor
-import Core
+import CoreWeb
 import Fluent
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 struct UpdatePreviewItemInput: Sendable {
     let previewID: PreviewID

@@ -6,13 +6,13 @@ let package = Package(
     platforms: [
        .macOS(.v15)
     ],
-    products: [
-        .library(name: "Core", targets: ["Core"]),
-        .library(name: "AuthKit", targets: ["AuthKit"]),
-    ],
     dependencies: [
         // 🍎 Shared types for native app and backend.
-        .package(path: "../tmbr-core"),
+        .package(path: "../core-tmbr"),
+        // 🧩 Shared web infrastructure (Vapor/Fluent/Markdown helpers).
+        .package(path: "../core-web"),
+        // 🔐 Authentication + permissions.
+        .package(path: "../core-auth"),
         // 💧 A server-side Swift web framework.
         .package(url: "https://github.com/vapor/vapor.git", from: "4.110.1"),
         // 🗄 An ORM for SQL and NoSQL databases.
@@ -25,8 +25,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
         // 🔑 JWT library for token verification.
         .package(url: "https://github.com/vapor/jwt.git", from: "5.0.0"),
-        // 🖋️ Markdown parser
-        .package(url: "https://github.com/danieltmbr/swift-markdown.git", branch: "main"),
         // 🔔 Push notifications
         .package(url: "https://github.com/mochidev/swift-webpush.git", from: "0.4.1"),
         // 🖼️ File storage for gallery
@@ -37,25 +35,6 @@ let package = Package(
         .package(url: "https://github.com/danieltmbr/ImageResize.git", from: "1.0.1"),
     ],
     targets: [
-        .target(
-            name: "Core",
-            dependencies: [
-                .product(name: "Vapor", package: "vapor"),
-                .product(name: "Markdown", package: "swift-markdown"),
-                .product(name: "Fluent", package: "fluent"),
-                .product(name: "TmbrCore", package: "tmbr-core"),
-            ]
-        ),
-        .target(
-            name: "AuthKit",
-            dependencies: [
-                .product(name: "Vapor", package: "vapor"),
-                .product(name: "Fluent", package: "fluent"),
-                .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
-                .product(name: "JWT", package: "jwt"),
-                .product(name: "TmbrCore", package: "tmbr-core"),
-            ]
-        ),
         .executableTarget(
             name: "Backend",
             dependencies: [
@@ -70,9 +49,9 @@ let package = Package(
                 .product(name: "SotoS3", package: "soto"),
                 .product(name: "Crypto", package: "swift-crypto"),
                 .product(name: "ImageResize", package: "ImageResize"),
-                .product(name: "TmbrCore", package: "tmbr-core"),
-                "Core",
-                "AuthKit",
+                .product(name: "CoreTmbr", package: "core-tmbr"),
+                .product(name: "CoreWeb", package: "core-web"),
+                .product(name: "CoreAuth", package: "core-auth"),
             ],
             path: "Sources/App",
             swiftSettings: swiftSettings
@@ -81,19 +60,11 @@ let package = Package(
             name: "AppTests",
             dependencies: [
                 .target(name: "Backend"),
-                .target(name: "AuthKit"),
+                .product(name: "CoreAuth", package: "core-auth"),
                 .product(name: "VaporTesting", package: "vapor"),
             ],
             swiftSettings: swiftSettings
         ),
-        .testTarget(
-            name: "CoreTests",
-            dependencies: [
-                .target(name: "Core")
-            ],
-            path: "Tests/CoreTests",
-            swiftSettings: swiftSettings
-        )
     ],
     swiftLanguageModes: [.v5]
 )

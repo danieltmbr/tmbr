@@ -1,4 +1,4 @@
-import AuthKit
+import CoreAuth
 
 extension PermissionScopes {
     var deletions: PermissionScopes.Deletions.Type { PermissionScopes.Deletions.self }

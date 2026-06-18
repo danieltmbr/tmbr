@@ -1,6 +1,6 @@
 import Foundation
-import Core
-import TmbrCore
+import CoreWeb
+import CoreTmbr
 
 extension Commands {
     var podcasts: Commands.Podcasts.Type { Commands.Podcasts.self }

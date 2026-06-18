@@ -1,9 +1,9 @@
 import Foundation
 import Vapor
-import Core
+import CoreWeb
 import Logging
 import Fluent
-import AuthKit
+import CoreAuth
 
 struct Metadata: @unchecked Sendable {
 

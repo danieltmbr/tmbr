@@ -1,6 +1,6 @@
-import AuthKit
+import CoreAuth
 import Fluent
-import TmbrCore
+import CoreTmbr
 
 extension PermissionScopes {
     var books: PreviewablePermissionScope<Book>.Type { PreviewablePermissionScope<Book>.self }

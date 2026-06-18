@@ -1,5 +1,5 @@
 import Foundation
-import ApiKit
+import CoreApi
 
 struct APIConfig: Sendable {
 

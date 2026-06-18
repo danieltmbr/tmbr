@@ -1,5 +1,5 @@
 import Foundation
-import Core
+import CoreWeb
 
 extension Commands {
     var deletions: Commands.Deletions.Type { Commands.Deletions.self }

@@ -1,5 +1,5 @@
 import Fluent
-import Core
+import CoreWeb
 
 extension QueryBuilder where Model: Previewable {
     @discardableResult

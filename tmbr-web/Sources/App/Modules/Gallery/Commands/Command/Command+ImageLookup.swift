@@ -1,9 +1,9 @@
 import Foundation
 import Vapor
-import Core
+import CoreWeb
 import Logging
 import Fluent
-import AuthKit
+import CoreAuth
 
 /// Finds an existing gallery image by its original source URL.
 /// Editors call this before `addFromURL` to avoid re-downloading the same image on repeated saves.

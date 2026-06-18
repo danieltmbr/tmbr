@@ -1,4 +1,4 @@
-import AuthKit
+import CoreAuth
 import Fluent
 
 extension PermissionScopes {

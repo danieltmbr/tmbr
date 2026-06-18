@@ -1,5 +1,5 @@
 import Vapor
-import Core
+import CoreWeb
 
 extension Configuration where Self == CoreConfiguration {
     static var logging: Self {

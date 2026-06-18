@@ -1,6 +1,6 @@
 import Foundation
 import Fluent
-import TmbrCore
+import CoreTmbr
 
 final class Deletion: Model, @unchecked Sendable {
 

@@ -1,8 +1,8 @@
-import Core
+import CoreWeb
 import Fluent
 import Vapor
-import AuthKit
-import TmbrCore
+import CoreAuth
+import CoreTmbr
 
 final class Post: Model, Content, @unchecked Sendable {
 

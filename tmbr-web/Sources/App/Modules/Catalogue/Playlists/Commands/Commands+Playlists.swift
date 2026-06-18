@@ -1,5 +1,5 @@
 import Foundation
-import Core
+import CoreWeb
 
 extension Commands {
     var playlists: Commands.Playlists.Type { Commands.Playlists.self }
