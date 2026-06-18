@@ -10,6 +10,8 @@
 		03297F0053BB73A1328B6378 /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = 8229BF76A2BB18E12999E69F /* CoreApp */; };
 		109CB8C24233693E8E8EF54C /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = F193199EDBC5D787AC73097C /* CoreTmbr */; };
 		2549866CD08843ECFBA90108 /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = D47E8BCA7C0DA4C5D5F9513D /* CoreTmbr */; };
+		34119C3C4719A80DA5477EA1 /* ReaderPosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E70CD2B910F77D4DBFB7DE0 /* ReaderPosts.swift */; };
+		42193258B011E7FFA1C7ED23 /* ReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFD847D16304DA44B690E5A /* ReaderApp.swift */; };
 		707239A243CF738549160865 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E173FBA3F6594B28E84BDB5C /* Cocoa.framework */; };
 		9692272AC826634604D10C7E /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = 4359256FA09B2AD131BFF498 /* CoreApp */; };
 		A838BCBD3A5F97E873E1C206 /* CoreApi in Frameworks */ = {isa = PBXBuildFile; productRef = CD234EC0DAF2EA0B8DE0C637 /* CoreApi */; };
@@ -45,6 +47,8 @@
 		AABB000000000007006866D7 /* Personal.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Personal.Debug.xcconfig; sourceTree = "<group>"; };
 		AABB000000000008006866D7 /* Personal.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Personal.Release.xcconfig; sourceTree = "<group>"; };
 		62A76E36B6219EC07B0C03DE /* Personal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Personal.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D8082582147D945F3CD68BD /* PersonalApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersonalApp.swift; sourceTree = "<group>"; };
+		8E70CD2B910F77D4DBFB7DE0 /* ReaderPosts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReaderPosts.swift; sourceTree = "<group>"; };
 		9F40A6262A8539E304F7E63A /* Reader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E173FBA3F6594B28E84BDB5C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		E27B47882FC4E864006866D7 /* tmbr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tmbr.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -168,6 +172,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9AE3E00865BAEC9380F318FF /* Reader */ = {
+			isa = PBXGroup;
+			children = (
+				3CFD847D16304DA44B690E5A /* ReaderApp.swift */,
+				F78A088AD38720E8CF729923 /* Info.plist */,
+				8E70CD2B910F77D4DBFB7DE0 /* ReaderPosts.swift */,
+			);
+			name = Reader;
+			path = Reader;
+			sourceTree = "<group>";
+		};
+		9B32AE8F90C2ED90EEDD025D /* Personal */ = {
+			isa = PBXGroup;
+			children = (
+				6D8082582147D945F3CD68BD /* PersonalApp.swift */,
+				57393777E9C0E549BD0FB9E2 /* Info.plist */,
+			);
+			name = Personal;
+			path = Personal;
+			sourceTree = "<group>";
+		};
 		B359988695A9E1C1620C655B /* OS X */ = {
 			isa = PBXGroup;
 			children = (
@@ -459,6 +484,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				42193258B011E7FFA1C7ED23 /* ReaderApp.swift in Sources */,
+				34119C3C4719A80DA5477EA1 /* ReaderPosts.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

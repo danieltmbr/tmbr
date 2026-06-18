@@ -1,29 +1,45 @@
 import SwiftUI
+import SwiftData
 
 struct BlogTab: View {
-    @State private var showEditor = false
+
+    @Query(sort: \PostRecord.createdAt, order: .reverse) 
+    private var posts: [PostRecord]
+
+    @Blog(\.phase) 
+    private var phase
+
+    @Environment(\.refreshBlog) 
+    private var refreshBlog
+
+    @State 
+    private var showEditor = false
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(Array(placeholderPosts.enumerated()), id: \.offset) { index, title in
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("\(index + 1).")
-                            .foregroundStyle(.secondary)
-                            .monospacedDigit()
-#if os(macOS)
-                        Text(title)
-                        Spacer()
-                        Text("May 28")
-                            .foregroundStyle(.secondary)
-#else
+                ForEach(posts) { post in
+                    NavigationLink {
+                        PostDetailView(post: post)
+                    } label: {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(title)
-                            Text("May 28")
+                            Text(post.title)
+                            Text(post.createdAt, format: .dateTime.month().day().year())
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
-#endif
+                    }
+                }
+            }
+            .overlay {
+                if posts.isEmpty {
+                    switch phase {
+                    case .loading:
+                        ProgressView()
+                    case .failed(let message):
+                        ContentUnavailableView("Couldn't load posts", systemImage: "wifi.slash", description: Text(message))
+                    case .idle, .loaded:
+                        ContentUnavailableView("No posts yet", systemImage: "doc.text")
                     }
                 }
             }
@@ -42,17 +58,11 @@ struct BlogTab: View {
                     AccountButton()
                 }
             }
+            .refreshable { await refreshBlog() }
         }
+        .task { await refreshBlog() }
         .sheet(isPresented: $showEditor) {
             BlogEditorView()
         }
     }
-
-    private let placeholderPosts = [
-        "On keeping a reading journal",
-        "Why I stopped using recommendations",
-        "Albums I return to every winter",
-        "Notes on Detransition, Baby",
-        "The case for private playlists",
-    ]
 }
