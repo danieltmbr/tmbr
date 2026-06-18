@@ -10,26 +10,47 @@ Each app feels fast and reliable regardless of connectivity, driven by SwiftData
 - **No spinners on launch**: the user always sees their data
 - **Author/Personal**: offline writes saved locally first; **Reader**: stale-while-revalidate cache
 
+## Current status (2026-06) — read this first
+
+The package restructure and the networking foundation are **done**, and the build order is now
+**Reader-first**. This supersedes the stale internals below:
+
+- **Packages renamed** (repo root): `tmbr-core`→`core-tmbr`/`CoreTmbr`, `api-kit`→`core-api`/`CoreApi`,
+  `app-core`→`core-app`/`CoreApp`; `tmbr-web` split into `core-web`/`CoreWeb` + `core-auth`/`CoreAuth` +
+  the `Backend` exe. The doc's `AppCore`/`AppBackend` = `CoreApp`/`CoreApi`. Read names below accordingly.
+- **Networking built** in `core-api`: `RequestLoader` loader factories (`.songs`/`.posts`/`.orphans`/
+  `.deletions`…) + `RequestLoader.syncAll(since:)` (the pagination driver) + per-endpoint `…Query`
+  requests. The `SyncAPI`/`PageLoader` code blocks below are **superseded**. `OrphanPageQuery`/`SinceQuery`
+  live in `core-tmbr`.
+- **Schema**: there is **no `CatalogueItemRecord`** — it's `PreviewRecord` (unified list driver) +
+  per-type records (`SongRecord`…) linked by `previewID`. Wherever the text below says
+  `CatalogueItemRecord`, read `PreviewRecord` (+ its typed record). See the architecture doc.
+- **Build order** (active plan): three-target split → **Reader** (lazy fetch+upsert over the *existing*
+  public endpoints, **no new backend**; ETag/`304` deferred) → Author (delta `SyncEngine` + auth) →
+  Personal (CloudKit). Stages 1–5 below describe the already-built **Author** path and remain the
+  reference/regression checklist; they are **not** the build sequence.
+
 ## Roadmap structure
 
 | Phase | App | Status |
 |---|---|---|
-| **Stages 1–5** (below) | **Author** (offline-first, backend sync) | **Built** — the original monolithic app *is* the Author app |
-| **Restructure** | Extract `AppCore`/`AppBackend`; re-home app as Author; Reader + Personal target skeletons | Next |
-| **Reader backend** | Public read API (browse/feed + detail JSON) + ETag/`304` in `tmbr-web` | Later |
-| **Reader app** | `CacheLoader` (lazy ETag cache), read-only UI | Later |
+| **Stages 1–5** (below) | **Author** (offline-first, backend sync) | **Built** — original monolithic app; reference impl |
+| **Restructure** | `core-*` package rename; `core-api` networking foundation | **Done** |
+| **Three-target split** | Author/Reader/Personal targets; shared UI → `CoreApp` | **Next** |
+| **Reader app** | lazy fetch+upsert over existing public endpoints, read-only UI | **Next** (building first) |
+| **Author app** | re-home over `CoreApp`/`CoreApi`; delta `SyncEngine` + auth + writes | Later |
 | **Personal app** | `.private` CloudKit container + runtime mirror validation | Later |
+| **Reader optimization** | public read API + ETag/`304` in the backend | Later |
 
-The **Stages 1–5 below are the Author app, already built.** They are retained as the reference
-implementation and regression checklist for the extraction. The Domain Primer and Notes Sync Design
-sections that follow are still accurate and apply to all backend-wired apps (Reader + Author).
+The Domain Primer and Notes Sync Design sections below are still accurate and apply to all backend-wired
+apps (Reader + Author).
 
 ### Seam & schema (see architecture doc for full rationale)
 
 - **Composition, not a protocol.** Write actions call an injected `requestSync` closure
   (`syncEngine.runSync()` for Author, `{}` for Personal); read/refresh uses a per-screen
-  `@Observable` detail model holding an injected refresh-strategy closure (`SyncEngine` / `CacheLoader`
-  ETag GET / no-op). `AppCore` imports no networking, no CloudKit.
+  `@Observable` detail model holding an injected refresh-strategy closure (Author `SyncEngine` / Reader
+  fetch+upsert / Personal no-op). `CoreApp` imports no networking, no CloudKit.
 - **Normalized schema mirroring the backend** (Author + Personal author catalogue items offline):
   `PreviewRecord` (unified list driver + note anchor, keyed by server PreviewID) + typed
   `SongRecord`/etc. linked by `previewID` + `ContainerEntryRecord` for tracks. CloudKit-constrained
