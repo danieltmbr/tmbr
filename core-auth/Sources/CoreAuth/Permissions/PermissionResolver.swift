@@ -76,9 +76,9 @@ extension ErasedPermissionResolver {
     // but for that we might need to introduce protocols
     
     public init<I, C>(
-        input: @escaping (Input) -> I,
-        condition: @escaping (Input) -> C,
-        select: @escaping (C) -> PermissionResolver<I, Void>
+        input: @escaping @Sendable (Input) -> I,
+        condition: @escaping @Sendable (Input) -> C,
+        select: @escaping @Sendable (C) -> PermissionResolver<I, Void>
     ) where Output == Void {
         self.init {
             let permission = select(condition($0))
@@ -89,7 +89,7 @@ extension ErasedPermissionResolver {
     public init<I, C>(
         input: KeyPath<Input, I>,
         condition: KeyPath<Input, C>,
-        select: @escaping (C) -> PermissionResolver<I, Void>
+        select: @escaping @Sendable (C) -> PermissionResolver<I, Void>
     ) where Output == Void {
         self.init(
             input: { $0[keyPath: input] },

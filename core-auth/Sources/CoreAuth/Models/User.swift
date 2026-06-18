@@ -5,7 +5,7 @@ import CoreTmbr
 
 public final class User: Model, Content, Authenticatable, @unchecked Sendable {
     
-    public enum Role: String, Codable {
+    public enum Role: String, Codable, Sendable {
         case admin
         case author
         case standard

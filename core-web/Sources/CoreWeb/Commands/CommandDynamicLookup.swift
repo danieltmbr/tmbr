@@ -27,7 +27,7 @@ public struct CommandDynamicLookup<T: Sendable>: Sendable {
         }
     }
     
-    public func transaction<V>(_ execute: @escaping @Sendable (Self) async throws -> V) async throws -> V
+    public func transaction<V: Sendable>(_ execute: @escaping @Sendable (Self) async throws -> V) async throws -> V
     where T == Commands {
         let database: any Database = request.commandDB
         if database.inTransaction {
