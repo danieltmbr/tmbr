@@ -6,7 +6,7 @@ import Foundation
 struct BasicRequestNoBodyTests {
     @Test func getBuildsURL() throws {
         let req = BasicRequest<Void, Echo>.get(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: (), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: (), token: nil)
         #expect(urlRequest.url?.absoluteString == "https://test.example.com/api/things")
         #expect(urlRequest.httpMethod == "GET")
         #expect(urlRequest.httpBody == nil)
@@ -14,19 +14,19 @@ struct BasicRequestNoBodyTests {
 
     @Test func getOmitsAuthHeaderWhenTokenNil() throws {
         let req = BasicRequest<Void, Echo>.get(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: (), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: (), token: nil)
         #expect(urlRequest.value(forHTTPHeaderField: "Authorization") == nil)
     }
 
     @Test func getAttachesAuthHeaderWhenTokenPresent() throws {
         let req = BasicRequest<Void, Echo>.get(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: (), token: "abc123", using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: (), token: "abc123")
         #expect(urlRequest.value(forHTTPHeaderField: "Authorization") == "Bearer abc123")
     }
 
     @Test func deleteBuildsURL() throws {
         let req = BasicRequest<Void, Echo>.delete(baseURL: testBase, path: "/api/things/1")
-        let urlRequest = try req.makeRequest(from: (), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: (), token: nil)
         #expect(urlRequest.url?.absoluteString == "https://test.example.com/api/things/1")
         #expect(urlRequest.httpMethod == "DELETE")
     }
@@ -44,45 +44,45 @@ struct BasicRequestBodyTests {
 
     @Test func postBuildsURLAndMethod() throws {
         let req = BasicRequest<Payload, Echo>.post(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: nil)
         #expect(urlRequest.url?.absoluteString == "https://test.example.com/api/things")
         #expect(urlRequest.httpMethod == "POST")
     }
 
     @Test func postEncodesBodyAsJSON() throws {
         let req = BasicRequest<Payload, Echo>.post(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: Payload(name: "hello"), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: Payload(name: "hello"), token: nil)
         let decoded = try JSONDecoder().decode(Payload.self, from: urlRequest.httpBody!)
         #expect(decoded.name == "hello")
     }
 
     @Test func postSetsContentTypeHeader() throws {
         let req = BasicRequest<Payload, Echo>.post(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: nil)
         #expect(urlRequest.value(forHTTPHeaderField: "Content-Type") == "application/json")
     }
 
     @Test func putUsesCorrectMethod() throws {
         let req = BasicRequest<Payload, Echo>.put(baseURL: testBase, path: "/api/things/1")
-        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: nil)
         #expect(urlRequest.httpMethod == "PUT")
     }
 
     @Test func patchUsesCorrectMethod() throws {
         let req = BasicRequest<Payload, Echo>.patch(baseURL: testBase, path: "/api/things/1")
-        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: nil)
         #expect(urlRequest.httpMethod == "PATCH")
     }
 
     @Test func bodyOmitsAuthHeaderWhenTokenNil() throws {
         let req = BasicRequest<Payload, Echo>.post(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: nil)
         #expect(urlRequest.value(forHTTPHeaderField: "Authorization") == nil)
     }
 
     @Test func bodyAttachesAuthHeaderWhenTokenPresent() throws {
         let req = BasicRequest<Payload, Echo>.post(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: "tok", using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: Payload(name: "x"), token: "tok")
         #expect(urlRequest.value(forHTTPHeaderField: "Authorization") == "Bearer tok")
     }
 }
@@ -96,7 +96,7 @@ struct BasicRequestQueryTests {
 
     @Test func encodesQueryParams() throws {
         let req = BasicRequest<SearchParams, Echo>.query(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: SearchParams(q: "hello", page: 2), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: SearchParams(q: "hello", page: 2), token: nil)
         let components = URLComponents(url: urlRequest.url!, resolvingAgainstBaseURL: false)
         let items = components?.queryItems ?? []
         #expect(items.contains(URLQueryItem(name: "q", value: "hello")))
@@ -105,19 +105,19 @@ struct BasicRequestQueryTests {
 
     @Test func queryUsesGetMethod() throws {
         let req = BasicRequest<SearchParams, Echo>.query(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: SearchParams(q: "x", page: 1), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: SearchParams(q: "x", page: 1), token: nil)
         #expect(urlRequest.httpMethod == "GET")
     }
 
     @Test func queryHasNoBody() throws {
         let req = BasicRequest<SearchParams, Echo>.query(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: SearchParams(q: "x", page: 1), token: nil, using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: SearchParams(q: "x", page: 1), token: nil)
         #expect(urlRequest.httpBody == nil)
     }
 
     @Test func queryAttachesAuthHeaderWhenTokenPresent() throws {
         let req = BasicRequest<SearchParams, Echo>.query(baseURL: testBase, path: "/api/things")
-        let urlRequest = try req.makeRequest(from: SearchParams(q: "x", page: 1), token: "tok", using: JSONEncoder())
+        let urlRequest = try req.makeRequest(from: SearchParams(q: "x", page: 1), token: "tok")
         #expect(urlRequest.value(forHTTPHeaderField: "Authorization") == "Bearer tok")
     }
 }
