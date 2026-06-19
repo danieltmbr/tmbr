@@ -15,7 +15,6 @@
 		82AF5B85AB3215D3608CD013 /* PersonalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8082582147D945F3CD68BD /* PersonalApp.swift */; };
 		9692272AC826634604D10C7E /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = 4359256FA09B2AD131BFF498 /* CoreApp */; };
 		A838BCBD3A5F97E873E1C206 /* CoreApi in Frameworks */ = {isa = PBXBuildFile; productRef = CD234EC0DAF2EA0B8DE0C637 /* CoreApi */; };
-		D86F4D8148FA9293550EADFC /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E173FBA3F6594B28E84BDB5C /* Cocoa.framework */; };
 		E2497B602FE1302F00D1B325 /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = E2497B5F2FE1302F00D1B325 /* CoreApp */; };
 		E27B48712FC58690006866D7 /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = E27B48722FC58690006866D7 /* CoreTmbr */; };
 		E27C0B542FC5FE480055C952 /* CoreApi in Frameworks */ = {isa = PBXBuildFile; productRef = E27C0B532FC5FE480055C952 /* CoreApi */; };
@@ -77,15 +76,11 @@
 		};
 		E27B479A2FC4E865006866D7 /* tmbrTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = tmbrTests;
 			sourceTree = "<group>";
 		};
 		E27B47A42FC4E865006866D7 /* tmbrUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = tmbrUITests;
 			sourceTree = "<group>";
 		};
@@ -106,7 +101,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D86F4D8148FA9293550EADFC /* Cocoa.framework in Frameworks */,
 				03297F0053BB73A1328B6378 /* CoreApp in Frameworks */,
 				A838BCBD3A5F97E873E1C206 /* CoreApi in Frameworks */,
 				109CB8C24233693E8E8EF54C /* CoreTmbr in Frameworks */,
@@ -146,7 +140,6 @@
 				3CFD847D16304DA44B690E5A /* ReaderApp.swift */,
 				F78A088AD38720E8CF729923 /* Info.plist */,
 			);
-			name = Reader;
 			path = Reader;
 			sourceTree = "<group>";
 		};
@@ -156,7 +149,6 @@
 				6D8082582147D945F3CD68BD /* PersonalApp.swift */,
 				57393777E9C0E549BD0FB9E2 /* Info.plist */,
 			);
-			name = Personal;
 			path = Personal;
 			sourceTree = "<group>";
 		};
@@ -360,9 +352,9 @@
 			mainGroup = E27B477F2FC4E864006866D7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "core-tmbr" */,
-				E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "core-api" */,
-				E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "core-app" */,
+				E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */,
+				E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../core-api" */,
+				E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E27B47892FC4E864006866D7 /* Products */;
@@ -1014,15 +1006,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "core-app" */ = {
+		E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../core-app";
 		};
-		E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "core-tmbr" */ = {
+		E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../core-tmbr";
 		};
-		E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "core-api" */ = {
+		E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../core-api" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../core-api";
 		};
@@ -1031,42 +1023,42 @@
 /* Begin XCSwiftPackageProductDependency section */
 		4359256FA09B2AD131BFF498 /* CoreApp */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "core-app" */;
+			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */;
 			productName = CoreApp;
 		};
 		8229BF76A2BB18E12999E69F /* CoreApp */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "core-app" */;
+			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */;
 			productName = CoreApp;
 		};
 		CD234EC0DAF2EA0B8DE0C637 /* CoreApi */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "core-api" */;
+			package = E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../core-api" */;
 			productName = CoreApi;
 		};
 		D47E8BCA7C0DA4C5D5F9513D /* CoreTmbr */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "core-tmbr" */;
+			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */;
 			productName = CoreTmbr;
 		};
 		E2497B5F2FE1302F00D1B325 /* CoreApp */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "core-app" */;
+			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */;
 			productName = CoreApp;
 		};
 		E27B48722FC58690006866D7 /* CoreTmbr */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "core-tmbr" */;
+			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */;
 			productName = CoreTmbr;
 		};
 		E27C0B532FC5FE480055C952 /* CoreApi */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "core-api" */;
+			package = E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../core-api" */;
 			productName = CoreApi;
 		};
 		F193199EDBC5D787AC73097C /* CoreTmbr */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "core-tmbr" */;
+			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */;
 			productName = CoreTmbr;
 		};
 /* End XCSwiftPackageProductDependency section */
