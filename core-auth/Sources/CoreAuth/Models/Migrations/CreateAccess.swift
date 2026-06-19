@@ -3,7 +3,9 @@ import Foundation
 import SQLKit
 
 public struct CreateAccess: AsyncMigration {
-    
+
+    public var name: String { "AuthKit.CreateAccess" }
+
     public init() {}
     
     public func prepare(on database: Database) async throws {
