@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct BlogTab: View {
-    @Environment(AuthState.self) private var authState
-    @State private var showAccount = false
     @State private var showEditor = false
 
     var body: some View {
@@ -32,38 +30,18 @@ struct BlogTab: View {
             .navigationTitle("Blog")
             .toolbar {
 #if os(iOS)
-                if authState.isSignedIn {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            showEditor = true
-                        } label: {
-                            Image(systemName: "square.and.pencil")
-                        }
-                    }
+                ToolbarItem(placement: .topBarLeading) {
+                    AuthoringButton(systemImage: "square.and.pencil") { showEditor = true }
                 }
 #else
-                if authState.isSignedIn {
-                    ToolbarItem(placement: .automatic) {
-                        Button {
-                            showEditor = true
-                        } label: {
-                            Image(systemName: "square.and.pencil")
-                        }
-                    }
+                ToolbarItem(placement: .automatic) {
+                    AuthoringButton(systemImage: "square.and.pencil") { showEditor = true }
                 }
 #endif
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showAccount = true
-                    } label: {
-                        Image(systemName: authState.isSignedIn ? "person.circle.fill" : "person.circle")
-                    }
+                    AccountButton()
                 }
             }
-        }
-        .sheet(isPresented: $showAccount) {
-            AccountSheet()
-                .environment(authState)
         }
         .sheet(isPresented: $showEditor) {
             BlogEditorView()

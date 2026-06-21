@@ -3,8 +3,11 @@ import AuthenticationServices
 import CoreApi
 import CoreTmbr
 
+/// The shared account model for the Author app — manages sign-in state, token storage,
+/// and vends authenticated request loaders for other features.
+@MainActor
 @Observable
-final class AuthState {
+public final class AccountModel {
 
     private(set) var isSignedIn: Bool
 
@@ -40,7 +43,7 @@ final class AuthState {
               let codeData = credential.authorizationCode,
               let authCode = String(data: codeData, encoding: .utf8)
         else {
-            throw AuthError.invalidCredential
+            throw AccountError.invalidCredential
         }
 
         let response = try await signInLoader.load(from: AppleSignInData(
@@ -72,7 +75,7 @@ final class AuthState {
         return .init(email: credential.email, name: name)
     }
 
-    enum AuthError: LocalizedError {
+    enum AccountError: LocalizedError {
         case invalidCredential
         var errorDescription: String? { "Could not read Apple Sign In credential." }
     }

@@ -1,20 +1,18 @@
 import SwiftUI
 
 struct AccountSheet: View {
-    @Environment(AuthState.self) private var authState
-    @Environment(\.dismiss) private var dismiss
+
+    @Environment(\.accountStatus)
+    private var status
+
+    @Environment(\.dismiss)
+    private var dismiss
 
     var body: some View {
         NavigationStack {
             Group {
-                if authState.isSignedIn {
-                    VStack(spacing: 24) {
-                        Spacer()
-                        Button("Sign Out", role: .destructive) {
-                            Task { await authState.signOut() }
-                        }
-                        .padding(.bottom, 60)
-                    }
+                if status == .signedIn {
+                    AccountView()
                 } else {
                     SignInView()
                 }
@@ -28,8 +26,9 @@ struct AccountSheet: View {
             }
         }
         .frame(minWidth: 320, minHeight: 380)
-        .onChange(of: authState.isSignedIn) { _, _ in
-            dismiss()
+        .onChange(of: status) { old, new in
+            // Auto-dismiss when sign-in / sign-out completes
+            if old != new { dismiss() }
         }
     }
 }

@@ -1,13 +1,13 @@
 import Foundation
 
-enum CatalogueItemType: String, CaseIterable, Identifiable {
+public enum CatalogueItemType: String, CaseIterable, Identifiable, Sendable {
     case song, album, playlist, book, podcast, movie
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
-    var label: String { rawValue.capitalized }
+    public var label: String { rawValue.capitalized }
 
-    var systemImage: String {
+    public var systemImage: String {
         switch self {
         case .song: "music.note"
         case .album: "music.note.square.stack"

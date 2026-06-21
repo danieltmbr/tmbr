@@ -1,13 +1,13 @@
 import SwiftUI
 
 @main
-struct tmbr: App {
+struct AuthorApp: App {
 
-    private let authState: AuthState
+    private let account: AccountModel
 
     init() {
         let config = APIConfig.fromInfoPlist()
-        authState = AuthState(
+        account = AccountModel(
             session: config.session,
             keychain: Keychain(),
             signInLoader: config.loader(for: .signIn(baseURL: config.baseURL))
@@ -16,8 +16,8 @@ struct tmbr: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(authState)
+            RootView()
+                .account(account)
         }
     }
 }

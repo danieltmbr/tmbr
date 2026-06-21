@@ -1,0 +1,18 @@
+#include "../Base.xcconfig"
+
+// Dev backend (ngrok tunnel — update when tunnel changes)
+API_BASE_URL = https:$()/$()/10bb-2a01-4b00-bf22-e100-fd4d-5430-b41a-d74.ngrok-free.app
+WEB_CREDENTIALS_DOMAIN = 10bb-2a01-4b00-bf22-e100-fd4d-5430-b41a-d74.ngrok-free.app
+
+// SIWA App Group — all debug targets share ONE Sign in with Apple service.
+// Apple issues JWTs with aud = SIWA_NATIVE_APP_ID (the group primary), regardless
+// of which member app requested the sign-in.  The backend validates against this ID.
+//
+// REQUIRED PORTAL SETUP (one-time, per environment):
+//   1. identifiers → me.tmbr.dev → Sign in with Apple → "Enable as a primary App ID"
+//   2. identifiers → me.tmbr.author.dev → Sign in with Apple → Enable, group primary = me.tmbr.dev
+//   3. identifiers → me.tmbr.personal.dev → Sign in with Apple → Enable, group primary = me.tmbr.dev
+//
+// Without this, each app's SIWA JWT will have its own bundle ID as aud, and the backend
+// will treat Author/Personal as separate accounts from Reader.
+SIWA_NATIVE_APP_ID = me.tmbr.dev

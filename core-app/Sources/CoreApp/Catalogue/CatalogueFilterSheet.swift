@@ -1,10 +1,14 @@
 import SwiftUI
 
-struct CatalogueFilterSheet: View {
+public struct CatalogueFilterSheet: View {
     @Binding var selectedTypes: Set<CatalogueItemType>
     @Environment(\.dismiss) private var dismiss
 
-    var body: some View {
+    public init(selectedTypes: Binding<Set<CatalogueItemType>>) {
+        self._selectedTypes = selectedTypes
+    }
+
+    public var body: some View {
         NavigationStack {
             List(CatalogueItemType.allCases) { type in
                 Button {

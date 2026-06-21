@@ -7,9 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		03297F0053BB73A1328B6378 /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = 8229BF76A2BB18E12999E69F /* CoreApp */; };
+		109CB8C24233693E8E8EF54C /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = F193199EDBC5D787AC73097C /* CoreTmbr */; };
+		2549866CD08843ECFBA90108 /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = D47E8BCA7C0DA4C5D5F9513D /* CoreTmbr */; };
+		707239A243CF738549160865 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E173FBA3F6594B28E84BDB5C /* Cocoa.framework */; };
+		9692272AC826634604D10C7E /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = 4359256FA09B2AD131BFF498 /* CoreApp */; };
+		A838BCBD3A5F97E873E1C206 /* CoreApi in Frameworks */ = {isa = PBXBuildFile; productRef = CD234EC0DAF2EA0B8DE0C637 /* CoreApi */; };
+		E2497B602FE1302F00D1B325 /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = E2497B5F2FE1302F00D1B325 /* CoreApp */; };
 		E27B48712FC58690006866D7 /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = E27B48722FC58690006866D7 /* CoreTmbr */; };
 		E27C0B542FC5FE480055C952 /* CoreApi in Frameworks */ = {isa = PBXBuildFile; productRef = E27C0B532FC5FE480055C952 /* CoreApi */; };
-		E2497B602FE1302F00D1B325 /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = E2497B5F2FE1302F00D1B325 /* CoreApp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,30 +36,75 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AABB000000000001006866D7 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		AABB000000000002006866D7 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		AABB000000000003006866D7 /* Author.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Author.Debug.xcconfig; sourceTree = "<group>"; };
+		AABB000000000004006866D7 /* Author.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Author.Release.xcconfig; sourceTree = "<group>"; };
+		AABB000000000005006866D7 /* Reader.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Reader.Debug.xcconfig; sourceTree = "<group>"; };
+		AABB000000000006006866D7 /* Reader.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Reader.Release.xcconfig; sourceTree = "<group>"; };
+		AABB000000000007006866D7 /* Personal.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Personal.Debug.xcconfig; sourceTree = "<group>"; };
+		AABB000000000008006866D7 /* Personal.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Personal.Release.xcconfig; sourceTree = "<group>"; };
+		62A76E36B6219EC07B0C03DE /* Personal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Personal.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F40A6262A8539E304F7E63A /* Reader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reader.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E173FBA3F6594B28E84BDB5C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		E27B47882FC4E864006866D7 /* tmbr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tmbr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E27B47972FC4E865006866D7 /* tmbrTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = tmbrTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E27B47A12FC4E865006866D7 /* tmbrUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = tmbrUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E27B48732FC58690006866D7 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
-		E27B48742FC58690006866D7 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
-		E27B48752FC58690006866D7 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E27B48762FC58690006866D8 /* Exceptions for "tmbr" folder in "tmbr" target */ = {
+		AABB00000000000C006866D7 /* Exceptions for "Author" folder in "tmbr" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				Author.entitlements,
+			);
+			target = E27B47872FC4E864006866D7 /* tmbr */;
+		};
+		AABB00000000000D006866D7 /* Exceptions for "Reader" folder in "Reader" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = E27B47872FC4E864006866D7 /* tmbr */;
+			target = CD7145ED09C7AD4D2774B306 /* Reader */;
+		};
+		AABB00000000000E006866D7 /* Exceptions for "Personal" folder in "Personal" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4E9AF2CFAEAE3684B2EBCE3C /* Personal */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		E27B478A2FC4E864006866D7 /* tmbr */ = {
+		AABB00000000000B006866D7 /* Author */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E27B48762FC58690006866D8 /* Exceptions for "tmbr" folder in "tmbr" target */,
+				AABB00000000000C006866D7 /* Exceptions for "Author" folder in "tmbr" target */,
 			);
+			path = Author;
+			sourceTree = "<group>";
+		};
+		9AE3E00865BAEC9380F318FF /* Reader */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AABB00000000000D006866D7 /* Exceptions for "Reader" folder in "Reader" target */,
+			);
+			path = Reader;
+			sourceTree = "<group>";
+		};
+		9B32AE8F90C2ED90EEDD025D /* Personal */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AABB00000000000E006866D7 /* Exceptions for "Personal" folder in "Personal" target */,
+			);
+			path = Personal;
+			sourceTree = "<group>";
+		};
+		E27B478A2FC4E864006866D7 /* tmbr */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
 			path = tmbr;
 			sourceTree = "<group>";
 		};
@@ -70,6 +121,26 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		458FCB39940826BC025E09EC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				707239A243CF738549160865 /* Cocoa.framework in Frameworks */,
+				9692272AC826634604D10C7E /* CoreApp in Frameworks */,
+				2549866CD08843ECFBA90108 /* CoreTmbr in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C51F0AC44CEE69B5F896CAB9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				03297F0053BB73A1328B6378 /* CoreApp in Frameworks */,
+				A838BCBD3A5F97E873E1C206 /* CoreApi in Frameworks */,
+				109CB8C24233693E8E8EF54C /* CoreTmbr in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E27B47852FC4E864006866D7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -97,15 +168,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B359988695A9E1C1620C655B /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				E173FBA3F6594B28E84BDB5C /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
 		E27B477F2FC4E864006866D7 = {
 			isa = PBXGroup;
 			children = (
 				E27B48762FC58690006866D7 /* Configs */,
+				AABB00000000000B006866D7 /* Author */,
 				E27B478A2FC4E864006866D7 /* tmbr */,
 				E27B479A2FC4E865006866D7 /* tmbrTests */,
 				E27B47A42FC4E865006866D7 /* tmbrUITests */,
 				E27C0B522FC5FE480055C952 /* Frameworks */,
 				E27B47892FC4E864006866D7 /* Products */,
+				9AE3E00865BAEC9380F318FF /* Reader */,
+				9B32AE8F90C2ED90EEDD025D /* Personal */,
 			);
 			sourceTree = "<group>";
 		};
@@ -115,6 +197,8 @@
 				E27B47882FC4E864006866D7 /* tmbr.app */,
 				E27B47972FC4E865006866D7 /* tmbrTests.xctest */,
 				E27B47A12FC4E865006866D7 /* tmbrUITests.xctest */,
+				9F40A6262A8539E304F7E63A /* Reader.app */,
+				62A76E36B6219EC07B0C03DE /* Personal.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -123,15 +207,38 @@
 			isa = PBXGroup;
 			children = (
 				E27B48732FC58690006866D7 /* Base.xcconfig */,
-				E27B48742FC58690006866D7 /* Debug.xcconfig */,
-				E27B48752FC58690006866D7 /* Release.xcconfig */,
+				AABB000000000009006866D7 /* Environments */,
+				AABB00000000000A006866D7 /* Apps */,
 			);
 			path = Configs;
+			sourceTree = "<group>";
+		};
+		AABB000000000009006866D7 /* Environments */ = {
+			isa = PBXGroup;
+			children = (
+				AABB000000000001006866D7 /* Debug.xcconfig */,
+				AABB000000000002006866D7 /* Release.xcconfig */,
+			);
+			path = Environments;
+			sourceTree = "<group>";
+		};
+		AABB00000000000A006866D7 /* Apps */ = {
+			isa = PBXGroup;
+			children = (
+				AABB000000000003006866D7 /* Author.Debug.xcconfig */,
+				AABB000000000004006866D7 /* Author.Release.xcconfig */,
+				AABB000000000005006866D7 /* Reader.Debug.xcconfig */,
+				AABB000000000006006866D7 /* Reader.Release.xcconfig */,
+				AABB000000000007006866D7 /* Personal.Debug.xcconfig */,
+				AABB000000000008006866D7 /* Personal.Release.xcconfig */,
+			);
+			path = Apps;
 			sourceTree = "<group>";
 		};
 		E27C0B522FC5FE480055C952 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B359988695A9E1C1620C655B /* OS X */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -139,6 +246,57 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		4E9AF2CFAEAE3684B2EBCE3C /* Personal */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4D8988E1F88B9B0F7B3D55FB /* Build configuration list for PBXNativeTarget "Personal" */;
+			buildPhases = (
+				F8F2BA312EB943FF6737B161 /* Sources */,
+				458FCB39940826BC025E09EC /* Frameworks */,
+				E153B215EE3AE264A86D30C8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9B32AE8F90C2ED90EEDD025D /* Personal */,
+				E27B478A2FC4E864006866D7 /* tmbr */,
+			);
+			name = Personal;
+			packageProductDependencies = (
+				4359256FA09B2AD131BFF498 /* CoreApp */,
+				D47E8BCA7C0DA4C5D5F9513D /* CoreTmbr */,
+			);
+			productName = Personal;
+			productReference = 62A76E36B6219EC07B0C03DE /* Personal.app */;
+			productType = "com.apple.product-type.application";
+		};
+		CD7145ED09C7AD4D2774B306 /* Reader */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E899FB28AAC16E304F1E68F1 /* Build configuration list for PBXNativeTarget "Reader" */;
+			buildPhases = (
+				C98C1A1DCA88C5FDDF6BEC01 /* Sources */,
+				C51F0AC44CEE69B5F896CAB9 /* Frameworks */,
+				BEA08B37655C75F3DA9C13CD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9AE3E00865BAEC9380F318FF /* Reader */,
+				E27B478A2FC4E864006866D7 /* tmbr */,
+			);
+			name = Reader;
+			packageProductDependencies = (
+				8229BF76A2BB18E12999E69F /* CoreApp */,
+				CD234EC0DAF2EA0B8DE0C637 /* CoreApi */,
+				F193199EDBC5D787AC73097C /* CoreTmbr */,
+			);
+			productName = Reader;
+			productReference = 9F40A6262A8539E304F7E63A /* Reader.app */;
+			productType = "com.apple.product-type.application";
+		};
 		E27B47872FC4E864006866D7 /* tmbr */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E27B47AB2FC4E865006866D7 /* Build configuration list for PBXNativeTarget "tmbr" */;
@@ -152,6 +310,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				AABB00000000000B006866D7 /* Author */,
 				E27B478A2FC4E864006866D7 /* tmbr */,
 			);
 			name = tmbr;
@@ -181,8 +340,6 @@
 				E27B479A2FC4E865006866D7 /* tmbrTests */,
 			);
 			name = tmbrTests;
-			packageProductDependencies = (
-			);
 			productName = tmbrTests;
 			productReference = E27B47972FC4E865006866D7 /* tmbrTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -204,8 +361,6 @@
 				E27B47A42FC4E865006866D7 /* tmbrUITests */,
 			);
 			name = tmbrUITests;
-			packageProductDependencies = (
-			);
 			productName = tmbrUITests;
 			productReference = E27B47A12FC4E865006866D7 /* tmbrUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -255,11 +410,27 @@
 				E27B47872FC4E864006866D7 /* tmbr */,
 				E27B47962FC4E865006866D7 /* tmbrTests */,
 				E27B47A02FC4E865006866D7 /* tmbrUITests */,
+				CD7145ED09C7AD4D2774B306 /* Reader */,
+				4E9AF2CFAEAE3684B2EBCE3C /* Personal */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		BEA08B37655C75F3DA9C13CD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E153B215EE3AE264A86D30C8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E27B47862FC4E864006866D7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -284,6 +455,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		C98C1A1DCA88C5FDDF6BEC01 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E27B47842FC4E864006866D7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -299,6 +477,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		E27B479D2FC4E865006866D7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F8F2BA312EB943FF6737B161 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -321,6 +506,182 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		4249CEB0DA805984C51ED5DA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AABB000000000005006866D7 /* Reader.Debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VNN8LWX58P;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				INFOPLIST_FILE = Reader/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		470A7FEAE1EF7C62A231EEF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AABB000000000008006866D7 /* Personal.Release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				INFOPLIST_FILE = Personal/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		79DCAB378D2804DD0A3F542D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AABB000000000007006866D7 /* Personal.Debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VNN8LWX58P;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				INFOPLIST_FILE = Personal/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		9AA1894B233682546BF666AE /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AABB000000000006006866D7 /* Reader.Release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				INFOPLIST_FILE = Reader/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
 		E27B47A92FC4E865006866D7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -439,11 +800,11 @@
 		};
 		E27B47AC2FC4E865006866D7 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E27B48742FC58690006866D7 /* Debug.xcconfig */;
+			baseConfigurationReference = AABB000000000003006866D7 /* Author.Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = tmbr/tmbr.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Author/Author.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -462,7 +823,7 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				INFOPLIST_FILE = tmbr/Info.plist;
+				INFOPLIST_FILE = Author/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
@@ -486,11 +847,11 @@
 		};
 		E27B47AD2FC4E865006866D7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E27B48752FC58690006866D7 /* Release.xcconfig */;
+			baseConfigurationReference = AABB000000000004006866D7 /* Author.Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = tmbr/tmbr.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Author/Author.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -506,7 +867,7 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				INFOPLIST_FILE = tmbr/Info.plist;
+				INFOPLIST_FILE = Author/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
@@ -632,6 +993,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4D8988E1F88B9B0F7B3D55FB /* Build configuration list for PBXNativeTarget "Personal" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				470A7FEAE1EF7C62A231EEF7 /* Release */,
+				79DCAB378D2804DD0A3F542D /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E27B47832FC4E864006866D7 /* Build configuration list for PBXProject "tmbr-app" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -668,6 +1038,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		E899FB28AAC16E304F1E68F1 /* Build configuration list for PBXNativeTarget "Reader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9AA1894B233682546BF666AE /* Release */,
+				4249CEB0DA805984C51ED5DA /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -686,6 +1065,26 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4359256FA09B2AD131BFF498 /* CoreApp */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */;
+			productName = CoreApp;
+		};
+		8229BF76A2BB18E12999E69F /* CoreApp */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */;
+			productName = CoreApp;
+		};
+		CD234EC0DAF2EA0B8DE0C637 /* CoreApi */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../core-api" */;
+			productName = CoreApi;
+		};
+		D47E8BCA7C0DA4C5D5F9513D /* CoreTmbr */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */;
+			productName = CoreTmbr;
+		};
 		E2497B5F2FE1302F00D1B325 /* CoreApp */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */;
@@ -700,6 +1099,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../core-api" */;
 			productName = CoreApi;
+		};
+		F193199EDBC5D787AC73097C /* CoreTmbr */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */;
+			productName = CoreTmbr;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

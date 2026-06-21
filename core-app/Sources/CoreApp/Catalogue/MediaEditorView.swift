@@ -1,13 +1,18 @@
 import SwiftUI
 
-struct BlogEditorView: View {
+public struct MediaEditorView: View {
+    let type: CatalogueItemType
     @Environment(\.dismiss) private var dismiss
 
-    var body: some View {
+    public init(type: CatalogueItemType) {
+        self.type = type
+    }
+
+    public var body: some View {
         NavigationStack {
-            Text("Blog Editor")
+            Text("\(type.label) Editor")
                 .foregroundStyle(.secondary)
-                .navigationTitle("New Post")
+                .navigationTitle(type.label)
                 .toolbarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {

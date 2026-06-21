@@ -1,15 +1,13 @@
 import SwiftUI
 import AuthenticationServices
 import CryptoKit
-import OSLog
-
-private let logger = Logger(subsystem: "me.tmbr", category: "auth")
 
 struct SignInView: View {
-    @Environment(AuthState.self)
-    private var authState
-    
-    @State 
+
+    @Environment(\.signIn)
+    private var signIn
+
+    @State
     private var currentNonce: String = ""
 
     var body: some View {
@@ -17,9 +15,9 @@ struct SignInView: View {
             Spacer()
             Text("tmbr")
                 .font(.largeTitle.bold())
-            
+
             Spacer()
-            
+
             SignInWithAppleButton(
                 .signIn,
                 onRequest: configure,
@@ -41,18 +39,11 @@ struct SignInView: View {
     private func handle(_ result: Result<ASAuthorization, Error>) {
         switch result {
         case .success(let authorization):
-            let nonce = currentNonce
-            Task {
-                do {
-                    try await authState.signIn(authorization: authorization, nonce: nonce)
-                } catch {
-                    logger.error("Sign in failed: \(error)")
-                }
-            }
+            signIn(authorization, nonce: currentNonce)
         case .failure(let err):
             let asErr = err as? ASAuthorizationError
             if asErr?.code == .canceled { return }
-            logger.error("Apple credential error: \(err)")
+            // Non-cancellation errors are logged inside SignInAction
         }
     }
 
