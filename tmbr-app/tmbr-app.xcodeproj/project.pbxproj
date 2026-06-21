@@ -10,9 +10,7 @@
 		03297F0053BB73A1328B6378 /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = 8229BF76A2BB18E12999E69F /* CoreApp */; };
 		109CB8C24233693E8E8EF54C /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = F193199EDBC5D787AC73097C /* CoreTmbr */; };
 		2549866CD08843ECFBA90108 /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = D47E8BCA7C0DA4C5D5F9513D /* CoreTmbr */; };
-		42193258B011E7FFA1C7ED23 /* ReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFD847D16304DA44B690E5A /* ReaderApp.swift */; };
 		707239A243CF738549160865 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E173FBA3F6594B28E84BDB5C /* Cocoa.framework */; };
-		82AF5B85AB3215D3608CD013 /* PersonalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8082582147D945F3CD68BD /* PersonalApp.swift */; };
 		9692272AC826634604D10C7E /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = 4359256FA09B2AD131BFF498 /* CoreApp */; };
 		A838BCBD3A5F97E873E1C206 /* CoreApi in Frameworks */ = {isa = PBXBuildFile; productRef = CD234EC0DAF2EA0B8DE0C637 /* CoreApi */; };
 		E2497B602FE1302F00D1B325 /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = E2497B5F2FE1302F00D1B325 /* CoreApp */; };
@@ -38,39 +36,75 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2EA2D64D285F449788AAFE40 /* Reader.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Reader.xcconfig; sourceTree = "<group>"; };
-		3CFD847D16304DA44B690E5A /* ReaderApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReaderApp.swift; sourceTree = "<group>"; };
-		57393777E9C0E549BD0FB9E2 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AABB000000000001006866D7 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		AABB000000000002006866D7 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		AABB000000000003006866D7 /* Author.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Author.Debug.xcconfig; sourceTree = "<group>"; };
+		AABB000000000004006866D7 /* Author.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Author.Release.xcconfig; sourceTree = "<group>"; };
+		AABB000000000005006866D7 /* Reader.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Reader.Debug.xcconfig; sourceTree = "<group>"; };
+		AABB000000000006006866D7 /* Reader.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Reader.Release.xcconfig; sourceTree = "<group>"; };
+		AABB000000000007006866D7 /* Personal.Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Personal.Debug.xcconfig; sourceTree = "<group>"; };
+		AABB000000000008006866D7 /* Personal.Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Personal.Release.xcconfig; sourceTree = "<group>"; };
 		62A76E36B6219EC07B0C03DE /* Personal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Personal.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		6D8082582147D945F3CD68BD /* PersonalApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersonalApp.swift; sourceTree = "<group>"; };
 		9F40A6262A8539E304F7E63A /* Reader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reader.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CD15EA7A27426B4673F79E3C /* Personal.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Personal.xcconfig; sourceTree = "<group>"; };
 		E173FBA3F6594B28E84BDB5C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		E27B47882FC4E864006866D7 /* tmbr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tmbr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E27B47972FC4E865006866D7 /* tmbrTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = tmbrTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E27B47A12FC4E865006866D7 /* tmbrUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = tmbrUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E27B48732FC58690006866D7 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
-		E27B48742FC58690006866D7 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
-		E27B48752FC58690006866D7 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
-		F78A088AD38720E8CF729923 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E27B48762FC58690006866D8 /* Exceptions for "tmbr" folder in "tmbr" target */ = {
+		AABB00000000000C006866D7 /* Exceptions for "Author" folder in "tmbr" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				Author.entitlements,
+			);
+			target = E27B47872FC4E864006866D7 /* tmbr */;
+		};
+		AABB00000000000D006866D7 /* Exceptions for "Reader" folder in "Reader" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = E27B47872FC4E864006866D7 /* tmbr */;
+			target = CD7145ED09C7AD4D2774B306 /* Reader */;
+		};
+		AABB00000000000E006866D7 /* Exceptions for "Personal" folder in "Personal" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4E9AF2CFAEAE3684B2EBCE3C /* Personal */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		E27B478A2FC4E864006866D7 /* tmbr */ = {
+		AABB00000000000B006866D7 /* Author */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				E27B48762FC58690006866D8 /* Exceptions for "tmbr" folder in "tmbr" target */,
+				AABB00000000000C006866D7 /* Exceptions for "Author" folder in "tmbr" target */,
 			);
+			path = Author;
+			sourceTree = "<group>";
+		};
+		9AE3E00865BAEC9380F318FF /* Reader */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AABB00000000000D006866D7 /* Exceptions for "Reader" folder in "Reader" target */,
+			);
+			path = Reader;
+			sourceTree = "<group>";
+		};
+		9B32AE8F90C2ED90EEDD025D /* Personal */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AABB00000000000E006866D7 /* Exceptions for "Personal" folder in "Personal" target */,
+			);
+			path = Personal;
+			sourceTree = "<group>";
+		};
+		E27B478A2FC4E864006866D7 /* tmbr */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
 			path = tmbr;
 			sourceTree = "<group>";
 		};
@@ -134,24 +168,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		9AE3E00865BAEC9380F318FF /* Reader */ = {
-			isa = PBXGroup;
-			children = (
-				3CFD847D16304DA44B690E5A /* ReaderApp.swift */,
-				F78A088AD38720E8CF729923 /* Info.plist */,
-			);
-			path = Reader;
-			sourceTree = "<group>";
-		};
-		9B32AE8F90C2ED90EEDD025D /* Personal */ = {
-			isa = PBXGroup;
-			children = (
-				6D8082582147D945F3CD68BD /* PersonalApp.swift */,
-				57393777E9C0E549BD0FB9E2 /* Info.plist */,
-			);
-			path = Personal;
-			sourceTree = "<group>";
-		};
 		B359988695A9E1C1620C655B /* OS X */ = {
 			isa = PBXGroup;
 			children = (
@@ -164,6 +180,7 @@
 			isa = PBXGroup;
 			children = (
 				E27B48762FC58690006866D7 /* Configs */,
+				AABB00000000000B006866D7 /* Author */,
 				E27B478A2FC4E864006866D7 /* tmbr */,
 				E27B479A2FC4E865006866D7 /* tmbrTests */,
 				E27B47A42FC4E865006866D7 /* tmbrUITests */,
@@ -190,12 +207,32 @@
 			isa = PBXGroup;
 			children = (
 				E27B48732FC58690006866D7 /* Base.xcconfig */,
-				E27B48742FC58690006866D7 /* Debug.xcconfig */,
-				E27B48752FC58690006866D7 /* Release.xcconfig */,
-				2EA2D64D285F449788AAFE40 /* Reader.xcconfig */,
-				CD15EA7A27426B4673F79E3C /* Personal.xcconfig */,
+				AABB000000000009006866D7 /* Environments */,
+				AABB00000000000A006866D7 /* Apps */,
 			);
 			path = Configs;
+			sourceTree = "<group>";
+		};
+		AABB000000000009006866D7 /* Environments */ = {
+			isa = PBXGroup;
+			children = (
+				AABB000000000001006866D7 /* Debug.xcconfig */,
+				AABB000000000002006866D7 /* Release.xcconfig */,
+			);
+			path = Environments;
+			sourceTree = "<group>";
+		};
+		AABB00000000000A006866D7 /* Apps */ = {
+			isa = PBXGroup;
+			children = (
+				AABB000000000003006866D7 /* Author.Debug.xcconfig */,
+				AABB000000000004006866D7 /* Author.Release.xcconfig */,
+				AABB000000000005006866D7 /* Reader.Debug.xcconfig */,
+				AABB000000000006006866D7 /* Reader.Release.xcconfig */,
+				AABB000000000007006866D7 /* Personal.Debug.xcconfig */,
+				AABB000000000008006866D7 /* Personal.Release.xcconfig */,
+			);
+			path = Apps;
 			sourceTree = "<group>";
 		};
 		E27C0B522FC5FE480055C952 /* Frameworks */ = {
@@ -221,6 +258,10 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				9B32AE8F90C2ED90EEDD025D /* Personal */,
+				E27B478A2FC4E864006866D7 /* tmbr */,
+			);
 			name = Personal;
 			packageProductDependencies = (
 				4359256FA09B2AD131BFF498 /* CoreApp */,
@@ -241,6 +282,10 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9AE3E00865BAEC9380F318FF /* Reader */,
+				E27B478A2FC4E864006866D7 /* tmbr */,
 			);
 			name = Reader;
 			packageProductDependencies = (
@@ -265,6 +310,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				AABB00000000000B006866D7 /* Author */,
 				E27B478A2FC4E864006866D7 /* tmbr */,
 			);
 			name = tmbr;
@@ -413,7 +459,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				42193258B011E7FFA1C7ED23 /* ReaderApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -442,7 +487,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				82AF5B85AB3215D3608CD013 /* PersonalApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -464,7 +508,7 @@
 /* Begin XCBuildConfiguration section */
 		4249CEB0DA805984C51ED5DA /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2EA2D64D285F449788AAFE40 /* Reader.xcconfig */;
+			baseConfigurationReference = AABB000000000005006866D7 /* Reader.Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -510,7 +554,7 @@
 		};
 		470A7FEAE1EF7C62A231EEF7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CD15EA7A27426B4673F79E3C /* Personal.xcconfig */;
+			baseConfigurationReference = AABB000000000008006866D7 /* Personal.Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -552,7 +596,7 @@
 		};
 		79DCAB378D2804DD0A3F542D /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = CD15EA7A27426B4673F79E3C /* Personal.xcconfig */;
+			baseConfigurationReference = AABB000000000007006866D7 /* Personal.Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -598,7 +642,7 @@
 		};
 		9AA1894B233682546BF666AE /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2EA2D64D285F449788AAFE40 /* Reader.xcconfig */;
+			baseConfigurationReference = AABB000000000006006866D7 /* Reader.Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -756,11 +800,11 @@
 		};
 		E27B47AC2FC4E865006866D7 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E27B48742FC58690006866D7 /* Debug.xcconfig */;
+			baseConfigurationReference = AABB000000000003006866D7 /* Author.Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = tmbr/tmbr.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Author/Author.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -779,7 +823,7 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				INFOPLIST_FILE = tmbr/Info.plist;
+				INFOPLIST_FILE = Author/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
@@ -803,11 +847,11 @@
 		};
 		E27B47AD2FC4E865006866D7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E27B48752FC58690006866D7 /* Release.xcconfig */;
+			baseConfigurationReference = AABB000000000004006866D7 /* Author.Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = tmbr/tmbr.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Author/Author.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -823,7 +867,7 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				INFOPLIST_FILE = tmbr/Info.plist;
+				INFOPLIST_FILE = Author/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";

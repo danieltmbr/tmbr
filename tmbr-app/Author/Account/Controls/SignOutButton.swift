@@ -1,17 +1,18 @@
 import SwiftUI
 
 struct SignOutButton: View {
-    
-    @Environment(AuthState.self)
-    private var authState
+
+    @Environment(\.signOut)
+    private var signOut
 
     var body: some View {
         Button("Sign Out", role: .destructive) {
-            Task { await authState.signOut() }
+            signOut()
         }
     }
 }
 
 #Preview {
     SignOutButton()
+        .environment(\.signOut, SignOutAction())
 }

@@ -1,0 +1,4 @@
+#include "../Environments/Debug.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER = me.tmbr.personal.dev
+APP_DISPLAY_NAME = personal dev

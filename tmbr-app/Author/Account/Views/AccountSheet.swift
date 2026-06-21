@@ -1,17 +1,17 @@
 import SwiftUI
 
 struct AccountSheet: View {
-    
-    @Environment(AuthState.self)
-    private var authState
-    
+
+    @Account(\.isSignedIn)
+    private var isSignedIn
+
     @Environment(\.dismiss)
     private var dismiss
 
     var body: some View {
         NavigationStack {
             Group {
-                if authState.isSignedIn {
+                if isSignedIn {
                     AccountView()
                 } else {
                     SignInView()
@@ -26,7 +26,7 @@ struct AccountSheet: View {
             }
         }
         .frame(minWidth: 320, minHeight: 380)
-        .onChange(of: authState.isSignedIn) { _, _ in
+        .onChange(of: isSignedIn) { _, _ in
             dismiss()
         }
     }
