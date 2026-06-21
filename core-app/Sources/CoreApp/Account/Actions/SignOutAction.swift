@@ -1,6 +1,7 @@
-import Foundation
-
 /// Signs the current user out and clears stored credentials.
+///
+/// The default no-op init is safe in Reader and Personal. Author extends this type with
+/// `init(model:)` — see `Author/Account/`.
 @MainActor
 public struct SignOutAction: Sendable {
 
@@ -9,14 +10,6 @@ public struct SignOutAction: Sendable {
     /// Default / test path — no-op body.
     nonisolated public init(_ body: @escaping @MainActor () -> Void = {}) {
         self.body = body
-    }
-
-    /// Production path — bound to a concrete model.
-    @MainActor
-    init(model: AccountModel) {
-        self.init {
-            Task { await model.signOut() }
-        }
     }
 
     @MainActor

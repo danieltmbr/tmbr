@@ -2,8 +2,8 @@ import SwiftUI
 
 struct AccountSheet: View {
 
-    @Account(\.isSignedIn)
-    private var isSignedIn
+    @Environment(\.accountStatus)
+    private var status
 
     @Environment(\.dismiss)
     private var dismiss
@@ -11,7 +11,7 @@ struct AccountSheet: View {
     var body: some View {
         NavigationStack {
             Group {
-                if isSignedIn {
+                if status == .signedIn {
                     AccountView()
                 } else {
                     SignInView()
@@ -26,8 +26,9 @@ struct AccountSheet: View {
             }
         }
         .frame(minWidth: 320, minHeight: 380)
-        .onChange(of: isSignedIn) { _, _ in
-            dismiss()
+        .onChange(of: status) { old, new in
+            // Auto-dismiss when sign-in / sign-out completes
+            if old != new { dismiss() }
         }
     }
 }

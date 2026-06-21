@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct BlogTab: View {
-    @Environment(\.canAuthor) private var canAuthor
-    @Environment(\.accountToolbar) private var accountToolbar
     @State private var showEditor = false
 
     var body: some View {
@@ -31,23 +29,17 @@ struct BlogTab: View {
             }
             .navigationTitle("Blog")
             .toolbar {
-                if canAuthor {
 #if os(iOS)
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button { showEditor = true } label: {
-                            Image(systemName: "square.and.pencil")
-                        }
-                    }
-#else
-                    ToolbarItem(placement: .automatic) {
-                        Button { showEditor = true } label: {
-                            Image(systemName: "square.and.pencil")
-                        }
-                    }
-#endif
+                ToolbarItem(placement: .topBarLeading) {
+                    AuthoringButton(systemImage: "square.and.pencil") { showEditor = true }
                 }
+#else
+                ToolbarItem(placement: .automatic) {
+                    AuthoringButton(systemImage: "square.and.pencil") { showEditor = true }
+                }
+#endif
                 ToolbarItem(placement: .primaryAction) {
-                    accountToolbar.content()
+                    AccountButton()
                 }
             }
         }

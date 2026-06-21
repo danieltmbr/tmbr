@@ -1,8 +1,6 @@
 import SwiftUI
 
 struct CatalogueTab: View {
-    @Environment(\.canAuthor) private var canAuthor
-    @Environment(\.accountToolbar) private var accountToolbar
     @State private var showFilter = false
     @State private var showTypePicker = false
     @State private var selectedType: CatalogueItemType?
@@ -27,13 +25,8 @@ struct CatalogueTab: View {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
                 }
-                if canAuthor {
-                    ToolbarSpacer(.fixed, placement: .topBarLeading)
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button { showTypePicker = true } label: {
-                            Image(systemName: "square.and.pencil")
-                        }
-                    }
+                ToolbarItem(placement: .topBarLeading) {
+                    AuthoringButton(systemImage: "square.and.pencil") { showTypePicker = true }
                 }
 #else
                 ToolbarItem(placement: .automatic) {
@@ -41,16 +34,12 @@ struct CatalogueTab: View {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
                 }
-                if canAuthor {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button { showTypePicker = true } label: {
-                            Image(systemName: "square.and.pencil")
-                        }
-                    }
+                ToolbarItem(placement: .primaryAction) {
+                    AuthoringButton(systemImage: "square.and.pencil") { showTypePicker = true }
                 }
 #endif
                 ToolbarItem(placement: .primaryAction) {
-                    accountToolbar.content()
+                    AccountButton()
                 }
             }
         }
