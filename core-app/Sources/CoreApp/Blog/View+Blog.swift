@@ -5,5 +5,6 @@ public extension View {
     func blog(_ model: BlogModel) -> some View {
         environment(model)
             .environment(\.refreshBlog, RefreshBlogAction(model: model))
+            .environment(\.loadMoreBlog, LoadMoreBlogAction(model: model))
     }
 }

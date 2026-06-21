@@ -3,16 +3,25 @@ import SwiftData
 
 struct BlogTab: View {
 
-    @Query(sort: \PostRecord.createdAt, order: .reverse) 
+    @Query(sort: \PostRecord.createdAt, order: .reverse)
     private var posts: [PostRecord]
 
-    @Blog(\.phase) 
+    @Blog(\.phase)
     private var phase
 
-    @Environment(\.refreshBlog) 
+    @Blog(\.isLoadingMore)
+    private var isLoadingMore
+
+    @Blog(\.hasMore)
+    private var hasMore
+
+    @Environment(\.refreshBlog)
     private var refreshBlog
 
-    @State 
+    @Environment(\.loadMoreBlog)
+    private var loadMoreBlog
+
+    @State
     private var showEditor = false
 
     var body: some View {
@@ -29,6 +38,19 @@ struct BlogTab: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    .onAppear {
+                        if post.id == posts.last?.id {
+                            Task { await loadMoreBlog() }
+                        }
+                    }
+                }
+                if isLoadingMore {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
+                    }
+                    .listRowSeparator(.hidden)
                 }
             }
             .overlay {
@@ -36,8 +58,12 @@ struct BlogTab: View {
                     switch phase {
                     case .loading:
                         ProgressView()
-                    case .failed(let message):
-                        ContentUnavailableView("Couldn't load posts", systemImage: "wifi.slash", description: Text(message))
+                    case .failed(let error):
+                        ContentUnavailableView(
+                            error.title,
+                            systemImage: error.systemImage,
+                            description: Text(error.message)
+                        )
                     case .idle, .loaded:
                         ContentUnavailableView("No posts yet", systemImage: "doc.text")
                     }

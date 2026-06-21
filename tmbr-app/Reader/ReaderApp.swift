@@ -7,7 +7,9 @@ import CoreApp
 /// The shared UI's seam stays at its defaults: `canAuthor = false`, `accountToolbar = .none`.
 @main
 struct ReaderApp: App {
+    
     let container: ModelContainer
+    
     let blog: BlogModel
 
     init() {
@@ -16,8 +18,14 @@ struct ReaderApp: App {
         } catch {
             fatalError("Failed to create Reader ModelContainer: \(error)")
         }
-        let posts = ReaderPosts(baseURL: Self.apiBaseURL, context: container.mainContext)
-        blog = BlogModel(refresh: { try await posts.refreshPosts() })
+        let posts = ReaderPosts(
+            baseURL: Self.apiBaseURL,
+            context: container.mainContext
+        )
+        blog = BlogModel(
+            refresh: { try await posts.refreshPosts() },
+            loadMore: { try await posts.loadMore() }
+        )
     }
 
     var body: some Scene {

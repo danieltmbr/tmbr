@@ -10,6 +10,7 @@ public struct Blog<Value>: DynamicProperty {
     private var model
 
     private let get: @MainActor (BlogModel) -> Value
+    
     private let set: @MainActor (BlogModel, Value) -> Void
 
     public var wrappedValue: Value {
