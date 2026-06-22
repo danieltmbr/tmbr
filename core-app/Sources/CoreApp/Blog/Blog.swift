@@ -1,6 +1,7 @@
 import SwiftUI
+import SwiftData
 
-/// Scoped access to `BlogModel` — a view re-renders only for the keypath it reads (`@Blog(\.phase)`),
+/// Scoped access to `BlogModel` — a view re-renders only for the keypath it reads (`@Blog(\.status)`),
 /// not on every model change. Mirrors the house `@NowPlaying` wrapper.
 @MainActor
 @propertyWrapper

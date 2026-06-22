@@ -1,22 +1,29 @@
 import SwiftUI
 
-/// Overlay shown when the post list is empty, switching on the current load phase.
+/// Overlay shown when the post list is empty, switching on the current load state.
 struct BlogEmptyView: View {
 
-    @Blog(\.phase)
-    private var phase
+    @Blog(\.activeLoad)
+    private var activeLoad
+
+    @Blog(\.lastError)
+    private var lastError
+
+    @Environment(\.refreshBlog)
+    private var refreshBlog
 
     var body: some View {
-        switch phase {
-        case .loading:
+        if activeLoad == .refreshing {
             ProgressView()
-        case .failed(let error):
-            ContentUnavailableView(
-                error.title,
-                systemImage: error.systemImage,
-                description: Text(error.message)
-            )
-        case .idle, .loaded:
+        } else if let error = lastError {
+            ContentUnavailableView {
+                Label(error.title, systemImage: error.systemImage)
+            } description: {
+                Text(error.message)
+            } actions: {
+                Button("Try Again") { Task { await refreshBlog() } }
+            }
+        } else {
             ContentUnavailableView("No posts yet", systemImage: "doc.text")
         }
     }

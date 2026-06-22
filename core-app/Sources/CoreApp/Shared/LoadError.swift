@@ -1,6 +1,6 @@
 import Foundation
 
-/// Typed failure cause for a background refresh. Carried by `LoadPhase.failed` so views can vary
+/// Typed failure cause for a background refresh. Carried by `BlogModel.lastError` so views can vary
 /// their icon and copy per cause rather than showing a generic error string.
 public enum LoadError: Error, Equatable, Sendable {
     case offline

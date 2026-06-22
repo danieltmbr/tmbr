@@ -15,6 +15,9 @@ struct BlogTab: View {
     var body: some View {
         NavigationStack {
             List {
+                if !posts.isEmpty {
+                    BlogStatusLine()
+                }
                 ForEach(posts) { post in
                     NavigationLink(value: post) {
                         PostCell(

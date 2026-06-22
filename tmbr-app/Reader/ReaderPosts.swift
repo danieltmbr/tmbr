@@ -22,7 +22,6 @@ final class ReaderPosts {
 
     private var nextCursor: String?
 
-
     init(loader: RequestLoader<PostsRequest>, store: PostStore) {
         self.loader = loader
         self.store = store

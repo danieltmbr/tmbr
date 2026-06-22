@@ -25,9 +25,17 @@ struct ReaderApp: App {
         )
         let store = PostStore(context: container.mainContext)
         let posts = ReaderPosts(loader: loader, store: store)
+        let userDefaults = UserDefaults.standard
+        let lastFetchedKey = "reader.blog.lastFetched"
         blog = BlogModel(
-            refresh: { try await posts.refreshPosts() },
-            loadMore: { try await posts.loadMore() }
+            refresh: {
+                try await posts.refreshPosts()
+                let now = Date.now
+                userDefaults.set(now, forKey: lastFetchedKey)
+                return now
+            },
+            loadMore: { try await posts.loadMore() },
+            lastFetched: userDefaults.object(forKey: lastFetchedKey) as? Date
         )
     }
 

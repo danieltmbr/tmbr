@@ -30,6 +30,7 @@ public final class PostRecord {
 
     // Optional catalogue item this post is about (anchored by PreviewID).
     public var attachmentID: UUID?
+    
     public var attachmentTitle: String?
 
     public init(
