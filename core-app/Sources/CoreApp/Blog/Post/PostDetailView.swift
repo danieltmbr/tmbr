@@ -3,6 +3,7 @@ import SwiftUI
 /// Reads the cached `PostRecord` — the list response already carries the full `content`. No per-item
 /// fetch (no public detail endpoint yet); a per-screen refresh seam lands when one does.
 struct PostDetailView: View {
+    
     let post: PostRecord
 
     var body: some View {
@@ -10,10 +11,10 @@ struct PostDetailView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text(post.title)
                     .font(.title.bold())
-                Text(post.createdAt, format: .dateTime.month(.wide).day().year())
+                Text((post.publishedAt ?? post.createdAt).formatted(.publishDate))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                Text(post.content)
+                Text((try? AttributedString(markdown: post.content)) ?? AttributedString(post.content))
                     .textSelection(.enabled)
             }
             .frame(maxWidth: .infinity, alignment: .leading)

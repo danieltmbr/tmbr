@@ -1,6 +1,5 @@
 import Foundation
 import OSLog
-import SwiftData
 import CoreApi
 import CoreApp
 import CoreTmbr
@@ -15,18 +14,18 @@ import CoreTmbr
 @MainActor
 final class ReaderPosts {
 
-    private let baseURL: URL
-    
-    private let context: ModelContext
-    
+    private let loader: RequestLoader<PostsRequest>
+
+    private let store: PostStore
+
     private let logger = Logger(subsystem: "me.tmbr", category: "sync")
-    
+
     private var nextCursor: String?
 
 
-    init(baseURL: URL, context: ModelContext) {
-        self.baseURL = baseURL
-        self.context = context
+    init(loader: RequestLoader<PostsRequest>, store: PostStore) {
+        self.loader = loader
+        self.store = store
     }
 
     // MARK: - Refresh (first page)
@@ -36,8 +35,7 @@ final class ReaderPosts {
     func refreshPosts() async throws {
         let page = try await fetch(cursor: nil)
         nextCursor = page.nextCursor
-        try PostRecord.upsert(page.items, in: context)
-        try context.save()
+        try store.upsert(page.items)
         logger.info("Blog refresh: loaded \(page.items.count) posts, nextCursor=\(page.nextCursor ?? "nil")")
     }
 
@@ -49,8 +47,7 @@ final class ReaderPosts {
         guard let cursor = nextCursor else { return false }
         let page = try await fetch(cursor: cursor)
         nextCursor = page.nextCursor
-        try PostRecord.upsert(page.items, in: context)
-        try context.save()
+        try store.upsert(page.items)
         logger.info("Blog load-more: loaded \(page.items.count) posts, nextCursor=\(page.nextCursor ?? "nil")")
         return page.nextCursor != nil
     }
@@ -58,10 +55,6 @@ final class ReaderPosts {
     // MARK: - Private
 
     private func fetch(cursor: String?) async throws -> PageResult<PostResponse> {
-        let loader = RequestLoader(
-            request: PostsRequest.postQuery(baseURL: baseURL),
-            session: .shared
-        )
         let query = PageQuery(cursor: cursor, limit: 50)
         do {
             return try await loader.load(from: query)

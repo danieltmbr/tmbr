@@ -4,12 +4,14 @@ import SwiftUI
 ///
 /// Self-gating on `canAuthor` — renders nothing in Reader and Personal. Callers provide
 /// the icon and action; they never need to read `canAuthor` themselves.
+///
 struct AuthoringButton: View {
 
     @Environment(\.canAuthor)
     private var canAuthor
 
     let systemImage: String
+    
     let action: () -> Void
 
     var body: some View {

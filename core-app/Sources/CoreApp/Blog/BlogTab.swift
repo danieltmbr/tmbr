@@ -6,20 +6,8 @@ struct BlogTab: View {
     @Query(sort: \PostRecord.createdAt, order: .reverse)
     private var posts: [PostRecord]
 
-    @Blog(\.phase)
-    private var phase
-
-    @Blog(\.isLoadingMore)
-    private var isLoadingMore
-
-    @Blog(\.hasMore)
-    private var hasMore
-
     @Environment(\.refreshBlog)
     private var refreshBlog
-
-    @Environment(\.loadMoreBlog)
-    private var loadMoreBlog
 
     @State
     private var showEditor = false
@@ -28,48 +16,26 @@ struct BlogTab: View {
         NavigationStack {
             List {
                 ForEach(posts) { post in
-                    NavigationLink {
-                        PostDetailView(post: post)
-                    } label: {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(post.title)
-                            Text(post.createdAt, format: .dateTime.month().day().year())
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .onAppear {
-                        if post.id == posts.last?.id {
-                            Task { await loadMoreBlog() }
-                        }
+                    NavigationLink(value: post) {
+                        PostCell(
+                            title: post.title,
+                            date: post.publishedAt ?? post.createdAt
+                        )
                     }
                 }
-                if isLoadingMore {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    }
-                    .listRowSeparator(.hidden)
+                if !posts.isEmpty {
+                    BlogLoadMoreCell()
                 }
             }
             .overlay {
                 if posts.isEmpty {
-                    switch phase {
-                    case .loading:
-                        ProgressView()
-                    case .failed(let error):
-                        ContentUnavailableView(
-                            error.title,
-                            systemImage: error.systemImage,
-                            description: Text(error.message)
-                        )
-                    case .idle, .loaded:
-                        ContentUnavailableView("No posts yet", systemImage: "doc.text")
-                    }
+                    BlogEmptyView()
                 }
             }
             .navigationTitle("Blog")
+            .navigationDestination(for: PostRecord.self) { post in
+                PostDetailView(post: post)
+            }
             .toolbar {
 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
@@ -88,7 +54,7 @@ struct BlogTab: View {
         }
         .task { await refreshBlog() }
         .sheet(isPresented: $showEditor) {
-            BlogEditorView()
+            PostEditor()
         }
     }
 }

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import CoreApi
 import CoreApp
 
 /// Reader — public, read-only. Plain on-disk SwiftData cache; no auth, no account.
@@ -18,10 +19,12 @@ struct ReaderApp: App {
         } catch {
             fatalError("Failed to create Reader ModelContainer: \(error)")
         }
-        let posts = ReaderPosts(
-            baseURL: Self.apiBaseURL,
-            context: container.mainContext
+        let loader = RequestLoader(
+            request: PostsRequest.postQuery(baseURL: Self.apiBaseURL),
+            session: .shared
         )
+        let store = PostStore(context: container.mainContext)
+        let posts = ReaderPosts(loader: loader, store: store)
         blog = BlogModel(
             refresh: { try await posts.refreshPosts() },
             loadMore: { try await posts.loadMore() }

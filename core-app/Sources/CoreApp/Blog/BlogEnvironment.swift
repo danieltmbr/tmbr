@@ -2,8 +2,8 @@ import SwiftUI
 
 public extension EnvironmentValues {
     @Entry
-    var refreshBlog: RefreshBlogAction = RefreshBlogAction()
+    var refreshBlog: BlogRefreshAction = BlogRefreshAction()
     
     @Entry
-    var loadMoreBlog: LoadMoreBlogAction = LoadMoreBlogAction()
+    var loadBlog: BlogPageLoadAction = BlogPageLoadAction()
 }

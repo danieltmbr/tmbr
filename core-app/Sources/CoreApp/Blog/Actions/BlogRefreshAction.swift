@@ -3,7 +3,7 @@ import Foundation
 /// Refreshes the Blog tab — the env-injected seam. One key, a different body per app
 /// (Reader fetch+upsert, Author `SyncEngine`, Personal no-op), all funnelled through `BlogModel`.
 @MainActor
-public struct RefreshBlogAction: Sendable {
+public struct BlogRefreshAction: Sendable {
 
     private let body: @MainActor () async -> Void
 

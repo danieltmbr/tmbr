@@ -1,4 +1,5 @@
 import Foundation
+import CoreTmbr
 
 /// The default `Request`: a URL plus two closures — one that builds the `URLRequest`, one that decodes
 /// the `Output`. Both own their coding (a `JSONEncoder`/`JSONDecoder` or `QueryItemEncoder` created

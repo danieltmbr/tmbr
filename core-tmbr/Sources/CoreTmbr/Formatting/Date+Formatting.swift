@@ -9,17 +9,17 @@ public extension Date {
 public struct DateFormat: Sendable {
 
     typealias Formatting = @Sendable (Date) -> String
-    
+
     private let format: Formatting
-    
+
     init(format: @escaping Formatting) {
         self.format = format
     }
-    
+
     public func callAsFunction(date: Date) -> String {
         format(date)
     }
-    
+
     public static let publishDate = Self { date in
 #if os(Linux)
         let dateFormatter = DateFormatter()
@@ -33,7 +33,7 @@ public struct DateFormat: Sendable {
         )
 #endif
     }
-    
+
     public static let releaseDate = Self { date in
 #if os(Linux)
         let dateFormatter = DateFormatter()
@@ -47,13 +47,13 @@ public struct DateFormat: Sendable {
         )
 #endif
     }
-    
+
     public static let year = Self { date in
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy"
         return dateFormatter.string(from: date)
     }
-    
+
     public static let rfc822 = Self { date in
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")

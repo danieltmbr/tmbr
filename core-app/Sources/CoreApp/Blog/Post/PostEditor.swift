@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct BlogEditorView: View {
+public struct PostEditor: View {
     @Environment(\.dismiss) private var dismiss
 
     public init() {}

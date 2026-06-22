@@ -3,7 +3,7 @@ import Foundation
 /// Loads the next page of Blog posts — the env-injected seam. Same shape as `RefreshBlogAction`:
 /// a no-op default + a model-bound production init, callable as a function.
 @MainActor
-public struct LoadMoreBlogAction: Sendable {
+public struct BlogPageLoadAction: Sendable {
 
     private let body: @MainActor () async -> Void
 
