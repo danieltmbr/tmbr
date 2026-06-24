@@ -1,25 +1,27 @@
 import Foundation
+import OSLog
 
-/// A thin wrapper around a single `load(from:)` closure that turns a request's `Input` into its `Response`.
+/// A thin wrapper around a single `load(from:)` closure that turns `Input` into `Response`.
 ///
 /// The loader holds no coding state — a `Request` owns that. Build one from a `Request` with the
-/// convenience inits below (auth-refreshing or plain), or hand it any closure for tests/composition.
-public struct RequestLoader<R: Request>: Sendable {
+/// convenience inits (auth-refreshing or plain), or supply any closure directly for tests/composition.
+/// Chain `.logged()` to attach request/response logging at debug level.
+public struct RequestLoader<Input: Sendable, Response: Decodable & Sendable>: Sendable {
 
-    private let _load: @Sendable (R.Input) async throws -> R.Response
+    private let _load: @Sendable (Input) async throws -> Response
 
-    public init(_ load: @escaping @Sendable (R.Input) async throws -> R.Response) {
+    public init(_ load: @escaping @Sendable (Input) async throws -> Response) {
         self._load = load
     }
 
-    public func load(from input: R.Input) async throws -> R.Response {
+    public func load(from input: Input) async throws -> Response {
         try await _load(input)
     }
 }
 
-public extension RequestLoader where R.Input == Void {
+public extension RequestLoader where Input == Void {
 
-    func load() async throws -> R.Response {
+    func load() async throws -> Response {
         try await load(from: ())
     }
 }
@@ -29,14 +31,14 @@ public extension RequestLoader where R.Input == Void {
 public extension RequestLoader {
 
     /// Loads `request` without authentication.
-    init(request: R, session: URLSession = .shared) {
+    init<R: Request>(request: R, session: URLSession = .shared) where R.Input == Input, R.Response == Response {
         self.init { input in
             try await Self.send(request, input, token: nil, session: session)
         }
     }
 
     /// Loads `request` with a bearer token from `auth`, refreshing once on a 401 and retrying.
-    init(request: R, session: URLSession = .shared, auth: AuthProvider) {
+    init<R: Request>(request: R, session: URLSession = .shared, auth: AuthProvider) where R.Input == Input, R.Response == Response {
         self.init { input in
             let token = await auth.value
             do {
@@ -49,7 +51,7 @@ public extension RequestLoader {
         }
     }
 
-    private static func send(
+    private static func send<R: Request>(
         _ request: R,
         _ input: R.Input,
         token: String?,
@@ -62,4 +64,28 @@ public extension RequestLoader {
         }
         return try request.parseResponse(data)
     }
+}
+
+// MARK: - Logging
+
+public extension RequestLoader {
+
+    /// Returns a loader that logs the outgoing request type and decoded response at `.debug` level.
+    func logged(by logger: Logger = .networking) -> RequestLoader<Input, Response> {
+        RequestLoader { input in
+            logger.debug("→ \(String(describing: Response.self))")
+            do {
+                let response = try await self.load(from: input)
+                logger.debug("← \(String(describing: response))")
+                return response
+            } catch {
+                logger.error("✗ \(String(describing: Response.self)): \(error)")
+                throw error
+            }
+        }
+    }
+}
+
+public extension Logger {
+    static let networking = Logger(subsystem: "me.tmbr", category: "networking")
 }
