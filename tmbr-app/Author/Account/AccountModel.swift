@@ -17,12 +17,12 @@ public final class AccountModel {
 
     private let auth: AuthProvider
 
-    private let signInLoader: RequestLoader<AppleSignInRequest>
+    private let signInLoader: RequestLoader<AppleSignInData, AuthResponse>
 
     init(
         session: URLSession,
         keychain: Keychain,
-        signInLoader: RequestLoader<AppleSignInRequest>
+        signInLoader: RequestLoader<AppleSignInData, AuthResponse>
     ) {
         let savedToken = keychain.loadToken()
         self.session = session
@@ -32,7 +32,7 @@ public final class AccountModel {
         self.signInLoader = signInLoader
     }
 
-    func loader<R: Request>(for request: R) -> RequestLoader<R> {
+    func loader<R: Request>(for request: R) -> RequestLoader<R.Input, R.Response> {
         RequestLoader(request: request, session: session, auth: auth)
     }
 

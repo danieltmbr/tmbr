@@ -7,7 +7,7 @@ struct APIConfig: Sendable {
 
     let session: URLSession
 
-    func loader<R: Request>(for request: R) -> RequestLoader<R> {
+    func loader<R: Request>(for request: R) -> RequestLoader<R.Input, R.Response> {
         RequestLoader(request: request, session: session)
     }
 }
