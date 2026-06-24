@@ -1,62 +1,124 @@
 import Foundation
 import CoreTmbr
 
-// Ready-to-use, auth-refreshing loaders for each sync endpoint — the loader counterpart to the
-// request factories in `SyncRequests.swift`. Drive them to completion with `.syncAll(since:)`
-// (or `.load(from:)` for the unpaginated deletions endpoint), e.g.
+// Loader typealiases — the `RequestLoader` counterpart to the request typealiases in `SyncRequests.swift`.
+// Each pairs with its request: `SongsRequest` ↔ `SongsLoader`, `PostsRequest` ↔ `PostsLoader`, etc.
+
+public typealias SongsLoader     = RequestLoader<PageQuery, PageResult<SongResponse>>
+public typealias AlbumsLoader    = RequestLoader<PageQuery, PageResult<AlbumResponse>>
+public typealias BooksLoader     = RequestLoader<PageQuery, PageResult<BookResponse>>
+public typealias MoviesLoader    = RequestLoader<PageQuery, PageResult<MovieResponse>>
+public typealias PodcastsLoader  = RequestLoader<PageQuery, PageResult<PodcastResponse>>
+public typealias PlaylistsLoader = RequestLoader<PageQuery, PageResult<PlaylistResponse>>
+public typealias PostsLoader     = RequestLoader<PageQuery, PageResult<PostResponse>>
+public typealias OrphansLoader   = RequestLoader<OrphanPageQuery, PageResult<PreviewResponse>>
+public typealias DeletionsLoader = RequestLoader<SinceQuery, [DeletionRecord]>
+
+// Unauthenticated loader factories — for public endpoints (Reader app).
+// Drive with `.load(from:)` and a plain `PageQuery` / `OrphanPageQuery`.
+
+public extension SongsLoader {
+    static func songs(baseURL: URL, session: URLSession = .shared) -> Self {
+        SongsLoader(request: SongsRequest.songQuery(baseURL: baseURL), session: session)
+    }
+}
+
+public extension AlbumsLoader {
+    static func albums(baseURL: URL, session: URLSession = .shared) -> Self {
+        AlbumsLoader(request: AlbumsRequest.albumQuery(baseURL: baseURL), session: session)
+    }
+}
+
+public extension BooksLoader {
+    static func books(baseURL: URL, session: URLSession = .shared) -> Self {
+        BooksLoader(request: BooksRequest.bookQuery(baseURL: baseURL), session: session)
+    }
+}
+
+public extension MoviesLoader {
+    static func movies(baseURL: URL, session: URLSession = .shared) -> Self {
+        MoviesLoader(request: MoviesRequest.movieQuery(baseURL: baseURL), session: session)
+    }
+}
+
+public extension PodcastsLoader {
+    static func podcasts(baseURL: URL, session: URLSession = .shared) -> Self {
+        PodcastsLoader(request: PodcastsRequest.podcastQuery(baseURL: baseURL), session: session)
+    }
+}
+
+public extension PlaylistsLoader {
+    static func playlists(baseURL: URL, session: URLSession = .shared) -> Self {
+        PlaylistsLoader(request: PlaylistsRequest.playlistQuery(baseURL: baseURL), session: session)
+    }
+}
+
+public extension PostsLoader {
+    static func posts(baseURL: URL, session: URLSession = .shared) -> Self {
+        PostsLoader(request: PostsRequest.postQuery(baseURL: baseURL), session: session)
+    }
+}
+
+public extension OrphansLoader {
+    static func orphans(baseURL: URL, session: URLSession = .shared) -> Self {
+        OrphansLoader(request: OrphansRequest.orphanQuery(baseURL: baseURL), session: session)
+    }
+}
+
+// Ready-to-use, auth-refreshing loader factories — drive with `.syncAll(since:)` or `.load(from:)`, e.g.
 //
-//     let songs = try await RequestLoader<SongsRequest>.songs(baseURL: url, auth: auth).syncAll(since: lastSync)
+//     let songs = try await SongsLoader.songs(baseURL: url, auth: auth).syncAll(since: lastSync)
 
-public extension RequestLoader where R == SongsRequest {
+public extension SongsLoader {
     static func songs(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
-        RequestLoader(request: .songQuery(baseURL: baseURL), session: session, auth: auth)
+        SongsLoader(request: SongsRequest.songQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
 
-public extension RequestLoader where R == AlbumsRequest {
+public extension AlbumsLoader {
     static func albums(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
-        RequestLoader(request: .albumQuery(baseURL: baseURL), session: session, auth: auth)
+        AlbumsLoader(request: AlbumsRequest.albumQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
 
-public extension RequestLoader where R == BooksRequest {
+public extension BooksLoader {
     static func books(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
-        RequestLoader(request: .bookQuery(baseURL: baseURL), session: session, auth: auth)
+        BooksLoader(request: BooksRequest.bookQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
 
-public extension RequestLoader where R == MoviesRequest {
+public extension MoviesLoader {
     static func movies(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
-        RequestLoader(request: .movieQuery(baseURL: baseURL), session: session, auth: auth)
+        MoviesLoader(request: MoviesRequest.movieQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
 
-public extension RequestLoader where R == PodcastsRequest {
+public extension PodcastsLoader {
     static func podcasts(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
-        RequestLoader(request: .podcastQuery(baseURL: baseURL), session: session, auth: auth)
+        PodcastsLoader(request: PodcastsRequest.podcastQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
 
-public extension RequestLoader where R == PlaylistsRequest {
+public extension PlaylistsLoader {
     static func playlists(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
-        RequestLoader(request: .playlistQuery(baseURL: baseURL), session: session, auth: auth)
+        PlaylistsLoader(request: PlaylistsRequest.playlistQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
 
-public extension RequestLoader where R == PostsRequest {
+public extension PostsLoader {
     static func posts(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
-        RequestLoader(request: .postQuery(baseURL: baseURL), session: session, auth: auth)
+        PostsLoader(request: PostsRequest.postQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
 
-public extension RequestLoader where R == OrphansRequest {
+public extension OrphansLoader {
     static func orphans(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
-        RequestLoader(request: .orphanQuery(baseURL: baseURL), session: session, auth: auth)
+        OrphansLoader(request: OrphansRequest.orphanQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
 
-public extension RequestLoader where R == DeletionsRequest {
+public extension DeletionsLoader {
     static func deletions(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
-        RequestLoader(request: .deletionQuery(baseURL: baseURL), session: session, auth: auth)
+        DeletionsLoader(request: DeletionsRequest.deletionQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
