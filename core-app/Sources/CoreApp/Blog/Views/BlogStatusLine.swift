@@ -6,7 +6,7 @@ import SwiftUI
 /// Uses `Text(date, format:)` for relative dates so the time auto-updates while the view is on screen.
 struct BlogStatusLine: View {
 
-    @Blog(\.activeLoad)
+    @Blog(\.loading)
     private var activeLoad
 
     @Blog(\.lastError)
@@ -25,7 +25,7 @@ struct BlogStatusLine: View {
 
     @ViewBuilder
     private var statusContent: some View {
-        if activeLoad == .refreshing {
+        if activeLoad == .refresh {
             Label("Updating\u{2026}", systemImage: "arrow.clockwise")
         } else if lastError != nil {
             if let date = lastFetched {

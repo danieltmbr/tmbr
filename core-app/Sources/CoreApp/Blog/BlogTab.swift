@@ -37,7 +37,12 @@ struct BlogTab: View {
             }
             .navigationTitle("Blog")
             .navigationDestination(for: PostRecord.self) { post in
-                PostDetailView(post: post)
+                PostReaderView(
+                    title: post.title,
+                    content: post.markdown ?? AttributedString(post.content),
+                    created: post.createdAt,
+                    published: post.publishedAt
+                )
             }
             .toolbar {
 #if os(iOS)

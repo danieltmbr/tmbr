@@ -3,8 +3,8 @@ import OSLog
 
 /// Which load operation is currently in flight, if any.
 public enum LoadingState: Equatable, Sendable {
-    case refreshing
-    case pageLoad
+    case refresh
+    case page
 }
 
 /// Headless model for the Blog tab. Tracks refresh activity and outcome; the list itself comes
@@ -23,10 +23,7 @@ public final class BlogModel {
     // MARK: - Public state
 
     /// Which load operation is currently in flight; `nil` when idle.
-    public private(set) var activeLoad: LoadingState?
-
-    /// Convenience for the footer spinner.
-    public var isPageLoading: Bool { activeLoad == .pageLoad }
+    public private(set) var loading: LoadingState?
 
     /// `false` once a page fetch returns no cursor, meaning there are no more pages to load.
     public private(set) var hasMore = true
@@ -41,6 +38,7 @@ public final class BlogModel {
     // MARK: - Dependencies
 
     private let _refresh: @Sendable () async throws -> Date?
+    
     private let _loadMore: @Sendable () async throws -> Bool
 
     public init(
@@ -56,9 +54,9 @@ public final class BlogModel {
     // MARK: - Refresh (first page)
 
     public func refresh() async {
-        guard activeLoad == nil else { return }
-        activeLoad = .refreshing
-        defer { activeLoad = nil }
+        guard loading == nil else { return }
+        loading = .refresh
+        defer { loading = nil }
         do {
             if let date = try await _refresh() {
                 lastFetched = date
@@ -76,9 +74,9 @@ public final class BlogModel {
     /// Fetches the next page if one is available. Never surfaces its error to the UI —
     /// a paging hiccup on a populated list shouldn't blank the screen.
     public func loadMore() async {
-        guard hasMore, activeLoad == nil else { return }
-        activeLoad = .pageLoad
-        defer { activeLoad = nil }
+        guard hasMore, loading == nil else { return }
+        loading = .page
+        defer { loading = nil }
         do {
             hasMore = try await _loadMore()
         } catch {

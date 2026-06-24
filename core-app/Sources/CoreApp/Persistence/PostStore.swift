@@ -4,8 +4,8 @@ import CoreTmbr
 
 /// A persistence façade for blog posts.
 ///
-/// Wraps a SwiftData `ModelContext` and delegates to the well-tested `PostRecord.upsert` static
-/// method. Folding `context.save()` into the call keeps callers free of dual-step save boilerplate.
+/// Wraps a SwiftData `ModelContext`. Folding `context.save()` into the call keeps callers
+/// free of dual-step save boilerplate.
 @MainActor
 public struct PostStore {
 
@@ -17,8 +17,24 @@ public struct PostStore {
 
     /// Upserts `responses` into the store and saves. Idempotent: existing records are updated
     /// in-place; new server IDs create fresh `PostRecord`s.
+    ///
+    /// Indexes the existing rows once rather than per-item `#Predicate` fetches (SwiftData
+    /// mistranslates the optional-`Int` `serverID == id` comparison and traps).
     public func upsert(_ responses: [PostResponse]) throws {
-        try PostRecord.upsert(responses, in: context)
+        var bySID: [Int: PostRecord] = [:]
+        for record in try context.fetch(FetchDescriptor<PostRecord>()) {
+            if let sid = record.serverID { bySID[sid] = record }
+        }
+        for response in responses {
+            if let existing = bySID[response.id] {
+                existing.update(from: response)
+            } else {
+                let record = PostRecord()
+                record.update(from: response)
+                context.insert(record)
+                bySID[response.id] = record
+            }
+        }
         try context.save()
     }
 }

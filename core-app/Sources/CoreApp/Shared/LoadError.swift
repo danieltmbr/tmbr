@@ -37,10 +37,9 @@ public enum LoadError: Error, Equatable, Sendable {
 
     public var title: String {
         switch self {
-        case .offline:  return "No Connection"
-        case .server:   return "Server Error"
-        case .decoding: return "Couldn't Load"
-        case .unknown:  return "Something Went Wrong"
+        case .offline:          return "No Connection"
+        case .server, .decoding: return "Couldn't Load"
+        case .unknown:          return "Something Went Wrong"
         }
     }
 
@@ -48,11 +47,8 @@ public enum LoadError: Error, Equatable, Sendable {
         switch self {
         case .offline:
             return "Check your connection and try again."
-        case .server(let status):
-            if let status { return "The server returned an error (\(status))." }
-            return "The server returned an error."
-        case .decoding:
-            return "The app received unexpected data. Try updating the app."
+        case .server, .decoding:
+            return "Something went wrong. Try again later."
         case .unknown(let description):
             return description
         }

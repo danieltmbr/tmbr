@@ -70,6 +70,10 @@ public extension PostRecord {
         get { Language(rawValue: languageRaw) }
         set { languageRaw = newValue?.rawValue ?? "" }
     }
+    
+    var markdown: AttributedString? {
+        try? AttributedString(markdown: content)
+    }
 
     var syncState: SyncState {
         get { SyncState(rawValue: syncStateRaw) ?? .synced }

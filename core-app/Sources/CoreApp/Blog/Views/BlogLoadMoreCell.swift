@@ -7,8 +7,8 @@ import SwiftUI
 /// invisible placeholder otherwise so the `.onAppear` trigger stays in the list.
 struct BlogLoadMoreCell: View {
 
-    @Blog(\.isPageLoading)
-    private var isPageLoading
+    @Blog(\.loading)
+    private var loading
 
     @Blog(\.hasMore)
     private var hasMore
@@ -18,7 +18,7 @@ struct BlogLoadMoreCell: View {
 
     var body: some View {
         Group {
-            if isPageLoading {
+            if loading == .page {
                 HStack {
                     Spacer()
                     ProgressView()

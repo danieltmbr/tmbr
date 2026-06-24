@@ -19,7 +19,7 @@ struct BlogModelTests {
     // MARK: - Initial state
 
     @Test func initialActiveLoadIsNil() {
-        #expect(makeModel().activeLoad == nil)
+        #expect(makeModel().loading == nil)
     }
 
     @Test func initialLastFetchedIsNil() {
@@ -73,7 +73,7 @@ struct BlogModelTests {
     @Test func refreshActiveLoadIsNilAfterCompletion() async {
         let model = makeModel(refresh: { Date.now })
         await model.refresh()
-        #expect(model.activeLoad == nil)
+        #expect(model.loading == nil)
     }
 
     // MARK: - refresh() failure
@@ -97,7 +97,7 @@ struct BlogModelTests {
     @Test func refreshFailureActiveLoadIsNilAfterCompletion() async {
         let model = makeModel(refresh: { throw LoadError.offline })
         await model.refresh()
-        #expect(model.activeLoad == nil)
+        #expect(model.loading == nil)
     }
 
     // MARK: - loadMore() happy path
@@ -121,7 +121,7 @@ struct BlogModelTests {
         let model = makeModel(loadMore: { false })
         await model.refresh()
         await model.loadMore()
-        #expect(!model.isPageLoading)
+        #expect(model.loading != .page)
     }
 
     // MARK: - loadMore() guards

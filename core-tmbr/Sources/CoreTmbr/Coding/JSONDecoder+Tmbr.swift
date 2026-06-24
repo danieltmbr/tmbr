@@ -13,7 +13,7 @@ public extension JSONDecoder {
         decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
             let string = try container.decode(String.self)
-            guard let date = ISO8601.date(from: string) else {
+            guard let date = ISO8601DateFormatter.parse(string) else {
                 throw DecodingError.dataCorruptedError(
                     in: container,
                     debugDescription: "Expected ISO 8601 date string, got: \(string)"
