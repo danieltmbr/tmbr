@@ -43,7 +43,7 @@ struct CatalogueUpsertTests {
         let noteID = UUID()
         let s = song(previewID: pid, title: "Glow")
         let withNote = SongResponse(id: s.id, access: s.access, album: s.album, artist: s.artist, artwork: s.artwork, genre: s.genre, notes: [note(noteID, on: s.preview)], owner: user, preview: s.preview, post: nil, releaseDate: nil, resources: s.resources, title: s.title)
-        try SongRecord.upsert([withNote], in: ctx)
+        try CatalogueStore(context: ctx).upsert([withNote])
 
         #expect(try count(PreviewRecord.self, ctx) == 1)
         #expect(try count(SongRecord.self, ctx) == 1)
@@ -61,8 +61,8 @@ struct CatalogueUpsertTests {
         let container = try makeContainer()
         let ctx = container.mainContext
         let pid = UUID()
-        try SongRecord.upsert([song(previewID: pid, title: "A")], in: ctx)
-        try SongRecord.upsert([song(previewID: pid, title: "B")], in: ctx)
+        try CatalogueStore(context: ctx).upsert([song(previewID: pid, title: "A")])
+        try CatalogueStore(context: ctx).upsert([song(previewID: pid, title: "B")])
         #expect(try count(PreviewRecord.self, ctx) == 1)
         #expect(try count(SongRecord.self, ctx) == 1)
         #expect(try ctx.fetch(FetchDescriptor<SongRecord>()).first?.title == "B")
@@ -74,10 +74,10 @@ struct CatalogueUpsertTests {
         let pid = UUID()
         let a = UUID(), b = UUID()
         let p = preview(pid)
-        try SongRecord.upsert([song(previewID: pid, notes: [note(a, on: p), note(b, on: p)])], in: ctx)
+        try CatalogueStore(context: ctx).upsert([song(previewID: pid, notes: [note(a, on: p), note(b, on: p)])])
         #expect(try count(NoteRecord.self, ctx) == 2)
         // re-fetch with only note A → B is dropped
-        try SongRecord.upsert([song(previewID: pid, notes: [note(a, on: p)])], in: ctx)
+        try CatalogueStore(context: ctx).upsert([song(previewID: pid, notes: [note(a, on: p)])])
         let notes = try ctx.fetch(FetchDescriptor<NoteRecord>())
         #expect(notes.count == 1)
         #expect(notes.first?.serverID == a)
@@ -88,7 +88,7 @@ struct CatalogueUpsertTests {
         let ctx = container.mainContext
         let pid = UUID()
         let orphan = preview(pid, type: "recipe", sourceID: nil, category: "Recipe", title: "Risotto", notes: [note(UUID(), on: preview(pid, sourceID: nil))])
-        try PreviewRecord.upsertOrphans([orphan], in: ctx)
+        try CatalogueStore(context: ctx).upsertOrphans([orphan])
         let preview = try ctx.fetch(FetchDescriptor<PreviewRecord>()).first
         #expect(preview?.isOrphan == true)
         #expect(preview?.categoryType == "Recipe")

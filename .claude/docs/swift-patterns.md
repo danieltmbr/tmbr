@@ -61,6 +61,14 @@ extension Platform where M == SongMetadata {
 
 Each type should do one thing. If a type is doing two things (e.g., URL validation AND ID extraction), split it. This makes pieces reusable and easier to reason about.
 
+## No Free-Standing Helper Functions
+
+**Every helper lives inside the type it serves**, as a `private` method or in a `private extension` — never a global/file-scope `func`. A free function is acceptable *only* when it genuinely belongs to no type (rare). If a helper takes a value of type `T` and works on it, it is a method on `T`.
+
+## No Namespace / Static-Only Enums for Behaviour
+
+An `enum` with no cases and only `static` members, or an enum whose cases exist mainly to drive `switch self` computed properties, is a real entity in disguise. **Model behaviour as a `struct`/`actor`/`class` with one clear responsibility, injected as a dependency** — not as static functions hung off an enum or a type extension. (Multi-case data: store the fields on a `struct` and keep a `Kind`/`Style`/`Type` enum as just one property of that struct.)
+
 ## Optional Capabilities
 
 When some instances support a feature and others don't, make it optional rather than forcing all implementations to provide it:
