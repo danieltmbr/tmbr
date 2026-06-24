@@ -1,33 +1,49 @@
 import SwiftUI
+import SwiftData
 
 struct BlogTab: View {
-    @State private var showEditor = false
+
+    @Query(sort: \PostRecord.createdAt, order: .reverse)
+    private var posts: [PostRecord]
+
+    @Environment(\.refreshBlog)
+    private var refreshBlog
+
+    @State
+    private var showEditor = false
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(Array(placeholderPosts.enumerated()), id: \.offset) { index, title in
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("\(index + 1).")
-                            .foregroundStyle(.secondary)
-                            .monospacedDigit()
-#if os(macOS)
-                        Text(title)
-                        Spacer()
-                        Text("May 28")
-                            .foregroundStyle(.secondary)
-#else
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(title)
-                            Text("May 28")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-#endif
+                if !posts.isEmpty {
+                    BlogStatusLine()
+                }
+                ForEach(posts) { post in
+                    NavigationLink(value: post) {
+                        PostCell(
+                            title: post.title,
+                            date: post.publishedAt ?? post.createdAt
+                        )
                     }
+                }
+                if !posts.isEmpty {
+                    BlogLoadMoreCell()
+                }
+            }
+            .overlay {
+                if posts.isEmpty {
+                    BlogEmptyView()
                 }
             }
             .navigationTitle("Blog")
+            .navigationDestination(for: PostRecord.self) { post in
+                PostReaderView(
+                    title: post.title,
+                    content: post.markdown ?? AttributedString(post.content),
+                    created: post.createdAt,
+                    published: post.publishedAt
+                )
+            }
             .toolbar {
 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
@@ -42,17 +58,11 @@ struct BlogTab: View {
                     AccountButton()
                 }
             }
+            .refreshable { await refreshBlog() }
         }
+        .task { await refreshBlog() }
         .sheet(isPresented: $showEditor) {
-            BlogEditorView()
+            PostEditor()
         }
     }
-
-    private let placeholderPosts = [
-        "On keeping a reading journal",
-        "Why I stopped using recommendations",
-        "Albums I return to every winter",
-        "Notes on Detransition, Baby",
-        "The case for private playlists",
-    ]
 }

@@ -18,5 +18,9 @@ let package = Package(
             name: "CoreApp",
             dependencies: [.product(name: "CoreTmbr", package: "core-tmbr")]
         ),
+        .testTarget(
+            name: "CoreAppTests",
+            dependencies: ["CoreApp"]
+        ),
     ]
 )

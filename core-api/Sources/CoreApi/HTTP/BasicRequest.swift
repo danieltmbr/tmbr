@@ -1,4 +1,5 @@
 import Foundation
+import CoreTmbr
 
 /// The default `Request`: a URL plus two closures — one that builds the `URLRequest`, one that decodes
 /// the `Output`. Both own their coding (a `JSONEncoder`/`JSONDecoder` or `QueryItemEncoder` created
@@ -14,7 +15,7 @@ public struct BasicRequest<Input: Sendable, Response: Decodable & Sendable>: Req
     public init(
         url: URL,
         build: @escaping @Sendable (_ url: URL, _ input: Input, _ token: String?) throws -> URLRequest,
-        decode: @escaping @Sendable (_ data: Data) throws -> Response = { try JSONDecoder().decode(Response.self, from: $0) }
+        decode: @escaping @Sendable (_ data: Data) throws -> Response = { try JSONDecoder.tmbr().decode(Response.self, from: $0) }
     ) {
         self.url = url
         self.build = build

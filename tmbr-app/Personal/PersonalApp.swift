@@ -11,6 +11,8 @@ import CoreApp
 @main
 struct PersonalApp: App {
     let container: ModelContainer
+    // No-op refresh — Personal's data is CloudKit-mirrored (no fetch). Empty until the write path lands.
+    let blog = BlogModel()
 
     init() {
         do {
@@ -23,6 +25,7 @@ struct PersonalApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .blog(blog)
         }
         .modelContainer(container)
     }

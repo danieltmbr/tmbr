@@ -1,8 +1,8 @@
 #include "../Base.xcconfig"
 
 // Dev backend (ngrok tunnel — update when tunnel changes)
-API_BASE_URL = https:$()/$()/10bb-2a01-4b00-bf22-e100-fd4d-5430-b41a-d74.ngrok-free.app
-WEB_CREDENTIALS_DOMAIN = 10bb-2a01-4b00-bf22-e100-fd4d-5430-b41a-d74.ngrok-free.app
+API_BASE_URL = https:$()/$()/fc24-31-94-4-136.ngrok-free.app
+WEB_CREDENTIALS_DOMAIN = fc24-31-94-4-136.ngrok-free.app
 
 // SIWA App Group — all debug targets share ONE Sign in with Apple service.
 // Apple issues JWTs with aud = SIWA_NATIVE_APP_ID (the group primary), regardless

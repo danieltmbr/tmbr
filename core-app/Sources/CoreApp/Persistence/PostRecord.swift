@@ -30,6 +30,7 @@ public final class PostRecord {
 
     // Optional catalogue item this post is about (anchored by PreviewID).
     public var attachmentID: UUID?
+    
     public var attachmentTitle: String?
 
     public init(
@@ -68,6 +69,10 @@ public extension PostRecord {
     var language: Language? {
         get { Language(rawValue: languageRaw) }
         set { languageRaw = newValue?.rawValue ?? "" }
+    }
+    
+    var markdown: AttributedString? {
+        try? AttributedString(markdown: content)
     }
 
     var syncState: SyncState {
