@@ -15,6 +15,9 @@ public final class CatalogueModel {
     /// The error from the last refresh attempt; `nil` after a successful refresh.
     public private(set) var lastError: LoadError?
 
+    /// When the last successful refresh completed.
+    public private(set) var lastFetched: Date?
+
     // MARK: - Dependencies
 
     private let _refresh: @Sendable () async throws -> Void
@@ -31,6 +34,7 @@ public final class CatalogueModel {
         defer { loading = nil }
         do {
             try await _refresh()
+            lastFetched = .now
             lastError = nil
         } catch {
             Logger.catalogue.error("Catalogue refresh failed: \(error)")

@@ -2,12 +2,15 @@ import SwiftUI
 import SwiftData
 
 struct CatalogueTab: View {
-    @Query(sort: \PreviewRecord.primaryInfo) private var allItems: [PreviewRecord]
-    @Catalogue(\.loading) private var loading
-    @Catalogue(\.lastError) private var lastError
-    @Environment(\.refreshCatalogue) private var refreshCatalogue
-    @Environment(\.canAuthor) private var canAuthor
-    @Environment(\.accountToolbar) private var accountToolbar
+    @Query(sort: \PreviewRecord.primaryInfo)
+    private var allItems: [PreviewRecord]
+
+    @Environment(\.refreshCatalogue)
+    private var refreshCatalogue
+    
+    @Environment(\.canAuthor)
+    private var canAuthor
+
     @State private var showFilter = false
     @State private var showTypePicker = false
     @State private var selectedType: CatalogueItemType?
@@ -22,29 +25,28 @@ struct CatalogueTab: View {
 
     var body: some View {
         NavigationStack {
-            List(items) { item in
-                NavigationLink {
-                    CatalogueItemDetailView(item: item)
-                } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(item.primaryInfo)
-                        if let subtitle = item.secondaryInfo {
-                            Text(subtitle)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+            List {
+                if !items.isEmpty {
+                    CatalogueStatusLine()
+                }
+                ForEach(items) { item in
+                    NavigationLink {
+                        CatalogueItemDetailView(item: item)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(item.primaryInfo)
+                            if let subtitle = item.secondaryInfo {
+                                Text(subtitle)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }
             }
             .overlay {
                 if items.isEmpty {
-                    if loading != nil {
-                        ProgressView()
-                    } else if let error = lastError {
-                        ContentUnavailableView(error.title, systemImage: error.systemImage, description: Text(error.message))
-                    } else {
-                        ContentUnavailableView("Nothing here yet", systemImage: "square.grid.2x2")
-                    }
+                    CatalogueEmptyView()
                 }
             }
             .navigationTitle("Catalogue")

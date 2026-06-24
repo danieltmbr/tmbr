@@ -20,10 +20,7 @@ struct ReaderApp: App {
         } catch {
             fatalError("Failed to create Reader ModelContainer: \(error)")
         }
-        let loader = RequestLoader(
-            request: PostsRequest.postQuery(baseURL: Self.apiBaseURL),
-            session: .shared
-        )
+        let loader = PostsLoader.posts(baseURL: Self.apiBaseURL)
         let store = PostStore(context: container.mainContext)
         let posts = ReaderPosts(loader: loader, store: store)
         let userDefaults = UserDefaults.standard
@@ -40,8 +37,8 @@ struct ReaderApp: App {
         )
 
         let catalogueStore = CatalogueStore(context: container.mainContext)
-        let catalogueFetcher = ReaderCatalogue(baseURL: Self.apiBaseURL, store: catalogueStore)
-        catalogue = CatalogueModel(refresh: { try await catalogueFetcher.refresh() })
+        let catalogueSync = SyncGroup.catalogue(baseURL: Self.apiBaseURL, store: catalogueStore)
+        catalogue = CatalogueModel(refresh: { try await catalogueSync.run() })
     }
 
     var body: some Scene {
