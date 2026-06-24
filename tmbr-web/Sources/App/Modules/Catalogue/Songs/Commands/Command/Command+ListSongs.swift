@@ -10,7 +10,7 @@ extension Command where Self == PlainCommand<PageInput, [Song]> {
             let query = Song.query(on: database)
                 .join(Preview.self, on: \Song.$preview.$id == \Preview.$id)
                 .sort(Preview.self, \Preview.$createdAt, .descending)
-                .with(\.$preview) { p in p.with(\.$image) }
+                .with(\.$preview) { p in p.with(\.$image).with(\.$catalogueCategory) }
                 .with(\.$artwork)
                 .with(\.$owner)
                 .with(\.$post)
