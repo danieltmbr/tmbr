@@ -128,7 +128,7 @@ struct BlogModelTests {
 
     @Test func loadMoreBlockedWhenHasMoreIsFalse() async {
         var callCount = 0
-        let model = makeModel(loadMore: {
+        let model = makeModel(loadMore: { @MainActor in
             callCount += 1
             return false
         })

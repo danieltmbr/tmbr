@@ -62,6 +62,14 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
   `@Observable` detail model holding an injected refresh-strategy closure. Same env-key, different
   body per app — that injection point *is* the three-app seam; do not branch on app inside `AppCore`.
 
+**Persistence / sync**
+- DTO→record sync orchestration (fetch, index, dedup, reconcile, delete, `context.save()`) lives in a
+  `@MainActor` **Store** struct that owns the `ModelContext` (e.g. `PostStore`, `CatalogueStore`).
+- `@Model` record extensions hold **only** pure single-record field mapping (`func update(from:)`) and
+  value accessors. **Never** a `static func` that takes or touches a `ModelContext`. Never a
+  file-scope `private func` helper — helpers belong on the Store as `private` methods.
+- See `.claude/docs/swift-patterns.md` §*No Free-Standing Helper Functions* + §*No Namespace / Static-Only Enums for Behaviour*.
+
 **Concurrency**
 - `@MainActor` on all `@Observable` classes and action structs.
 - `nonisolated` on pure-closure action inits.
