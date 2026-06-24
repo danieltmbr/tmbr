@@ -1,20 +1,52 @@
 import SwiftUI
+import SwiftData
 
 struct CatalogueTab: View {
+    @Query(sort: \PreviewRecord.primaryInfo)
+    private var allItems: [PreviewRecord]
+
+    @Environment(\.refreshCatalogue)
+    private var refreshCatalogue
+    
+    @Environment(\.canAuthor)
+    private var canAuthor
+
     @State private var showFilter = false
     @State private var showTypePicker = false
     @State private var selectedType: CatalogueItemType?
     @State private var showEditor = false
     @State private var filterTypes: Set<CatalogueItemType> = []
 
+    private var items: [PreviewRecord] {
+        guard !filterTypes.isEmpty else { return allItems }
+        let raw = Set(filterTypes.map(\.rawValue))
+        return allItems.filter { raw.contains($0.categoryType) }
+    }
+
     var body: some View {
         NavigationStack {
-            List(placeholderItems) { item in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(item.primaryInfo)
-                    Text(item.secondaryInfo)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+            List {
+                if !items.isEmpty {
+                    CatalogueStatusLine()
+                }
+                ForEach(items) { item in
+                    NavigationLink {
+                        CatalogueItemDetailView(item: item)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(item.primaryInfo)
+                            if let subtitle = item.secondaryInfo {
+                                Text(subtitle)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
+            .overlay {
+                if items.isEmpty {
+                    CatalogueEmptyView()
                 }
             }
             .navigationTitle("Catalogue")
@@ -42,7 +74,9 @@ struct CatalogueTab: View {
                     AccountButton()
                 }
             }
+            .refreshable { await refreshCatalogue() }
         }
+        .task { await refreshCatalogue() }
         .sheet(isPresented: $showFilter) {
             CatalogueFilterSheet(selectedTypes: $filterTypes)
         }
@@ -60,21 +94,4 @@ struct CatalogueTab: View {
             if type != nil { showEditor = true }
         }
     }
-
-    private struct PreviewItem: Identifiable {
-        let id = UUID()
-        let primaryInfo: String
-        let secondaryInfo: String
-    }
-
-    private let placeholderItems: [PreviewItem] = [
-        .init(primaryInfo: "The Glow Pt. 2", secondaryInfo: "The Microphones"),
-        .init(primaryInfo: "Parable of the Sower", secondaryInfo: "Octavia Butler"),
-        .init(primaryInfo: "Stranger in the Alps", secondaryInfo: "Phoebe Bridgers"),
-        .init(primaryInfo: "Arrival", secondaryInfo: "Denis Villeneuve"),
-        .init(primaryInfo: "Radiolab", secondaryInfo: "Season 22, Ep. 4"),
-        .init(primaryInfo: "Late Night Playlist", secondaryInfo: "Playlist"),
-        .init(primaryInfo: "Normal People", secondaryInfo: "Sally Rooney"),
-        .init(primaryInfo: "Javelin", secondaryInfo: "Sufjan Stevens"),
-    ]
 }

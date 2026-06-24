@@ -72,6 +72,10 @@ public final class NoteRecord {
 }
 
 public extension NoteRecord {
+    var markdown: AttributedString? {
+        try? AttributedString(markdown: body)
+    }
+
     var access: Access {
         get { Access(rawValue: accessRaw) ?? .private }
         set { accessRaw = newValue.rawValue }

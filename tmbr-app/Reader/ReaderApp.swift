@@ -12,6 +12,7 @@ struct ReaderApp: App {
     let container: ModelContainer
     
     let blog: BlogModel
+    let catalogue: CatalogueModel
 
     init() {
         do {
@@ -19,10 +20,7 @@ struct ReaderApp: App {
         } catch {
             fatalError("Failed to create Reader ModelContainer: \(error)")
         }
-        let loader = RequestLoader(
-            request: PostsRequest.postQuery(baseURL: Self.apiBaseURL),
-            session: .shared
-        )
+        let loader = PostsLoader.posts(baseURL: Self.apiBaseURL)
         let store = PostStore(context: container.mainContext)
         let posts = ReaderPosts(loader: loader, store: store)
         let userDefaults = UserDefaults.standard
@@ -37,12 +35,17 @@ struct ReaderApp: App {
             loadMore: { try await posts.loadMore() },
             lastFetched: userDefaults.object(forKey: lastFetchedKey) as? Date
         )
+
+        let catalogueStore = CatalogueStore(context: container.mainContext)
+        let catalogueSync = SyncGroup.catalogue(baseURL: Self.apiBaseURL, store: catalogueStore)
+        catalogue = CatalogueModel(refresh: { try await catalogueSync.run() })
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .blog(blog)
+                .catalogue(catalogue)
         }
         .modelContainer(container)
     }

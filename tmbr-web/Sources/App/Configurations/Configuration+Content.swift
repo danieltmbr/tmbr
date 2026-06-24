@@ -25,7 +25,7 @@ private extension URLEncodedFormDecoder.Configuration.DateDecodingStrategy {
         .custom { decoder in
             let container = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
-            guard let date = ISO8601.date(from: dateString) else {
+            guard let date = ISO8601DateFormatter.isoFormatter.date(from: dateString) else {
                 throw DecodingError.dataCorruptedError(
                     in: container,
                     debugDescription: "Invalid ISO 8601 date: \(dateString)"
@@ -33,5 +33,16 @@ private extension URLEncodedFormDecoder.Configuration.DateDecodingStrategy {
             }
             return date
         }
+    }
+}
+
+private extension ISO8601DateFormatter {
+    static var isoFormatter: ISO8601DateFormatter {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [
+            .withInternetDateTime,
+            .withFractionalSeconds
+        ]
+        return formatter
     }
 }

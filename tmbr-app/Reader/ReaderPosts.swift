@@ -14,7 +14,7 @@ import CoreTmbr
 @MainActor
 final class ReaderPosts {
 
-    private let loader: RequestLoader<PostsRequest>
+    private let loader: PostsLoader
 
     private let store: PostStore
 
@@ -22,7 +22,7 @@ final class ReaderPosts {
 
     private var nextCursor: String?
 
-    init(loader: RequestLoader<PostsRequest>, store: PostStore) {
+    init(loader: PostsLoader, store: PostStore) {
         self.loader = loader
         self.store = store
     }
