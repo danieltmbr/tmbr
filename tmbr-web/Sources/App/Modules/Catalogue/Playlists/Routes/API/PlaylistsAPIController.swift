@@ -16,10 +16,23 @@ struct PlaylistsAPIController: RouteCollection {
             let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
             let playlists = try await request.commands.playlists.list(input)
             let previewIDs = playlists.map { $0.$preview.id }
-            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
+            async let notesByPreviewID = request.commands.notes.grouped(previewIDs)
+            let playlistIDs = playlists.compactMap(\.id)
+            let tracksByPlaylistID: [PlaylistID: [Preview]] = try await withThrowingTaskGroup(of: (PlaylistID, [Preview]).self) { group in
+                for playlistID in playlistIDs {
+                    group.addTask { (playlistID, try await request.commands.previews.listContainerPreviews("playlist", playlistID)) }
+                }
+                return try await group.reduce(into: [:]) { $0[$1.0] = $1.1 }
+            }
+            let resolvedNotes = try await notesByPreviewID
             let baseURL = request.baseURL
             return PageResult(from: playlists, limit: input.limit) { playlist in
-                PlaylistResponse(playlist: playlist, notes: notesByPreviewID[playlist.$preview.id] ?? [], baseURL: baseURL)
+                PlaylistResponse(
+                    playlist: playlist,
+                    notes: resolvedNotes[playlist.$preview.id] ?? [],
+                    trackPreviews: playlist.id.flatMap { tracksByPlaylistID[$0] } ?? [],
+                    baseURL: baseURL
+                )
             }
         }
 
