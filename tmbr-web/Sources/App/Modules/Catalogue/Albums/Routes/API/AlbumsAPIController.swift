@@ -23,10 +23,23 @@ struct AlbumsAPIController: RouteCollection {
             let input = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
             let albums = try await request.commands.albums.list(input)
             let previewIDs = albums.map { $0.$preview.id }
-            let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
+            async let notesByPreviewID = request.commands.notes.grouped(previewIDs)
+            let albumIDs = albums.compactMap(\.id)
+            let tracksByAlbumID: [AlbumID: [Preview]] = try await withThrowingTaskGroup(of: (AlbumID, [Preview]).self) { group in
+                for albumID in albumIDs {
+                    group.addTask { (albumID, try await request.commands.previews.listContainerPreviews("album", albumID)) }
+                }
+                return try await group.reduce(into: [:]) { $0[$1.0] = $1.1 }
+            }
+            let resolvedNotes = try await notesByPreviewID
             let baseURL = request.baseURL
             return PageResult(from: albums, limit: input.limit) { album in
-                AlbumResponse(album: album, notes: notesByPreviewID[album.$preview.id] ?? [], baseURL: baseURL)
+                AlbumResponse(
+                    album: album,
+                    notes: resolvedNotes[album.$preview.id] ?? [],
+                    trackPreviews: album.id.flatMap { tracksByAlbumID[$0] } ?? [],
+                    baseURL: baseURL
+                )
             }
         }
 
