@@ -71,10 +71,6 @@ public extension PostRecord {
         set { languageRaw = newValue?.rawValue ?? "" }
     }
     
-    var markdown: AttributedString? {
-        try? AttributedString(markdown: content)
-    }
-
     var syncState: SyncState {
         get { SyncState(rawValue: syncStateRaw) ?? .synced }
         set { syncStateRaw = newValue.rawValue }

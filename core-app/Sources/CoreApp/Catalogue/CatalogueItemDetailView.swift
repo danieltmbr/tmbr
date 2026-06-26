@@ -29,8 +29,7 @@ struct CatalogueItemDetailView: View {
             if !notes.isEmpty {
                 Section("Notes") {
                     ForEach(notes) { note in
-                        Text(note.markdown ?? AttributedString(note.body))
-                            .textSelection(.enabled)
+                        MarkdownView(raw: note.body)
                     }
                 }
             }

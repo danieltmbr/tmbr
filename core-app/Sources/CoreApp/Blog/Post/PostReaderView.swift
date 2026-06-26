@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct PostReaderView: View {
-        
+
     let title: String
-    
-    let content: AttributedString
-        
+
+    let content: String
+
     let created: Date
-    
+
     let published: Date?
 
     var body: some View {
@@ -18,8 +18,7 @@ struct PostReaderView: View {
                 Text((published ?? created).formatted(.publishDate))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                Text(content)
-                    .textSelection(.enabled)
+                MarkdownView(raw: content)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()

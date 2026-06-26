@@ -39,7 +39,7 @@ struct BlogTab: View {
             .navigationDestination(for: PostRecord.self) { post in
                 PostReaderView(
                     title: post.title,
-                    content: post.markdown ?? AttributedString(post.content),
+                    content: post.content,
                     created: post.createdAt,
                     published: post.publishedAt
                 )
