@@ -10,9 +10,8 @@ import SwiftUI
 /// Block layout (list indentation, blockquote bar, code background) is handled at the view
 /// level; inline run styling is delegated to the `MarkdownDecorator` from the environment.
 ///
-/// For anchor jumps (`^[[1](#reference-1)](htmltag: sup)` → scroll to `#reference-1`), wrap
-/// in a `ScrollViewReader` and install a custom `openURL` action that intercepts fragment URLs.
-/// See `PostReaderView` for the wiring.
+/// **Anchor jumps:** fragment URLs (`#reference-N`) are intercepted internally and resolved
+/// via `ScrollViewProxy` against the nearest enclosing `ScrollView`. No external wiring needed.
 struct MarkdownView: View {
 
     let raw: String
@@ -22,13 +21,20 @@ struct MarkdownView: View {
     private var blocks: [MarkdownBlock] { MarkdownBlock.parse(raw) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(blocks, id: \.id) { block in
-                blockView(for: block)
-                    .modifier(AnchorIDModifier(anchorID: block.anchorID))
+        ScrollViewReader { proxy in
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(blocks, id: \.id) { block in
+                    blockView(for: block)
+                        .modifier(AnchorIDModifier(anchorID: block.anchorID))
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .environment(\.openURL, OpenURLAction { url in
+                guard url.host == nil, let fragment = url.fragment else { return .systemAction }
+                withAnimation { proxy.scrollTo(fragment, anchor: .top) }
+                return .handled
+            })
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Block rendering
