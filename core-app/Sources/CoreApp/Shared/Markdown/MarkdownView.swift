@@ -1,14 +1,20 @@
 import SwiftUI
+import CoreTmbr
 
 /// Renders a raw Markdown string as laid-out SwiftUI blocks — headings, lists, blockquotes,
-/// code blocks, and inline formatting (bold, italic, links, code spans, custom attributes).
+/// code blocks, and inline formatting (bold, italic, links, code spans, citations).
 ///
 /// Uses Foundation's `AttributedString` with `interpretedSyntax: .full` and the custom
-/// `TmbrAttributes` scope so the web's inline-attribute convention (`htmltag`, `class`, `id`)
-/// is decoded alongside standard Foundation attributes. No third-party dependency.
+/// `TmbrAttributes` scope so the web's inline-attribute convention (`htmltag`, `class`, `id`,
+/// `cite`) is decoded alongside standard Foundation attributes. No third-party dependency.
 ///
 /// Block layout (list indentation, blockquote bar, code background) is handled at the view
 /// level; inline run styling is delegated to the `MarkdownDecorator` from the environment.
+///
+/// **Citations:** spans marked with `^[content](cite: kind)` are processed before rendering
+/// by `MarkdownFootnotes`. The `citationPlacement` environment key controls whether they are
+/// extracted to a numbered references section at the bottom (`.endOfDocument`) or left inline
+/// as styled attributions (`.inline`).
 ///
 /// **Anchor jumps:** fragment URLs (`#reference-N`) are intercepted internally and resolved
 /// via `ScrollViewProxy` against the nearest enclosing `ScrollView`. No external wiring needed.
@@ -17,15 +23,20 @@ struct MarkdownView: View {
     let raw: String
 
     @Environment(\.markdownDecorator) private var decorator
+    @Environment(\.citationPlacement) private var citationPlacement
 
-    private var blocks: [MarkdownBlock] { MarkdownBlock.parse(raw) }
+    private var parsed: ParseResult { ParseResult.parse(raw, placement: citationPlacement) }
 
     var body: some View {
+        let result = parsed
         ScrollViewReader { proxy in
             VStack(alignment: .leading, spacing: 8) {
-                ForEach(blocks, id: \.id) { block in
+                ForEach(result.blocks, id: \.id) { block in
                     blockView(for: block)
                         .modifier(AnchorIDModifier(anchorID: block.anchorID))
+                }
+                if !result.references.isEmpty {
+                    referencesSection(result.references)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -34,6 +45,49 @@ struct MarkdownView: View {
                 withAnimation { proxy.scrollTo(fragment, anchor: .top) }
                 return .handled
             })
+        }
+    }
+
+    // MARK: - References section
+
+    @ViewBuilder
+    private func referencesSection(_ references: [Citation]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Divider()
+                .padding(.bottom, 4)
+            ForEach(references, id: \.number) { citation in
+                referenceRow(citation)
+                    .id(citation.anchorID)
+            }
+        }
+        .padding(.top, 8)
+    }
+
+    @ViewBuilder
+    private func referenceRow(_ citation: Citation) -> some View {
+        let contentAttr: AttributedString = {
+            let options = AttributedString.MarkdownParsingOptions(
+                interpretedSyntax: .full,
+                failurePolicy: .returnPartiallyParsedIfPossible
+            )
+            return (try? AttributedString(
+                markdown: citation.content,
+                including: AttributeScopes.TmbrAttributes.self,
+                options: options
+            )) ?? AttributedString(citation.content)
+        }()
+
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Text("\(citation.number).")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+                .frame(minWidth: 16, alignment: .trailing)
+            Text(contentAttr)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -138,6 +192,39 @@ private struct CodeBlock: View {
     }
 }
 
+// MARK: - ParseResult
+
+private struct ParseResult {
+    let blocks: [MarkdownBlock]
+    let references: [Citation]
+
+    static func parse(_ raw: String, placement: CitationPlacement) -> ParseResult {
+        guard !raw.isEmpty else { return ParseResult(blocks: [], references: []) }
+
+        let options = AttributedString.MarkdownParsingOptions(
+            interpretedSyntax: .full,
+            failurePolicy: .returnPartiallyParsedIfPossible
+        )
+        guard let attributed = try? AttributedString(
+            markdown: raw,
+            including: AttributeScopes.TmbrAttributes.self,
+            options: options
+        ) else {
+            let fallback = MarkdownBlock(id: 0, anchorID: nil, content: AttributedString(raw), kind: .paragraph)
+            return ParseResult(blocks: [fallback], references: [])
+        }
+
+        // Run the citations pass before block-grouping so cite spans are replaced with
+        // FootnoteMarkerAttribute runs (endOfDocument) or left styled (inline).
+        let footnotes = MarkdownFootnotes.process(attributed, placement: placement)
+
+        return ParseResult(
+            blocks: MarkdownBlock.grouped(footnotes.body),
+            references: footnotes.references
+        )
+    }
+}
+
 
 // MARK: - MarkdownBlock
 
@@ -160,30 +247,12 @@ private struct MarkdownBlock {
         case codeBlock
     }
 
-    // MARK: Parsing
-
-    static func parse(_ raw: String) -> [MarkdownBlock] {
-        guard !raw.isEmpty else { return [] }
-        let options = AttributedString.MarkdownParsingOptions(
-            interpretedSyntax: .full,
-            failurePolicy: .returnPartiallyParsedIfPossible
-        )
-        // `including: TmbrAttributes.self` decodes the web's custom attributes (htmltag, class,
-        // id) while preserving all standard Foundation attributes (presentationIntent, link…).
-        guard let attributed = try? AttributedString(
-            markdown: raw,
-            including: AttributeScopes.TmbrAttributes.self,
-            options: options
-        ) else {
-            return [MarkdownBlock(id: 0, anchorID: nil, content: AttributedString(raw), kind: .paragraph)]
-        }
-        return grouped(attributed)
-    }
+    // MARK: Grouping
 
     /// Groups runs by innermost block identity — each paragraph / heading / list item /
     /// blockquote gets one `MarkdownBlock`. Multiple runs sharing the same block (e.g. bold +
     /// normal text within one paragraph) are concatenated into a single `AttributedString`.
-    private static func grouped(_ attributed: AttributedString) -> [MarkdownBlock] {
+    static func grouped(_ attributed: AttributedString) -> [MarkdownBlock] {
         struct Group {
             let id: Int
             var content: AttributedString
