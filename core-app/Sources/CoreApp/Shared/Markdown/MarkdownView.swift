@@ -36,41 +36,15 @@ struct MarkdownView: View {
     @ViewBuilder
     private func blockView(for block: MarkdownBlock) -> some View {
         let content = decoratedAndStripped(block)
-
         switch block.kind {
         case .heading, .paragraph:
-            Text(content)
-                .textSelection(.enabled)
-
+            TextBlock(content: content)
         case .listItem(let ordinal, let depth):
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(ordinal.map { "\($0)." } ?? "•")
-                    .monospacedDigit()
-                    .frame(minWidth: 16, alignment: .trailing)
-                
-                Text(content)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding(.leading, CGFloat(depth) * 12)
-
+            ListItemBlock(content: content, ordinal: ordinal, depth: depth)
         case .blockQuote:
-            HStack(alignment: .top, spacing: 10) {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(.secondary.opacity(0.5))
-                    .frame(width: 3)
-                Text(content)
-                    .foregroundStyle(.secondary)
-                    .textSelection(.enabled)
-            }
-
+            QuoteBlock(content: content)
         case .codeBlock:
-            Text(content)
-                .font(.system(.body, design: .monospaced))
-                .padding(10)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
-                .textSelection(.enabled)
+            CodeBlock(content: content)
         }
     }
 
@@ -104,6 +78,60 @@ private struct AnchorIDModifier: ViewModifier {
         }
     }
 }
+
+// MARK: - Block views
+
+private struct TextBlock: View {
+    let content: AttributedString
+    var body: some View {
+        Text(content)
+            .textSelection(.enabled)
+    }
+}
+
+private struct ListItemBlock: View {
+    let content: AttributedString
+    let ordinal: Int?
+    let depth: Int
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Text(ordinal.map { "\($0)." } ?? "•")
+                .monospacedDigit()
+                .frame(minWidth: 16, alignment: .trailing)
+            Text(content)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.leading, CGFloat(depth) * 12)
+    }
+}
+
+private struct QuoteBlock: View {
+    let content: AttributedString
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(.secondary.opacity(0.5))
+                .frame(width: 3)
+            Text(content)
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+        }
+    }
+}
+
+private struct CodeBlock: View {
+    let content: AttributedString
+    var body: some View {
+        Text(content)
+            .font(.system(.body, design: .monospaced))
+            .padding(10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
+            .textSelection(.enabled)
+    }
+}
+
 
 // MARK: - MarkdownBlock
 
