@@ -1,14 +1,23 @@
 import SwiftUI
-import Foundation
 
 /// Renders a raw Markdown string as laid-out SwiftUI blocks — headings, lists, blockquotes,
-/// code blocks, and inline formatting (bold, italic, links, code spans). Uses Foundation's
-/// `AttributedString` with `interpretedSyntax: .full`; no third-party dependency.
+/// code blocks, and inline formatting (bold, italic, links, code spans, custom attributes).
 ///
-/// Falls back to unstyled `Text` if markdown parsing fails.
+/// Uses Foundation's `AttributedString` with `interpretedSyntax: .full` and the custom
+/// `TmbrAttributes` scope so the web's inline-attribute convention (`htmltag`, `class`, `id`)
+/// is decoded alongside standard Foundation attributes. No third-party dependency.
+///
+/// Block layout (list indentation, blockquote bar, code background) is handled at the view
+/// level; inline run styling is delegated to the `MarkdownDecorator` from the environment.
+///
+/// For anchor jumps (`^[[1](#reference-1)](htmltag: sup)` → scroll to `#reference-1`), wrap
+/// in a `ScrollViewReader` and install a custom `openURL` action that intercepts fragment URLs.
+/// See `PostReaderView` for the wiring.
 struct MarkdownView: View {
 
     let raw: String
+
+    @Environment(\.markdownDecorator) private var decorator
 
     private var blocks: [MarkdownBlock] { MarkdownBlock.parse(raw) }
 
@@ -16,6 +25,7 @@ struct MarkdownView: View {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(blocks, id: \.id) { block in
                 blockView(for: block)
+                    .modifier(AnchorIDModifier(anchorID: block.anchorID))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -25,14 +35,11 @@ struct MarkdownView: View {
 
     @ViewBuilder
     private func blockView(for block: MarkdownBlock) -> some View {
-        switch block.kind {
-        case .heading(let level):
-            Text(block.content)
-                .font(headingFont(level))
-                .textSelection(.enabled)
+        let content = decoratedAndStripped(block)
 
-        case .paragraph:
-            Text(block.content)
+        switch block.kind {
+        case .heading, .paragraph:
+            Text(content)
                 .textSelection(.enabled)
 
         case .listItem(let ordinal, let depth):
@@ -40,7 +47,8 @@ struct MarkdownView: View {
                 Text(ordinal.map { "\($0)." } ?? "•")
                     .monospacedDigit()
                     .frame(minWidth: 16, alignment: .trailing)
-                Text(block.content)
+                
+                Text(content)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -51,13 +59,13 @@ struct MarkdownView: View {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(.secondary.opacity(0.5))
                     .frame(width: 3)
-                Text(block.content)
+                Text(content)
                     .foregroundStyle(.secondary)
                     .textSelection(.enabled)
             }
 
         case .codeBlock:
-            Text(block.content)
+            Text(content)
                 .font(.system(.body, design: .monospaced))
                 .padding(10)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -66,12 +74,33 @@ struct MarkdownView: View {
         }
     }
 
-    private func headingFont(_ level: Int) -> Font {
-        switch level {
-        case 1: return .title.bold()
-        case 2: return .title2.bold()
-        case 3: return .title3.bold()
-        default: return .headline
+    // MARK: - Decorate then strip
+
+    /// Applies the injected decorator to each run (decorators can read `presentationIntent`
+    /// for heading-level font selection), then strips `presentationIntent` so `Text` doesn't
+    /// apply its own block layout on top of our block chrome.
+    private func decoratedAndStripped(_ block: MarkdownBlock) -> AttributedString {
+        var content = block.content
+        let ranges = content.runs.map(\.range)
+        for range in ranges {
+            decorator(&content[range])
+        }
+        for range in ranges {
+            content[range].presentationIntent = nil
+        }
+        return content
+    }
+}
+
+// MARK: - Anchor ID modifier
+
+private struct AnchorIDModifier: ViewModifier {
+    let anchorID: String?
+    func body(content: Content) -> some View {
+        if let anchorID {
+            content.id(anchorID)
+        } else {
+            content
         }
     }
 }
@@ -81,6 +110,11 @@ struct MarkdownView: View {
 private struct MarkdownBlock {
 
     let id: Int
+    /// Populated from the `id:` custom inline attribute (`AnchorIDAttribute`). Used by
+    /// `MarkdownView` to tag the block view with `.id(anchorID)` for `scrollTo` targets.
+    let anchorID: String?
+    /// Content still carries `presentationIntent` at this point — stripping happens in the
+    /// view after the decorator runs so `.heading` can read the header level.
     let content: AttributedString
     let kind: Kind
 
@@ -100,8 +134,14 @@ private struct MarkdownBlock {
             interpretedSyntax: .full,
             failurePolicy: .returnPartiallyParsedIfPossible
         )
-        guard let attributed = try? AttributedString(markdown: raw, options: options) else {
-            return [MarkdownBlock(id: 0, content: AttributedString(raw), kind: .paragraph)]
+        // `including: TmbrAttributes.self` decodes the web's custom attributes (htmltag, class,
+        // id) while preserving all standard Foundation attributes (presentationIntent, link…).
+        guard let attributed = try? AttributedString(
+            markdown: raw,
+            including: AttributeScopes.TmbrAttributes.self,
+            options: options
+        ) else {
+            return [MarkdownBlock(id: 0, anchorID: nil, content: AttributedString(raw), kind: .paragraph)]
         }
         return grouped(attributed)
     }
@@ -141,16 +181,18 @@ private struct MarkdownBlock {
         }
 
         return groups.map { group in
-            MarkdownBlock(
+            let anchorID = group.content.runs
+                .compactMap { $0[AnchorIDAttribute.self] }
+                .first
+            return MarkdownBlock(
                 id: group.id,
-                content: strippingBlockIntent(group.content),
+                anchorID: anchorID,
+                content: group.content,
                 kind: blockKind(for: group.intent)
             )
         }
     }
 
-    /// Determines the block kind from the `PresentationIntent` component hierarchy
-    /// (outermost → innermost, following `components` ordering).
     private static func blockKind(for intent: PresentationIntent?) -> Kind {
         guard let intent else { return .paragraph }
 
@@ -186,18 +228,5 @@ private struct MarkdownBlock {
         if isList { return .listItem(ordinal: isOrdered ? listOrdinal : nil, depth: intent.indentationLevel) }
         if isBlockQuote { return .blockQuote }
         return .paragraph
-    }
-
-    /// Removes `presentationIntent` from all runs so `Text` doesn't apply its own block layout
-    /// on top of our custom block rendering while still honouring inline attributes (bold, italic…).
-    private static func strippingBlockIntent(_ content: AttributedString) -> AttributedString {
-        var result = content
-        let ranges = Array(content.runs.compactMap { run -> Range<AttributedString.Index>? in
-            run.presentationIntent != nil ? run.range : nil
-        })
-        for range in ranges {
-            result[range].presentationIntent = nil
-        }
-        return result
     }
 }
