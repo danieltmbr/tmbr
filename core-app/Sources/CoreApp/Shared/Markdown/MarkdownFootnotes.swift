@@ -4,17 +4,17 @@ import CoreTmbr
 /// Rewrites raw Markdown source to process `^[content](cite: kind)` citation spans
 /// before the string is handed to Foundation's `AttributedString` parser.
 ///
-/// Foundation does not apply custom inline attributes (`CiteAttribute`) to runs inside
-/// block-level containers such as blockquotes, so scanning `AttributedString` runs for
-/// `CiteAttribute` is unreliable. Instead, this pass operates on the raw source string —
-/// identical in spirit to the web-side `CitationMarkdownFormatter`.
+/// Foundation does not apply custom inline attributes to runs inside blockquotes, so
+/// scanning `AttributedString` runs for `CiteAttribute` is unreliable. This pass operates
+/// on the raw source string instead — identical in approach to `CitationMarkdownFormatter`
+/// on the web side.
 ///
-/// After collection, each span is replaced according to `CitationPlacement`:
+/// For `.endOfDocument`, each cite span is replaced with a standard markdown link:
+/// `[N](#tmbr-footnote-N)`. After `AttributedString` parsing, `ParseResult` converts
+/// those placeholder links into `FootnoteMarkerAttribute` runs (see `MarkdownView`).
 ///
-/// - `.endOfDocument`: replaced with `^[N](#reference-N)](class: reference-id, htmltag: sup)`
-///   — the same legacy marker syntax the web formatter emits, handled by `.legacyFootnote`.
-/// - `.inline`: replaced with `^[content](class: citation)` — the `.citation` decorator
-///   reads `CSSClassAttribute == "citation"` and styles it as a secondary attribution.
+/// For `.inline`, each cite span is replaced with its raw content text so it renders
+/// inline alongside the surrounding prose.
 struct MarkdownFootnotes {
 
     // MARK: - Result
@@ -41,9 +41,11 @@ struct MarkdownFootnotes {
             let replacement: String
             switch placement {
             case .endOfDocument:
-                replacement = "^[[\(citation.number)](#\(citation.anchorID))](class: reference-id, htmltag: sup)"
+                // Standard markdown link with a private URL scheme — no web attributes.
+                // ParseResult converts this to FootnoteMarkerAttribute after parsing.
+                replacement = "[\(citation.number)](#tmbr-footnote-\(citation.number))"
             case .inline:
-                replacement = "^[\(span.content)](class: citation)"
+                replacement = span.content
             }
             result.replaceSubrange(span.sourceRange, with: replacement)
         }

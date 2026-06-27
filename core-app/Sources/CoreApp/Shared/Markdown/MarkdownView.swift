@@ -209,13 +209,28 @@ private struct ParseResult {
             interpretedSyntax: .full,
             failurePolicy: .returnPartiallyParsedIfPossible
         )
-        guard let attributed = try? AttributedString(
+        guard var attributed = try? AttributedString(
             markdown: footnotes.processed,
             including: AttributeScopes.TmbrAttributes.self,
             options: options
         ) else {
             let fallback = MarkdownBlock(id: 0, anchorID: nil, content: AttributedString(raw), kind: .paragraph)
             return ParseResult(blocks: [fallback], references: [])
+        }
+
+        // MarkdownFootnotes replaced cite spans with [N](#tmbr-footnote-N) links.
+        // Foundation applies `link` correctly everywhere (including inside blockquotes), so
+        // we can now find those placeholder links and swap in FootnoteMarkerAttribute — the
+        // purely native attribute that the .footnote decorator reads for superscript styling.
+        let markerRuns = attributed.runs.compactMap { run -> (Range<AttributedString.Index>, Int)? in
+            guard let fragment = run.link?.fragment,
+                  fragment.hasPrefix("tmbr-footnote-"),
+                  let n = Int(fragment.dropFirst("tmbr-footnote-".count)) else { return nil }
+            return (run.range, n)
+        }
+        for (range, n) in markerRuns {
+            attributed[range][FootnoteMarkerAttribute.self] = n
+            attributed[range].link = URL(string: "#\(Citation.anchorID(forNumber: n))")
         }
 
         return ParseResult(
