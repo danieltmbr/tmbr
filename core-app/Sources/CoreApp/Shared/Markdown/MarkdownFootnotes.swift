@@ -1,137 +1,130 @@
 import Foundation
 import CoreTmbr
 
-/// Walks a parsed `AttributedString` and processes citation spans marked with `CiteAttribute`.
+/// Rewrites raw Markdown source to process `^[content](cite: kind)` citation spans
+/// before the string is handed to Foundation's `AttributedString` parser.
 ///
-/// Each contiguous run carrying `CiteAttribute` is a standalone citation:
-/// ```markdown
-/// ^[Andy Puddicombe, [Headspace](https://headspace.com)](cite: podcast)
-/// ```
-/// The span text is the citation content (already parsed as rich attributed runs by Foundation).
-/// The `cite` value is the optional kind/category.
+/// Foundation does not apply custom inline attributes (`CiteAttribute`) to runs inside
+/// block-level containers such as blockquotes, so scanning `AttributedString` runs for
+/// `CiteAttribute` is unreliable. Instead, this pass operates on the raw source string —
+/// identical in spirit to the web-side `CitationMarkdownFormatter`.
 ///
-/// After collection the function transforms the string according to `CitationPlacement`:
+/// After collection, each span is replaced according to `CitationPlacement`:
 ///
-/// - `.endOfDocument`: replaces every cite span with a `FootnoteMarkerAttribute` run linked to
-///   `Citation.anchorID(...)`, and returns the collected `[Citation]` for the caller to append
-///   as a trailing references section.
-/// - `.inline`: leaves cite spans in place (the `MarkdownDecorator.citation` factory styles
-///   them as an attribution); returns an empty `references` array.
-///
-/// No HTML tags, CSS classes, or anchor pairs are ever emitted natively.
+/// - `.endOfDocument`: replaced with `^[N](#reference-N)](class: reference-id, htmltag: sup)`
+///   — the same legacy marker syntax the web formatter emits, handled by `.legacyFootnote`.
+/// - `.inline`: replaced with `^[content](class: citation)` — the `.citation` decorator
+///   reads `CSSClassAttribute == "citation"` and styles it as a secondary attribution.
 struct MarkdownFootnotes {
 
     // MARK: - Result
 
     struct Result {
-        /// The body string with cite spans replaced (`.endOfDocument`) or left in place (`.inline`).
-        var body: AttributedString
+        /// Raw markdown with cite spans rewritten for the chosen placement.
+        let processed: String
         /// Citations in document order. Empty when placement is `.inline`.
-        var references: [Citation]
+        let references: [Citation]
     }
 
     // MARK: - Processing
 
-    static func process(
-        _ attributed: AttributedString,
-        placement: CitationPlacement
-    ) -> Result {
+    static func process(_ raw: String, placement: CitationPlacement) -> Result {
+        let spans = collectSpans(in: raw)
+        guard !spans.isEmpty else { return Result(processed: raw, references: []) }
+
         var collector = CitationCollector()
-        var body = attributed
+        var result = raw
 
-        // Collect cite spans and record their ranges (in reverse so index arithmetic is stable
-        // when we mutate the string — removing/replacing from the end does not shift earlier indices).
-        let citeRanges = collectCiteRanges(in: body)
-
-        for (range, kind) in citeRanges.reversed() {
-            let content = rawMarkdown(from: body[range])
-            let citation = collector.append(content: content, kind: kind)
-
+        // Reverse order so earlier source positions stay valid after each replacement.
+        for span in spans.reversed() {
+            let citation = collector.append(content: span.content, kind: span.kind)
+            let replacement: String
             switch placement {
             case .endOfDocument:
-                // Replace the cite span with a single marker character attributed with
-                // FootnoteMarkerAttribute + a link to the citation's anchor.
-                var marker = AttributedString("\(citation.number)")
-                marker[marker.startIndex..<marker.endIndex][FootnoteMarkerAttribute.self] = citation.number
-                marker[marker.startIndex..<marker.endIndex].link = URL(string: "#\(citation.anchorID)")
-                body.replaceSubrange(range, with: marker)
-
+                replacement = "^[[\(citation.number)](#\(citation.anchorID))](class: reference-id, htmltag: sup)"
             case .inline:
-                // Leave the cite span in place; the decorator styles it.
-                // We still collect so the caller can number consistently (if mixed placements arise).
-                break
+                replacement = "^[\(span.content)](class: citation)"
             }
+            result.replaceSubrange(span.sourceRange, with: replacement)
         }
 
         return Result(
-            body: body,
-            references: collector.references
+            processed: result,
+            references: placement == .endOfDocument ? collector.references : []
         )
     }
 
-    // MARK: - Helpers
+    // MARK: - Span collection
 
-    /// Returns all contiguous cite-attributed ranges in **forward document order**, paired with
-    /// the `cite` attribute value (the kind). Adjacent runs with the same `cite` value that form
-    /// one logical span are merged.
-    private static func collectCiteRanges(
-        in attributed: AttributedString
-    ) -> [(range: Range<AttributedString.Index>, kind: String)] {
-        var result: [(range: Range<AttributedString.Index>, kind: String)] = []
-
-        var spanStart: AttributedString.Index?
-        var spanEnd: AttributedString.Index?
-        var spanKind: String?
-
-        for run in attributed.runs {
-            guard let kind = run[CiteAttribute.self] else {
-                // Flush any open span
-                if let start = spanStart, let end = spanEnd, let k = spanKind {
-                    result.append((start..<end, k))
-                    spanStart = nil; spanEnd = nil; spanKind = nil
-                }
-                continue
-            }
-
-            if spanStart == nil {
-                spanStart = run.range.lowerBound
-            }
-            spanEnd = run.range.upperBound
-            spanKind = kind
-        }
-
-        // Flush final span
-        if let start = spanStart, let end = spanEnd, let k = spanKind {
-            result.append((start..<end, k))
-        }
-
-        return result
+    private struct Span {
+        let sourceRange: Range<String.Index>
+        let content: String
+        let kind: String?
     }
 
-    /// Extracts a minimal raw markdown string from an `AttributedSubstring` by converting
-    /// the attributed content back to its plaintext + inline-formatting approximation.
-    /// Used to store citation content in `Citation.content` so it can be re-parsed per-surface.
-    ///
-    /// Handles: plain text, bold, italic, links. Block presentation is not expected inside a
-    /// cite span, so `presentationIntent` is ignored.
-    private static func rawMarkdown(from slice: AttributedSubstring) -> String {
-        var result = ""
-        for run in slice.runs {
-            var text = String(slice[run.range].characters)
+    /// Scans the raw markdown string for `^[content](cite: kind)` patterns in document order.
+    /// Bracket-counting handles nested `[…]` inside the content (e.g. inline links).
+    private static func collectSpans(in source: String) -> [Span] {
+        var spans: [Span] = []
+        var idx = source.startIndex
 
-            // Reconstruct link markdown: [text](url)
-            if let url = run.link {
-                text = "[\(text)](\(url.absoluteString))"
+        while idx < source.endIndex {
+            guard source[idx] == "^" else { source.formIndex(after: &idx); continue }
+            let spanStart = idx
+            source.formIndex(after: &idx)
+            guard idx < source.endIndex, source[idx] == "[" else { continue }
+            source.formIndex(after: &idx)
+
+            // Scan content with balanced bracket counting.
+            let contentStart = idx
+            var depth = 1
+            while idx < source.endIndex, depth > 0 {
+                switch source[idx] {
+                case "[": depth += 1
+                case "]": depth -= 1
+                default: break
+                }
+                if depth > 0 { source.formIndex(after: &idx) }
             }
+            guard depth == 0 else { break }
+            let content = String(source[contentStart..<idx])
+            source.formIndex(after: &idx)  // past ']'
 
-            // Reconstruct bold/italic from inlinePresentationIntent
-            if let intent = run.inlinePresentationIntent {
-                if intent.contains(.stronglyEmphasized) { text = "**\(text)**" }
-                else if intent.contains(.emphasized) { text = "*\(text)*" }
-            }
+            guard idx < source.endIndex, source[idx] == "(" else { continue }
+            source.formIndex(after: &idx)  // past '('
 
-            result += text
+            let attrStart = idx
+            while idx < source.endIndex, source[idx] != ")" { source.formIndex(after: &idx) }
+            guard idx < source.endIndex else { break }
+            let attributes = String(source[attrStart..<idx])
+            source.formIndex(after: &idx)  // past ')'
+
+            guard let kind = citeKind(from: attributes) else { continue }
+            spans.append(Span(sourceRange: spanStart..<idx, content: content, kind: kind))
         }
-        return result
+
+        return spans
+    }
+
+    private static func citeKind(from attributes: String) -> String? {
+        // Unquoted: cite: word
+        if let m = attributes.range(of: #"\bcite\s*:\s*([A-Za-z0-9_-]+)"#, options: .regularExpression) {
+            let value = String(
+                attributes[m]
+                    .drop(while: { $0 != ":" }).dropFirst()
+                    .drop(while: { $0.isWhitespace })
+            )
+            return value.isEmpty ? nil : value
+        }
+        // Quoted: cite: "value with spaces"
+        if let m = attributes.range(of: #"\bcite\s*:\s*"([^"]+)""#, options: .regularExpression) {
+            let segment = String(attributes[m])
+            if let open = segment.firstIndex(of: "\""),
+               let close = segment.lastIndex(of: "\""),
+               open != close {
+                return String(segment[segment.index(after: open)..<close])
+            }
+        }
+        return nil
     }
 }

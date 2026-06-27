@@ -107,8 +107,10 @@ public extension MarkdownDecorator {
 
     /// Styles inline citations left in place when `CitationPlacement.inline` is active.
     /// Renders as a secondary-color attribution (e.g. "— Andy Puddicombe, *Headspace*").
+    /// The `MarkdownFootnotes` pass rewrites cite spans to `class: citation` before parsing,
+    /// so this decorator reads `CSSClassAttribute` rather than `CiteAttribute`.
     static let citation = MarkdownDecorator { run in
-        guard run.runs.first?[CiteAttribute.self] != nil else { return }
+        guard run.runs.first?[CSSClassAttribute.self] == "citation" else { return }
         run.swiftUI.foregroundColor = .secondary
     }
 
@@ -140,7 +142,7 @@ public extension MarkdownDecorator {
     /// Includes both the new `cite`-based footnote styling and legacy `htmltag: sup` support
     /// during the post-body migration window.
     static let standard = MarkdownDecorator([
-        .heading, .link, .inlineCode, .footnote, .citation, .legacyFootnote
+        .heading, .link, .inlineCode, .citation, .legacyFootnote
     ])
 }
 

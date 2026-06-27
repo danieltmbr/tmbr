@@ -201,12 +201,16 @@ private struct ParseResult {
     static func parse(_ raw: String, placement: CitationPlacement) -> ParseResult {
         guard !raw.isEmpty else { return ParseResult(blocks: [], references: []) }
 
+        // Rewrite cite spans in the raw string before AttributedString parsing —
+        // Foundation does not apply custom inline attributes inside blockquotes.
+        let footnotes = MarkdownFootnotes.process(raw, placement: placement)
+
         let options = AttributedString.MarkdownParsingOptions(
             interpretedSyntax: .full,
             failurePolicy: .returnPartiallyParsedIfPossible
         )
         guard let attributed = try? AttributedString(
-            markdown: raw,
+            markdown: footnotes.processed,
             including: AttributeScopes.TmbrAttributes.self,
             options: options
         ) else {
@@ -214,12 +218,8 @@ private struct ParseResult {
             return ParseResult(blocks: [fallback], references: [])
         }
 
-        // Run the citations pass before block-grouping so cite spans are replaced with
-        // FootnoteMarkerAttribute runs (endOfDocument) or left styled (inline).
-        let footnotes = MarkdownFootnotes.process(attributed, placement: placement)
-
         return ParseResult(
-            blocks: MarkdownBlock.grouped(footnotes.body),
+            blocks: MarkdownBlock.grouped(attributed),
             references: footnotes.references
         )
     }
