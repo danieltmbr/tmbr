@@ -167,6 +167,21 @@ main article p span.reference {
     font-size: 1.3rem;
 }
 
+main article section.references ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+main article section.references li {
+    font-size: 1.3rem;
+    padding: 0;
+}
+
+main article section.references li::before {
+    content: counter(list-item) ": ";
+}
+
 main article li {
     padding: 0 0;
 }
