@@ -36,7 +36,7 @@ struct PostViewModel: Encodable {
     
     init(
         post: Post,
-        markdownFormatter formatter: MarkdownFormatter = .html(citationPlacement: .endOfDocument),
+        markdownFormatter formatter: MarkdownFormatter = .html,
         nameFormatter: NameFormatter = .author,
         attachment: PreviewResponse? = nil
     ) {

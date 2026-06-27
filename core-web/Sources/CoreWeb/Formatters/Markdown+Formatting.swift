@@ -15,19 +15,11 @@ public struct MarkdownFormatter: Sendable {
         formatter(markdown)
     }
 
-    /// Renders markdown to HTML with no citation processing.
-    /// Use `html(citationPlacement:)` when the content may contain `^[…](cite:…)` spans.
-    public static let html = MarkdownFormatter { markdown in
-        var walker = HTMLFormatter()
-        walker.visit(Document(parsing: markdown))
-        return walker.result
-    }
-
-    /// Renders markdown to HTML with citation processing:
-    /// `^[content](cite: kind)` spans are collected, numbered, and rendered according to
-    /// `CitationPlacement`. Use this for post bodies and notes that may contain citations.
-    public static func html(citationPlacement: CitationPlacement = .endOfDocument) -> MarkdownFormatter {
-        let formatter = CitationMarkdownFormatter(placement: citationPlacement)
+    /// Renders markdown to HTML with citation processing (`.endOfDocument` by default).
+    /// `^[content](cite: kind)` spans are collected, numbered, and relocated to a references
+    /// section; no-op when the content contains no citations.
+    public static let html: MarkdownFormatter = {
+        let formatter = CitationMarkdownFormatter(placement: .endOfDocument)
         return MarkdownFormatter { markdown in formatter.format(markdown) }
-    }
+    }()
 }

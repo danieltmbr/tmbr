@@ -51,7 +51,7 @@ struct NoteViewModel: Encodable, Sendable {
     }
 
     init(note: Note, isEditable: Bool = false, error: String? = nil) throws {
-        try self.init(note: note, markdownFormatter: .html(citationPlacement: .endOfDocument), isEditable: isEditable, error: error)
+        try self.init(note: note, markdownFormatter: .html, isEditable: isEditable, error: error)
     }
 }
 
