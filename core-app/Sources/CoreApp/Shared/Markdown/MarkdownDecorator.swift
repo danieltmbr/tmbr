@@ -84,18 +84,41 @@ public extension MarkdownDecorator {
         run.swiftUI.font = .system(.body, design: .monospaced)
     }
 
-    /// Handles the web's generic inline-attribute convention (`htmltag:`, `class:`, `id:`).
-    /// Currently styles `htmltag: sup` as a superscript — the pattern used for footnote
-    /// markers: `^[[1](#reference-1)](class: reference-id, htmltag: sup)`.
+    /// Styles citation markers produced by the `MarkdownFootnotes` preprocess pass.
+    ///
+    /// A marker run carries `FootnoteMarkerAttribute` (the assigned citation number) and a `link`
+    /// to the reference anchor. This decorator renders it as a superscript-style label (smaller
+    /// font, raised baseline) with the accent color. The `link` is left intact so tapping the
+    /// marker triggers the fragment-URL intercept in `PostReaderView`.
     ///
     /// - Note: SwiftUI has no true superscript attribute. We approximate with `.caption` size
-    ///   and a UIKit/AppKit baseline offset. The marker will appear smaller; vertical raise
-    ///   depends on platform.
-    static let customAttributes = MarkdownDecorator { run in
-        // Read custom attrs via `runs.first` — AttributedString.Runs.Run has a documented
-        // subscript `[K.Type] -> K.Value?` that returns String? for HTMLTagAttribute.
+    ///   and a UIKit/AppKit baseline offset. The marker renders smaller; vertical raise depends
+    ///   on platform.
+    static let footnote = MarkdownDecorator { run in
+        guard run.runs.first?[FootnoteMarkerAttribute.self] != nil else { return }
+        run.swiftUI.font = .caption
+        run.swiftUI.foregroundColor = .accentColor
+#if canImport(UIKit)
+        run.uiKit.baselineOffset = 6
+#elseif canImport(AppKit)
+        run.appKit.baselineOffset = 4
+#endif
+    }
+
+    /// Styles inline citations left in place when `CitationPlacement.inline` is active.
+    /// Renders as a secondary-color attribution (e.g. "— Andy Puddicombe, *Headspace*").
+    static let citation = MarkdownDecorator { run in
+        guard run.runs.first?[CiteAttribute.self] != nil else { return }
+        run.swiftUI.foregroundColor = .secondary
+    }
+
+    /// Legacy: handles the hand-authored `htmltag: sup` footnote markup that exists in
+    /// posts written before the `cite:` syntax. Retained during migration.
+    /// Will be removed once all post bodies have been converted.
+    static let legacyFootnote = MarkdownDecorator { run in
         guard run.runs.first?[HTMLTagAttribute.self] == "sup" else { return }
         run.swiftUI.font = .caption
+        run.swiftUI.foregroundColor = .accentColor
 #if canImport(UIKit)
         run.uiKit.baselineOffset = 6
 #elseif canImport(AppKit)
@@ -114,8 +137,10 @@ public extension MarkdownDecorator {
     static let strikethrough = MarkdownDecorator { _ in }
 
     /// The standard decorator set. Applied by default to all `MarkdownView` instances.
+    /// Includes both the new `cite`-based footnote styling and legacy `htmltag: sup` support
+    /// during the post-body migration window.
     static let standard = MarkdownDecorator([
-        .heading, .link, .inlineCode, .customAttributes
+        .heading, .link, .inlineCode, .footnote, .legacyFootnote
     ])
 }
 
