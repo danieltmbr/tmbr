@@ -44,7 +44,7 @@ struct NoteViewModel: Encodable, Sendable {
         self.init(
             id: try note.requireID(),
             body: formatter.format(note.body),
-            created: (note.createdAt ?? .now).formatted(.publishDate),
+            created: note.createdAt.formatted(.publishDate),
             editDetails: isEditable ? EditDetails(rawBody: note.body, access: note.access.rawValue, language: note.language.rawValue) : nil,
             error: error
         )

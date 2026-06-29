@@ -8,9 +8,9 @@ import CoreApp
 /// The shared UI's seam stays at its defaults: `canAuthor = false`, `accountToolbar = .none`.
 @main
 struct ReaderApp: App {
-    
+
     let container: ModelContainer
-    
+
     let blog: BlogModel
     let catalogue: CatalogueModel
 
@@ -46,6 +46,7 @@ struct ReaderApp: App {
             ContentView()
                 .blog(blog)
                 .catalogue(catalogue)
+                .environment(\.apiBaseURL, Self.apiBaseURL)
         }
         .modelContainer(container)
     }

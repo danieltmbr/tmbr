@@ -52,6 +52,23 @@ extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDVa
     where repeat (each Property): AsyncLoadable {
         self.fetch(
             database: database,
+            readPermission: readPermission,
+            writePermission: writePermission,
+            load: repeat (each properties),
+            then: { _, _ in }
+        )
+    }
+
+    static func fetch<each Property>(
+        database: Database,
+        readPermission: BasePermissionResolver<Output>,
+        writePermission: AuthPermissionResolver<Output>,
+        load properties: repeat KeyPath<Output, each Property>,
+        then afterLoad: @escaping @Sendable (Output, any Database) async throws -> Void
+    ) -> Self
+    where repeat (each Property): AsyncLoadable {
+        self.fetch(
+            database: database,
             permission: ErasedPermissionResolver(input: { $0.item }, condition: { $0.reason }) { reason in
                 switch reason {
                 case .read: readPermission.eraseOutput()
@@ -67,6 +84,7 @@ extension PlainCommand where Output: Model, Input == FetchParameters<Output.IDVa
                 //     for try await _ in group {}
                 // }
                 try await (repeat model[keyPath: (each properties)].load(on: db))
+                try await afterLoad(model, db)
             }
         )
     }

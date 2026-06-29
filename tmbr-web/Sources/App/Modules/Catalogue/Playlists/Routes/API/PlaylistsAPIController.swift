@@ -58,6 +58,9 @@ struct PlaylistsAPIController: RouteCollection {
             return try await request.commands.transaction { commands in
                 let playlistInput = PlaylistInput(payload: payload)
                 let playlist = try await commands.playlists.create(playlistInput)
+                try await playlist.$preview.load(on: request.commandDB)
+                try await playlist.preview.$image.load(on: request.commandDB)
+                try await playlist.preview.$catalogueCategory.load(on: request.commandDB)
                 let notesInput = payload.notes.map {
                     BatchCreateNoteInput(
                         attachment: playlist.preview,
@@ -91,6 +94,9 @@ struct PlaylistsAPIController: RouteCollection {
                         SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
                     )
                 }
+                try await playlist.$preview.load(on: request.commandDB)
+                try await playlist.preview.$image.load(on: request.commandDB)
+                try await playlist.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: playlistID, of: Playlist.previewType)
                 return PlaylistResponse(playlist: playlist, notes: notes, baseURL: request.baseURL)
             }

@@ -66,6 +66,9 @@ struct PodcastsAPIController: RouteCollection {
             return try await request.commands.transaction { commands in
                 let podcastInput = PodcastInput(payload: payload)
                 let podcast = try await commands.podcasts.create(podcastInput)
+                try await podcast.$preview.load(on: request.commandDB)
+                try await podcast.preview.$image.load(on: request.commandDB)
+                try await podcast.preview.$catalogueCategory.load(on: request.commandDB)
                 let notesInput = payload.notes.map { entries in
                     BatchCreateNoteInput(
                         attachment: podcast.preview,
@@ -99,6 +102,9 @@ struct PodcastsAPIController: RouteCollection {
                         SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
                     )
                 }
+                try await podcast.$preview.load(on: request.commandDB)
+                try await podcast.preview.$image.load(on: request.commandDB)
+                try await podcast.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: podcastID, of: Podcast.previewType)
                 return PodcastResponse(podcast: podcast, baseURL: request.baseURL, notes: notes)
             }

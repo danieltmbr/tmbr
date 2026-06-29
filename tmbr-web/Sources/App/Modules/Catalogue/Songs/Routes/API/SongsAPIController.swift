@@ -61,6 +61,9 @@ struct SongsAPIController: RouteCollection {
             return try await request.commands.transaction { commands in
                 let songInput = SongInput(payload: payload)
                 let song = try await commands.songs.create(songInput)
+                try await song.$preview.load(on: request.commandDB)
+                try await song.preview.$image.load(on: request.commandDB)
+                try await song.preview.$catalogueCategory.load(on: request.commandDB)
                 let notesInput = payload.notes.map {
                     BatchCreateNoteInput(
                         attachment: song.preview,
@@ -94,6 +97,9 @@ struct SongsAPIController: RouteCollection {
                         SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
                     )
                 }
+                try await song.$preview.load(on: request.commandDB)
+                try await song.preview.$image.load(on: request.commandDB)
+                try await song.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: songID, of: Song.previewType)
                 return SongResponse(song: song, notes: notes, baseURL: request.baseURL)
             }
@@ -115,6 +121,9 @@ struct SongsAPIController: RouteCollection {
             }
             let payload = try request.content.decode(PromotePayload.self)
             let song = try await request.commands.songs.promote(payload.previewID)
+            try await song.$preview.load(on: request.commandDB)
+            try await song.preview.$image.load(on: request.commandDB)
+            try await song.preview.$catalogueCategory.load(on: request.commandDB)
             let notes = try await request.commands.notes.query(id: song.id!, of: Song.previewType)
             return SongResponse(song: song, notes: notes, baseURL: request.baseURL)
         }

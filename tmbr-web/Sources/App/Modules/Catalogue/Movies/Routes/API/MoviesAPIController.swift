@@ -61,6 +61,9 @@ struct MoviesAPIController: RouteCollection {
             return try await request.commands.transaction { commands in
                 let movieInput = MovieInput(payload: payload)
                 let movie = try await commands.movies.create(movieInput)
+                try await movie.$preview.load(on: request.commandDB)
+                try await movie.preview.$image.load(on: request.commandDB)
+                try await movie.preview.$catalogueCategory.load(on: request.commandDB)
                 let notesInput = payload.notes.map { entries in
                     BatchCreateNoteInput(
                         attachment: movie.preview,
@@ -94,6 +97,9 @@ struct MoviesAPIController: RouteCollection {
                         SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
                     )
                 }
+                try await movie.$preview.load(on: request.commandDB)
+                try await movie.preview.$image.load(on: request.commandDB)
+                try await movie.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: movieID, of: Movie.previewType)
                 return MovieResponse(movie: movie, baseURL: request.baseURL, notes: notes)
             }

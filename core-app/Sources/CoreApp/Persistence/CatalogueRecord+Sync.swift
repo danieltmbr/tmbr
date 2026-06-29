@@ -121,3 +121,20 @@ public extension PlaylistRecord {
         syncState = .synced
     }
 }
+
+public extension ContainerEntryRecord {
+    /// Overwrites this entry's fields from a `TrackItem`. Denormalises the title and URLs so
+    /// the track list renders standalone without requiring the member's `PreviewRecord` to be cached.
+    func update(from track: TrackItem, containerType: String, containerSourceID: Int) {
+        self.containerType = containerType
+        self.containerSourceID = containerSourceID
+        if let id = UUID(uuidString: track.previewID) {
+            memberPreviewID = id
+        }
+        position = track.position
+        title = track.title
+        trackURL = track.trackURL
+        href = track.href
+        syncState = .synced
+    }
+}

@@ -36,8 +36,10 @@ extension Command where Self == PlainCommand<QueryNotesInput, [Note]> {
                 .filter(Preview.self, \.$parentID == input.ownerID)
                 .languages(languages)
                 .with(\.$attachment) { attachment in
-                    attachment.with(\.$image)
+                    attachment.with(\.$image).with(\.$catalogueCategory)
                 }
+                .with(\.$author)
+                .with(\.$quotes)
                 .sort(\Note.$createdAt, .descending)
             try await permission.grant(query)
             return try await query.all()

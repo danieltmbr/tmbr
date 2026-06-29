@@ -76,6 +76,9 @@ struct AlbumsAPIController: RouteCollection {
             return try await request.commands.transaction { commands in
                 let albumInput = AlbumInput(payload: payload)
                 let album = try await commands.albums.create(albumInput)
+                try await album.$preview.load(on: request.commandDB)
+                try await album.preview.$image.load(on: request.commandDB)
+                try await album.preview.$catalogueCategory.load(on: request.commandDB)
                 let notesInput = payload.notes.map {
                     BatchCreateNoteInput(
                         attachment: album.preview,
@@ -109,6 +112,9 @@ struct AlbumsAPIController: RouteCollection {
                         SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
                     )
                 }
+                try await album.$preview.load(on: request.commandDB)
+                try await album.preview.$image.load(on: request.commandDB)
+                try await album.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: albumID, of: Album.previewType)
                 return AlbumResponse(album: album, notes: notes, baseURL: request.baseURL)
             }

@@ -14,7 +14,7 @@ extension Command where Self == PlainCommand<GroupedNotesInput, [PreviewID: [Not
             guard !input.previewIDs.isEmpty else { return [:] }
             let query = Note.query(on: database)
                 .filter(\.$attachment.$id ~~ input.previewIDs)
-                .with(\.$attachment) { a in a.with(\.$image) }
+                .with(\.$attachment) { a in a.with(\.$image).with(\.$catalogueCategory) }
                 .with(\.$author)
                 .with(\.$quotes)
             try await permission.grant(query)

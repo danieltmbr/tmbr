@@ -53,6 +53,7 @@ public struct CatalogueStore {
         var previews = try previewsByID()
         var notes = try notesByPreview()
         var typed = try typedIndex(AlbumRecord.self, key: \.previewID)
+        var containers = try containerEntriesByKey()
         for r in responses {
             guard let pid = upsertItem(r, into: &previews, notes: &notes) else { continue }
             let record = typed[pid] ?? {
@@ -62,6 +63,7 @@ public struct CatalogueStore {
                 return new
             }()
             record.update(from: r)
+            reconcileTracks(r.tracks, containerType: "album", containerSourceID: r.id, into: &containers)
         }
         try context.save()
     }
@@ -121,6 +123,7 @@ public struct CatalogueStore {
         var previews = try previewsByID()
         var notes = try notesByPreview()
         var typed = try typedIndex(PlaylistRecord.self, key: \.previewID)
+        var containers = try containerEntriesByKey()
         for r in responses {
             guard let pid = upsertItem(r, into: &previews, notes: &notes) else { continue }
             let record = typed[pid] ?? {
@@ -130,6 +133,7 @@ public struct CatalogueStore {
                 return new
             }()
             record.update(from: r)
+            reconcileTracks(r.tracks, containerType: "playlist", containerSourceID: r.id, into: &containers)
         }
         try context.save()
     }
@@ -157,6 +161,16 @@ public struct CatalogueStore {
         var index: [UUID: [NoteRecord]] = [:]
         for note in try context.fetch(FetchDescriptor<NoteRecord>()) {
             if let pid = note.attachmentPreviewID { index[pid, default: []].append(note) }
+        }
+        return index
+    }
+
+    /// Builds an index of `ContainerEntryRecord`s keyed by `"\(containerType):\(containerSourceID)"`.
+    private func containerEntriesByKey() throws -> [String: [ContainerEntryRecord]] {
+        var index: [String: [ContainerEntryRecord]] = [:]
+        for entry in try context.fetch(FetchDescriptor<ContainerEntryRecord>()) {
+            let key = "\(entry.containerType):\(entry.containerSourceID)"
+            index[key, default: []].append(entry)
         }
         return index
     }
@@ -213,6 +227,41 @@ public struct CatalogueStore {
         }
 
         byPreview[previewID] = current
+    }
+
+    /// Track reconcile: mirrors `reconcileNotes` but for `ContainerEntryRecord`s within an album
+    /// or playlist. Inserts new entries, updates existing ones, and deletes `.synced` entries
+    /// absent from the incoming track list (server-side removes).
+    private func reconcileTracks(
+        _ tracks: [TrackItem],
+        containerType: String,
+        containerSourceID: Int,
+        into byContainer: inout [String: [ContainerEntryRecord]]
+    ) {
+        let key = "\(containerType):\(containerSourceID)"
+        let incomingIDs = Set(tracks.compactMap { UUID(uuidString: $0.previewID) })
+        var current = byContainer[key] ?? []
+
+        current.removeAll { entry in
+            if entry.syncState == .synced, !incomingIDs.contains(entry.memberPreviewID) {
+                context.delete(entry)
+                return true
+            }
+            return false
+        }
+
+        for track in tracks {
+            guard let memberID = UUID(uuidString: track.previewID) else { continue }
+            let record = current.first { $0.memberPreviewID == memberID } ?? {
+                let new = ContainerEntryRecord()
+                context.insert(new)
+                current.append(new)
+                return new
+            }()
+            record.update(from: track, containerType: containerType, containerSourceID: containerSourceID)
+        }
+
+        byContainer[key] = current
     }
 
     private func upsertItem<R: CatalogueItemResponse>(

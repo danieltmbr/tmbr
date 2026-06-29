@@ -6,12 +6,24 @@ import SwiftUI
 /// the MainActor.
 struct CatalogueItemRefresh: Equatable, @unchecked Sendable {
     let id: UUID
-    let run: @MainActor () async throws -> Void
+    
+    private let run: @MainActor () async throws -> Void
+    
+    init(id: UUID, run: @Sendable @escaping () async throws -> Void) {
+        self.id = id
+        self.run = run
+    }
+    
+    func callAsFunction() async throws {
+        try await run()
+    }
+    
     static func == (lhs: Self, rhs: Self) -> Bool { lhs.id == rhs.id }
 }
 
 struct CatalogueItemRefreshKey: PreferenceKey {
     static let defaultValue: CatalogueItemRefresh? = nil
+    
     static func reduce(value: inout CatalogueItemRefresh?, nextValue: () -> CatalogueItemRefresh?) {
         value = nextValue() ?? value
     }
