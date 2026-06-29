@@ -38,7 +38,15 @@ struct CatalogueAPIController: RouteCollection {
             throw Abort(.badRequest, reason: "Invalid preview ID")
         }
         let preview = try await request.commands.previews.fetch(previewID, for: .read)
-        return PreviewResponse(preview: preview, baseURL: request.baseURL)
+        let baseURL = request.baseURL
+        // ?notes=true embeds notes for native-app per-item refresh (mirrors listOrphans). Without
+        // the flag the response is unchanged so existing web callers are unaffected.
+        let includeNotes = (try? request.query.get(Bool.self, at: "notes")) ?? false
+        let notes: [NoteResponse]? = includeNotes
+            ? (try await request.commands.notes.grouped([previewID])[previewID] ?? [])
+                .map { NoteResponse(note: $0, baseURL: baseURL) }
+            : nil
+        return PreviewResponse(preview: preview, baseURL: baseURL, notes: notes)
     }
 
     @Sendable

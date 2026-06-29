@@ -56,11 +56,14 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 - `tmbr-app` ships **three** targets — **Author** (owner, offline-first backend sync), **Reader**
   (public, read-only ETag cache), **Personal** (private, CloudKit-only) — over one shared local SPM
   package, `AppCore` (+ `AppBackend` for networking, used by Author + Reader only).
-- **Hard rule: `AppCore` imports neither networking (`api-kit`/`URLSession`) nor CloudKit.** Per-app
-  sync is injected at the app layer as closures (the composition seam), never referenced from the core.
+- **Hard rule: `CoreApp` never constructs a `URLSession`, holds a `baseURL`, or references
+  `AuthProvider`, `SyncEngine`, or CloudKit.** It imports `CoreApi` for `RequestLoader` types used
+  in `@Loader`/`@Upserter` DynamicProperties, but all per-app config (`apiBaseURL`, `urlSession`,
+  `auth`) is injected at the app layer as env values. Personal injects no URL → both wrappers are
+  no-ops. Do not branch on app identity inside `CoreApp`.
 - Write path: actions → SwiftData + an injected `requestSync` closure. Read/refresh: a per-screen
-  `@Observable` detail model holding an injected refresh-strategy closure. Same env-key, different
-  body per app — that injection point *is* the three-app seam; do not branch on app inside `AppCore`.
+  `@Observable` detail model (`CatalogueItemDetailModel`) whose refresh is driven by the active
+  section's `PreferenceKey` publish. Same env-key, different body per app.
 
 **Persistence / sync**
 - DTO→record sync orchestration (fetch, index, dedup, reconcile, delete, `context.save()`) lives in a
