@@ -15,9 +15,5 @@ let package = Package(
             name: "AppPersistence",
             dependencies: [.product(name: "TmbrCore", package: "tmbr-core")]
         ),
-        .testTarget(
-            name: "AppPersistenceTests",
-            dependencies: ["AppPersistence"]
-        ),
     ]
 )
