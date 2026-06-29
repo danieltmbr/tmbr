@@ -27,7 +27,17 @@ public final class ContainerEntryRecord {
     public var memberPreviewID: UUID = UUID()
     
     public var position: Int = 0
-    
+
+    /// Denormalised track title — lets the list render standalone without the member's
+    /// `PreviewRecord` being cached.
+    public var title: String = ""
+
+    /// Optional direct track URL (e.g. a streaming link).
+    public var trackURL: String?
+
+    /// Route to the promoted song page (e.g. `/songs/123`); non-nil only when promoted.
+    public var href: String?
+
     var syncStateRaw: String = SyncState.synced.rawValue
 
     public init(
@@ -36,6 +46,9 @@ public final class ContainerEntryRecord {
         containerSourceID: Int = 0,
         memberPreviewID: UUID = UUID(),
         position: Int = 0,
+        title: String = "",
+        trackURL: String? = nil,
+        href: String? = nil,
         syncState: SyncState = .synced
     ) {
         self.clientKey = clientKey
@@ -43,6 +56,9 @@ public final class ContainerEntryRecord {
         self.containerSourceID = containerSourceID
         self.memberPreviewID = memberPreviewID
         self.position = position
+        self.title = title
+        self.trackURL = trackURL
+        self.href = href
         self.syncStateRaw = syncState.rawValue
     }
 }

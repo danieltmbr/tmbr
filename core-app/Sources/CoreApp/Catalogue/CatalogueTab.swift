@@ -74,6 +74,7 @@ struct CatalogueTab: View {
                     AccountButton()
                 }
             }
+            .navigationDestination(for: CatalogueItemNavigation.self) { CatalogueItemNavigation.destination($0) }
             .refreshable { await refreshCatalogue() }
         }
         .task { await refreshCatalogue() }
