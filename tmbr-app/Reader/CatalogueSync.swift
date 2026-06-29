@@ -1,6 +1,7 @@
 import Foundation
 import AppApi
 import AppCore
+import AppPersistence
 import TmbrCore
 
 extension SyncGroup {
