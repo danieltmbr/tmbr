@@ -87,4 +87,7 @@ public extension PreviewRecord {
 
     /// An orphan has no backing per-type record.
     var isOrphan: Bool { sourceID == nil }
+
+    /// The known catalogue type, or `nil` for orphan / user-defined categories.
+    var category: CatalogueItemType? { CatalogueItemType(rawValue: categoryType) }
 }

@@ -8,7 +8,8 @@ import CoreTmbr
 public struct Syncer: Sendable {
 
     public let label: String
-    let run: @Sendable () async throws -> Void
+    
+    public let run: @Sendable () async throws -> Void
 
     public init(_ label: String = "", run: @escaping @Sendable () async throws -> Void) {
         self.label = label
@@ -25,6 +26,16 @@ public struct Syncer: Sendable {
         self.init(label) {
             try await sink(loader.load(from: input).items)
         }
+    }
+
+    /// Couples a single-item load with a sink that consumes the response directly (no pagination).
+    public init<Input, Response>(
+        _ label: String = "",
+        loader: RequestLoader<Input, Response>,
+        from input: Input,
+        into sink: @escaping @Sendable (Response) async throws -> Void
+    ) where Input: Sendable, Response: Sendable & Decodable {
+        self.init(label) { try await sink(loader.load(from: input)) }
     }
 }
 

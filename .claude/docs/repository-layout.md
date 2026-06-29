@@ -16,15 +16,16 @@
 
 | Module / target | Role | Can import |
 |---|---|---|
-| `AppCore` (lib) | SwiftData schema, `@Query` views, `@Observable` models, property wrappers, actions. The composition seam lives here as injected closures. | `tmbr-core`, SwiftData, SwiftUI |
-| `AppBackend` (lib) | api-kit request structs + shared pull/push helpers | `AppCore`, `tmbr-core`, `api-kit` |
-| **Author** (target) | Owner app: offline-first, `SyncEngine` backend sync | `AppCore`, `AppBackend` |
-| **Reader** (target) | Public read-only app: on-demand ETag cache | `AppCore`, `AppBackend` |
-| **Personal** (target) | Private consumer app: `.private` CloudKit, no engine | `AppCore` only (no networking) |
+| `CoreApp` (lib) | SwiftData schema, `@Query` views, `@Observable` models, property wrappers (`@Loader`, `@Upserter`), actions. Imports `CoreApi` for `RequestLoader` types only — never constructs loaders. | `CoreTmbr`, `CoreApi`, SwiftData, SwiftUI |
+| `CoreApi` (lib) | HTTP client, per-endpoint requests, `RequestLoader`, `Syncer`/`SyncGroup` | `CoreTmbr`, Foundation |
+| **Author** (target) | Owner app: offline-first, `SyncEngine` backend sync | `CoreApp`, `CoreApi` |
+| **Reader** (target) | Public read-only app: on-demand ETag cache | `CoreApp`, `CoreApi` |
+| **Personal** (target) | Private consumer app: `.private` CloudKit, no engine | `CoreApp` only — never imports `CoreApi` |
 
-**Hard dependency rule:** `AppCore` must import **neither networking (`api-kit`/`URLSession`) nor
-CloudKit.** That isolation is what lets one core serve all three apps; per-app sync is injected as
-closures at the app layer.
+**Hard dependency rule:** `CoreApp` must **never construct a URLSession, hold a baseURL, or
+reference AuthProvider, SyncEngine, or CloudKit.** It imports `CoreApi` for types only; per-app
+config (`apiBaseURL`, `urlSession`, `auth`) is injected at the app layer as env values. Personal
+injects no URL → `@Loader`/`@Upserter` are no-ops; the core never branches on app identity.
 
 ## What Belongs in `tmbr-core`
 

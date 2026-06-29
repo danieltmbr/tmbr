@@ -122,3 +122,61 @@ public extension DeletionsLoader {
         DeletionsLoader(request: DeletionsRequest.deletionQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
+
+// MARK: - Single-item loaders (unauthenticated — Reader app)
+
+// MARK: - Single-item loaders
+//
+// `Input` is the item id type (Int for typed catalogue items, UUID for orphans). The loader is
+// created once per base URL; the id is supplied at call time via `load(from:)` — consistent with
+// how `CatalogueItemSyncer<ID>` passes the id through `Syncer(loader:from:into:)`.
+
+public typealias SongItemLoader     = RequestLoader<Int, SongResponse>
+public typealias AlbumItemLoader    = RequestLoader<Int, AlbumResponse>
+public typealias BookItemLoader     = RequestLoader<Int, BookResponse>
+public typealias MovieItemLoader    = RequestLoader<Int, MovieResponse>
+public typealias PodcastItemLoader  = RequestLoader<Int, PodcastResponse>
+public typealias PlaylistItemLoader = RequestLoader<Int, PlaylistResponse>
+public typealias PreviewItemLoader  = RequestLoader<UUID, PreviewResponse>
+
+public extension SongItemLoader {
+    static func song(baseURL: URL, session: URLSession = .shared) -> Self {
+        SongItemLoader(request: SongItemRequest.song(baseURL: baseURL), session: session)
+    }
+}
+
+public extension AlbumItemLoader {
+    static func album(baseURL: URL, session: URLSession = .shared) -> Self {
+        AlbumItemLoader(request: AlbumItemRequest.album(baseURL: baseURL), session: session)
+    }
+}
+
+public extension BookItemLoader {
+    static func book(baseURL: URL, session: URLSession = .shared) -> Self {
+        BookItemLoader(request: BookItemRequest.book(baseURL: baseURL), session: session)
+    }
+}
+
+public extension MovieItemLoader {
+    static func movie(baseURL: URL, session: URLSession = .shared) -> Self {
+        MovieItemLoader(request: MovieItemRequest.movie(baseURL: baseURL), session: session)
+    }
+}
+
+public extension PodcastItemLoader {
+    static func podcast(baseURL: URL, session: URLSession = .shared) -> Self {
+        PodcastItemLoader(request: PodcastItemRequest.podcast(baseURL: baseURL), session: session)
+    }
+}
+
+public extension PlaylistItemLoader {
+    static func playlist(baseURL: URL, session: URLSession = .shared) -> Self {
+        PlaylistItemLoader(request: PlaylistItemRequest.playlist(baseURL: baseURL), session: session)
+    }
+}
+
+public extension PreviewItemLoader {
+    static func previewItem(baseURL: URL, session: URLSession = .shared) -> Self {
+        PreviewItemLoader(request: PreviewItemRequest.previewItem(baseURL: baseURL), session: session)
+    }
+}
