@@ -1,6 +1,22 @@
 import SwiftUI
 import SwiftData
 
+private struct BookInfoLine: View {
+    let book: BookRecord
+
+    var body: some View {
+        if let text {
+            Text(text).foregroundStyle(.secondary)
+        }
+    }
+
+    private var text: String? {
+        let parts = [book.genre, book.releaseDate?.formatted(date: .abbreviated, time: .omitted)]
+            .compactMap { $0 }.filter { !$0.isEmpty }
+        return parts.isEmpty ? nil : parts.joined(separator: ", ")
+    }
+}
+
 struct BookDetailSection: View {
 
     let previewID: UUID
@@ -21,7 +37,7 @@ struct BookDetailSection: View {
                     title: book.title,
                     artworkURL: book.coverURL,
                     credit: book.author.isEmpty ? nil : "by \(book.author)",
-                    info: infoLine(for: book),
+                    info: { BookInfoLine(book: book) },
                     resourceURLs: book.resourceURLs
                 )
             }
@@ -31,9 +47,4 @@ struct BookDetailSection: View {
         }
     }
 
-    private func infoLine(for book: BookRecord) -> String? {
-        let parts = [book.genre, book.releaseDate?.formatted(date: .abbreviated, time: .omitted)]
-            .compactMap { $0 }.filter { !$0.isEmpty }
-        return parts.isEmpty ? nil : parts.joined(separator: ", ")
-    }
 }

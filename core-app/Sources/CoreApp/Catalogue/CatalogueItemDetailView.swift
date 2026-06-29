@@ -45,7 +45,7 @@ struct CatalogueItemDetailView: View {
         .onPreferenceChange(CatalogueItemRefreshKey.self) { [model] value in
             Task { @MainActor in model.setRefresh(value) }
         }
-        .refreshable { await model.run() }
+        .refreshable { await model.refresh() }
     }
 
     // MARK: - Type section

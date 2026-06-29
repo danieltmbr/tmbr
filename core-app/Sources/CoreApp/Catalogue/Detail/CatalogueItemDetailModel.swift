@@ -12,27 +12,29 @@ public final class CatalogueItemDetailModel {
 
     /// The visible section's published "how to refresh me" (id already bound).
     /// Set via `setSyncer(_:)` from `onPreferenceChange`.
-    var refresh: CatalogueItemRefresh?
+    private var sync: CatalogueItemRefresh?
 
     public private(set) var loading: LoadingState?
+    
     public private(set) var lastError: LoadError?
+    
     public private(set) var lastFetched: Date?
 
     public init() {}
 
     /// Called by `onPreferenceChange` when the active section publishes a new refresh closure.
     func setRefresh(_ value: CatalogueItemRefresh?) {
-        refresh = value
+        sync = value
     }
 
     /// Runs the active section's refresh; updates loading/error/lastFetched.
     /// Called by `.refreshable` — errors are captured into `lastError`, never thrown to the caller.
-    public func run() async {
-        guard let refresh, loading == nil else { return }
+    public func refresh() async {
+        guard let sync, loading == nil else { return }
         loading = .refresh
         defer { loading = nil }
         do {
-            try await refresh.run()
+            try await sync()
             lastFetched = .now
             lastError = nil
         } catch {

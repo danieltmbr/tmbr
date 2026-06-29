@@ -5,15 +5,29 @@ import SwiftUI
 /// Mirrors the web's responsive catalogue item header.
 /// - Compact (iPhone): artwork centered above, then title → credit → info below.
 /// - Regular (iPad/macOS): title → credit → info on the left, artwork on the right.
-struct CatalogueItemHeader: View {
+struct CatalogueItemHeader<InfoContent: View>: View {
 
     let title: String
     var artworkURL: String? = nil
     var credit: String? = nil
-    var info: String? = nil
+    let info: InfoContent
     var resourceURLs: [String] = []
 
     @Environment(\.horizontalSizeClass) private var sizeClass
+
+    init(
+        title: String,
+        artworkURL: String? = nil,
+        credit: String? = nil,
+        @ViewBuilder info: () -> InfoContent,
+        resourceURLs: [String] = []
+    ) {
+        self.title = title
+        self.artworkURL = artworkURL
+        self.credit = credit
+        self.info = info()
+        self.resourceURLs = resourceURLs
+    }
 
     var body: some View {
         Group {
@@ -66,10 +80,7 @@ struct CatalogueItemHeader: View {
                     .font(.headline)
                     .fontWeight(.bold)
             }
-            if let info, !info.isEmpty {
-                Text(info)
-                    .foregroundStyle(.secondary)
-            }
+            info
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

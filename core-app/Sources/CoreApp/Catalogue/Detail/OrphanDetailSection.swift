@@ -1,5 +1,17 @@
 import SwiftUI
 
+private struct OrphanInfoLine: View {
+    let item: PreviewRecord
+
+    var body: some View {
+        let text = [item.secondaryInfo, item.categoryType.capitalized]
+            .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+        if !text.isEmpty {
+            Text(text).foregroundStyle(.secondary)
+        }
+    }
+}
+
 struct OrphanDetailSection: View {
 
     let item: PreviewRecord
@@ -11,8 +23,7 @@ struct OrphanDetailSection: View {
             CatalogueItemHeader(
                 title: item.primaryInfo,
                 artworkURL: item.imageURL,
-                info: [item.secondaryInfo, item.categoryType.capitalized]
-                    .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "),
+                info: { OrphanInfoLine(item: item) },
                 resourceURLs: item.externalLinks
             )
         }

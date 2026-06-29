@@ -1,6 +1,22 @@
 import SwiftUI
 import SwiftData
 
+private struct AlbumInfoLine: View {
+    let album: AlbumRecord
+
+    var body: some View {
+        if let text {
+            Text(text).foregroundStyle(.secondary)
+        }
+    }
+
+    private var text: String? {
+        let parts = [album.genre, album.releaseDate?.formatted(date: .abbreviated, time: .omitted)]
+            .compactMap { $0 }.filter { !$0.isEmpty }
+        return parts.isEmpty ? nil : parts.joined(separator: ", ")
+    }
+}
+
 struct AlbumDetailSection: View {
 
     let previewID: UUID
@@ -21,7 +37,7 @@ struct AlbumDetailSection: View {
                     title: album.title,
                     artworkURL: album.artworkURL,
                     credit: album.artist.isEmpty ? nil : "by \(album.artist)",
-                    info: infoLine(for: album),
+                    info: { AlbumInfoLine(album: album) },
                     resourceURLs: album.resourceURLs
                 )
             }
@@ -34,9 +50,4 @@ struct AlbumDetailSection: View {
         }
     }
 
-    private func infoLine(for album: AlbumRecord) -> String? {
-        let parts = [album.genre, album.releaseDate?.formatted(date: .abbreviated, time: .omitted)]
-            .compactMap { $0 }.filter { !$0.isEmpty }
-        return parts.isEmpty ? nil : parts.joined(separator: ", ")
-    }
 }

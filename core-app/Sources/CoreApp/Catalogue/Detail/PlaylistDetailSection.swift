@@ -1,6 +1,16 @@
 import SwiftUI
 import SwiftData
 
+private struct PlaylistInfoLine: View {
+    let playlist: PlaylistRecord
+
+    var body: some View {
+        if let description = playlist.playlistDescription, !description.isEmpty {
+            Text(description).foregroundStyle(.secondary)
+        }
+    }
+}
+
 struct PlaylistDetailSection: View {
 
     let previewID: UUID
@@ -20,7 +30,7 @@ struct PlaylistDetailSection: View {
                 CatalogueItemHeader(
                     title: playlist.title,
                     artworkURL: playlist.artworkURL,
-                    info: playlist.playlistDescription,
+                    info: { PlaylistInfoLine(playlist: playlist) },
                     resourceURLs: playlist.resourceURLs
                 )
             }
