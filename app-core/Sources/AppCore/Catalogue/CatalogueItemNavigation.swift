@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppPersistence
 
 /// Lightweight navigation value for pushing a catalogue item detail without storing a live
 /// SwiftData model in the path. Storing `@Model` references in `NavigationPath` causes stale

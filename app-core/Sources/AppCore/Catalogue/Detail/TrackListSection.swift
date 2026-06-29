@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppPersistence
 
 /// Renders the ordered track list for an album or playlist from cached `ContainerEntryRecord`s.
 /// Pass `containerType` ("album" | "playlist") and the container's backing `sourceID` (Int).

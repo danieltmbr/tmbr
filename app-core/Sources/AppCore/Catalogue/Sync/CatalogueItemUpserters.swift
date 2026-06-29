@@ -1,4 +1,5 @@
 import Foundation
+import AppPersistence
 import TmbrCore
 
 /// The persistence injection seam for per-item catalogue sync.

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppPersistence
 
 struct CatalogueTab: View {
     @Query(sort: \PreviewRecord.primaryInfo)

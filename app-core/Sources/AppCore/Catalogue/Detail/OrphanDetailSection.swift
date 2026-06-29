@@ -1,4 +1,5 @@
 import SwiftUI
+import AppPersistence
 
 private struct OrphanInfoLine: View {
     let item: PreviewRecord

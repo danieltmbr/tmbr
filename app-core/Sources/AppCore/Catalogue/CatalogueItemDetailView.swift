@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppPersistence
 
 /// Single navigation destination for all catalogue item types. A `switch` over `item.category`
 /// (a `CatalogueItemType?`) embeds the matching per-type section (which fetches its typed record

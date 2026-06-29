@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppPersistence
 
 private struct BookInfoLine: View {
     let book: BookRecord
