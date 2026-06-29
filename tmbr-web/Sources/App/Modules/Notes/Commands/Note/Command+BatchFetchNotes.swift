@@ -1,7 +1,7 @@
-import CoreWeb
+import WebCore
 import Fluent
-import CoreAuth
-import CoreTmbr
+import WebAuth
+import TmbrCore
 
 struct GroupedNotesInput: Sendable {
     let previewIDs: [PreviewID]

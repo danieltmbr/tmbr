@@ -1,4 +1,4 @@
-import CoreAuth
+import WebAuth
 
 struct ComposeDefinition: Sendable {
 

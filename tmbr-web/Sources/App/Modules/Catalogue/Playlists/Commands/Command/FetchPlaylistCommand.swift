@@ -1,6 +1,6 @@
 import Vapor
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 
 extension CommandFactory<FetchParameters<PlaylistID>, Playlist> {
 

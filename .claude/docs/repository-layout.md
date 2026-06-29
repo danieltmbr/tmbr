@@ -2,28 +2,33 @@
 
 ## Packages at a Glance
 
-| Package | Role | Can import |
-|---------|------|------------|
-| `tmbr-core` | Shared Codable/Sendable types. No platform-specific deps. | Swift stdlib only |
-| `tmbr-web` | Vapor backend + Leaf frontend | `tmbr-core`, Vapor, Fluent, Leaf |
-| `tmbr-app` | Native SwiftUI apps (three targets — see below) | `tmbr-core`, `api-kit`, `AppCore`, SwiftUI, MusicKit |
-| `api-kit` | Networking infra (RequestLoader, AuthToken) | Swift stdlib only |
+| Package | Module | Role | Can import |
+|---------|--------|------|------------|
+| `tmbr-core` | `TmbrCore` | Shared Codable/Sendable types. No platform-specific deps. | Swift stdlib only |
+| `tmbr-web` | — | Vapor backend + Leaf frontend (executable) | `TmbrCore`, Vapor, Fluent, Leaf |
+| `web-auth` | `WebAuth` | Vapor middleware, Fluent models, JWT, permissions | `TmbrCore`, Vapor, Fluent, JWT |
+| `web-core` | `WebCore` | Vapor/Fluent helpers, web Markdown rendering | `TmbrCore`, Vapor, Fluent |
+| `tmbr-app` | — | Native SwiftUI apps (three targets — see below) | `TmbrCore`, `AppApi`, `AppCore`, `AppPersistence`, SwiftUI |
+| `app-api` | `AppApi` | Networking infra (RequestLoader, Syncer) | `TmbrCore`, Foundation |
+| `app-persistence` | `AppPersistence` | SwiftData @Model records + Stores; no SwiftUI | `TmbrCore`, SwiftData |
+| `app-core` | `AppCore` | SwiftUI features: Blog, Catalogue, Account, Search | `TmbrCore`, `AppApi`, `AppPersistence`, SwiftUI |
 
-## Native App: three targets over one shared core
+## Native App: three targets over shared packages
 
-`tmbr-app` ships **three apps** from one shared local SPM package (`AppCore`). See
+`tmbr-app` ships **three apps** from shared local SPM packages. See
 `.claude/docs/native-apps-architecture.md` for the full design.
 
 | Module / target | Role | Can import |
 |---|---|---|
-| `CoreApp` (lib) | SwiftData schema, `@Query` views, `@Observable` models, property wrappers (`@Loader`, `@Upserter`), actions. Imports `CoreApi` for `RequestLoader` types only — never constructs loaders. | `CoreTmbr`, `CoreApi`, SwiftData, SwiftUI |
-| `CoreApi` (lib) | HTTP client, per-endpoint requests, `RequestLoader`, `Syncer`/`SyncGroup` | `CoreTmbr`, Foundation |
-| **Author** (target) | Owner app: offline-first, `SyncEngine` backend sync | `CoreApp`, `CoreApi` |
-| **Reader** (target) | Public read-only app: on-demand ETag cache | `CoreApp`, `CoreApi` |
-| **Personal** (target) | Private consumer app: `.private` CloudKit, no engine | `CoreApp` only — never imports `CoreApi` |
+| `AppPersistence` (lib) | SwiftData @Model records + Stores. No SwiftUI. Testable without a UI host. | `TmbrCore`, SwiftData |
+| `AppApi` (lib) | HTTP client, per-endpoint requests, `RequestLoader`, `Syncer`/`SyncGroup` | `TmbrCore`, Foundation |
+| `AppCore` (lib) | `@Query` views, `@Observable` models, property wrappers (`@Loader`, `@Upserter`), actions. Imports `AppApi` for `RequestLoader` types only — never constructs loaders. | `TmbrCore`, `AppApi`, `AppPersistence`, SwiftData, SwiftUI |
+| **Author** (target) | Owner app: offline-first, `SyncEngine` backend sync | `AppCore`, `AppApi` |
+| **Reader** (target) | Public read-only app: on-demand ETag cache | `AppCore`, `AppApi`, `AppPersistence` |
+| **Personal** (target) | Private consumer app: `.private` CloudKit, no engine | `AppCore`, `AppPersistence` — never imports `AppApi` |
 
-**Hard dependency rule:** `CoreApp` must **never construct a URLSession, hold a baseURL, or
-reference AuthProvider, SyncEngine, or CloudKit.** It imports `CoreApi` for types only; per-app
+**Hard dependency rule:** `AppCore` must **never construct a URLSession, hold a baseURL, or
+reference AuthProvider, SyncEngine, or CloudKit.** It imports `AppApi` for types only; per-app
 config (`apiBaseURL`, `urlSession`, `auth`) is injected at the app layer as env values. Personal
 injects no URL → `@Loader`/`@Upserter` are no-ops; the core never branches on app identity.
 
@@ -58,8 +63,8 @@ The monorepo exists to avoid declaring the same type twice. Violating this creat
 
 ## Naming Conventions
 
-- Packages: `tmbr-<role>` (kebab-case)
-- Swift module names: PascalCase — `import TmbrCore`, `import ApiKit`
+- Packages: kebab-case with prefix indicating platform — `tmbr-*` (shared/top-level), `web-*` (backend-only), `app-*` (native-app-only)
+- Swift module names: PascalCase — `import TmbrCore`, `import AppApi`
 - Endpoint request structs: `[Verb][Noun]Request` — e.g. `GetSongRequest`, `CreateNoteRequest`
 
 ## Cross-Platform Build Rule

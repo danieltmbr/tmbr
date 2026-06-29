@@ -1,7 +1,7 @@
 import Fluent
 import Vapor
 import Markdown
-import CoreWeb
+import WebCore
 
 struct NoteModelMiddleware: AsyncModelMiddleware {
     

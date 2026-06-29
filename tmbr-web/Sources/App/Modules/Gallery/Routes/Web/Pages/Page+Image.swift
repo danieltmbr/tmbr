@@ -1,6 +1,6 @@
-import CoreWeb
+import WebCore
 import Vapor
-import CoreTmbr
+import TmbrCore
 
 struct ImageViewModel: Encodable, Sendable {
     

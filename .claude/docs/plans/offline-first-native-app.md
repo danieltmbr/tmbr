@@ -15,13 +15,14 @@ Each app feels fast and reliable regardless of connectivity, driven by SwiftData
 The package restructure and the networking foundation are **done**, and the build order is now
 **Reader-first**. This supersedes the stale internals below:
 
-- **Packages renamed** (repo root): `tmbr-core`→`core-tmbr`/`CoreTmbr`, `api-kit`→`core-api`/`CoreApi`,
-  `app-core`→`core-app`/`CoreApp`; `tmbr-web` split into `core-web`/`CoreWeb` + `core-auth`/`CoreAuth` +
-  the `Backend` exe. The doc's `AppCore`/`AppBackend` = `CoreApp`/`CoreApi`. Read names below accordingly.
-- **Networking built** in `core-api`: `RequestLoader` loader factories (`.songs`/`.posts`/`.orphans`/
+- **Packages renamed** (repo root): `tmbr-core`/`TmbrCore` (shared), `app-api`/`AppApi` (networking),
+  `app-persistence`/`AppPersistence` (SwiftData records + stores), `app-core`/`AppCore` (SwiftUI features);
+  `tmbr-web` split into `web-core`/`WebCore` + `web-auth`/`WebAuth` + the `Backend` exe.
+  The doc's original `AppCore`/`AppBackend` = `AppCore`/`AppApi`. Read names below accordingly.
+- **Networking built** in `app-api`: `RequestLoader` loader factories (`.songs`/`.posts`/`.orphans`/
   `.deletions`…) + `RequestLoader.syncAll(since:)` (the pagination driver) + per-endpoint `…Query`
   requests. The `SyncAPI`/`PageLoader` code blocks below are **superseded**. `OrphanPageQuery`/`SinceQuery`
-  live in `core-tmbr`.
+  live in `tmbr-core`.
 - **Schema**: there is **no `CatalogueItemRecord`** — it's `PreviewRecord` (unified list driver) +
   per-type records (`SongRecord`…) linked by `previewID`. Wherever the text below says
   `CatalogueItemRecord`, read `PreviewRecord` (+ its typed record). See the architecture doc.
@@ -35,10 +36,10 @@ The package restructure and the networking foundation are **done**, and the buil
 | Phase | App | Status |
 |---|---|---|
 | **Stages 1–5** (below) | **Author** (offline-first, backend sync) | **Built** — original monolithic app; reference impl |
-| **Restructure** | `core-*` package rename; `core-api` networking foundation | **Done** |
-| **Three-target split** | Author/Reader/Personal targets; shared UI → `CoreApp` | **Next** |
-| **Reader app** | lazy fetch+upsert over existing public endpoints, read-only UI | **Next** (building first) |
-| **Author app** | re-home over `CoreApp`/`CoreApi`; delta `SyncEngine` + auth + writes | Later |
+| **Restructure** | package rename to `app-*`/`web-*`/`tmbr-*`; `app-persistence` extracted; `app-api` networking foundation | **Done** |
+| **Three-target split** | Author/Reader/Personal targets; shared UI → `AppCore` | **Done** |
+| **Reader app** | lazy fetch+upsert over existing public endpoints, read-only UI | **Done** |
+| **Author app** | re-home over `AppCore`/`AppApi`; delta `SyncEngine` + auth + writes | Later |
 | **Personal app** | `.private` CloudKit container + runtime mirror validation | Later |
 | **Reader optimization** | public read API + ETag/`304` in the backend | Later |
 
@@ -50,7 +51,7 @@ apps (Reader + Author).
 - **Composition, not a protocol.** Write actions call an injected `requestSync` closure
   (`syncEngine.runSync()` for Author, `{}` for Personal); read/refresh uses a per-screen
   `@Observable` detail model holding an injected refresh-strategy closure (Author `SyncEngine` / Reader
-  fetch+upsert / Personal no-op). `CoreApp` imports no networking, no CloudKit.
+  fetch+upsert / Personal no-op). `AppCore` imports no networking, no CloudKit.
 - **Normalized schema mirroring the backend** (Author + Personal author catalogue items offline):
   `PreviewRecord` (unified list driver + note anchor, keyed by server PreviewID) + typed
   `SongRecord`/etc. linked by `previewID` + `ContainerEntryRecord` for tracks. CloudKit-constrained

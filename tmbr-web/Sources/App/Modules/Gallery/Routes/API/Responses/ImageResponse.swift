@@ -1,5 +1,5 @@
 import Foundation
-import CoreTmbr
+import TmbrCore
 
 extension ImageResponse {
 

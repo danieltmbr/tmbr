@@ -1,8 +1,8 @@
 import Vapor
-import CoreAuth
+import WebAuth
 import Fluent
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 import Foundation
 
 struct PostsAPIController: RouteCollection {

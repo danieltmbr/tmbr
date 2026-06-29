@@ -1,8 +1,8 @@
 import Vapor
 import Foundation
-import CoreAuth
-import CoreWeb
-import CoreTmbr
+import WebAuth
+import WebCore
+import TmbrCore
 
 struct CatalogueItemViewModel: Encodable, Sendable {
 

@@ -1,8 +1,8 @@
 import Foundation
 import Vapor
-import CoreWeb
+import WebCore
 import Fluent
-import CoreAuth
+import WebAuth
 
 struct FetchPermissionInput<Item: Sendable>: Sendable {
     let item: Item

@@ -1,7 +1,8 @@
 import SwiftUI
 import SwiftData
-import CoreApi
-import CoreApp
+import AppApi
+import AppCore
+import AppPersistence
 
 /// Reader — public, read-only. Plain on-disk SwiftData cache; no auth, no account.
 /// Data enters lazily: the Blog tab's `refresh` fetches public posts + upserts (`ReaderPosts`).

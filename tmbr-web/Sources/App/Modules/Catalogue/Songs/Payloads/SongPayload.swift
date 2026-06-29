@@ -1,8 +1,8 @@
 import Vapor
 import Fluent
 import Foundation
-import CoreAuth
-import CoreTmbr
+import WebAuth
+import TmbrCore
 
 struct SongPayload: Decodable, Sendable {
     

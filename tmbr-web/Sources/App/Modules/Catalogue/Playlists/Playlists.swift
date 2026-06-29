@@ -1,7 +1,7 @@
 import Vapor
 import Fluent
-import CoreWeb
-import CoreAuth
+import WebCore
+import WebAuth
 
 struct Playlists: Module {
 

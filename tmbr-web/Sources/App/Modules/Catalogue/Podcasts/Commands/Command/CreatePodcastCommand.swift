@@ -1,9 +1,9 @@
 import Foundation
 import Vapor
-import CoreWeb
+import WebCore
 import Logging
 import Fluent
-import CoreAuth
+import WebAuth
 
 struct CreatePodcastCommand: Command {
     

@@ -1,4 +1,4 @@
-import CoreWeb
+import WebCore
 
 struct GalleryViewModel: Encodable, Sendable {
 

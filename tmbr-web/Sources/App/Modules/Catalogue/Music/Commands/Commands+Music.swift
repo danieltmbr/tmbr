@@ -1,5 +1,5 @@
 import Foundation
-import CoreWeb
+import WebCore
 
 extension Commands {
     var music: Commands.Music.Type { Commands.Music.self }

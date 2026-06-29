@@ -1,8 +1,8 @@
 import Foundation
-import CoreAuth
+import WebAuth
 import Vapor
 import Fluent
-import CoreTmbr
+import TmbrCore
 
 // MARK: - Create
 extension AuthPermission<Void> {

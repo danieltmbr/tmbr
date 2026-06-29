@@ -1,5 +1,5 @@
 import Vapor
-import CoreWeb
+import WebCore
 
 extension Configuration where Self == CoreConfiguration {
     static var renderer: Self {

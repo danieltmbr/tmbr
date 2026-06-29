@@ -1,4 +1,4 @@
-import CoreAuth
+import WebAuth
 import Fluent
 import Vapor
 import Foundation

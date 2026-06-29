@@ -1,5 +1,5 @@
 import Vapor
-import CoreAuth
+import WebAuth
 
 struct UserIDLoggingMiddleware: AsyncMiddleware {
 

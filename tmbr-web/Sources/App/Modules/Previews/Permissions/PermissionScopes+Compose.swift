@@ -1,4 +1,4 @@
-import CoreAuth
+import WebAuth
 
 extension PermissionScopes {
     var compose: ComposePermissionScope.Type { ComposePermissionScope.self }

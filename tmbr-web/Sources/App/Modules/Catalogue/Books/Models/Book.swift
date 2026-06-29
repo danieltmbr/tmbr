@@ -1,8 +1,8 @@
 import Fluent
 import Vapor
 import Foundation
-import CoreAuth
-import CoreTmbr
+import WebAuth
+import TmbrCore
 
 final class Book: Model, Previewable, @unchecked Sendable {
     

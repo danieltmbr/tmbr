@@ -1,4 +1,4 @@
-import CoreTmbr
+import TmbrCore
 
 struct FilterPanelViewModel: Encodable, Sendable {
     let ariaLabel: String

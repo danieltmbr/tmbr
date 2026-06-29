@@ -1,7 +1,7 @@
 import Vapor
-import CoreWeb
+import WebCore
 import JWT
-import CoreAuth
+import WebAuth
 
 struct SignInViewModel: Encodable {
     

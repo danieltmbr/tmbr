@@ -7,15 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		03297F0053BB73A1328B6378 /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = 8229BF76A2BB18E12999E69F /* CoreApp */; };
-		109CB8C24233693E8E8EF54C /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = F193199EDBC5D787AC73097C /* CoreTmbr */; };
-		2549866CD08843ECFBA90108 /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = D47E8BCA7C0DA4C5D5F9513D /* CoreTmbr */; };
+		03297F0053BB73A1328B6378 /* AppCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8229BF76A2BB18E12999E69F /* AppCore */; };
+		109CB8C24233693E8E8EF54C /* TmbrCore in Frameworks */ = {isa = PBXBuildFile; productRef = F193199EDBC5D787AC73097C /* TmbrCore */; };
+		2549866CD08843ECFBA90108 /* TmbrCore in Frameworks */ = {isa = PBXBuildFile; productRef = D47E8BCA7C0DA4C5D5F9513D /* TmbrCore */; };
+		AA000004BB000004CC000004 /* AppPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = AA000002BB000002CC000002 /* AppPersistence */; };
+		AA000005BB000005CC000005 /* AppPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = AA000003BB000003CC000003 /* AppPersistence */; };
 		707239A243CF738549160865 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E173FBA3F6594B28E84BDB5C /* Cocoa.framework */; };
-		9692272AC826634604D10C7E /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = 4359256FA09B2AD131BFF498 /* CoreApp */; };
-		A838BCBD3A5F97E873E1C206 /* CoreApi in Frameworks */ = {isa = PBXBuildFile; productRef = CD234EC0DAF2EA0B8DE0C637 /* CoreApi */; };
-		E2497B602FE1302F00D1B325 /* CoreApp in Frameworks */ = {isa = PBXBuildFile; productRef = E2497B5F2FE1302F00D1B325 /* CoreApp */; };
-		E27B48712FC58690006866D7 /* CoreTmbr in Frameworks */ = {isa = PBXBuildFile; productRef = E27B48722FC58690006866D7 /* CoreTmbr */; };
-		E27C0B542FC5FE480055C952 /* CoreApi in Frameworks */ = {isa = PBXBuildFile; productRef = E27C0B532FC5FE480055C952 /* CoreApi */; };
+		9692272AC826634604D10C7E /* AppCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4359256FA09B2AD131BFF498 /* AppCore */; };
+		A838BCBD3A5F97E873E1C206 /* AppApi in Frameworks */ = {isa = PBXBuildFile; productRef = CD234EC0DAF2EA0B8DE0C637 /* AppApi */; };
+		E2497B602FE1302F00D1B325 /* AppCore in Frameworks */ = {isa = PBXBuildFile; productRef = E2497B5F2FE1302F00D1B325 /* AppCore */; };
+		E27B48712FC58690006866D7 /* TmbrCore in Frameworks */ = {isa = PBXBuildFile; productRef = E27B48722FC58690006866D7 /* TmbrCore */; };
+		E27C0B542FC5FE480055C952 /* AppApi in Frameworks */ = {isa = PBXBuildFile; productRef = E27C0B532FC5FE480055C952 /* AppApi */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -143,8 +145,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				707239A243CF738549160865 /* Cocoa.framework in Frameworks */,
-				9692272AC826634604D10C7E /* CoreApp in Frameworks */,
-				2549866CD08843ECFBA90108 /* CoreTmbr in Frameworks */,
+				9692272AC826634604D10C7E /* AppCore in Frameworks */,
+				2549866CD08843ECFBA90108 /* TmbrCore in Frameworks */,
+				AA000005BB000005CC000005 /* AppPersistence in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -152,9 +155,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				03297F0053BB73A1328B6378 /* CoreApp in Frameworks */,
-				A838BCBD3A5F97E873E1C206 /* CoreApi in Frameworks */,
-				109CB8C24233693E8E8EF54C /* CoreTmbr in Frameworks */,
+				03297F0053BB73A1328B6378 /* AppCore in Frameworks */,
+				A838BCBD3A5F97E873E1C206 /* AppApi in Frameworks */,
+				109CB8C24233693E8E8EF54C /* TmbrCore in Frameworks */,
+				AA000004BB000004CC000004 /* AppPersistence in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -162,9 +166,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E27C0B542FC5FE480055C952 /* CoreApi in Frameworks */,
-				E27B48712FC58690006866D7 /* CoreTmbr in Frameworks */,
-				E2497B602FE1302F00D1B325 /* CoreApp in Frameworks */,
+				E27C0B542FC5FE480055C952 /* AppApi in Frameworks */,
+				E27B48712FC58690006866D7 /* TmbrCore in Frameworks */,
+				E2497B602FE1302F00D1B325 /* AppCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,8 +285,9 @@
 			);
 			name = Personal;
 			packageProductDependencies = (
-				4359256FA09B2AD131BFF498 /* CoreApp */,
-				D47E8BCA7C0DA4C5D5F9513D /* CoreTmbr */,
+				4359256FA09B2AD131BFF498 /* AppCore */,
+				D47E8BCA7C0DA4C5D5F9513D /* TmbrCore */,
+				AA000003BB000003CC000003 /* AppPersistence */,
 			);
 			productName = Personal;
 			productReference = 62A76E36B6219EC07B0C03DE /* Personal.app */;
@@ -306,9 +311,10 @@
 			);
 			name = Reader;
 			packageProductDependencies = (
-				8229BF76A2BB18E12999E69F /* CoreApp */,
-				CD234EC0DAF2EA0B8DE0C637 /* CoreApi */,
-				F193199EDBC5D787AC73097C /* CoreTmbr */,
+				8229BF76A2BB18E12999E69F /* AppCore */,
+				CD234EC0DAF2EA0B8DE0C637 /* AppApi */,
+				F193199EDBC5D787AC73097C /* TmbrCore */,
+				AA000002BB000002CC000002 /* AppPersistence */,
 			);
 			productName = Reader;
 			productReference = 9F40A6262A8539E304F7E63A /* Reader.app */;
@@ -332,9 +338,9 @@
 			);
 			name = tmbr;
 			packageProductDependencies = (
-				E27B48722FC58690006866D7 /* CoreTmbr */,
-				E27C0B532FC5FE480055C952 /* CoreApi */,
-				E2497B5F2FE1302F00D1B325 /* CoreApp */,
+				E27B48722FC58690006866D7 /* TmbrCore */,
+				E27C0B532FC5FE480055C952 /* AppApi */,
+				E2497B5F2FE1302F00D1B325 /* AppCore */,
 			);
 			productName = tmbr;
 			productReference = E27B47882FC4E864006866D7 /* tmbr.app */;
@@ -415,9 +421,10 @@
 			mainGroup = E27B477F2FC4E864006866D7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */,
-				E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../core-api" */,
-				E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */,
+				E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../tmbr-core" */,
+				E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../app-api" */,
+				E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../app-core" */,
+				AA000001BB000001CC000001 /* XCLocalSwiftPackageReference "../app-persistence" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E27B47892FC4E864006866D7 /* Products */;
@@ -1067,60 +1074,74 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */ = {
+		E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../app-core" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../core-app";
+			relativePath = "../app-core";
 		};
-		E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */ = {
+		E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../tmbr-core" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../core-tmbr";
+			relativePath = "../tmbr-core";
 		};
-		E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../core-api" */ = {
+		E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../app-api" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../core-api";
+			relativePath = "../app-api";
+		};
+		AA000001BB000001CC000001 /* XCLocalSwiftPackageReference "../app-persistence" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../app-persistence";
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4359256FA09B2AD131BFF498 /* CoreApp */ = {
+		4359256FA09B2AD131BFF498 /* AppCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */;
-			productName = CoreApp;
+			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../app-core" */;
+			productName = AppCore;
 		};
-		8229BF76A2BB18E12999E69F /* CoreApp */ = {
+		8229BF76A2BB18E12999E69F /* AppCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */;
-			productName = CoreApp;
+			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../app-core" */;
+			productName = AppCore;
 		};
-		CD234EC0DAF2EA0B8DE0C637 /* CoreApi */ = {
+		CD234EC0DAF2EA0B8DE0C637 /* AppApi */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../core-api" */;
-			productName = CoreApi;
+			package = E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../app-api" */;
+			productName = AppApi;
 		};
-		D47E8BCA7C0DA4C5D5F9513D /* CoreTmbr */ = {
+		D47E8BCA7C0DA4C5D5F9513D /* TmbrCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */;
-			productName = CoreTmbr;
+			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../tmbr-core" */;
+			productName = TmbrCore;
 		};
-		E2497B5F2FE1302F00D1B325 /* CoreApp */ = {
+		E2497B5F2FE1302F00D1B325 /* AppCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../core-app" */;
-			productName = CoreApp;
+			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../app-core" */;
+			productName = AppCore;
 		};
-		E27B48722FC58690006866D7 /* CoreTmbr */ = {
+		E27B48722FC58690006866D7 /* TmbrCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */;
-			productName = CoreTmbr;
+			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../tmbr-core" */;
+			productName = TmbrCore;
 		};
-		E27C0B532FC5FE480055C952 /* CoreApi */ = {
+		E27C0B532FC5FE480055C952 /* AppApi */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../core-api" */;
-			productName = CoreApi;
+			package = E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../app-api" */;
+			productName = AppApi;
 		};
-		F193199EDBC5D787AC73097C /* CoreTmbr */ = {
+		F193199EDBC5D787AC73097C /* TmbrCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../core-tmbr" */;
-			productName = CoreTmbr;
+			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../tmbr-core" */;
+			productName = TmbrCore;
+		};
+		AA000002BB000002CC000002 /* AppPersistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA000001BB000001CC000001 /* XCLocalSwiftPackageReference "../app-persistence" */;
+			productName = AppPersistence;
+		};
+		AA000003BB000003CC000003 /* AppPersistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA000001BB000001CC000001 /* XCLocalSwiftPackageReference "../app-persistence" */;
+			productName = AppPersistence;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

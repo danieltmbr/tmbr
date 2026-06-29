@@ -1,4 +1,4 @@
-import CoreAuth
+import WebAuth
 
 extension PermissionScopes {
     var posts: PermissionScopes.Posts.Type { PermissionScopes.Posts.self }

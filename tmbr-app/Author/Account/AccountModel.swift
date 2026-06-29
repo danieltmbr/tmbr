@@ -1,7 +1,7 @@
 import Foundation
 import AuthenticationServices
-import CoreApi
-import CoreTmbr
+import AppApi
+import TmbrCore
 
 /// The shared account model for the Author app — manages sign-in state, token storage,
 /// and vends authenticated request loaders for other features.

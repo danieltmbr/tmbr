@@ -1,6 +1,6 @@
 import Fluent
 import Foundation
-import CoreTmbr
+import TmbrCore
 
 final class CatalogueCategory: Model, @unchecked Sendable {
 

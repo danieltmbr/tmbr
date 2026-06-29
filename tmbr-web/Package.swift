@@ -1,18 +1,18 @@
-// swift-tools-version:6.0.3
+// swift-tools-version: 6.2
 import PackageDescription
 
 let package = Package(
     name: "tmbr-web",
     platforms: [
-       .macOS(.v15)
+       .macOS(.v26)
     ],
     dependencies: [
         // 🍎 Shared types for native app and backend.
-        .package(path: "../core-tmbr"),
+        .package(path: "../tmbr-core"),
         // 🧩 Shared web infrastructure (Vapor/Fluent/Markdown helpers).
-        .package(path: "../core-web"),
+        .package(path: "../web-core"),
         // 🔐 Authentication + permissions.
-        .package(path: "../core-auth"),
+        .package(path: "../web-auth"),
         // 💧 A server-side Swift web framework.
         .package(url: "https://github.com/vapor/vapor.git", from: "4.110.1"),
         // 🗄 An ORM for SQL and NoSQL databases.
@@ -49,9 +49,9 @@ let package = Package(
                 .product(name: "SotoS3", package: "soto"),
                 .product(name: "Crypto", package: "swift-crypto"),
                 .product(name: "ImageResize", package: "ImageResize"),
-                .product(name: "CoreTmbr", package: "core-tmbr"),
-                .product(name: "CoreWeb", package: "core-web"),
-                .product(name: "CoreAuth", package: "core-auth"),
+                .product(name: "TmbrCore", package: "tmbr-core"),
+                .product(name: "WebCore", package: "web-core"),
+                .product(name: "WebAuth", package: "web-auth"),
             ],
             path: "Sources/App",
             swiftSettings: swiftSettings
@@ -60,7 +60,7 @@ let package = Package(
             name: "AppTests",
             dependencies: [
                 .target(name: "Backend"),
-                .product(name: "CoreAuth", package: "core-auth"),
+                .product(name: "WebAuth", package: "web-auth"),
                 .product(name: "VaporTesting", package: "vapor"),
             ],
             swiftSettings: swiftSettings

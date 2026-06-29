@@ -1,4 +1,4 @@
-import CoreApp
+import AppCore
 
 extension SignOutAction {
 

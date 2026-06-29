@@ -5,7 +5,7 @@
 | Package | Priority | Current state |
 |---------|----------|--------------|
 | `tmbr-web/` | Primary | Most complexity, most bugs, no tests |
-| `api-kit/` | Maintain | Already tested — expand as needed |
+| `app-api/` | Maintain | Already tested — expand as needed |
 | `tmbr-core/` | Low | Shared types only — add tests when logic grows |
 | `tmbr-app/` | Future | Empty stubs — tackle after web is stable |
 

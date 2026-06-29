@@ -1,8 +1,8 @@
 import Vapor
 import Fluent
-import CoreWeb
-import CoreAuth
-import CoreTmbr
+import WebCore
+import WebAuth
+import TmbrCore
 
 struct Previews: Module {
     

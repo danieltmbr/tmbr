@@ -1,6 +1,6 @@
-import CoreApi
+import AppApi
 import Foundation
-import CoreTmbr
+import TmbrCore
 
 typealias AppleSignInRequest = BasicRequest<AppleSignInData, AuthResponse>
 

@@ -1,5 +1,5 @@
-import CoreAuth
-import CoreTmbr
+import WebAuth
+import TmbrCore
 
 struct NoteEditorViewModel: Encodable, Sendable {
     let id: String?

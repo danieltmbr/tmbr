@@ -1,4 +1,4 @@
-import CoreAuth
+import WebAuth
 
 extension PermissionScopes {
     var deletions: PermissionScopes.Deletions.Type { PermissionScopes.Deletions.self }

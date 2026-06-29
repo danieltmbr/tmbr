@@ -1,6 +1,6 @@
-import CoreAuth
+import WebAuth
 import Fluent
-import CoreTmbr
+import TmbrCore
 
 extension PermissionScopes {
     var songs: PreviewablePermissionScope<Song>.Type { PreviewablePermissionScope<Song>.self }

@@ -1,5 +1,5 @@
 import SwiftUI
-import CoreApp
+import AppCore
 
 extension View {
     /// Injects the account model and its actions into the environment.

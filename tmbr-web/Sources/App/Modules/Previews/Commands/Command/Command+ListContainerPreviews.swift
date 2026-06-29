@@ -1,6 +1,6 @@
 import Foundation
 import Vapor
-import CoreWeb
+import WebCore
 import Fluent
 
 extension Command where Self == PlainCommand<ContainerEntriesInput, [Preview]> {
