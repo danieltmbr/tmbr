@@ -10,7 +10,11 @@ extension CommandFactory<FetchParameters<PlaylistID>, Playlist> {
                 database: request.commandDB,
                 readPermission: request.permissions.playlists.access,
                 writePermission: request.permissions.playlists.edit,
-                load: \.$artwork, \.$owner, \.$post
+                load: \.$artwork, \.$owner, \.$post, \.$preview,
+                then: { playlist, db in
+                    try await playlist.preview.$image.load(on: db)
+                    try await playlist.preview.$catalogueCategory.load(on: db)
+                }
             )
             .logged(name: "Fetch Playlist", logger: request.logger)
         }

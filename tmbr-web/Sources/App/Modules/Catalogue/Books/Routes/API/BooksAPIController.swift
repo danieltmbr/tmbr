@@ -61,6 +61,9 @@ struct BooksAPIController: RouteCollection {
             return try await request.commands.transaction { commands in
                 let bookInput = BookInput(payload: payload)
                 let book = try await commands.books.create(bookInput)
+                try await book.$preview.load(on: request.commandDB)
+                try await book.preview.$image.load(on: request.commandDB)
+                try await book.preview.$catalogueCategory.load(on: request.commandDB)
                 let notesInput = payload.notes.map { entries in
                     BatchCreateNoteInput(
                         attachment: book.preview,
@@ -94,6 +97,9 @@ struct BooksAPIController: RouteCollection {
                         SyncNotesInput(attachment: preview, parentAccess: payload.access, entries: syncEntries)
                     )
                 }
+                try await book.$preview.load(on: request.commandDB)
+                try await book.preview.$image.load(on: request.commandDB)
+                try await book.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: bookID, of: Book.previewType)
                 return BookResponse(book: book, baseURL: request.baseURL, notes: notes)
             }

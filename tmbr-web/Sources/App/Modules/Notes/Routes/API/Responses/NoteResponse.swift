@@ -11,7 +11,7 @@ extension NoteResponse {
             attachment: PreviewResponse(preview: note.attachment, baseURL: baseURL),
             author: UserResponse(user: note.author),
             body: note.body,
-            created: note.createdAt ?? .now,
+            created: note.createdAt,
             language: note.language,
             quotes: note.quotes.map { quote in
                 QuoteResponse(

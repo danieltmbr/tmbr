@@ -10,7 +10,11 @@ extension CommandFactory<FetchParameters<MovieID>, Movie> {
                 database: request.commandDB,
                 readPermission: request.permissions.movies.access,
                 writePermission: request.permissions.movies.edit,
-                load: \.$cover, \.$owner, \.$post
+                load: \.$cover, \.$owner, \.$post, \.$preview,
+                then: { movie, db in
+                    try await movie.preview.$image.load(on: db)
+                    try await movie.preview.$catalogueCategory.load(on: db)
+                }
             )
             .logged(name: "Fetch Movie", logger: request.logger)
         }

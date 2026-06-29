@@ -16,8 +16,10 @@ extension Command where Self == PlainCommand<PreviewID, [Note]> {
                 .query(on: database)
                 .filter(\.$attachment.$id == attachmentID)
                 .with(\.$attachment) { attachment in
-                    attachment.with(\.$image)
+                    attachment.with(\.$image).with(\.$catalogueCategory)
                 }
+                .with(\.$author)
+                .with(\.$quotes)
                 .sort(\.$createdAt, .descending)
             try await permission.grant(query)
             return try await query.all()
