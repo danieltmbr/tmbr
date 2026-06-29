@@ -1,4 +1,5 @@
 import Foundation
+import AppPersistence
 
 public enum CatalogueItemType: String, CaseIterable, Identifiable, Sendable {
     case song, album, playlist, book, podcast, movie
@@ -17,4 +18,9 @@ public enum CatalogueItemType: String, CaseIterable, Identifiable, Sendable {
         case .movie: "film"
         }
     }
+}
+
+public extension PreviewRecord {
+    /// The known catalogue type, or `nil` for orphan / user-defined categories.
+    var category: CatalogueItemType? { CatalogueItemType(rawValue: categoryType) }
 }
