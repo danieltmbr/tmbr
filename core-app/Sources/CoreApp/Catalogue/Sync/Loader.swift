@@ -1,11 +1,10 @@
 import SwiftUI
 import CoreApi
 
-/// Resolves a single `RequestLoader` from the `CatalogueItemSyncs` recipe namespace.
+/// Resolves a single `RequestLoader` directly from the `CatalogueItemLoaders` namespace.
 ///
-/// Reads `\.apiBaseURL`, `\.urlSession`, and `\.itemSyncs` from the environment; invokes the
-/// selected recipe's `loaderFactory` with those values. Returns `nil` when `apiBaseURL` is
-/// not set (Personal app / unconfigured).
+/// Reads `\.apiBaseURL`, `\.urlSession`, and `\.itemLoaders` from the environment.
+/// Returns `nil` when `apiBaseURL` is not set (Personal app / unconfigured).
 ///
 /// Usage:
 /// ```swift
@@ -16,16 +15,16 @@ public struct Loader<Input: Sendable, Response: Decodable & Sendable>: DynamicPr
 
     @Environment(\.apiBaseURL) private var baseURL
     @Environment(\.urlSession) private var session
-    @Environment(\.itemSyncs) private var syncs
+    @Environment(\.itemLoaders) private var loaders
 
-    private let path: KeyPath<CatalogueItemSyncs, CatalogueItemSync<Input, Response>>
+    private let path: KeyPath<CatalogueItemLoaders, @Sendable (URL, URLSession) -> RequestLoader<Input, Response>>
 
-    public init(_ path: KeyPath<CatalogueItemSyncs, CatalogueItemSync<Input, Response>>) {
+    public init(_ path: KeyPath<CatalogueItemLoaders, @Sendable (URL, URLSession) -> RequestLoader<Input, Response>>) {
         self.path = path
     }
 
     public var wrappedValue: RequestLoader<Input, Response>? {
         guard let baseURL else { return nil }
-        return syncs[keyPath: path].loaderFactory(baseURL, session)
+        return loaders[keyPath: path](baseURL, session)
     }
 }

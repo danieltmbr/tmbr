@@ -106,6 +106,18 @@ is injected as env values (`\.apiBaseURL`, `\.urlSession`) and closures at the a
 types (loader factories, `Syncer`) appear in `CoreApp` only as type parameters and stored-closure
 signatures — no live networking happens inside `CoreApp`.
 
+**Per-item sync seams** (`CoreApp/Catalogue/Sync/`): two independently injectable namespaces,
+mirroring the backend's resolver DI pattern:
+- `CatalogueItemLoaders` (`\.itemLoaders`) — **network seam**: per-type loader factories
+  `@Sendable (URL, URLSession) -> RequestLoader<ID, Response>`. Default wires real CoreApi
+  factories; tests substitute a stub loader for one type without touching the rest.
+- `CatalogueItemUpserters` (`\.itemUpserters`) — **persistence seam**: typed store-upsert closures
+  `@MainActor (CatalogueStore, Response) throws`. Default delegates to `CatalogueStore.upsert`.
+- `CatalogueItemSyncs` — static keypath-pair recipes linking each type's `loaderPath` to its
+  `upserterPath`; the shared generics enforce that loader output matches upserter input at compile
+  time. `@Loader(\.song)` keypaths into `CatalogueItemLoaders` directly (no recipe needed —
+  clean single-hop); `@Upserter(\.song)` keypaths into `CatalogueItemSyncs` to compose both.
+
 > **Long-term: `CorePersistence` split.** The ideal graph is `CoreTmbr → {CoreApi, CorePersistence}
 > → CoreApp` where `CorePersistence` holds SwiftData `@Model` records + Stores without any SwiftUI
 > or networking. This makes persistence testable without SwiftUI and lets a future share-extension

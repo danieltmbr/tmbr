@@ -59,8 +59,9 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 - **Hard rule: `CoreApp` never constructs a `URLSession`, holds a `baseURL`, or references
   `AuthProvider`, `SyncEngine`, or CloudKit.** It imports `CoreApi` for `RequestLoader` types used
   in `@Loader`/`@Upserter` DynamicProperties, but all per-app config (`apiBaseURL`, `urlSession`,
-  `auth`) is injected at the app layer as env values. Personal injects no URL → both wrappers are
-  no-ops. Do not branch on app identity inside `CoreApp`.
+  `auth`) is injected at the app layer as env values. Per-item sync uses two independent injection
+  seams: `\.itemLoaders` (network factories) and `\.itemUpserters` (typed store-upsert closures).
+  Personal injects no URL → both wrappers are no-ops. Do not branch on app identity inside `CoreApp`.
 - Write path: actions → SwiftData + an injected `requestSync` closure. Read/refresh: a per-screen
   `@Observable` detail model (`CatalogueItemDetailModel`) whose refresh is driven by the active
   section's `PreferenceKey` publish. Same env-key, different body per app.

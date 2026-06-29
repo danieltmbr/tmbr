@@ -4,14 +4,16 @@ import Foundation
 public extension EnvironmentValues {
     @Entry var refreshCatalogue: CatalogueRefreshAction = CatalogueRefreshAction()
 
-    // Networking config — decoupled from the recipe namespace so each value can be overridden
-    // independently (e.g. tests inject a stub URLSession without touching baseURL).
-    // `apiBaseURL == nil` is the on/off gate: Personal injects nothing → @Loader/.@Upserter no-op.
+    // Networking config — `apiBaseURL == nil` is the on/off gate: Personal injects nothing
+    // → @Loader returns nil, @Upserter returns a no-op syncer.
     @Entry var apiBaseURL: URL? = nil
     @Entry var urlSession: URLSession = .shared
 
-    // Single recipe namespace for all catalogue item types. Each recipe carries its own loader
-    // factory and store sink; @Loader and @Upserter both keypath into this one namespace.
-    // Default provides real factories; tests override individual recipes via the memberwise init.
-    @Entry var itemSyncs: CatalogueItemSyncs = .init()
+    // Network seam: factories keyed by item type. Tests/previews substitute a stub factory
+    // (e.g. a RequestLoader that never hits the network) for one type while leaving the rest real.
+    @Entry var itemLoaders: CatalogueItemLoaders = .init()
+
+    // Persistence seam: typed store-upsert closures. Tests/previews substitute a spy for one
+    // type to assert the right response reaches the right store method.
+    @Entry var itemUpserters: CatalogueItemUpserters = .init()
 }
