@@ -1,4 +1,4 @@
-import CoreAuth
+import WebAuth
 
 extension PermissionScopes {
     var notifications: PermissionScopes.Notifications.Type { PermissionScopes.Notifications.self }

@@ -1,8 +1,8 @@
 import Vapor
 import Fluent
-import CoreAuth
-import CoreWeb
-import CoreTmbr
+import WebAuth
+import WebCore
+import TmbrCore
 
 struct NotesWebController: RouteCollection {
 

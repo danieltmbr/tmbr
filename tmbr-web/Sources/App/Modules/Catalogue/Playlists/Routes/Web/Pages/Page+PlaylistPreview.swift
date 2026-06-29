@@ -1,8 +1,8 @@
-import CoreWeb
+import WebCore
 import Foundation
 import Vapor
-import CoreAuth
-import CoreTmbr
+import WebAuth
+import TmbrCore
 
 private struct PlaylistPreviewPayload: Content {
     let title: String

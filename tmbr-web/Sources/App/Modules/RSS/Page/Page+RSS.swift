@@ -1,5 +1,5 @@
 import Vapor
-import CoreWeb
+import WebCore
 import Fluent
 
 extension Template where Model == RSSViewModel {

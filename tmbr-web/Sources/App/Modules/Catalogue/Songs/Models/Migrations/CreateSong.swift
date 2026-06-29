@@ -1,6 +1,6 @@
 import Fluent
 import Foundation
-import CoreAuth
+import WebAuth
 
 struct CreateSong: AsyncMigration {
     func prepare(on database: Database) async throws {

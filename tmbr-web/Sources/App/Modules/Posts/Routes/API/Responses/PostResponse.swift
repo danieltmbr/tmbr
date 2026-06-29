@@ -1,6 +1,6 @@
 import Foundation
-import CoreTmbr
-import CoreAuth
+import TmbrCore
+import WebAuth
 
 extension PostResponse {
 

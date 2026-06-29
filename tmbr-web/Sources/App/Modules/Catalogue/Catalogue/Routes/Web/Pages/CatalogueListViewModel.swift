@@ -1,5 +1,5 @@
 import Vapor
-import CoreWeb
+import WebCore
 
 struct CatalogueListViewModel: Encodable, Sendable {
 

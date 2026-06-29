@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
-import CoreApp
+import AppCore
+import AppPersistence
 
 /// Personal — private, single-user. CloudKit mirrors writes across the user's devices, no backend.
 /// `canAuthor` stays `false` until the offline write path lands; no account UI (iCloud is implicit).

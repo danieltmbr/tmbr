@@ -1,6 +1,6 @@
 import Foundation
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 
 extension Commands {
     var gallery: Commands.Gallery.Type { Commands.Gallery.self }

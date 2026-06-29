@@ -8,10 +8,10 @@ Swift 6.0.3 (strict concurrency mode), SwiftUI, Swift Testing, Xcode
 
 ## Commands
 
-Build and run via Xcode. For `api-kit` package tests (requires Xcode toolchain, not just CLT):
+Build and run via Xcode. For `app-api` package tests (requires Xcode toolchain, not just CLT):
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path api-kit
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path app-api
 ```
 
 ## Architecture Constraints (Always Apply)
@@ -54,14 +54,15 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 
 **Three apps, one shared core** (see `.claude/docs/native-apps-architecture.md`)
 - `tmbr-app` ships **three** targets — **Author** (owner, offline-first backend sync), **Reader**
-  (public, read-only ETag cache), **Personal** (private, CloudKit-only) — over one shared local SPM
-  package, `AppCore` (+ `AppBackend` for networking, used by Author + Reader only).
-- **Hard rule: `CoreApp` never constructs a `URLSession`, holds a `baseURL`, or references
-  `AuthProvider`, `SyncEngine`, or CloudKit.** It imports `CoreApi` for `RequestLoader` types used
+  (public, read-only ETag cache), **Personal** (private, CloudKit-only) — over shared local SPM
+  packages: `app-persistence` (SwiftData records + stores), `app-core` (SwiftUI features), and
+  `app-api` (networking, used by Author + Reader only).
+- **Hard rule: `AppCore` never constructs a `URLSession`, holds a `baseURL`, or references
+  `AuthProvider`, `SyncEngine`, or CloudKit.** It imports `AppApi` for `RequestLoader` types used
   in `@Loader`/`@Upserter` DynamicProperties, but all per-app config (`apiBaseURL`, `urlSession`,
   `auth`) is injected at the app layer as env values. Per-item sync uses two independent injection
   seams: `\.itemLoaders` (network factories) and `\.itemUpserters` (typed store-upsert closures).
-  Personal injects no URL → both wrappers are no-ops. Do not branch on app identity inside `CoreApp`.
+  Personal injects no URL → both wrappers are no-ops. Do not branch on app identity inside `AppCore`.
 - Write path: actions → SwiftData + an injected `requestSync` closure. Read/refresh: a per-screen
   `@Observable` detail model (`CatalogueItemDetailModel`) whose refresh is driven by the active
   section's `PreferenceKey` publish. Same env-key, different body per app.
@@ -83,7 +84,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 - Native apps architecture (three apps, shared `AppCore`, composition seam) → `.claude/docs/native-apps-architecture.md`
 - SwiftUI architecture (Observable, env injection, property wrappers, actions, styles) → `.claude/docs/swiftui-architecture.md`
 - Navigation pattern (NavigationModel, scoped feature navigation) → `.claude/docs/navigation.md`
-- Networking (RequestLoader, AuthToken, api-kit) → `.claude/docs/networking.md`
+- Networking (RequestLoader, AuthToken, app-api) → `.claude/docs/networking.md`
 - Swift design patterns (both platforms) → `/.claude/docs/swift-patterns.md`
 - QA, testing invariants → `/.claude/docs/quality-assurance.md`
 - Monorepo cross-package contracts (shared models rule) → `/.claude/docs/repository-layout.md`

@@ -1,6 +1,6 @@
 import Vapor
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 
 extension Request {
     // TODO: See plan for injectable "controllers" to avoid hardcoded "features" on Request.

@@ -1,9 +1,9 @@
-import CoreWeb
+import WebCore
 import Foundation
 import Vapor
 import Fluent
-import CoreAuth
-import CoreTmbr
+import WebAuth
+import TmbrCore
 
 struct PlaylistEditorViewModel: Encodable, Sendable {
 

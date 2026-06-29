@@ -1,9 +1,9 @@
 import Foundation
 import Vapor
-import CoreWeb
+import WebCore
 import Fluent
-import CoreAuth
-import CoreTmbr
+import WebAuth
+import TmbrCore
 
 extension Command where Self == PlainCommand<Note, Void> {
 

@@ -1,8 +1,8 @@
 import Vapor
 import Fluent
-import CoreWeb
+import WebCore
 import SotoCore
-import CoreAuth
+import WebAuth
 
 struct Gallery: Module {
     fileprivate struct ServiceKey: StorageKey {

@@ -1,10 +1,10 @@
 import Vapor
 import Fluent
 import Foundation
-import CoreAuth
+import WebAuth
 import PostgresKit
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 
 struct QuotesAPIController: RouteCollection {
 

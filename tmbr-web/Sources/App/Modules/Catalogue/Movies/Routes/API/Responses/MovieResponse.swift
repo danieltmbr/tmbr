@@ -1,7 +1,7 @@
 import Foundation
-import CoreTmbr
-import CoreAuth
-import CoreWeb
+import TmbrCore
+import WebAuth
+import WebCore
 
 extension MovieResponse {
 

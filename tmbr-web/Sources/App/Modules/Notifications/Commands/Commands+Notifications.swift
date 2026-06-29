@@ -1,6 +1,6 @@
 import Foundation
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 
 extension Commands {
     var notifications: Commands.Notifications.Type { Commands.Notifications.self }

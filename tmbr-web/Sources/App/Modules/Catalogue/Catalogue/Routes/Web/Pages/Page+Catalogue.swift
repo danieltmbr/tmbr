@@ -1,6 +1,6 @@
 import Vapor
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 
 struct CatalogueViewModel: Encodable, Sendable {
 

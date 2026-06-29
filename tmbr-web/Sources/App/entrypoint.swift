@@ -2,12 +2,12 @@ import Vapor
 import Logging
 import NIOCore
 import NIOPosix
-import CoreWeb
+import WebCore
 
-typealias Command = CoreWeb.Command
-typealias Commands = CoreWeb.Commands
-typealias Page = CoreWeb.Page
-typealias Validator = CoreWeb.Validator
+typealias Command = WebCore.Command
+typealias Commands = WebCore.Commands
+typealias Page = WebCore.Page
+typealias Validator = WebCore.Validator
 
 @main
 enum Entrypoint {

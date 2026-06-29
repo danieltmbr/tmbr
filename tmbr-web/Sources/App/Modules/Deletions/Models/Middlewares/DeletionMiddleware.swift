@@ -1,5 +1,5 @@
 import Fluent
-import CoreTmbr
+import TmbrCore
 
 struct DeletionMiddleware<M: Model>: AsyncModelMiddleware {
 

@@ -1,7 +1,7 @@
 import Foundation
-import CoreWeb
+import WebCore
 import Fluent
-import CoreAuth
+import WebAuth
 
 extension Command where Self == PlainCommand<String, Book?> {
 

@@ -1,6 +1,6 @@
 import Foundation
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 
 extension Commands {
     var songs: Commands.Songs.Type { Commands.Songs.self }

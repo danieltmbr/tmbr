@@ -1,10 +1,10 @@
 import Vapor
-import CoreAuth
+import WebAuth
 import Crypto
 import JWT
 import Foundation
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 
 struct AuthAPIController: RouteCollection {
 

@@ -1,8 +1,8 @@
 import Foundation
 import Vapor
-import CoreAuth
-import CoreWeb
-import CoreTmbr
+import WebAuth
+import WebCore
+import TmbrCore
 
 struct PlaylistInput {
 

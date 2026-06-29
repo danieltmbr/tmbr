@@ -1,8 +1,8 @@
 import Vapor
-import CoreAuth
+import WebAuth
 import Fluent
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 
 private struct MovieLookupResponse: Content, Sendable {
     let id: Int

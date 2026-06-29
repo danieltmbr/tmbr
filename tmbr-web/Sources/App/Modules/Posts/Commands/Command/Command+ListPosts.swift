@@ -1,9 +1,9 @@
 import Foundation
 import Vapor
-import CoreWeb
+import WebCore
 import Logging
 import Fluent
-import CoreTmbr
+import TmbrCore
 
 struct ListPostsInput: Sendable {
     let query: PostQueryPayload

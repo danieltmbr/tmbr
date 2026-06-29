@@ -1,4 +1,4 @@
-import CoreAuth
+import WebAuth
 import Fluent
 
 extension PermissionScopes {

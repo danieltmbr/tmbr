@@ -67,24 +67,28 @@ own iCloud. Apple-only reach for other users was explicitly judged acceptable.
 
 ### Shared core + three compositions
 
-Two repo-root SPM packages back the three app targets (renamed in the package restructure):
+Three repo-root SPM packages back the three app targets:
 
 ```
-        ┌──────────────────────── core-app  (module CoreApp) ──────────────────────────┐
-        │  No CloudKit, no SyncEngine. Imports CoreApi for RequestLoader types only.    │
-        │    • SwiftData @Model records + SyncState   (CloudKit-constrained schema)     │
-        │    • CatalogueStore + upsert helpers (ModelContext-based)                     │
-        │    • @Query-driven views (Blog/Catalogue/detail/editors), capability-gated    │
-        │    • @Observable models (BlogModel, CatalogueModel, CatalogueItemDetailModel) │
-        │    • property wrappers (@Blog, @Catalogue, @Loader, @Upserter …), env keys   │
-        │    • write Actions (Create/Update/Delete) → SwiftData + injected requestSync() │
-        └──────────────────────────────────────────────────────────────────────────────┘
+        ┌──────────────────────── app-persistence  (module AppPersistence) ────────────────┐
+        │  SwiftData @Model records + Stores. No SwiftUI, no networking.                   │
+        │    • SwiftData @Model records + SyncState   (CloudKit-constrained schema)         │
+        │    • CatalogueStore + PostStore + upsert helpers (ModelContext-based)             │
+        └──────────────────────────────────────────────────────────────────────────────────┘
+                  ▲ (imports for @Model types)                ▲
+        ┌──────────────────────── app-core  (module AppCore) ──────────────────────────────┐
+        │  Imports AppApi for RequestLoader types and AppPersistence for store/record types.│
+        │    • @Query-driven views (Blog/Catalogue/detail/editors), capability-gated        │
+        │    • @Observable models (BlogModel, CatalogueModel, CatalogueItemDetailModel)     │
+        │    • property wrappers (@Blog, @Catalogue, @Loader, @Upserter …), env keys        │
+        │    • write Actions (Create/Update/Delete) → SwiftData + injected requestSync()    │
+        └──────────────────────────────────────────────────────────────────────────────────┘
                   ▲ (imports for RequestLoader types)
-        ┌──────────────────────── core-api  (module CoreApi) ──────────────────────────┐
-        │  HTTP client + per-endpoint requests + RequestLoader + Syncer/SyncGroup       │
-        └──────────────────────────────────────────────────────────────────────────────┘
+        ┌──────────────────────── app-api  (module AppApi) ────────────────────────────────┐
+        │  HTTP client + per-endpoint requests + RequestLoader + Syncer/SyncGroup           │
+        └──────────────────────────────────────────────────────────────────────────────────┘
                   ▲                        ▲
-        ┌─────────┘            ┌───────────┘             (Personal: CoreApp only)
+        ┌─────────┘            ┌───────────┘             (Personal: AppCore + AppPersistence only)
  ┌──────┴───────┐     ┌────────┴─────────┐      ┌──────────────────┐
  │ Reader (1)   │     │  Author (2)      │      │  Personal (3)    │
  │ fetch+upsert │     │  SyncEngine      │      │ .private CloudKit│
@@ -94,22 +98,22 @@ Two repo-root SPM packages back the three app targets (renamed in the package re
  └──────────────┘     └──────────────────┘      └──────────────────┘
 ```
 
-`CoreApp` + `CoreApi` are the (former) `AppCore` + `AppBackend` from the original sketch, now
-standalone root packages (`core-app`, `core-api`) sharing `core-tmbr`/`CoreTmbr` DTOs. `CoreApp`
-now imports `CoreApi` for `RequestLoader` types used in `@Loader` / `@Upserter`; it does **not**
+`AppCore` + `AppApi` are the (former) `AppCore` + `AppBackend` from the original sketch, now
+standalone root packages (`app-core`, `app-api`) sharing `tmbr-core`/`TmbrCore` DTOs. `AppCore`
+imports `AppApi` for `RequestLoader` types used in `@Loader` / `@Upserter`; it does **not**
 construct loaders — `baseURL`/`session` are injected at the app layer via env values. Personal
-imports `CoreApp` only; `apiBaseURL` is never set so `@Loader`/`@Upserter` are both no-ops.
+imports `AppCore` only; `apiBaseURL` is never set so `@Loader`/`@Upserter` are both no-ops.
 
-**The invariant that makes one core serve three apps:** `CoreApp` never constructs a `URLSession`,
+**The invariant that makes one core serve three apps:** `AppCore` never constructs a `URLSession`,
 never holds a `baseURL`, never references `AuthProvider`, `SyncEngine`, or CloudKit. Per-app config
-is injected as env values (`\.apiBaseURL`, `\.urlSession`) and closures at the app layer. `CoreApi`
-types (loader factories, `Syncer`) appear in `CoreApp` only as type parameters and stored-closure
-signatures — no live networking happens inside `CoreApp`.
+is injected as env values (`\.apiBaseURL`, `\.urlSession`) and closures at the app layer. `AppApi`
+types (loader factories, `Syncer`) appear in `AppCore` only as type parameters and stored-closure
+signatures — no live networking happens inside `AppCore`.
 
-**Per-item sync seams** (`CoreApp/Catalogue/Sync/`): two independently injectable namespaces,
+**Per-item sync seams** (`app-core/Catalogue/Sync/`): two independently injectable namespaces,
 mirroring the backend's resolver DI pattern:
 - `CatalogueItemLoaders` (`\.itemLoaders`) — **network seam**: per-type loader factories
-  `@Sendable (URL, URLSession) -> RequestLoader<ID, Response>`. Default wires real CoreApi
+  `@Sendable (URL, URLSession) -> RequestLoader<ID, Response>`. Default wires real AppApi
   factories; tests substitute a stub loader for one type without touching the rest.
 - `CatalogueItemUpserters` (`\.itemUpserters`) — **persistence seam**: typed store-upsert closures
   `@MainActor (CatalogueStore, Response) throws`. Default delegates to `CatalogueStore.upsert`.
@@ -117,13 +121,6 @@ mirroring the backend's resolver DI pattern:
   `upserterPath`; the shared generics enforce that loader output matches upserter input at compile
   time. `@Loader(\.song)` keypaths into `CatalogueItemLoaders` directly (no recipe needed —
   clean single-hop); `@Upserter(\.song)` keypaths into `CatalogueItemSyncs` to compose both.
-
-> **Long-term: `CorePersistence` split.** The ideal graph is `CoreTmbr → {CoreApi, CorePersistence}
-> → CoreApp` where `CorePersistence` holds SwiftData `@Model` records + Stores without any SwiftUI
-> or networking. This makes persistence testable without SwiftUI and lets a future share-extension
-> or Author background engine link persistence without the full UI layer. **Deferred** — do the
-> split when a second consumer of persistence-without-UI actually exists. Adding `CoreApi` to
-> `CoreApp` unblocks `@Loader`/`@Upserter` with far less churn now.
 
 ### The seam is the existing Action pattern — no new protocol
 
@@ -149,7 +146,7 @@ risky deviation from that reference.)
 
 The model owns: the observed record, the refresh `Task` lifecycle, and a `phase` enum
 (empty/loading/loaded/error — subsumes `isUpdating`, last-updated, and Reader's not-yet-cached case).
-It holds an **injected refresh strategy closure** — never CoreApi/SyncEngine/CloudKit — so `CoreApp`
+It holds an **injected refresh strategy closure** — never AppApi/SyncEngine/CloudKit — so `AppCore`
 stays clean. Injected scoped to the detail subtree at navigation time.
 
 Access uses the full house pattern; each layer earns its place:
@@ -210,23 +207,25 @@ by Personal) and are unaffected by normalization:
 `syncState`/`serverID`/tombstone fields are used fully by Author, set-but-ignored by Personal, and
 effectively always-`.synced` in Reader. One shared schema across all three.
 
-**Status:** the `CoreApp` package + this schema are **built and compiling** (`swift build`).
-**Still to validate at runtime (before Personal ships):** that the schema round-trips to a `.private`
-CloudKit database.
+**Status:** the `AppCore` + `AppPersistence` packages + this schema are **built and compiling**
+(`swift build`). **Still to validate at runtime (before Personal ships):** that the schema
+round-trips to a `.private` CloudKit database.
 
 ---
 
 ## Project structure
 
-Two repo-root SPM packages (shared with the web side via `core-tmbr`) + three thin app targets:
+Three repo-root SPM packages (shared with the web side via `tmbr-core`) + three thin app targets:
 
 ```
-core-tmbr/                      ← module CoreTmbr — shared Codable DTOs (also used by tmbr-web)
-core-api/                       ← module CoreApi  — HTTP client + Sync/ (per-endpoint requests,
+tmbr-core/                      ← module TmbrCore — shared Codable DTOs (also used by tmbr-web)
+app-api/                        ← module AppApi   — HTTP client + Sync/ (per-endpoint requests,
                                    RequestLoader.syncAll); linked by Reader + Author, NOT Personal
-core-app/                       ← module CoreApp  — Persistence/, Blog/, Catalogue/, shared views,
-                                   property wrappers, environments, actions, detail models,
-                                   DTO→record upsert; SwiftData + CoreTmbr only (no networking)
+app-persistence/                ← module AppPersistence — SwiftData @Model records + Stores;
+                                   no SwiftUI, testable without a UI host
+app-core/                       ← module AppCore  — Blog/, Catalogue/, shared views, property
+                                   wrappers, environments, actions, detail models;
+                                   imports AppPersistence + AppApi (no networking constructed here)
 tmbr-app/
   Author/                       ← @main, ModelContainer, SyncEngine, AuthState, background sync
   Reader/                       ← @main, plain container, read-only UI, fetch+upsert, public APIConfig
@@ -235,7 +234,7 @@ tmbr-app/
                                    APIBaseURL, CloudKit container id)
 ```
 
-The `core-api` split (formerly `AppBackend`) exists so Personal carries **no** networking code; keeping
+The `app-api` split (formerly `AppBackend`) exists so Personal carries **no** networking code; keeping
 Personal backend-free is a deliberate guard.
 
 ---
@@ -243,7 +242,7 @@ Personal backend-free is a deliberate guard.
 ## Backend: kept, not redesigned
 
 The branch's backend is, field-for-field, Author's backend — fully aligned, not a two-product
-compromise. Keep as-is: the `core-tmbr` pagination contract; `core-web` pagination infra; per-type list
+compromise. Keep as-is: the `tmbr-core` pagination contract; `web-core` pagination infra; per-type list
 endpoints; `GET /api/posts` pagination; `GET /api/catalogue/orphans?notes=true`; embedded-notes design;
 deletion tombstones; `PreviewResponse.id`; the `NoteModelMiddleware` `updatedAt` bump.
 
@@ -261,7 +260,7 @@ never receive private data — which is exactly the access model the Reader app 
 
 ## Build order & deferred
 
-**Building now (Reader first):** the three-target split, the shared UI moved into `CoreApp`, and the
+**Building now (Reader first):** the three-target split, the shared UI moved into `AppCore`, and the
 **Reader** app's read path (lazy fetch+upsert of public lists + detail over the existing endpoints).
 Reader is the simplest *complete* app — it validates the whole stack before Author's heavier sync.
 
@@ -271,4 +270,4 @@ Reader is the simplest *complete* app — it validates the whole stack before Au
 - **Author app**: the delta `SyncEngine` (eager `syncAll` + push/pull + tombstones), auth, offline writes.
 - **Personal app**: the `.private` CloudKit container wiring and runtime mirror validation.
 - **Atomic controls** for the read/refresh detail models — added when a second consumer appears.
-- Whether `CoreApi` stays separate or folds into `CoreApp`.
+- Whether `AppApi` stays separate or folds into `AppCore`.

@@ -1,6 +1,6 @@
 import Foundation
-import CoreWeb
-import CoreAuth
+import WebCore
+import WebAuth
 import Vapor
 
 extension Permission<Post> {

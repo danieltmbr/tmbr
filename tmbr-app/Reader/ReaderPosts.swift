@@ -1,8 +1,9 @@
 import Foundation
 import OSLog
-import CoreApi
-import CoreApp
-import CoreTmbr
+import AppApi
+import AppCore
+import TmbrCore
+import AppPersistence
 
 /// Reader's lazy data-in for the blog: fetch the public posts list (unauthenticated) and upsert
 /// into the local store. `@Query` in `BlogTab` renders the result reactively.

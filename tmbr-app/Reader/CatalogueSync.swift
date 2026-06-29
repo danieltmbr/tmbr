@@ -1,7 +1,8 @@
 import Foundation
-import CoreApi
-import CoreApp
-import CoreTmbr
+import AppApi
+import AppCore
+import AppPersistence
+import TmbrCore
 
 extension SyncGroup {
     /// Standard Reader catalogue sync: fetches the six typed lists + orphans from `baseURL` and

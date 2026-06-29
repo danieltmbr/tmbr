@@ -3,7 +3,7 @@ import VaporTesting
 import Testing
 import Fluent
 import Vapor
-import CoreAuth
+import WebAuth
 
 @Suite("Catalogue — Albums", .serialized)
 struct AlbumTests {

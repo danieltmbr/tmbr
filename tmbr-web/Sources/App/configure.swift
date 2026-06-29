@@ -1,6 +1,6 @@
 import Vapor
-import CoreWeb
-import CoreAuth
+import WebCore
+import WebAuth
 
 func configure(_ app: Application) async throws {
     app.middleware.use(AppleSignInTokenParser())

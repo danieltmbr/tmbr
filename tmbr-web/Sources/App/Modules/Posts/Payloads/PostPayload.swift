@@ -1,6 +1,6 @@
 import Vapor
 import Foundation
-import CoreTmbr
+import TmbrCore
 
 struct PostPayload: Decodable, Sendable {
 

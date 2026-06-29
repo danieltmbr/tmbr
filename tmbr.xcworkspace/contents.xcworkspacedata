@@ -5,21 +5,24 @@
       location = "container:tmbr-app/tmbr-app.xcodeproj">
    </FileRef>
    <FileRef
-      location = "container:core-tmbr">
-   </FileRef>
-   <FileRef
-      location = "container:core-api">
-   </FileRef>
-   <FileRef
-      location = "container:core-app">
-   </FileRef>
-   <FileRef
-      location = "container:core-web">
-   </FileRef>
-   <FileRef
-      location = "container:core-auth">
+      location = "container:tmbr-core">
    </FileRef>
    <FileRef
       location = "container:tmbr-web">
+   </FileRef>
+   <FileRef
+      location = "container:app-api">
+   </FileRef>
+   <FileRef
+      location = "container:app-core">
+   </FileRef>
+   <FileRef
+      location = "container:app-persistence">
+   </FileRef>
+   <FileRef
+      location = "container:web-auth">
+   </FileRef>
+   <FileRef
+      location = "container:web-core">
    </FileRef>
 </Workspace>

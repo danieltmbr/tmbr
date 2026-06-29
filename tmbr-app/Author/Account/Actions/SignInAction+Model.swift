@@ -1,5 +1,5 @@
 import AuthenticationServices
-import CoreApp
+import AppCore
 import OSLog
 
 private let logger = Logger(subsystem: "me.tmbr", category: "auth")

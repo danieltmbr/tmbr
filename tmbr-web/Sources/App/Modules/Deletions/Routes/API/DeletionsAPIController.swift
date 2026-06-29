@@ -1,5 +1,5 @@
 import Vapor
-import CoreTmbr
+import TmbrCore
 
 struct DeletionsAPIController: RouteCollection {
 

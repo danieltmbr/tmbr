@@ -1,9 +1,9 @@
-import CoreWeb
+import WebCore
 import Fluent
 import Vapor
 import Foundation
-import CoreAuth
-import CoreTmbr
+import WebAuth
+import TmbrCore
 
 final class Preview: Model, @unchecked Sendable {
     static let schema = "previews"

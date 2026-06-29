@@ -1,7 +1,7 @@
 import Foundation
-import CoreWeb
+import WebCore
 import Fluent
-import CoreAuth
+import WebAuth
 
 struct BookSearchResult: Sendable {
 

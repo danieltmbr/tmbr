@@ -1,5 +1,5 @@
 import Foundation
-import CoreWeb
+import WebCore
 import Fluent
 
 struct MusicSearchResult: Sendable {

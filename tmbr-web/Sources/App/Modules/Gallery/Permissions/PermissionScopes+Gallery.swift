@@ -1,4 +1,4 @@
-import CoreAuth
+import WebAuth
 
 extension PermissionScopes {
     var gallery: PermissionScopes.Gallery.Type { PermissionScopes.Gallery.self }

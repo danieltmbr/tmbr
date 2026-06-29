@@ -1,7 +1,7 @@
 import Foundation
 import Fluent
-import CoreWeb
-import CoreTmbr
+import WebCore
+import TmbrCore
 
 struct ListDeletionsInput: Sendable {
     let since: Date?
