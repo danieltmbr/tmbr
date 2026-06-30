@@ -5,6 +5,7 @@ import TmbrCore
 struct QuoteItemViewModel: Encodable, Sendable {
     private let id: String
     private let body: String
+    private let citation: String?
     private let sourceTitle: String
     private let sourceSubtitle: String?
     private let sourceType: String?
@@ -14,7 +15,9 @@ struct QuoteItemViewModel: Encodable, Sendable {
     init(quote: QuoteResponse) {
         let src = quote.source
         id = quote.id.uuidString
-        body = quote.body
+        let (bodyMarkdown, citationText) = Self.splitCitation(from: quote.body)
+        body = MarkdownFormatter.html.format(bodyMarkdown)
+        citation = citationText
         sourceTitle = src.title
         sourceSubtitle = src.subtitle
         sourceType = src.type
@@ -25,6 +28,29 @@ struct QuoteItemViewModel: Encodable, Sendable {
         case .post:
             sourceURL = src.postID.map { "/posts/\($0)" } ?? "/posts"
         }
+    }
+
+    // Separates `^[citation text](cite: kind)` lines from the quote body so they can be
+    // rendered outside the <blockquote> element.
+    private static func splitCitation(from markdown: String) -> (body: String, citation: String?) {
+        var bodyLines: [String] = []
+        var citation: String? = nil
+
+        for line in markdown.components(separatedBy: "\n") {
+            if line.hasPrefix("^["), citation == nil {
+                let rest = line.dropFirst(2)
+                if let end = rest.firstIndex(of: "]") {
+                    citation = String(rest[rest.startIndex..<end])
+                }
+            } else {
+                bodyLines.append(line)
+            }
+        }
+
+        return (
+            body: bodyLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines),
+            citation: citation
+        )
     }
 }
 

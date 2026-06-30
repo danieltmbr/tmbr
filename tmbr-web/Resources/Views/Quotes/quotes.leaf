@@ -5,7 +5,7 @@
             #extend("Shared/signature")
         </a>
         #extend("Shared/site-navigation")
-        <section>
+        <section class="quote-page">
             <h1>Quotes</h1>
             <nav>
                 #extend("Shared/search")
@@ -16,11 +16,10 @@
                 #for(quote in quotes):
                     <li>
                         <article>
-                            <blockquote><p>#(quote.body)</p></blockquote>
+                            <blockquote>#unsafeHTML(quote.body)</blockquote>
+                            #if(quote.citation):<cite>#(quote.citation)</cite>#endif
                             <footer>
-                                <a href="#(quote.sourceURL)">
-                                    <cite>#(quote.sourceTitle)#if(quote.sourceSubtitle): · #(quote.sourceSubtitle)#endif</cite>
-                                </a>
+                                From: <a href="#(quote.sourceURL)"><cite>#(quote.sourceTitle)#if(quote.sourceSubtitle): · #(quote.sourceSubtitle)#endif</cite></a>
                             </footer>
                         </article>
                     </li>

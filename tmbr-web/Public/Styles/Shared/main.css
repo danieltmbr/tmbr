@@ -374,6 +374,49 @@ main article > footer cite {
     font-style: normal;
 }
 
+main article > cite {
+    display: block;
+    font-size: 1.3rem;
+    font-style: normal;
+    opacity: 0.6;
+    text-align: center;
+    line-height: 170%;
+}
+
+main article > cite::before {
+    display: block;
+    content: "—";
+}
+
+main section.quote-page article blockquote {
+    margin: 1em 0 0 0;
+    text-align: center;
+}
+
+main section.quote-page article > footer {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    gap: 0.3em;
+}
+
+main section.quote-page article {
+    margin: 8em 0;
+    padding-bottom: 0;
+}
+
+main section.quote-page ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+main section.quote-page article blockquote p {
+    margin: 0;
+    padding: 0;
+}
+
 article.note > p.published-date {
     margin: 0;
 }
