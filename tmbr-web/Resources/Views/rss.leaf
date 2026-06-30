@@ -10,6 +10,7 @@
       <item>
         <title>#(post.title)</title>
         <link>#(post.url)</link>
+        <guid>#(post.url)</guid>
         <pubDate>#(post.publishDate)</pubDate>
       </item>
       #endfor
