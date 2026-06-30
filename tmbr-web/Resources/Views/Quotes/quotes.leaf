@@ -15,16 +15,14 @@
                 <ul>
                 #for(quote in quotes):
                     <li>
-                        <figure>
+                        <article>
                             <blockquote><p>#(quote.body)</p></blockquote>
-                            <figcaption>
+                            <footer>
                                 <a href="#(quote.sourceURL)">
-                                    #if(quote.imageURL):<img src="#(quote.imageURL)" alt="">#endif
-                                    <span>#(quote.sourceTitle)</span>
-                                    #if(quote.sourceSubtitle):<em>#(quote.sourceSubtitle)</em>#endif
+                                    <cite>#(quote.sourceTitle)#if(quote.sourceSubtitle) · #(quote.sourceSubtitle)#endif</cite>
                                 </a>
-                            </figcaption>
-                        </figure>
+                            </footer>
+                        </article>
                     </li>
                 #endfor
                 </ul>

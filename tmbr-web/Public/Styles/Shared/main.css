@@ -361,6 +361,19 @@ main section.quotes article blockquote * {
     height: auto;
 }
 
+main article > footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 0.75em;
+    font-size: 0.8em;
+    opacity: 0.6;
+}
+
+main article > footer cite {
+    font-style: normal;
+}
+
 article.note > p.published-date {
     margin: 0;
 }
