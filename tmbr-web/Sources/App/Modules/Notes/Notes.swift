@@ -34,6 +34,7 @@ struct Notes: Module {
         app.migrations.add(ChangeNoteIDToUUID())
         app.migrations.add(AddNoteLanguage())
         app.migrations.add(RefactorQuotesTable())
+        app.migrations.add(SeedQuotesFromContent())
         app.databases.middleware.use(NoteModelMiddleware())
         app.databases.middleware.use(DeletionMiddleware<Note>(
             deletionType: .note,
