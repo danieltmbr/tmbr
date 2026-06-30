@@ -57,6 +57,7 @@ public struct DateFormat: Sendable {
     public static let rfc822 = Self { date in
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.timeZone = TimeZone(identifier: "UTC")
         dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss Z"
         return dateFormatter.string(from: date)
     }
