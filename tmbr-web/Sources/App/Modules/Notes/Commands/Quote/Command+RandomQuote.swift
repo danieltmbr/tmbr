@@ -6,6 +6,7 @@ import Fluent
 import WebAuth
 
 extension Command where Self == PlainCommand<QuoteQueryPayload, Quote> {
+
     static func randomQuote(
         database: Database,
         permission: BasePermissionResolver<QueryBuilder<Quote>>
@@ -13,16 +14,24 @@ extension Command where Self == PlainCommand<QuoteQueryPayload, Quote> {
         PlainCommand { input in
             let query = Quote
                 .query(on: database)
-                .join(Note.self, on: \Quote.$note.$id == \Note.$id)
-                .join(Preview.self, on: \Note.$attachment.$id == \Preview.$id)
                 .with(\.$note) { note in
                     note.with(\.$attachment) { attachment in
                         attachment.with(\.$image)
+                        attachment.with(\.$catalogueCategory)
+                    }
+                }
+                .with(\.$post) { post in
+                    post.with(\.$attachment) { attachment in
+                        attachment.with(\.$image)
+                        attachment.with(\.$catalogueCategory)
                     }
                 }
                 .sort(.sql(unsafeRaw: "RANDOM()"))
             if let categoryIDs = input.categoryIDs {
-                query.filter(Preview.self, \.$catalogueCategory.$id ~~ categoryIDs)
+                query
+                    .join(Note.self, on: \Quote.$note.$id == \Note.$id)
+                    .join(Preview.self, on: \Note.$attachment.$id == \Preview.$id)
+                    .filter(Preview.self, \.$catalogueCategory.$id ~~ categoryIDs)
             }
             query.limit(1)
             try await permission.grant(query)
@@ -35,7 +44,7 @@ extension Command where Self == PlainCommand<QuoteQueryPayload, Quote> {
 }
 
 extension CommandFactory<QuoteQueryPayload, Quote> {
-    
+
     static var randomQuote: Self {
         CommandFactory { request in
             .randomQuote(

@@ -19,45 +19,20 @@ struct QuotesAPIController: RouteCollection {
     private func list(request: Request) async throws -> [QuoteResponse] {
         let payload = try request.query.decode(QuoteQueryPayload.self)
         let quotes = try await request.commands.quotes.list(payload)
-        return quotes.map { quote in
-            QuoteResponse(
-                body: quote.body,
-                noteID: quote.$note.id,
-                preview: PreviewResponse(
-                    preview: quote.note.attachment,
-                    baseURL: request.baseURL
-                )
-            )
-        }
+        return try quotes.map { try QuoteResponse(quote: $0, baseURL: request.baseURL) }
     }
 
     @Sendable
     private func random(request: Request) async throws -> QuoteResponse {
         let payload = try request.query.decode(QuoteQueryPayload.self)
         let quote = try await request.commands.quotes.random(payload)
-        return QuoteResponse(
-            body: quote.body,
-            noteID: quote.$note.id,
-            preview: PreviewResponse(
-                preview: quote.note.attachment,
-                baseURL: request.baseURL
-            )
-        )
+        return try QuoteResponse(quote: quote, baseURL: request.baseURL)
     }
 
     @Sendable
     private func search(request: Request) async throws -> [QuoteResponse] {
         let payload = try request.query.decode(QuoteQueryPayload.self)
         let quotes = try await request.commands.quotes.search(payload)
-        return quotes.map { quote in
-            QuoteResponse(
-                body: quote.body,
-                noteID: quote.$note.id,
-                preview: PreviewResponse(
-                    preview: quote.note.attachment,
-                    baseURL: request.baseURL
-                )
-            )
-        }
+        return try quotes.map { try QuoteResponse(quote: $0, baseURL: request.baseURL) }
     }
 }

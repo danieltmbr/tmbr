@@ -162,28 +162,24 @@ struct CatalogueAPIController: RouteCollection {
         let input = mapper.toQuoteQuery(from: payload)
         let quotes = try await request.commands.quotes.list(input)
         let baseURL = request.baseURL
-        return quotes.map {
-            QuoteResponse(quote: $0, baseURL: baseURL)
-        }
+        return try quotes.map { try QuoteResponse(quote: $0, baseURL: baseURL) }
     }
-    
+
     @Sendable
     private func quoteSearch(request: Request) async throws -> [QuoteResponse] {
         let payload = try request.content.decode(CatalogueQueryPayload.self)
         let input = mapper.toQuoteQuery(from: payload)
         let quotes = try await request.commands.quotes.search(input)
         let baseURL = request.baseURL
-        return quotes.map {
-            QuoteResponse(quote: $0, baseURL: baseURL)
-        }
+        return try quotes.map { try QuoteResponse(quote: $0, baseURL: baseURL) }
     }
-    
+
     @Sendable
     private func randomQuote(request: Request) async throws -> QuoteResponse {
         let payload = try request.content.decode(CatalogueQueryPayload.self)
         let input = mapper.toQuoteQuery(from: payload)
         let quote = try await request.commands.quotes.random(input)
-        return QuoteResponse(quote: quote, baseURL: request.baseURL)
+        return try QuoteResponse(quote: quote, baseURL: request.baseURL)
     }
 }
 

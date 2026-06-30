@@ -24,6 +24,7 @@ struct Posts: Module {
         app.migrations.add(AddPostLanguage())
         app.migrations.add(FixLanguageFieldValues())
         app.routes.defaultMaxBodySize = ByteCount(value: 1*1024*1024)
+        app.databases.middleware.use(PostModelMiddleware())
         app.databases.middleware.use(DeletionMiddleware<Post>(
             deletionType: .post,
             itemID: { $0.id.map(String.init) },

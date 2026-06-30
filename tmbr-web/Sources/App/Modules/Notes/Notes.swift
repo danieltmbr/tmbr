@@ -33,6 +33,7 @@ struct Notes: Module {
         app.migrations.add(UpdateNoteVisibilityToAccess())
         app.migrations.add(ChangeNoteIDToUUID())
         app.migrations.add(AddNoteLanguage())
+        app.migrations.add(RefactorQuotesTable())
         app.databases.middleware.use(NoteModelMiddleware())
         app.databases.middleware.use(DeletionMiddleware<Note>(
             deletionType: .note,
