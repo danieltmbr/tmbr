@@ -19,7 +19,7 @@
                             <blockquote><p>#(quote.body)</p></blockquote>
                             <footer>
                                 <a href="#(quote.sourceURL)">
-                                    <cite>#(quote.sourceTitle)#if(quote.sourceSubtitle) · #(quote.sourceSubtitle)#endif</cite>
+                                    <cite>#(quote.sourceTitle)#if(quote.sourceSubtitle): · #(quote.sourceSubtitle)#endif</cite>
                                 </a>
                             </footer>
                         </article>
