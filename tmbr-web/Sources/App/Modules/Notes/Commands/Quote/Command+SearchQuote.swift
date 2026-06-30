@@ -30,7 +30,7 @@ extension Command where Self == PlainCommand<QuoteQueryPayload, [Quote]> {
                     }
                 }
                 .group(.or) { group in
-                    let sql = "body ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
+                    let sql = "quotes.body ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
                     group.filter(.sql(unsafeRaw: sql))
                 }
                 .sort(\Quote.$createdAt, .descending)
