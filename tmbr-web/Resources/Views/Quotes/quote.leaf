@@ -1,0 +1,35 @@
+#extend("Shared/page"):
+
+    #export("main"):
+        <a href="/" alt="Home page">
+            #extend("Shared/signature")
+        </a>
+        #extend("Shared/site-navigation")
+        <section>
+            <h1>Quotes</h1>
+            #if(quote):
+                <figure class="quote-random">
+                    <blockquote><p>#(quote.body)</p></blockquote>
+                    <figcaption>
+                        <a href="#(quote.sourceURL)">
+                            #if(quote.imageURL):<img src="#(quote.imageURL)" alt="">#endif
+                            <span>#(quote.sourceTitle)</span>
+                            #if(quote.sourceSubtitle):<em>#(quote.sourceSubtitle)</em>#endif
+                        </a>
+                    </figcaption>
+                </figure>
+                <nav class="quote-actions">
+                    <a href="/quotes">Another</a>
+                    <a href="/quotes/list">All quotes</a>
+                </nav>
+            #else:
+                <p>No quotes yet.</p>
+            #endif
+        </section>
+    #endexport
+
+    #export("scripts"):
+        <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
+    #endexport
+
+#endextend

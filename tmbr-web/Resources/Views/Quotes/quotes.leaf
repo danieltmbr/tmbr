@@ -1,0 +1,43 @@
+#extend("Shared/page"):
+
+    #export("main"):
+        <a href="/" alt="Home page">
+            #extend("Shared/signature")
+        </a>
+        #extend("Shared/site-navigation")
+        <section>
+            <h1>Quotes</h1>
+            <nav>
+                #extend("Shared/search")
+                #if(panels):#extend("Panels/filter")#endif
+            </nav>
+            #if(count(quotes) > 0):
+                <ul>
+                #for(quote in quotes):
+                    <li>
+                        <figure>
+                            <blockquote><p>#(quote.body)</p></blockquote>
+                            <figcaption>
+                                <a href="#(quote.sourceURL)">
+                                    #if(quote.imageURL):<img src="#(quote.imageURL)" alt="">#endif
+                                    <span>#(quote.sourceTitle)</span>
+                                    #if(quote.sourceSubtitle):<em>#(quote.sourceSubtitle)</em>#endif
+                                </a>
+                            </figcaption>
+                        </figure>
+                    </li>
+                #endfor
+                </ul>
+            #else:
+                <p>No quotes yet.</p>
+            #endif
+        </section>
+    #endexport
+
+    #export("scripts"):
+        <script src="/Scripts/Shared/search.js"></script>
+        <script src="/Scripts/Panels/filter.js"></script>
+        <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
+    #endexport
+
+#endextend
