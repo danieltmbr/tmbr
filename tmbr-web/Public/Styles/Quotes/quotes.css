@@ -16,12 +16,11 @@ section.quote-page figure {
 }
 
 /* ------------------------------------------------
- Citation inside <figure> — replaces the base
- "main article > cite" rule (which no longer matches
- now that cite is nested inside figure).
+ Citation span rendered inline by CitationMarkdownFormatter(.inline).
+ Displayed as a block below the blockquote text with an em-dash prefix.
  ------------------------------------------------ */
 
-section.quote-page figure > cite {
+section.quote-page figure blockquote .citation {
     display: block;
     font-size: 1.3rem;
     font-style: normal;
@@ -30,7 +29,7 @@ section.quote-page figure > cite {
     line-height: 170%;
 }
 
-section.quote-page figure > cite::before {
+section.quote-page figure blockquote .citation::before {
     display: block;
     content: "—";
 }

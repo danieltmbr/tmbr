@@ -6,7 +6,6 @@ import Vapor
 struct QuoteItemViewModel: Encodable, Sendable {
     private let id: String
     private let body: String
-    private let citation: String?
     private let sourceTitle: String
     private let sourceSubtitle: String?
     private let sourceType: String?
@@ -16,9 +15,7 @@ struct QuoteItemViewModel: Encodable, Sendable {
     init(quote: QuoteResponse) {
         let src = quote.source
         id = quote.id.uuidString
-        let (bodyMarkdown, citationText) = CitationMarkdownFormatter.splitCitation(from: quote.body)
-        body = MarkdownFormatter.html.format(bodyMarkdown)
-        citation = citationText
+        body = MarkdownFormatter.quoteBody.format(quote.body)
         sourceTitle = src.title
         sourceSubtitle = src.subtitle
         sourceType = src.type

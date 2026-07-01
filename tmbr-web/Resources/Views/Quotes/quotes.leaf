@@ -28,7 +28,6 @@
                         <article>
                             <figure>
                                 <blockquote>#unsafeHTML(quote.body)</blockquote>
-                                #if(quote.citation):<cite>#(quote.citation)</cite>#endif
                                 <button class="quote-share icon" type="button" aria-label="Share quote">
                                     #extend("Icons/share")
                                 </button>

@@ -3,23 +3,20 @@ import Foundation
 import TmbrCore
 
 public struct MarkdownFormatter: Sendable {
-    typealias Formatter = @Sendable (String) -> String
 
-    private let formatter: Formatter
+    private let citationFormatter: CitationMarkdownFormatter
 
-    init(formatter: @escaping Formatter) {
-        self.formatter = formatter
+    public init(placement: CitationPlacement = .endOfDocument) {
+        citationFormatter = CitationMarkdownFormatter(placement: placement)
     }
 
     public func format(_ markdown: String) -> String {
-        formatter(markdown)
+        citationFormatter.format(markdown)
     }
 
-    /// Renders markdown to HTML with citation processing (`.endOfDocument` by default).
-    /// `^[content](cite: kind)` spans are collected, numbered, and relocated to a references
-    /// section; no-op when the content contains no citations.
-    public static let html: MarkdownFormatter = {
-        let formatter = CitationMarkdownFormatter(placement: .endOfDocument)
-        return MarkdownFormatter { markdown in formatter.format(markdown) }
-    }()
+    /// Standard note/post renderer — citations become numbered footnotes at end of document.
+    public static let html = MarkdownFormatter(placement: .endOfDocument)
+
+    /// Quote body renderer — citations stay inline as `<span class="citation">`.
+    public static let quoteBody = MarkdownFormatter(placement: .inline)
 }

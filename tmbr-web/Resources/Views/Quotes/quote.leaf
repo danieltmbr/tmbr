@@ -15,7 +15,6 @@
                 <article data-quote-id="#(quote.id)">
                     <figure>
                         <blockquote>#unsafeHTML(quote.body)</blockquote>
-                        #if(quote.citation):<cite>#(quote.citation)</cite>#endif
                         #if(isShareable):
                             <button class="quote-share icon" type="button" aria-label="Share quote">
                                 #extend("Icons/share")
