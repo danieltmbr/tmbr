@@ -15,11 +15,14 @@ public struct MarkdownFormatter: Sendable {
         formatter(markdown)
     }
 
-    /// Renders markdown to HTML with citation processing (`.endOfDocument` by default).
-    /// `^[content](cite: kind)` spans are collected, numbered, and relocated to a references
-    /// section; no-op when the content contains no citations.
+    /// Renders markdown to HTML with citations relocated to a numbered references section.
     public static let html: MarkdownFormatter = {
-        let formatter = CitationMarkdownFormatter(placement: .endOfDocument)
-        return MarkdownFormatter { markdown in formatter.format(markdown) }
+        Self.html(citationPlacement: .endOfDocument)
     }()
+
+    /// Renders markdown to HTML with the given citation placement.
+    public static func html(citationPlacement: CitationPlacement) -> MarkdownFormatter {
+        let formatter = CitationMarkdownFormatter(placement: citationPlacement)
+        return MarkdownFormatter { markdown in formatter.format(markdown) }
+    }
 }

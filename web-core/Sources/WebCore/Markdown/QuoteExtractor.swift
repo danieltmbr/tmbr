@@ -24,10 +24,19 @@ struct QuoteExtractor: MarkupWalker {
     }
     
     mutating func visitInlineAttributes(_ attributes: InlineAttributes) -> () {
-        guard !isInsideQuote else { return }
-        defaultVisit(attributes)
+        if isInsideQuote {
+            // Reconstruct ^[...](attr) syntax so the body is renderable markdown
+            let outer = currentQuote
+            currentQuote = ""
+            descendInto(attributes)
+            let inner = currentQuote
+            currentQuote = outer
+            currentQuote.append("^[\(inner)](\(attributes.attributes))")
+        } else {
+            defaultVisit(attributes)
+        }
     }
-    
+
     mutating func visitLineBreak(_ lineBreak: LineBreak) -> () {
         guard isInsideQuote else { return }
         currentQuote.append("\n")

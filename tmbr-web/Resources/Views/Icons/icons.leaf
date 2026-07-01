@@ -9,6 +9,7 @@
 #if(item.icon == "github"):#extend("Icons/github")#endif
 #if(item.icon == "globe"):#extend("Icons/globe")#endif
 #if(item.icon == "instagram"):#extend("Icons/instagram")#endif
+#if(item.icon == "layout"):#extend("Icons/layout")#endif
 #if(item.icon == "movie"):#extend("Icons/movie")#endif
 #if(item.icon == "note"):#extend("Icons/note")#endif
 #if(item.icon == "notification"):#extend("Icons/notification")#endif
@@ -18,7 +19,10 @@
 #if(item.icon == "podcast"):#extend("Icons/podcast")#endif
 #if(item.icon == "post"):#extend("Icons/post")#endif
 #if(item.icon == "recycle"):#extend("Icons/recycle")#endif
+#if(item.icon == "run"):#extend("Icons/run")#endif
 #if(item.icon == "search"):#extend("Icons/search")#endif
+#if(item.icon == "share"):#extend("Icons/share")#endif
+#if(item.icon == "shuffle"):#extend("Icons/shuffle")#endif
 #if(item.icon == "song"):#extend("Icons/song")#endif
 #if(item.icon == "threads"):#extend("Icons/threads")#endif
 #if(item.icon == "trash"):#extend("Icons/trash")#endif

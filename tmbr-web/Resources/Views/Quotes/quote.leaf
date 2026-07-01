@@ -1,0 +1,50 @@
+#extend("Shared/page"):
+
+    #export("styles"):
+        <link rel="stylesheet" href="/Styles/Quotes/quotes.css">
+    #endexport
+
+    #export("main"):
+        <a href="/" alt="Home page">
+            #extend("Shared/signature")
+        </a>
+        #extend("Shared/site-navigation")
+        <section class="quote-page">
+            <h1>Quotes</h1>
+            #if(quote):
+                <article data-quote-id="#(quote.id)">
+                    <figure>
+                        <blockquote>#unsafeHTML(quote.body)</blockquote>
+                        #if(isShareable):
+                            <button class="quote-share icon" type="button" aria-label="Share quote">
+                                #extend("Icons/share")
+                            </button>
+                        #endif
+                    </figure>
+                    <footer>
+                        From: <a href="#(quote.sourceURL)"><cite>#(quote.sourceTitle)#if(quote.sourceSubtitle): · #(quote.sourceSubtitle)#endif</cite></a>
+                    </footer>
+                </article>
+            #else:
+                <p>No quotes yet.</p>
+            #endif
+        </section>
+    #endexport
+
+    #export("scripts"):
+        <script src="/Scripts/Quotes/quote-immersion.js"></script>
+        <script src="/Scripts/Quotes/quote-share.js"></script>
+        <script>document.addEventListener('DOMContentLoaded', () => {
+            new ShortcutsController([ShortcutsController.login]).init();
+            new QuoteImmersionController().init();
+            const article = document.querySelector('section.quote-page > article');
+            if (article) {
+                new QuoteShareController(
+                    { container: article },
+                    { getQuoteId: () => article.dataset.quoteId }
+                ).init();
+            }
+        });</script>
+    #endexport
+
+#endextend

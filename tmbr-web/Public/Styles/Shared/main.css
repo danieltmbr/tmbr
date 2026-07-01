@@ -59,14 +59,12 @@ body {
 
 main {
     flex-grow: 1;
-    
+
     display: flex;
     flex-direction: column;
     align-items: center;
-    
+
     padding: 60px 2em 30px 2em;
-    
-    min-height: 0;
 }
 
 main > section,
@@ -360,6 +358,34 @@ main section.quotes article blockquote {
 main section.quotes article blockquote * {
     height: auto;
 }
+
+main article > footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 0.75em;
+    font-size: 0.8em;
+    opacity: 0.6;
+}
+
+main article > footer cite {
+    font-style: normal;
+}
+
+main article > cite {
+    display: block;
+    font-size: 1.3rem;
+    font-style: normal;
+    opacity: 0.6;
+    text-align: center;
+    line-height: 170%;
+}
+
+main article > cite::before {
+    display: block;
+    content: "—";
+}
+
 
 article.note > p.published-date {
     margin: 0;

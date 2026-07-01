@@ -144,6 +144,12 @@ private func sourceRange(of range: SourceRange, in source: String) -> Range<Stri
         if source[idx].isNewline { line += 1; col = 1 } else { col += 1 }
         source.formIndex(after: &idx)
     }
+    // The upper bound may land exactly at endIndex, which the loop exits before checking.
+    if upper == nil, lower != nil,
+       line == range.upperBound.line,
+       col == range.upperBound.column {
+        upper = idx
+    }
 
     guard let lo = lower, let hi = upper else { return nil }
     return lo..<hi

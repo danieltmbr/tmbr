@@ -53,9 +53,9 @@ struct Notes: Module {
     func boot(_ routes: any Vapor.RoutesBuilder) async throws {
         try routes.register(collection: NotesAPIController())
         try routes.register(collection: QuotesAPIController())
-        try routes
-            .grouped(RecoverMiddleware())
-            .register(collection: NotesWebController())
+        let recovering = routes.grouped(RecoverMiddleware())
+        try recovering.register(collection: NotesWebController())
+        try recovering.register(collection: QuotesWebController())
     }
 }
 
