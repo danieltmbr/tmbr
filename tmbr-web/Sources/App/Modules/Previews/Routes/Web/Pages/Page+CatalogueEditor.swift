@@ -53,6 +53,7 @@ extension Page {
             let categories = try await request.commands.catalogueCategories.list().map(\.name)
             return CatalogueEditorViewModel(categories: categories)
         }
+        .noStore()
     }
 
     static var catalogueItemEditor: Self {
@@ -80,6 +81,7 @@ extension Page {
                 notes: notes.map { NoteEditorViewModel(id: $0.id?.uuidString, body: $0.body, access: $0.access, language: $0.language) }
             )
         }
+        .noStore()
     }
 }
 

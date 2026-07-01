@@ -126,6 +126,7 @@ extension Page {
             req.session.data["csrf.editor"] = csrf
             return PlaylistEditorViewModel(pageTitle: "New playlist", submit: submit, csrf: csrf)
         }
+        .noStore()
     }
 
     static var editPlaylist: Self {
@@ -149,5 +150,6 @@ extension Page {
                 csrf: csrf
             )
         }
+        .noStore()
     }
 }

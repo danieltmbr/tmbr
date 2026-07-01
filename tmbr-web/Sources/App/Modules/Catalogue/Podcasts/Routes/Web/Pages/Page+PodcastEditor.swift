@@ -130,6 +130,7 @@ extension Page {
             req.session.data["csrf.editor"] = csrf
             return PodcastEditorViewModel(pageTitle: "New podcast", submit: submit, csrf: csrf)
         }
+        .noStore()
     }
 
     static var editPodcast: Self {
@@ -148,6 +149,7 @@ extension Page {
                 csrf: csrf
             )
         }
+        .noStore()
     }
 }
 
