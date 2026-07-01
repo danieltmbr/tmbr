@@ -50,16 +50,24 @@ struct QuoteExtractor: MarkupWalker {
 
     mutating func visitInlineAttributes(_ attributes: InlineAttributes) -> () {
         if isInsideQuote {
-            // Reconstruct ^[...](attr) syntax so the body is renderable markdown
             let outer = currentQuote
             currentQuote = ""
             descendInto(attributes)
             let inner = currentQuote
             currentQuote = outer
-            currentQuote.append("^[\(inner)](\(attributes.attributes))")
+            // Cite spans are pre-converted to `class: citation` so HTMLFormatter renders
+            // them with the correct CSS class. CitationMarkdownFormatter's source-range
+            // lookup breaks for >-prefixed blockquote bodies (it finds `>` at col 1 rather
+            // than `^[`, so extractContent returns "" and the span is never rewritten).
+            let attrs = isCiteSpan(attributes.attributes) ? "class: citation" : attributes.attributes
+            currentQuote.append("^[\(inner)](\(attrs))")
         } else {
             defaultVisit(attributes)
         }
+    }
+
+    private func isCiteSpan(_ attributes: String) -> Bool {
+        attributes.range(of: #"\bcite\s*:"#, options: .regularExpression) != nil
     }
 
     mutating func visitLineBreak(_ lineBreak: LineBreak) -> () {
