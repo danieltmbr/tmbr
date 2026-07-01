@@ -26,7 +26,9 @@ struct CatalogueQueryMapper: Sendable {
     func toQuoteQuery(from payload: CatalogueQueryPayload) -> QuoteQueryPayload {
         QuoteQueryPayload(
             term: payload.term,
-            categoryIDs: selectedCategoryIDs(from: payload.types)
+            // Only filter by category when the user has selected specific types.
+            // Passing nil means "no filter" and keeps post-sourced quotes visible.
+            categoryIDs: payload.types == nil ? nil : selectedCategoryIDs(from: payload.types)
         )
     }
 

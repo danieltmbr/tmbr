@@ -3,34 +3,34 @@ import Vapor
 import Markdown
 import WebCore
 
-struct NoteModelMiddleware: AsyncModelMiddleware {
+struct PostModelMiddleware: AsyncModelMiddleware {
 
-    func create(model: Note, on db: any Database, next: any AnyAsyncModelResponder) async throws {
+    func create(model: Post, on db: any Database, next: any AnyAsyncModelResponder) async throws {
         try await next.create(model, on: db)
         try await rematerializeQuotes(for: model, on: db)
     }
 
-    func update(model: Note, on db: any Database, next: any AnyAsyncModelResponder) async throws {
+    func update(model: Post, on db: any Database, next: any AnyAsyncModelResponder) async throws {
         try await next.update(model, on: db)
         try await rematerializeQuotes(for: model, on: db)
     }
 
-    func delete(model: Note, force: Bool, on db: any Database, next: any AnyAsyncModelResponder) async throws {
+    func delete(model: Post, force: Bool, on db: any Database, next: any AnyAsyncModelResponder) async throws {
         try await next.delete(model, force: force, on: db)
         guard let id = model.id else { return }
         try await Quote.query(on: db)
-            .filter(\.$note.$id == id)
+            .filter(\.$post.$id == id)
             .delete()
     }
 
-    private func rematerializeQuotes(for note: Note, on db: any Database) async throws {
-        guard let noteID = note.id else { return }
+    private func rematerializeQuotes(for post: Post, on db: any Database) async throws {
+        guard let postID = post.id else { return }
 
         let existing = try await Quote.query(on: db)
-            .filter(\.$note.$id == noteID)
+            .filter(\.$post.$id == postID)
             .all()
 
-        let freshBodies = Document(parsing: note.body).quotes
+        let freshBodies = Document(parsing: post.content).quotes
 
         let actions = QuoteReconciler.plan(
             existing: existing.compactMap { q in q.id.map { .init(id: $0, body: q.body) } },
@@ -43,7 +43,7 @@ struct NoteModelMiddleware: AsyncModelMiddleware {
             try await quote.update(on: db)
         }
         for body in actions.toInsert {
-            try await Quote(noteID: noteID, body: body).create(on: db)
+            try await Quote(postID: postID, body: body).create(on: db)
         }
         for id in actions.toDelete {
             guard let quote = existing.first(where: { $0.id == id }) else { continue }

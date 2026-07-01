@@ -7,6 +7,7 @@ public typealias MovieID = Int
 public typealias PodcastID = Int
 public typealias NoteID = UUID
 public typealias PostID = Int
+public typealias QuoteID = UUID
 public typealias ImageID = Int
 public typealias PreviewID = UUID
 public typealias UserID = Int

@@ -6,6 +6,7 @@ import Fluent
 import WebAuth
 
 extension Command where Self == PlainCommand<QuoteQueryPayload, [Quote]> {
+
     static func searchQuote(
         database: Database,
         permission: BasePermissionResolver<QueryBuilder<Quote>>
@@ -16,20 +17,28 @@ extension Command where Self == PlainCommand<QuoteQueryPayload, [Quote]> {
             }
             let query = Quote
                 .query(on: database)
-                .join(Note.self, on: \Quote.$note.$id == \Note.$id)
-                .join(Preview.self, on: \Note.$attachment.$id == \Preview.$id)
                 .with(\.$note) { note in
                     note.with(\.$attachment) { attachment in
                         attachment.with(\.$image)
+                        attachment.with(\.$catalogueCategory)
+                    }
+                }
+                .with(\.$post) { post in
+                    post.with(\.$attachment) { attachment in
+                        attachment.with(\.$image)
+                        attachment.with(\.$catalogueCategory)
                     }
                 }
                 .group(.or) { group in
-                    let sql = "body ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
+                    let sql = "quotes.body ILIKE '%\(term.replacingOccurrences(of: "'", with: "''"))%'"
                     group.filter(.sql(unsafeRaw: sql))
                 }
                 .sort(\Quote.$createdAt, .descending)
             if let categoryIDs = input.categoryIDs {
-                query.filter(Preview.self, \.$catalogueCategory.$id ~~ categoryIDs)
+                query
+                    .join(Note.self, on: \Quote.$note.$id == \Note.$id)
+                    .join(Preview.self, on: \Note.$attachment.$id == \Preview.$id)
+                    .filter(Preview.self, \.$catalogueCategory.$id ~~ categoryIDs)
             }
             try await permission.grant(query)
             return try await query.all()
@@ -38,7 +47,7 @@ extension Command where Self == PlainCommand<QuoteQueryPayload, [Quote]> {
 }
 
 extension CommandFactory<QuoteQueryPayload, [Quote]> {
-    
+
     static var searchQuote: Self {
         CommandFactory { request in
             .searchQuote(
