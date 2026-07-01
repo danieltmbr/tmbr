@@ -28,6 +28,19 @@ public struct CitationMarkdownFormatter: Sendable {
         self.placement = placement
     }
 
+    /// Splits a quote body into its prose and citation parts so they can be rendered separately.
+    /// Uses the same AST-based cite-span detection as `format(_:)` — no string scanning.
+    public static func splitCitation(from markdown: String) -> (body: String, citation: String?) {
+        let document = Document(parsing: markdown)
+        let spans = CiteSpanCollector.collect(in: document, source: markdown)
+        guard let span = spans.first else { return (markdown, nil) }
+        var body = markdown
+        if let range = sourceRange(of: span.sourceRange, in: body) {
+            body.removeSubrange(range)
+        }
+        return (body.trimmingCharacters(in: .whitespacesAndNewlines), span.content)
+    }
+
     public func format(_ markdown: String) -> String {
         let document = Document(parsing: markdown)
 
