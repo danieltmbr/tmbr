@@ -15,7 +15,7 @@ struct QuoteItemViewModel: Encodable, Sendable {
     init(quote: QuoteResponse) {
         let src = quote.source
         id = quote.id.uuidString
-        body = MarkdownFormatter.quoteBody.format(quote.body)
+        body = MarkdownFormatter.html(citationPlacement: .inline).format(quote.body)
         sourceTitle = src.title
         sourceSubtitle = src.subtitle
         sourceType = src.type
