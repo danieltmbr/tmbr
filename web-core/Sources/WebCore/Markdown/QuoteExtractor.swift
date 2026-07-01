@@ -22,7 +22,20 @@ struct QuoteExtractor: MarkupWalker {
         }
         isInsideQuote = false
     }
-    
+
+    /// Separates paragraphs within a blockquote with a blank line so the stored
+    /// body round-trips through `HTMLFormatter` as distinct `<p>` blocks.
+    mutating func visitParagraph(_ paragraph: Paragraph) -> () {
+        guard isInsideQuote else {
+            defaultVisit(paragraph)
+            return
+        }
+        if !currentQuote.isEmpty {
+            currentQuote.append("\n\n")
+        }
+        descendInto(paragraph)
+    }
+
     mutating func visitInlineAttributes(_ attributes: InlineAttributes) -> () {
         if isInsideQuote {
             // Reconstruct ^[...](attr) syntax so the body is renderable markdown
@@ -39,12 +52,16 @@ struct QuoteExtractor: MarkupWalker {
 
     mutating func visitLineBreak(_ lineBreak: LineBreak) -> () {
         guard isInsideQuote else { return }
-        currentQuote.append("\n")
+        // Store as a CommonMark hard break so re-parsing yields a LineBreak node,
+        // which HTMLFormatter renders as <br /> rather than a collapsible whitespace.
+        currentQuote.append("\\\n")
     }
-    
+
     mutating func visitSoftBreak(_ softBreak: SoftBreak) -> () {
         guard isInsideQuote else { return }
-        currentQuote.append("\n")
+        // Same as visitLineBreak — promote soft breaks to hard breaks so the
+        // stored body renders with <br /> rather than a space in HTML.
+        currentQuote.append("\\\n")
     }
     
     mutating func visitText(_ text: Text) -> () {
