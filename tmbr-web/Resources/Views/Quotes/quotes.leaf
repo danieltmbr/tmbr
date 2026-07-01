@@ -27,7 +27,7 @@
                     <li data-quote-id="#(quote.id)">
                         <article>
                             <figure>
-                                <blockquote>#unsafeHTML(quote.body)</blockquote>
+                                #unsafeHTML(quote.body)
                                 <button class="quote-share icon" type="button" aria-label="Share quote">
                                     #extend("Icons/share")
                                 </button>

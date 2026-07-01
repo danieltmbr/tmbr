@@ -35,6 +35,9 @@ struct Notes: Module {
         app.migrations.add(AddNoteLanguage())
         app.migrations.add(RefactorQuotesTable())
         app.migrations.add(SeedQuotesWithMarkdown())
+        app.migrations.add(RepairQuoteLineBreaks())
+        app.migrations.add(FixQuoteBodyToBlockquoteFormat())
+        app.migrations.add(FixQuoteCitationClass())
         app.databases.middleware.use(NoteModelMiddleware())
         app.databases.middleware.use(DeletionMiddleware<Note>(
             deletionType: .note,
