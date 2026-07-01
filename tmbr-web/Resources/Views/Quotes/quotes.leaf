@@ -1,5 +1,9 @@
 #extend("Shared/page"):
 
+    #export("styles"):
+        <link rel="stylesheet" href="/Styles/Quotes/quotes.css">
+    #endexport
+
     #export("main"):
         <a href="/" alt="Home page">
             #extend("Shared/signature")
@@ -10,14 +14,25 @@
             <nav>
                 #extend("Shared/search")
                 #if(panels):#extend("Panels/filter")#endif
+                <a href="/quotes/random" class="icon" aria-label="Random quote">
+                    #extend("Icons/shuffle")
+                </a>
+                <button id="layout-toggle" class="icon" type="button" aria-label="Toggle layout" hidden>
+                    #extend("Icons/layout")
+                </button>
             </nav>
             #if(count(quotes) > 0):
                 <ul>
                 #for(quote in quotes):
-                    <li>
+                    <li data-quote-id="#(quote.id)">
                         <article>
-                            <blockquote>#unsafeHTML(quote.body)</blockquote>
-                            #if(quote.citation):<cite>#(quote.citation)</cite>#endif
+                            <figure>
+                                <blockquote>#unsafeHTML(quote.body)</blockquote>
+                                #if(quote.citation):<cite>#(quote.citation)</cite>#endif
+                                <button class="quote-share icon" type="button" aria-label="Share quote">
+                                    #extend("Icons/share")
+                                </button>
+                            </figure>
                             <footer>
                                 From: <a href="#(quote.sourceURL)"><cite>#(quote.sourceTitle)#if(quote.sourceSubtitle): · #(quote.sourceSubtitle)#endif</cite></a>
                             </footer>
@@ -33,8 +48,25 @@
 
     #export("scripts"):
         <script src="/Scripts/Shared/search.js"></script>
-        <script src="/Scripts/Panels/filter.js"></script>
-        <script>document.addEventListener('DOMContentLoaded', () => new ShortcutsController([ShortcutsController.login]).init());</script>
+        <script src="/Scripts/Quotes/quote-focus.js"></script>
+        <script src="/Scripts/Quotes/quote-immersion.js"></script>
+        <script src="/Scripts/Quotes/quote-share.js"></script>
+        <script>document.addEventListener('DOMContentLoaded', () => {
+            new ShortcutsController([ShortcutsController.login]).init();
+            const section = document.querySelector('section.quote-page');
+            const toggle = document.getElementById('layout-toggle');
+            const nav = section ? section.querySelector(':scope > nav') : null;
+            const immersion = new QuoteImmersionController({ hold: nav });
+            if (section && section.querySelector(':scope > ul > li')) {
+                new QuoteFocusController({ section, toggle }, { immersion }).init();
+            }
+            if (section) {
+                new QuoteShareController(
+                    { container: section },
+                    { getQuoteId: (button) => button.closest('li[data-quote-id]')?.dataset.quoteId }
+                ).init();
+            }
+        });</script>
     #endexport
 
 #endextend

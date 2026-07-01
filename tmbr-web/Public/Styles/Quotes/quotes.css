@@ -1,0 +1,286 @@
+/*
+ ------------------------------------------------
+ Quotes pages (/quotes, /quotes/random)
+ ------------------------------------------------
+ */
+
+section.quote-page ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Browsers add 40px default margins to <figure>; zero them out. */
+section.quote-page figure {
+    margin: 0;
+}
+
+/* ------------------------------------------------
+ Citation inside <figure> — replaces the base
+ "main article > cite" rule (which no longer matches
+ now that cite is nested inside figure).
+ ------------------------------------------------ */
+
+section.quote-page figure > cite {
+    display: block;
+    font-size: 1.3rem;
+    font-style: normal;
+    opacity: 0.6;
+    text-align: center;
+    line-height: 170%;
+}
+
+section.quote-page figure > cite::before {
+    display: block;
+    content: "—";
+}
+
+/* ------------------------------------------------
+ Blockquote inside <figure>
+ ------------------------------------------------ */
+
+section.quote-page figure > blockquote {
+    margin: 0;
+    text-align: center;
+}
+
+section.quote-page figure > blockquote p {
+    margin: 0;
+    padding: 0;
+}
+
+/* Treat "From: <link>" as one inline sentence that wraps naturally and
+   centers as a block — eliminates the misalignment when the link text
+   wraps to a second line (flex row with align-items:center causes that). */
+section.quote-page footer {
+    display: block;
+    text-align: center;
+}
+
+/* ------------------------------------------------
+ Section: override the global `main > section { min-height: 0 }` rule.
+ With min-height: auto the section's content height propagates up through
+ main to body, so body scrolls when the viewport is shorter than the quote.
+ flex: 1 0 auto keeps the grow-to-fill behaviour without allowing shrink.
+ ------------------------------------------------ */
+
+section.quote-page {
+    flex: 1 0 auto;
+    min-height: auto;
+}
+
+/* ------------------------------------------------
+ Random + permalink page: article fills the section below
+ the <h1>. The figure floats toward center; the footer
+ pins to the bottom. On short viewports or long quotes
+ the body scrolls normally — nothing floats over chrome.
+ ------------------------------------------------ */
+
+section.quote-page > article {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding-bottom: 30px;
+}
+
+section.quote-page > article > figure {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+section.quote-page > article > footer {
+    margin-top: auto;
+}
+
+/* ------------------------------------------------
+ List page (collapsed/regular): spacious vertical scroll
+ ------------------------------------------------ */
+
+section.quote-page li article {
+    margin: 8em 0;
+    padding-bottom: 0;
+}
+
+section.quote-page li article > figure {
+    margin: 0;
+}
+
+section.quote-page li article > footer {
+    opacity: 1;
+}
+
+/*
+ ------------------------------------------------
+ Focused list mode (toggled by JS via .focused / body.quotes-focused)
+
+ The is-active li is in normal flow → the browser sees its height →
+ body scrolls when a quote is taller than the viewport.
+
+ The is-leaving li is position:absolute (overlay) → it takes zero layout
+ space so the page height is never inflated by the outgoing quote → the
+ fade/scale animation plays over the incoming quote without clipping.
+
+ Inactive li are display:none.
+ ------------------------------------------------
+ */
+
+/* Provides the containing block for the absolute leaving overlay. */
+section.quote-page.focused > ul {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+    min-height: auto;
+    margin: 0;
+}
+
+/* Inactive items take zero space and are invisible. */
+section.quote-page.focused > ul > li {
+    display: none;
+}
+
+/* Active/entering item is in normal flow — its height drives body scroll. */
+section.quote-page.focused > ul > li.is-active {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Leaving item overlays the incoming quote while it fades out.
+   position:absolute removes it from flow so it never adds to page height. */
+section.quote-page.focused > ul > li.is-leaving-forward,
+section.quote-page.focused > ul > li.is-leaving-backward {
+    display: flex;
+    position: absolute;
+    inset: 0;
+    flex-direction: column;
+    align-items: center;
+}
+
+section.quote-page.focused > ul > li article {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 600px;
+    margin: 0;
+    padding: 40px 0;
+}
+
+section.quote-page.focused > ul > li article > figure {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+section.quote-page.focused > ul > li article > footer {
+    margin-top: auto;
+}
+
+/*
+ ------------------------------------------------
+ Animations: fade on li, scale-tunnel on figure.
+
+ Active/entering li fades in. Leaving li fades out via absolute overlay.
+ Scale on figure is direction-aware; figure is inside li which has
+ overflow:visible so the 1.2× scale can extend beyond the li/section
+ bounds without clipping.
+ ------------------------------------------------
+ */
+
+@keyframes quote-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes quote-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+
+section.quote-page.focused > ul > li.is-leaving-forward,
+section.quote-page.focused > ul > li.is-leaving-backward {
+    animation: quote-fade-out 0.45s ease forwards;
+}
+section.quote-page.focused > ul > li.is-entering-forward,
+section.quote-page.focused > ul > li.is-entering-backward {
+    animation: quote-fade-in 0.45s ease forwards;
+}
+
+@keyframes quote-figure-leave-forward  { from { transform: scale(1);   } to { transform: scale(0.8); } }
+@keyframes quote-figure-enter-forward  { from { transform: scale(1.2); } to { transform: scale(1);   } }
+@keyframes quote-figure-leave-backward { from { transform: scale(1);   } to { transform: scale(1.2); } }
+@keyframes quote-figure-enter-backward { from { transform: scale(0.8); } to { transform: scale(1);   } }
+
+section.quote-page.focused > ul > li.is-leaving-forward  figure { animation: quote-figure-leave-forward  0.45s ease forwards; }
+section.quote-page.focused > ul > li.is-entering-forward figure { animation: quote-figure-enter-forward  0.45s ease forwards; }
+section.quote-page.focused > ul > li.is-leaving-backward figure { animation: quote-figure-leave-backward 0.45s ease forwards; }
+section.quote-page.focused > ul > li.is-entering-backward figure { animation: quote-figure-enter-backward 0.45s ease forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+    section.quote-page.focused > ul > li.is-leaving-forward,
+    section.quote-page.focused > ul > li.is-leaving-backward,
+    section.quote-page.focused > ul > li.is-entering-forward,
+    section.quote-page.focused > ul > li.is-entering-backward,
+    section.quote-page.focused > ul > li.is-leaving-forward  figure,
+    section.quote-page.focused > ul > li.is-leaving-backward figure,
+    section.quote-page.focused > ul > li.is-entering-forward figure,
+    section.quote-page.focused > ul > li.is-entering-backward figure {
+        animation: none;
+    }
+}
+
+/*
+ ------------------------------------------------
+ Focused mode: hide the page toolbar (language picker) to maximise
+ reading space. The section nav (search + layout toggle) stays visible.
+ ------------------------------------------------
+ */
+
+body.quotes-focused #toolbar {
+    display: none;
+}
+
+/*
+ ------------------------------------------------
+ Immersion mode: after 2s of cursor inactivity,
+ page chrome fades out leaving only the quote.
+ Cursor movement fades chrome back in.
+ Scroll does NOT reveal chrome (no wheel handler in QuoteImmersionController).
+ Applied on the focused list and random page; never on the collapsed list.
+ ------------------------------------------------
+ */
+
+/* Share button sits inline below the citation, centered. */
+section.quote-page article .quote-share {
+    display: block;
+    margin: 0.5em auto 0;
+    opacity: 0.5;
+}
+section.quote-page article .quote-share:hover,
+section.quote-page article .quote-share.active {
+    opacity: 1;
+}
+
+/* The tmbr signature logo (main > a) intentionally stays visible in
+   immersion mode — only the nav and page chrome fade. */
+nav.site-navigation,
+section.quote-page > h1,
+section.quote-page > nav,
+section.quote-page article .quote-share,
+#footer {
+    transition: opacity 0.6s ease;
+}
+
+body.quotes-immersive nav.site-navigation,
+body.quotes-immersive section.quote-page > h1,
+body.quotes-immersive section.quote-page > nav,
+body.quotes-immersive section.quote-page article .quote-share,
+body.quotes-immersive #footer {
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    nav.site-navigation,
+    section.quote-page > h1,
+    section.quote-page > nav,
+    section.quote-page article .quote-share,
+    #footer {
+        transition: none;
+    }
+}
