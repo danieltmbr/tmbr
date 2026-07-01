@@ -44,7 +44,19 @@ public struct Page: Sendable {
             }
         }
     }
-    
+
+    /// Adds `Cache-Control: no-store` to the response, preventing bfcache.
+    /// Required on all editor pages so that pressing Back triggers a fresh load
+    /// and `clearIfPending` can clear the localStorage draft.
+    public func noStore() -> Page {
+        Page { request in
+            let encodable = try await self.assembler(request)
+            let response = try await encodable.encodeResponse(for: request)
+            response.headers.replaceOrAdd(name: .cacheControl, value: "no-store")
+            return response
+        }
+    }
+
     func response(for request: Request) async throws -> AsyncResponseEncodable {
         try await assembler(request)
     }

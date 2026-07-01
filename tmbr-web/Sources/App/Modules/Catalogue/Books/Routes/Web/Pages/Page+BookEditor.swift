@@ -124,6 +124,7 @@ extension Page {
             req.session.data["csrf.editor"] = csrf
             return BookEditorViewModel(pageTitle: "New book", submit: submit, csrf: csrf)
         }
+        .noStore()
     }
 
     static var editBook: Self {
@@ -142,6 +143,7 @@ extension Page {
                 csrf: csrf
             )
         }
+        .noStore()
     }
 }
 

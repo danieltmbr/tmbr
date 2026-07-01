@@ -77,6 +77,27 @@ async function parseErrorResponse(response) {
 }
 ```
 
+### bfcache and editor pages
+
+Browsers use the Back/Forward Cache (bfcache) on HTTPS pages. When a user navigates away and presses Back, the page is restored from bfcache — scripts do not re-run, `DOMContentLoaded` does not fire. This breaks any pattern that defers work to "the next page load."
+
+**Rule:** any page that relies on a deferred side-effect on load (e.g. `clearIfPending` for localStorage drafts, CSRF token refresh) must opt out of bfcache.
+
+Use `Page.noStore()` when registering the route:
+
+```swift
+static var editSong: Self {
+    Page(template: .songEditor) { req in ... }
+        .noStore()  // prevents bfcache; Back triggers a real reload
+}
+```
+
+This adds `Cache-Control: no-store` to the response. All editor pages already carry this. Apply it to any new page that reads or mutates client-side state on load.
+
+Note: `Cache-Control: no-store` on the *editor* page (the GET response the user navigates *away from*) is what matters — not on the destination redirect after form submission.
+
+---
+
 ### Testing Invariants
 
 Apply these to every new web feature. When adding a route, ask which categories it falls into and write a test for each.

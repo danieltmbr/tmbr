@@ -52,5 +52,6 @@ extension Page {
             request.session.data["csrf.image-editor"] = model._csrf
             return model
         }
+        .noStore()
     }
 }

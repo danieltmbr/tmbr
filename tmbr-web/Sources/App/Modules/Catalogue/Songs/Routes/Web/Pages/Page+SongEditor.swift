@@ -132,8 +132,9 @@ extension Page {
             req.session.data["csrf.editor"] = csrf
             return SongEditorViewModel(pageTitle: "New song", submit: submit, csrf: csrf)
         }
+        .noStore()
     }
-    
+
     static var editSong: Self {
         Page(template: .songEditor) { request in
             guard let songID = request.parameters.get("songID", as: Int.self) else {
@@ -150,5 +151,6 @@ extension Page {
                 csrf: csrf
             )
         }
+        .noStore()
     }
 }

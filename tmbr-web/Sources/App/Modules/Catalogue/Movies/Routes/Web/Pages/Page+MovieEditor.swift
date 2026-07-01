@@ -124,6 +124,7 @@ extension Page {
             req.session.data["csrf.editor"] = csrf
             return MovieEditorViewModel(pageTitle: "New movie", submit: submit, csrf: csrf)
         }
+        .noStore()
     }
 
     static var editMovie: Self {
@@ -142,6 +143,7 @@ extension Page {
                 csrf: csrf
             )
         }
+        .noStore()
     }
 }
 

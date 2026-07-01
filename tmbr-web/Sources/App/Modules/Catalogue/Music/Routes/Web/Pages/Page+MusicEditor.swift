@@ -38,5 +38,6 @@ extension Page {
                 submit: Form.Submit(action: "/songs/new", label: "Save")
             )
         }
+        .noStore()
     }
 }

@@ -132,6 +132,7 @@ extension Page {
             req.session.data["csrf.editor"] = csrf
             return AlbumEditorViewModel(pageTitle: "New album", submit: submit, csrf: csrf)
         }
+        .noStore()
     }
 
     static var editAlbum: Self {
@@ -155,5 +156,6 @@ extension Page {
                 csrf: csrf
             )
         }
+        .noStore()
     }
 }
