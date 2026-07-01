@@ -44,5 +44,4 @@ let package = Package(
 var swiftSettings: [SwiftSetting] { [
     .enableUpcomingFeature("DisableOutwardActorInference"),
     .enableExperimentalFeature("StrictConcurrency"),
-    .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
 ] }
