@@ -1,10 +1,10 @@
-// swift-tools-version:6.2
+// swift-tools-version: 6.1
 import PackageDescription
 
 let package = Package(
     name: "web-auth",
     platforms: [
-       .macOS(.v26)
+       .macOS(.v15)
     ],
     products: [
         .library(name: "WebAuth", targets: ["WebAuth"]),
