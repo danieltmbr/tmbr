@@ -17,10 +17,22 @@ struct QuoteExtractor: MarkupWalker {
         isInsideQuote = true
         descendInto(blockQuote)
         if !currentQuote.isEmpty {
-            quotes.append(currentQuote)
+            quotes.append(wrapAsBlockquote(currentQuote))
             currentQuote = ""
         }
         isInsideQuote = false
+    }
+
+    /// Converts extracted body text to valid blockquote markdown by prefixing every
+    /// line with `> ` (blank paragraph-separator lines become bare `>`).
+    ///
+    /// Storing `Quote.body` as blockquote markdown means `CitationMarkdownFormatter`
+    /// processes it in its natural context — cite spans and line breaks are rendered
+    /// correctly without needing special round-trip encoding.
+    private func wrapAsBlockquote(_ body: String) -> String {
+        body.components(separatedBy: "\n")
+            .map { $0.isEmpty ? ">" : "> \($0)" }
+            .joined(separator: "\n")
     }
 
     /// Separates paragraphs within a blockquote with a blank line so the stored
@@ -52,15 +64,13 @@ struct QuoteExtractor: MarkupWalker {
 
     mutating func visitLineBreak(_ lineBreak: LineBreak) -> () {
         guard isInsideQuote else { return }
-        // Store as a CommonMark hard break so re-parsing yields a LineBreak node,
-        // which HTMLFormatter renders as <br /> rather than a collapsible whitespace.
         currentQuote.append("\\\n")
     }
 
     mutating func visitSoftBreak(_ softBreak: SoftBreak) -> () {
         guard isInsideQuote else { return }
-        // Same as visitLineBreak — promote soft breaks to hard breaks so the
-        // stored body renders with <br /> rather than a space in HTML.
+        // Promote soft breaks to hard breaks so consecutive > lines render as
+        // <br /> rather than a browser-collapsed space after wrapAsBlockquote.
         currentQuote.append("\\\n")
     }
     
