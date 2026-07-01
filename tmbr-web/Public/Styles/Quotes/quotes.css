@@ -235,6 +235,10 @@ body.quotes-focused #toolbar {
     display: none;
 }
 
+nav button#layout-toggle {
+    margin: 0 8px;
+}
+
 /*
  ------------------------------------------------
  Immersion mode: after 2s of cursor inactivity,

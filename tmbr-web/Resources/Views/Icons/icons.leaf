@@ -19,6 +19,7 @@
 #if(item.icon == "podcast"):#extend("Icons/podcast")#endif
 #if(item.icon == "post"):#extend("Icons/post")#endif
 #if(item.icon == "recycle"):#extend("Icons/recycle")#endif
+#if(item.icon == "run"):#extend("Icons/run")#endif
 #if(item.icon == "search"):#extend("Icons/search")#endif
 #if(item.icon == "share"):#extend("Icons/share")#endif
 #if(item.icon == "shuffle"):#extend("Icons/shuffle")#endif
