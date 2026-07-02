@@ -49,6 +49,7 @@ public struct CatalogueFilterView: View {
                         }
                     }
                 }
+                .buttonStyle(.plain)
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
             }
