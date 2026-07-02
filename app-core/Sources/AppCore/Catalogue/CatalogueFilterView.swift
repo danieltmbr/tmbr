@@ -55,7 +55,11 @@ public struct CatalogueFilterView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
         }
+        #if os(iOS)
         .presentationDetents([.medium])
         .presentationBackground(.ultraThinMaterial)
+        #else
+        .frame(minWidth: 280, minHeight: 300)
+        #endif
     }
 }

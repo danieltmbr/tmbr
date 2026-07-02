@@ -66,6 +66,9 @@ struct CatalogueTab: View {
                     Button { showFilter = true } label: {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
+                    .popover(isPresented: $showFilter) {
+                        CatalogueFilterView(selectedTypes: $filterTypes)
+                    }
                 }
                 ToolbarItem(placement: .primaryAction) {
                     AuthoringButton(systemImage: "square.and.pencil") { showTypePicker = true }
@@ -79,9 +82,11 @@ struct CatalogueTab: View {
             .refreshable { await refreshCatalogue() }
         }
         .task { await refreshCatalogue() }
+        #if os(iOS)
         .sheet(isPresented: $showFilter) {
             CatalogueFilterView(selectedTypes: $filterTypes)
         }
+        #endif
         .sheet(isPresented: $showTypePicker) {
             MediaTypePickerSheet { type in
                 selectedType = type
