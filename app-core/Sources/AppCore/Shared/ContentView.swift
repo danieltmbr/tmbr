@@ -17,6 +17,9 @@ public struct ContentView: View {
             Tab("Catalogue", systemImage: "square.grid.2x2") {
                 CatalogueTab()
             }
+            Tab("Quotes", systemImage: "quote.bubble") {
+                QuotesTab()
+            }
 #if !os(macOS)
             Tab(role: .search) {
                 SearchTab()
