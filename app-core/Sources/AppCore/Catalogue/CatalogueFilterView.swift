@@ -31,19 +31,21 @@ public struct CatalogueFilterView: View {
             .padding(.horizontal)
             .padding(.vertical, 12)
 
-            VStack(spacing: 0) {
-                ForEach(CatalogueItemType.allCases) { type in
-                    row(for: type)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 7)
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(CatalogueItemType.allCases) { type in
+                        row(for: type)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                    }
                 }
             }
         }
         #if os(iOS)
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
         .presentationBackground(.ultraThinMaterial)
         #else
-        .frame(minWidth: 200)
+        .frame(minWidth: 200, maxHeight: 400)
         #endif
     }
 
