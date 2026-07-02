@@ -79,8 +79,8 @@ struct CatalogueTab: View {
             .refreshable { await refreshCatalogue() }
         }
         .task { await refreshCatalogue() }
-        .sheet(isPresented: $showFilter) {
-            CatalogueFilterSheet(selectedTypes: $filterTypes)
+        .popover(isPresented: $showFilter) {
+            CatalogueFilterView(selectedTypes: $filterTypes)
         }
         .sheet(isPresented: $showTypePicker) {
             MediaTypePickerSheet { type in

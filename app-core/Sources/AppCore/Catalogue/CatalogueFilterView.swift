@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct CatalogueFilterSheet: View {
+public struct CatalogueFilterView: View {
     @Binding var selectedTypes: Set<CatalogueItemType>
     @Environment(\.dismiss) private var dismiss
 
@@ -48,6 +48,7 @@ public struct CatalogueFilterSheet: View {
                 }
             }
         }
+        .presentationDetents([.medium])
         .frame(minWidth: 320, minHeight: 380)
     }
 }
