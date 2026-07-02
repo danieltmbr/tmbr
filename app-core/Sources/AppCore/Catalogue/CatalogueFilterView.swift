@@ -40,6 +40,7 @@ public struct CatalogueFilterView: View {
                 .listRowBackground(Color.clear)
             }
             .scrollContentBackground(.hidden)
+            .contentMargins(.top, 0, for: .scrollContent)
             .navigationTitle("Filter")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
