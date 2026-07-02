@@ -31,7 +31,6 @@ public struct CatalogueFilterView: View {
             .padding(.horizontal)
             .padding(.vertical, 12)
 
-            #if os(macOS)
             VStack(spacing: 0) {
                 ForEach(CatalogueItemType.allCases) { type in
                     row(for: type)
@@ -39,15 +38,6 @@ public struct CatalogueFilterView: View {
                         .padding(.vertical, 7)
                 }
             }
-            #else
-            List(CatalogueItemType.allCases) { type in
-                row(for: type)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-            }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            #endif
         }
         #if os(iOS)
         .presentationDetents([.medium])
