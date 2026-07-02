@@ -1,21 +1,18 @@
 import SwiftUI
 import SwiftData
 import AppPersistence
+import TmbrCore
 
 /// Adaptively shows "Select All" or "Deselect All" based on whether every filterable category
 /// is currently selected. Uses .override strategy so it replaces the selection in one tap.
 struct CatalogueSelectAllButton: View {
 
-    private static let virtual = CatalogueCategoryKind.virtual.rawValue
-    private static let promotable = CatalogueCategoryKind.promotable.rawValue
+    @Query
+    private var allCategories: [CatalogueCategoryRecord]
 
-    @Query(
-        filter: #Predicate<CatalogueCategoryRecord> {
-            $0.kindRaw != CatalogueSelectAllButton.virtual &&
-            $0.kindRaw != CatalogueSelectAllButton.promotable
-        }
-    )
-    private var categories: [CatalogueCategoryRecord]
+    private var categories: [CatalogueCategoryRecord] {
+        allCategories.filter { $0.kind != .virtual && $0.kind != .promotable }
+    }
 
     @Catalogue(\.selectedCategorySlugs)
     private var selectedSlugs

@@ -5,17 +5,12 @@ import AppPersistence
 /// Displays all filterable catalogue categories (excludes virtual groupings and promotable placeholders).
 struct CatalogueCategoriesList: View {
 
-    private static let virtual = CatalogueCategoryKind.virtual.rawValue
-    private static let promotable = CatalogueCategoryKind.promotable.rawValue
+    @Query(sort: \.name)
+    private var allCategories: [CatalogueCategoryRecord]
 
-    @Query(
-        filter: #Predicate<CatalogueCategoryRecord> {
-            $0.kindRaw != CatalogueCategoriesList.virtual &&
-            $0.kindRaw != CatalogueCategoriesList.promotable
-        },
-        sort: \.name
-    )
-    private var categories: [CatalogueCategoryRecord]
+    private var categories: [CatalogueCategoryRecord] {
+        allCategories.filter { $0.kind != .virtual && $0.kind != .promotable }
+    }
 
     var body: some View {
         #if os(iOS)
