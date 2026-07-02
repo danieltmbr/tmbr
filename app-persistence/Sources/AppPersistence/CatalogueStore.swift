@@ -144,6 +144,34 @@ public struct CatalogueStore {
         try context.save()
     }
 
+    /// Full-replaces the catalogue category lookup table from the server's authoritative list.
+    ///
+    /// Upserts each incoming category by `slug` (the natural key); deletes any locally-stored
+    /// category whose slug is absent from the server response. The server list is small and
+    /// complete, so full-replace is safe and avoids delta-cursor complexity.
+    public func replaceCategories(_ responses: [CategoryResponse]) throws {
+        var bySlug: [String: CatalogueCategoryRecord] = [:]
+        for record in try context.fetch(FetchDescriptor<CatalogueCategoryRecord>()) {
+            bySlug[record.slug] = record
+        }
+        let incomingSlugs = Set(responses.map(\.slug))
+        // Delete categories no longer on the server.
+        for (slug, record) in bySlug where !incomingSlugs.contains(slug) {
+            context.delete(record)
+        }
+        // Upsert incoming categories.
+        for response in responses {
+            let record = bySlug[response.slug] ?? {
+                let new = CatalogueCategoryRecord()
+                context.insert(new)
+                bySlug[response.slug] = new
+                return new
+            }()
+            record.update(from: response)
+        }
+        try context.save()
+    }
+
     /// Upserts orphan items (`PreviewResponse` is their complete data; `?notes=true` embeds notes).
     public func upsertOrphans(_ responses: [PreviewResponse]) throws {
         var previews = try previewsByID()

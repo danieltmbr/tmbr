@@ -146,6 +146,20 @@ public extension QuoteRecord {
     }
 }
 
+public extension CatalogueCategoryRecord {
+    /// Overwrites this record's fields from a server `CategoryResponse` (a synced pull).
+    func update(from response: CategoryResponse) {
+        serverID = response.id
+        slug = response.slug
+        name = response.name
+        kind = response.kind
+        route = response.route
+        icon = response.icon
+        parentSlug = response.parentSlug
+        syncState = .synced
+    }
+}
+
 public extension ContainerEntryRecord {
     /// Overwrites this entry's fields from a `TrackItem`. Denormalises the title and URLs so
     /// the track list renders standalone without requiring the member's `PreviewRecord` to be cached.

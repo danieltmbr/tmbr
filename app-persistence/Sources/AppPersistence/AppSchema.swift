@@ -11,6 +11,7 @@ import TmbrCore
 public enum AppSchema {
 
     public static let models: [any PersistentModel.Type] = [
+        CatalogueCategoryRecord.self,
         PreviewRecord.self,
         SongRecord.self,
         AlbumRecord.self,
