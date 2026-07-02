@@ -11,8 +11,9 @@ public typealias MoviesLoader    = RequestLoader<PageQuery, PageResult<MovieResp
 public typealias PodcastsLoader  = RequestLoader<PageQuery, PageResult<PodcastResponse>>
 public typealias PlaylistsLoader = RequestLoader<PageQuery, PageResult<PlaylistResponse>>
 public typealias PostsLoader     = RequestLoader<PageQuery, PageResult<PostResponse>>
-public typealias OrphansLoader   = RequestLoader<OrphanPageQuery, PageResult<PreviewResponse>>
-public typealias DeletionsLoader = RequestLoader<SinceQuery, [DeletionRecord]>
+public typealias OrphansLoader    = RequestLoader<OrphanPageQuery, PageResult<PreviewResponse>>
+public typealias CategoriesLoader = RequestLoader<Void, [CategoryResponse]>
+public typealias DeletionsLoader  = RequestLoader<SinceQuery, [DeletionRecord]>
 
 // Unauthenticated loader factories — for public endpoints (Reader app).
 // Drive with `.load(from:)` and a plain `PageQuery` / `OrphanPageQuery`.
@@ -65,6 +66,12 @@ public extension OrphansLoader {
     }
 }
 
+public extension CategoriesLoader {
+    static func categories(baseURL: URL, session: URLSession = .shared) -> Self {
+        CategoriesLoader(request: CategoriesRequest.categoryQuery(baseURL: baseURL), session: session)
+    }
+}
+
 // Ready-to-use, auth-refreshing loader factories — drive with `.syncAll(since:)` or `.load(from:)`, e.g.
 //
 //     let songs = try await SongsLoader.songs(baseURL: url, auth: auth).syncAll(since: lastSync)
@@ -114,6 +121,12 @@ public extension PostsLoader {
 public extension OrphansLoader {
     static func orphans(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
         OrphansLoader(request: OrphansRequest.orphanQuery(baseURL: baseURL), session: session, auth: auth)
+    }
+}
+
+public extension CategoriesLoader {
+    static func categories(baseURL: URL, session: URLSession = .shared, auth: AuthProvider) -> Self {
+        CategoriesLoader(request: CategoriesRequest.categoryQuery(baseURL: baseURL), session: session, auth: auth)
     }
 }
 

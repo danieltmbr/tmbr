@@ -16,6 +16,8 @@ public struct PostResponse: Codable, Sendable {
 
     public let publishedAt: Date?
 
+    public let quotes: [QuoteResponse]
+
     public let state: PostState
 
     public let title: String
@@ -28,6 +30,7 @@ public struct PostResponse: Codable, Sendable {
         createdAt: Date,
         language: Language,
         publishedAt: Date?,
+        quotes: [QuoteResponse],
         state: PostState,
         title: String
     ) {
@@ -38,6 +41,7 @@ public struct PostResponse: Codable, Sendable {
         self.createdAt = createdAt
         self.language = language
         self.publishedAt = publishedAt
+        self.quotes = quotes
         self.state = state
         self.title = title
     }

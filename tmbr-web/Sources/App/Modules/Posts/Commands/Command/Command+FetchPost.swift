@@ -54,6 +54,7 @@ struct FetchPostCommand: Command {
         }
         try await permission.grant((post, params.reason))
         try await post.$attachment.load(on: database)
+        try await post.$quotes.load(on: database)
         return post
     }
 }

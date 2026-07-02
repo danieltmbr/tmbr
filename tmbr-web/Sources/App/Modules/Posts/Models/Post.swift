@@ -37,6 +37,9 @@ final class Post: Model, Content, @unchecked Sendable {
     @Field(key: "title")
     var title: String
 
+    @Children(for: \.$post)
+    private(set) var quotes: [Quote]
+
     init() {}
 
     init(

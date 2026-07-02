@@ -24,6 +24,9 @@ struct CatalogueAPIController: RouteCollection {
         // GET /api/catalogue/orphans — paginated orphan items for native app sync
         catalogue.get("orphans", use: listOrphans)
 
+        // GET /api/catalogue/categories — full structured category list for native app sync
+        catalogue.get("categories", use: listCategories)
+
         let quotes = catalogue.grouped("quotes")
         quotes.get(use: quoteList)
         quotes.get("search", use: quoteSearch)
@@ -102,6 +105,12 @@ struct CatalogueAPIController: RouteCollection {
     }
 
     // MARK: - Catalogue list handlers
+
+    @Sendable
+    private func listCategories(request: Request) async throws -> [CategoryResponse] {
+        let categories = try await request.commands.catalogueCategories.list()
+        return try categories.map { try CategoryResponse(category: $0) }
+    }
 
     @Sendable
     private func listOrphans(request: Request) async throws -> PageResult<PreviewResponse> {

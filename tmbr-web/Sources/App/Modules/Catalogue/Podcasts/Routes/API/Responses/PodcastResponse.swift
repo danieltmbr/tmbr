@@ -10,7 +10,7 @@ extension PodcastResponse {
         baseURL: String,
         notes: [Note],
         platform: Platform<PodcastMetadata> = .podcast
-    ) {
+    ) throws {
         self.init(
             id: podcast.id!,
             access: podcast.access,
@@ -21,7 +21,7 @@ extension PodcastResponse {
             notes: notes.map { NoteResponse(note: $0, baseURL: baseURL) },
             owner: UserResponse(user: podcast.owner),
             preview: PreviewResponse(preview: podcast.preview, baseURL: baseURL),
-            post: podcast.post.map { PostResponse(post: $0, baseURL: baseURL) },
+            post: try podcast.post.map { try PostResponse(post: $0, baseURL: baseURL) },
             releaseDate: podcast.releaseDate,
             resources: podcast.resourceURLs.compactMap(platform.hyperlink),
             seasonNumber: podcast.seasonNumber,

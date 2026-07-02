@@ -10,7 +10,7 @@ extension SongResponse {
         notes: [Note],
         baseURL: String,
         platform: Platform<SongMetadata> = .song
-    ) {
+    ) throws {
         self.init(
             id: song.id!,
             access: song.access,
@@ -21,7 +21,7 @@ extension SongResponse {
             notes: notes.map { NoteResponse(note: $0, baseURL: baseURL) },
             owner: UserResponse(user: song.owner),
             preview: PreviewResponse(preview: song.preview, baseURL: baseURL),
-            post: song.post.map { PostResponse(post: $0, baseURL: baseURL) },
+            post: try song.post.map { try PostResponse(post: $0, baseURL: baseURL) },
             releaseDate: song.releaseDate,
             resources: song.resourceURLs.compactMap(platform.hyperlink),
             title: song.title

@@ -19,8 +19,8 @@ struct PostsAPIController: RouteCollection {
             let page = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
             let posts = try await req.commands.posts.list(ListPostsInput(query: PostQueryPayload(term: nil), page: page))
             let baseURL = req.baseURL
-            return PageResult(from: posts, limit: page.limit) { post in
-                PostResponse(post: post, baseURL: baseURL)
+            return try PageResult(from: posts, limit: page.limit) { post in
+                try PostResponse(post: post, baseURL: baseURL)
             }
         }
         

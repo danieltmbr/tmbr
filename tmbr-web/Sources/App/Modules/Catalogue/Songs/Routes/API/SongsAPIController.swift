@@ -25,8 +25,8 @@ struct SongsAPIController: RouteCollection {
             let previewIDs = songs.map { $0.$preview.id }
             let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
             let baseURL = request.baseURL
-            return PageResult(from: songs, limit: input.limit) { song in
-                SongResponse(song: song, notes: notesByPreviewID[song.$preview.id] ?? [], baseURL: baseURL)
+            return try PageResult(from: songs, limit: input.limit) { song in
+                try SongResponse(song: song, notes: notesByPreviewID[song.$preview.id] ?? [], baseURL: baseURL)
             }
         }
 
@@ -71,7 +71,7 @@ struct SongsAPIController: RouteCollection {
                     )
                 }
                 let notes = try await notesInput.map(commands.notes.batchCreate)
-                return SongResponse(
+                return try SongResponse(
                     song: song,
                     notes: notes ?? [],
                     baseURL: request.baseURL
@@ -101,10 +101,10 @@ struct SongsAPIController: RouteCollection {
                 try await song.preview.$image.load(on: request.commandDB)
                 try await song.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: songID, of: Song.previewType)
-                return SongResponse(song: song, notes: notes, baseURL: request.baseURL)
+                return try SongResponse(song: song, notes: notes, baseURL: request.baseURL)
             }
         }
-        
+
         // DELETE /api/songs/:songID
         songsRoute.delete(":songID") { req async throws -> HTTPStatus in
             guard let songID = req.parameters.get("songID", as: Int.self) else {
@@ -125,7 +125,7 @@ struct SongsAPIController: RouteCollection {
             try await song.preview.$image.load(on: request.commandDB)
             try await song.preview.$catalogueCategory.load(on: request.commandDB)
             let notes = try await request.commands.notes.query(id: song.id!, of: Song.previewType)
-            return SongResponse(song: song, notes: notes, baseURL: request.baseURL)
+            return try SongResponse(song: song, notes: notes, baseURL: request.baseURL)
         }
 
         // POST /api/songs/:songID/notes

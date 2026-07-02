@@ -17,7 +17,7 @@ extension MovieResponse: CatalogueItemResponse {}
 extension PodcastResponse: CatalogueItemResponse {}
 extension PlaylistResponse: CatalogueItemResponse {}
 
-/// A persistence façade for the unified catalogue (previews, per-type records, and notes).
+/// A persistence façade for the unified catalogue (previews, per-type records, notes, and quotes).
 ///
 /// Wraps a SwiftData `ModelContext`. Folding `context.save()` into each call keeps callers
 /// free of dual-step save boilerplate.
@@ -35,9 +35,10 @@ public struct CatalogueStore {
     public func upsert(_ responses: [SongResponse]) throws {
         var previews = try previewsByID()
         var notes = try notesByPreview()
+        var quotes = try quotesByNoteServerID()
         var typed = try typedIndex(SongRecord.self, key: \.previewID)
         for r in responses {
-            guard let pid = upsertItem(r, into: &previews, notes: &notes) else { continue }
+            guard let pid = upsertItem(r, into: &previews, notes: &notes, quotes: &quotes) else { continue }
             let record = typed[pid] ?? {
                 let new = SongRecord(previewID: pid)
                 context.insert(new)
@@ -52,10 +53,11 @@ public struct CatalogueStore {
     public func upsert(_ responses: [AlbumResponse]) throws {
         var previews = try previewsByID()
         var notes = try notesByPreview()
+        var quotes = try quotesByNoteServerID()
         var typed = try typedIndex(AlbumRecord.self, key: \.previewID)
         var containers = try containerEntriesByKey()
         for r in responses {
-            guard let pid = upsertItem(r, into: &previews, notes: &notes) else { continue }
+            guard let pid = upsertItem(r, into: &previews, notes: &notes, quotes: &quotes) else { continue }
             let record = typed[pid] ?? {
                 let new = AlbumRecord(previewID: pid)
                 context.insert(new)
@@ -71,9 +73,10 @@ public struct CatalogueStore {
     public func upsert(_ responses: [BookResponse]) throws {
         var previews = try previewsByID()
         var notes = try notesByPreview()
+        var quotes = try quotesByNoteServerID()
         var typed = try typedIndex(BookRecord.self, key: \.previewID)
         for r in responses {
-            guard let pid = upsertItem(r, into: &previews, notes: &notes) else { continue }
+            guard let pid = upsertItem(r, into: &previews, notes: &notes, quotes: &quotes) else { continue }
             let record = typed[pid] ?? {
                 let new = BookRecord(previewID: pid)
                 context.insert(new)
@@ -88,9 +91,10 @@ public struct CatalogueStore {
     public func upsert(_ responses: [MovieResponse]) throws {
         var previews = try previewsByID()
         var notes = try notesByPreview()
+        var quotes = try quotesByNoteServerID()
         var typed = try typedIndex(MovieRecord.self, key: \.previewID)
         for r in responses {
-            guard let pid = upsertItem(r, into: &previews, notes: &notes) else { continue }
+            guard let pid = upsertItem(r, into: &previews, notes: &notes, quotes: &quotes) else { continue }
             let record = typed[pid] ?? {
                 let new = MovieRecord(previewID: pid)
                 context.insert(new)
@@ -105,9 +109,10 @@ public struct CatalogueStore {
     public func upsert(_ responses: [PodcastResponse]) throws {
         var previews = try previewsByID()
         var notes = try notesByPreview()
+        var quotes = try quotesByNoteServerID()
         var typed = try typedIndex(PodcastRecord.self, key: \.previewID)
         for r in responses {
-            guard let pid = upsertItem(r, into: &previews, notes: &notes) else { continue }
+            guard let pid = upsertItem(r, into: &previews, notes: &notes, quotes: &quotes) else { continue }
             let record = typed[pid] ?? {
                 let new = PodcastRecord(previewID: pid)
                 context.insert(new)
@@ -122,10 +127,11 @@ public struct CatalogueStore {
     public func upsert(_ responses: [PlaylistResponse]) throws {
         var previews = try previewsByID()
         var notes = try notesByPreview()
+        var quotes = try quotesByNoteServerID()
         var typed = try typedIndex(PlaylistRecord.self, key: \.previewID)
         var containers = try containerEntriesByKey()
         for r in responses {
-            guard let pid = upsertItem(r, into: &previews, notes: &notes) else { continue }
+            guard let pid = upsertItem(r, into: &previews, notes: &notes, quotes: &quotes) else { continue }
             let record = typed[pid] ?? {
                 let new = PlaylistRecord(previewID: pid)
                 context.insert(new)
@@ -138,13 +144,42 @@ public struct CatalogueStore {
         try context.save()
     }
 
+    /// Full-replaces the catalogue category lookup table from the server's authoritative list.
+    ///
+    /// Upserts each incoming category by `slug` (the natural key); deletes any locally-stored
+    /// category whose slug is absent from the server response. The server list is small and
+    /// complete, so full-replace is safe and avoids delta-cursor complexity.
+    public func replaceCategories(_ responses: [CategoryResponse]) throws {
+        var bySlug: [String: CatalogueCategoryRecord] = [:]
+        for record in try context.fetch(FetchDescriptor<CatalogueCategoryRecord>()) {
+            bySlug[record.slug] = record
+        }
+        let incomingSlugs = Set(responses.map(\.slug))
+        // Delete categories no longer on the server.
+        for (slug, record) in bySlug where !incomingSlugs.contains(slug) {
+            context.delete(record)
+        }
+        // Upsert incoming categories.
+        for response in responses {
+            let record = bySlug[response.slug] ?? {
+                let new = CatalogueCategoryRecord()
+                context.insert(new)
+                bySlug[response.slug] = new
+                return new
+            }()
+            record.update(from: response)
+        }
+        try context.save()
+    }
+
     /// Upserts orphan items (`PreviewResponse` is their complete data; `?notes=true` embeds notes).
     public func upsertOrphans(_ responses: [PreviewResponse]) throws {
         var previews = try previewsByID()
         var notes = try notesByPreview()
+        var quotes = try quotesByNoteServerID()
         for r in responses {
             guard upsertPreview(r, access: .public, into: &previews) != nil else { continue }
-            reconcileNotes(r.notes ?? [], for: r, into: &notes)
+            reconcileNotes(r.notes ?? [], for: r, into: &notes, quotes: &quotes)
         }
         try context.save()
     }
@@ -161,6 +196,14 @@ public struct CatalogueStore {
         var index: [UUID: [NoteRecord]] = [:]
         for note in try context.fetch(FetchDescriptor<NoteRecord>()) {
             if let pid = note.attachmentPreviewID { index[pid, default: []].append(note) }
+        }
+        return index
+    }
+
+    private func quotesByNoteServerID() throws -> [UUID: [QuoteRecord]] {
+        var index: [UUID: [QuoteRecord]] = [:]
+        for quote in try context.fetch(FetchDescriptor<QuoteRecord>()) {
+            if let nid = quote.noteServerID { index[nid, default: []].append(quote) }
         }
         return index
     }
@@ -198,22 +241,27 @@ public struct CatalogueStore {
     }
 
     /// Item-level note reconcile: upsert embedded notes by `serverID`; drop this item's `.synced`
-    /// notes absent from the incoming array (server-side deletes); preserve locally-pending notes.
+    /// notes absent from the incoming array (server-side blockquote removals); preserve
+    /// locally-pending notes. Cascades `QuoteRecord` deletion when a note is removed.
     private func reconcileNotes(
         _ notes: [NoteResponse],
         for preview: PreviewResponse,
-        into byPreview: inout [UUID: [NoteRecord]]
+        into byPreview: inout [UUID: [NoteRecord]],
+        quotes byNote: inout [UUID: [QuoteRecord]]
     ) {
         guard let previewID = preview.id else { return }
         let incomingIDs = Set(notes.map(\.id))
         var current = byPreview[previewID] ?? []
 
         current.removeAll { note in
-            if note.syncState == .synced, let sid = note.serverID, !incomingIDs.contains(sid) {
-                context.delete(note)
-                return true
+            guard note.syncState == .synced, let sid = note.serverID, !incomingIDs.contains(sid) else {
+                return false
             }
-            return false
+            // Cascade: delete this note's quotes before deleting the note.
+            byNote[sid]?.forEach { context.delete($0) }
+            byNote.removeValue(forKey: sid)
+            context.delete(note)
+            return true
         }
 
         for note in notes {
@@ -224,9 +272,41 @@ public struct CatalogueStore {
                 return new
             }()
             record.update(from: note, preview: preview)
+            reconcileQuotes(note.quotes, forNoteServerID: note.id, into: &byNote)
         }
 
         byPreview[previewID] = current
+    }
+
+    /// Quote reconcile for a single note: upsert embedded quotes by `serverID`; delete `.synced`
+    /// quotes absent from the incoming array (blockquote removed from note body).
+    private func reconcileQuotes(
+        _ quotes: [QuoteResponse],
+        forNoteServerID noteID: NoteID,
+        into byNote: inout [UUID: [QuoteRecord]]
+    ) {
+        let incomingIDs = Set(quotes.map(\.id))
+        var current = byNote[noteID] ?? []
+
+        current.removeAll { quote in
+            if quote.syncState == .synced, !incomingIDs.contains(quote.serverID) {
+                context.delete(quote)
+                return true
+            }
+            return false
+        }
+
+        for quote in quotes {
+            let record = current.first { $0.serverID == quote.id } ?? {
+                let new = QuoteRecord()
+                context.insert(new)
+                current.append(new)
+                return new
+            }()
+            record.update(from: quote)
+        }
+
+        byNote[noteID] = current
     }
 
     /// Track reconcile: mirrors `reconcileNotes` but for `ContainerEntryRecord`s within an album
@@ -267,10 +347,11 @@ public struct CatalogueStore {
     private func upsertItem<R: CatalogueItemResponse>(
         _ response: R,
         into previews: inout [UUID: PreviewRecord],
-        notes: inout [UUID: [NoteRecord]]
+        notes: inout [UUID: [NoteRecord]],
+        quotes: inout [UUID: [QuoteRecord]]
     ) -> UUID? {
         guard let pid = upsertPreview(response.preview, access: response.access, into: &previews) else { return nil }
-        reconcileNotes(response.notes, for: response.preview, into: &notes)
+        reconcileNotes(response.notes, for: response.preview, into: &notes, quotes: &quotes)
         return pid
     }
 }

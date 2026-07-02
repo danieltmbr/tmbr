@@ -25,8 +25,8 @@ struct PodcastsAPIController: RouteCollection {
             let previewIDs = podcasts.map { $0.$preview.id }
             let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
             let baseURL = request.baseURL
-            return PageResult(from: podcasts, limit: input.limit) { podcast in
-                PodcastResponse(podcast: podcast, baseURL: baseURL, notes: notesByPreviewID[podcast.$preview.id] ?? [])
+            return try PageResult(from: podcasts, limit: input.limit) { podcast in
+                try PodcastResponse(podcast: podcast, baseURL: baseURL, notes: notesByPreviewID[podcast.$preview.id] ?? [])
             }
         }
 
@@ -53,7 +53,7 @@ struct PodcastsAPIController: RouteCollection {
             }
             async let podcast = request.commands.podcasts.fetch(podcastID, for: .read)
             async let notes = request.commands.notes.query(id: podcastID, of: Podcast.previewType)
-            return PodcastResponse(
+            return try PodcastResponse(
                 podcast: try await podcast,
                 baseURL: request.baseURL,
                 notes: try await notes
@@ -76,7 +76,7 @@ struct PodcastsAPIController: RouteCollection {
                     )
                 }
                 let notes = try await notesInput.map(commands.notes.batchCreate)
-                return PodcastResponse(
+                return try PodcastResponse(
                     podcast: podcast,
                     baseURL: request.baseURL,
                     notes: notes ?? []
@@ -106,7 +106,7 @@ struct PodcastsAPIController: RouteCollection {
                 try await podcast.preview.$image.load(on: request.commandDB)
                 try await podcast.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: podcastID, of: Podcast.previewType)
-                return PodcastResponse(podcast: podcast, baseURL: request.baseURL, notes: notes)
+                return try PodcastResponse(podcast: podcast, baseURL: request.baseURL, notes: notes)
             }
         }
 

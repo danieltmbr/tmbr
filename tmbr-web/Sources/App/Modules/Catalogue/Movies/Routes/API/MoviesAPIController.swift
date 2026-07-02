@@ -25,8 +25,8 @@ struct MoviesAPIController: RouteCollection {
             let previewIDs = movies.map { $0.$preview.id }
             let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
             let baseURL = request.baseURL
-            return PageResult(from: movies, limit: input.limit) { movie in
-                MovieResponse(movie: movie, baseURL: baseURL, notes: notesByPreviewID[movie.$preview.id] ?? [])
+            return try PageResult(from: movies, limit: input.limit) { movie in
+                try MovieResponse(movie: movie, baseURL: baseURL, notes: notesByPreviewID[movie.$preview.id] ?? [])
             }
         }
 
@@ -48,7 +48,7 @@ struct MoviesAPIController: RouteCollection {
             }
             async let movie = request.commands.movies.fetch(movieID, for: .read)
             async let notes = request.commands.notes.query(id: movieID, of: Movie.previewType)
-            return MovieResponse(
+            return try MovieResponse(
                 movie: try await movie,
                 baseURL: request.baseURL,
                 notes: try await notes
@@ -71,7 +71,7 @@ struct MoviesAPIController: RouteCollection {
                     )
                 }
                 let notes = try await notesInput.map(commands.notes.batchCreate)
-                return MovieResponse(
+                return try MovieResponse(
                     movie: movie,
                     baseURL: request.baseURL,
                     notes: notes ?? []
@@ -101,7 +101,7 @@ struct MoviesAPIController: RouteCollection {
                 try await movie.preview.$image.load(on: request.commandDB)
                 try await movie.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: movieID, of: Movie.previewType)
-                return MovieResponse(movie: movie, baseURL: request.baseURL, notes: notes)
+                return try MovieResponse(movie: movie, baseURL: request.baseURL, notes: notes)
             }
         }
 

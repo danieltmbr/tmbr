@@ -48,6 +48,12 @@ public extension Request where Self == OrphansRequest {
     static func orphanQuery(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/catalogue/orphans") }
 }
 
+/// Full structured category list — non-paginated; the set is small and server-authoritative.
+public typealias CategoriesRequest = BasicRequest<Void, [CategoryResponse]>
+public extension Request where Self == CategoriesRequest {
+    static func categoryQuery(baseURL: URL) -> Self { .get(baseURL: baseURL, path: "api/catalogue/categories") }
+}
+
 /// Deletion tombstones — sparse, unpaginated; always queried since the last sync.
 public typealias DeletionsRequest = BasicRequest<SinceQuery, [DeletionRecord]>
 public extension Request where Self == DeletionsRequest {

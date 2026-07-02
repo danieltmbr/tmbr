@@ -10,7 +10,7 @@ extension BookResponse {
         baseURL: String,
         notes: [Note],
         platform: Platform<BookMetadata> = .book
-    ) {
+    ) throws {
         self.init(
             id: book.id!,
             access: book.access,
@@ -20,7 +20,7 @@ extension BookResponse {
             notes: notes.map { NoteResponse(note: $0, baseURL: baseURL) },
             owner: UserResponse(user: book.owner),
             preview: PreviewResponse(preview: book.preview, baseURL: baseURL),
-            post: book.post.map { PostResponse(post: $0, baseURL: baseURL) },
+            post: try book.post.map { try PostResponse(post: $0, baseURL: baseURL) },
             releaseDate: book.releaseDate,
             resources: book.resourceURLs.compactMap(platform.hyperlink),
             title: book.title

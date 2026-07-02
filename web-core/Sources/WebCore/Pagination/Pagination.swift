@@ -26,11 +26,11 @@ private let iso8601Formatter = ISO8601DateFormatter()
 public extension PageResult {
     /// Builds a paginated response from raw query results fetched with `limit + 1`.
     /// Trims to `limit`, sets `nextCursor` from the last item's `createdAt` if more exist.
-    init<M: Timestamped>(from models: [M], limit: Int, mapping: (M) -> T) {
+    init<M: Timestamped>(from models: [M], limit: Int, mapping: (M) throws -> T) rethrows {
         let trimmed = Array(models.prefix(limit))
         let nextCursor = models.count > limit
             ? trimmed.last.map { iso8601Formatter.string(from: $0.createdAt) }
             : nil
-        self.init(items: trimmed.map(mapping), nextCursor: nextCursor)
+        self.init(items: try trimmed.map(mapping), nextCursor: nextCursor)
     }
 }

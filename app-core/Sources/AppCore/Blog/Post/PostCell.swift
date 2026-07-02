@@ -14,7 +14,7 @@ struct PostCell: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                 Text(date.formatted(.publishDate))
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
         } else {
@@ -22,7 +22,7 @@ struct PostCell: View {
                 Text(title)
                 Spacer()
                 Text(date.formatted(.publishDate))
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }

@@ -10,7 +10,7 @@ extension PlaylistResponse {
         trackPreviews: [Preview] = [],
         baseURL: String,
         platform: Platform<PlaylistMetadata> = .playlist
-    ) {
+    ) throws {
         self.init(
             id: playlist.id!,
             access: playlist.access,
@@ -19,7 +19,7 @@ extension PlaylistResponse {
             notes: notes.map { NoteResponse(note: $0, baseURL: baseURL) },
             owner: UserResponse(user: playlist.owner),
             preview: PreviewResponse(preview: playlist.preview, baseURL: baseURL),
-            post: playlist.post.map { PostResponse(post: $0, baseURL: baseURL) },
+            post: try playlist.post.map { try PostResponse(post: $0, baseURL: baseURL) },
             resources: playlist.resourceURLs.compactMap(platform.hyperlink),
             title: playlist.title,
             tracks: trackPreviews.enumerated().compactMap { index, preview in
