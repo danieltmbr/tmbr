@@ -28,6 +28,8 @@ public struct CatalogueFilterView: View {
                         }
                     }
                 }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
             }
             .listStyle(.plain)
             .navigationTitle("Filter")
