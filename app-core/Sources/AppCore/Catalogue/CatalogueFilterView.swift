@@ -53,6 +53,7 @@ public struct CatalogueFilterView: View {
                 .listRowBackground(Color.clear)
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
         .presentationDetents([.medium])
         .presentationBackground(.ultraThinMaterial)
