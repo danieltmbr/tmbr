@@ -972,7 +972,9 @@ p.published-date {
 
 @media screen and (max-width: 600px) {
     main {
-        padding: calc(env(safe-area-inset-top) + 20px) 1.2em 20px 1.2em;
+        /* top padding matches toolbar height (~52px = 17px icon + 2×16px margin)
+           to prevent the absolute-positioned toolbar from overlapping the site navigation */
+        padding: calc(env(safe-area-inset-top) + 52px) 1.2em 20px 1.2em;
     }
     
     main > section > ul.counted > a > li {
