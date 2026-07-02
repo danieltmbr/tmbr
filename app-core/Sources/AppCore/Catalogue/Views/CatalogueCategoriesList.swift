@@ -5,7 +5,7 @@ import AppPersistence
 /// Displays all filterable catalogue categories (excludes virtual groupings and promotable placeholders).
 struct CatalogueCategoriesList: View {
 
-    @Query(sort: \.name)
+    @Query(sort: \CatalogueCategoryRecord.name)
     private var allCategories: [CatalogueCategoryRecord]
 
     private var categories: [CatalogueCategoryRecord] {
