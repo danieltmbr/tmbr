@@ -31,36 +31,51 @@ public struct CatalogueFilterView: View {
             .padding(.horizontal)
             .padding(.vertical, 12)
 
-            List(CatalogueItemType.allCases) { type in
-                Button {
-                    if selectedTypes.contains(type) {
-                        selectedTypes.remove(type)
-                    } else {
-                        selectedTypes.insert(type)
-                    }
-                } label: {
-                    HStack {
-                        Label(type.label, systemImage: type.systemImage)
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        if selectedTypes.contains(type) {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(.tint)
-                        }
-                    }
+            #if os(macOS)
+            VStack(spacing: 0) {
+                ForEach(CatalogueItemType.allCases) { type in
+                    row(for: type)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
                 }
-                .buttonStyle(.plain)
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
+            }
+            #else
+            List(CatalogueItemType.allCases) { type in
+                row(for: type)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            #endif
         }
         #if os(iOS)
         .presentationDetents([.medium])
         .presentationBackground(.ultraThinMaterial)
         #else
-        .frame(minWidth: 280, minHeight: 300)
+        .frame(minWidth: 200)
         #endif
+    }
+
+    @ViewBuilder
+    private func row(for type: CatalogueItemType) -> some View {
+        Button {
+            if selectedTypes.contains(type) {
+                selectedTypes.remove(type)
+            } else {
+                selectedTypes.insert(type)
+            }
+        } label: {
+            HStack {
+                Label(type.label, systemImage: type.systemImage)
+                    .foregroundStyle(.primary)
+                Spacer()
+                if selectedTypes.contains(type) {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.tint)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
