@@ -12,7 +12,53 @@ public struct CatalogueFilterView: View {
         selectedTypes.count == CatalogueItemType.allCases.count
     }
 
+    private func toggle(_ type: CatalogueItemType) {
+        if selectedTypes.contains(type) {
+            selectedTypes.remove(type)
+        } else {
+            selectedTypes.insert(type)
+        }
+    }
+
     public var body: some View {
+        #if os(iOS)
+        NavigationStack {
+            List(CatalogueItemType.allCases) { type in
+                Button { toggle(type) } label: {
+                    HStack {
+                        Label(type.label, systemImage: type.systemImage)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        if selectedTypes.contains(type) {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.tint)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(Color.clear)
+            }
+            .scrollContentBackground(.hidden)
+            .navigationTitle("Filter")
+            .toolbarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(allSelected ? "Deselect All" : "Select All") {
+                        if allSelected {
+                            selectedTypes.removeAll()
+                        } else {
+                            selectedTypes = Set(CatalogueItemType.allCases)
+                        }
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        #else
         VStack(spacing: 0) {
             HStack {
                 Button(allSelected ? "Deselect All" : "Select All") {
@@ -34,40 +80,26 @@ public struct CatalogueFilterView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     ForEach(CatalogueItemType.allCases) { type in
-                        row(for: type)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 7)
+                        Button { toggle(type) } label: {
+                            HStack {
+                                Label(type.label, systemImage: type.systemImage)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                if selectedTypes.contains(type) {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(.tint)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
                     }
                 }
             }
         }
-        #if os(iOS)
-        .presentationDetents([.medium, .large])
-        #else
         .frame(minWidth: 200, maxHeight: 400)
         #endif
-    }
-
-    @ViewBuilder
-    private func row(for type: CatalogueItemType) -> some View {
-        Button {
-            if selectedTypes.contains(type) {
-                selectedTypes.remove(type)
-            } else {
-                selectedTypes.insert(type)
-            }
-        } label: {
-            HStack {
-                Label(type.label, systemImage: type.systemImage)
-                    .foregroundStyle(.primary)
-                Spacer()
-                if selectedTypes.contains(type) {
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(.tint)
-                }
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 }
