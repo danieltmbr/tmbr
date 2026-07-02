@@ -8,8 +8,29 @@ public struct CatalogueFilterView: View {
         self._selectedTypes = selectedTypes
     }
 
+    private var allSelected: Bool {
+        selectedTypes.count == CatalogueItemType.allCases.count
+    }
+
     public var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            HStack {
+                Button(allSelected ? "Deselect All" : "Select All") {
+                    if allSelected {
+                        selectedTypes.removeAll()
+                    } else {
+                        selectedTypes = Set(CatalogueItemType.allCases)
+                    }
+                }
+                Spacer()
+                Text("Filter")
+                    .font(.headline)
+                Spacer()
+                Button("Done") { dismiss() }
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+
             List(CatalogueItemType.allCases) { type in
                 Button {
                     if selectedTypes.contains(type) {
@@ -32,25 +53,8 @@ public struct CatalogueFilterView: View {
                 .listRowBackground(Color.clear)
             }
             .listStyle(.plain)
-            .navigationTitle("Filter")
-            .toolbarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    let allSelected = selectedTypes.count == CatalogueItemType.allCases.count
-                    Button(allSelected ? "Deselect All" : "Select All") {
-                        if allSelected {
-                            selectedTypes.removeAll()
-                        } else {
-                            selectedTypes = Set(CatalogueItemType.allCases)
-                        }
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
         }
         .presentationDetents([.medium])
-        .frame(minWidth: 320, minHeight: 380)
+        .presentationBackground(.ultraThinMaterial)
     }
 }

@@ -57,9 +57,6 @@ struct CatalogueTab: View {
                     Button { showFilter = true } label: {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
-                    .popover(isPresented: $showFilter) {
-                        CatalogueFilterView(selectedTypes: $filterTypes)
-                    }
                 }
                 ToolbarItem(placement: .topBarLeading) {
                     AuthoringButton(systemImage: "square.and.pencil") { showTypePicker = true }
@@ -68,9 +65,6 @@ struct CatalogueTab: View {
                 ToolbarItem(placement: .automatic) {
                     Button { showFilter = true } label: {
                         Image(systemName: "line.3.horizontal.decrease")
-                    }
-                    .popover(isPresented: $showFilter) {
-                        CatalogueFilterView(selectedTypes: $filterTypes)
                     }
                 }
                 ToolbarItem(placement: .primaryAction) {
@@ -85,6 +79,9 @@ struct CatalogueTab: View {
             .refreshable { await refreshCatalogue() }
         }
         .task { await refreshCatalogue() }
+        .sheet(isPresented: $showFilter) {
+            CatalogueFilterView(selectedTypes: $filterTypes)
+        }
         .sheet(isPresented: $showTypePicker) {
             MediaTypePickerSheet { type in
                 selectedType = type
