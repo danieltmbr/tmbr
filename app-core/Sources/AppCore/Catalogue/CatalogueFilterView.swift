@@ -75,6 +75,7 @@ public struct CatalogueFilterView: View {
                         .foregroundStyle(.tint)
                 }
             }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
