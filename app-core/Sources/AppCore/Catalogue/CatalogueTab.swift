@@ -8,20 +8,21 @@ struct CatalogueTab: View {
 
     @Environment(\.refreshCatalogue)
     private var refreshCatalogue
-    
+
     @Environment(\.canAuthor)
     private var canAuthor
+
+    @Catalogue(\.selectedCategorySlugs)
+    private var selectedCategorySlugs
 
     @State private var showFilter = false
     @State private var showTypePicker = false
     @State private var selectedType: CatalogueItemType?
     @State private var showEditor = false
-    @State private var filterTypes: Set<CatalogueItemType> = []
 
     private var items: [PreviewRecord] {
-        guard !filterTypes.isEmpty else { return allItems }
-        let raw = Set(filterTypes.map(\.rawValue))
-        return allItems.filter { raw.contains($0.categoryType) }
+        guard !selectedCategorySlugs.isEmpty else { return allItems }
+        return allItems.filter { selectedCategorySlugs.contains($0.categoryType) }
     }
 
     var body: some View {
@@ -66,6 +67,9 @@ struct CatalogueTab: View {
                     Button { showFilter = true } label: {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
+                    .popover(isPresented: $showFilter) {
+                        CatalogueFilterView()
+                    }
                 }
                 ToolbarItem(placement: .primaryAction) {
                     AuthoringButton(systemImage: "square.and.pencil") { showTypePicker = true }
@@ -79,9 +83,11 @@ struct CatalogueTab: View {
             .refreshable { await refreshCatalogue() }
         }
         .task { await refreshCatalogue() }
+        #if os(iOS)
         .sheet(isPresented: $showFilter) {
-            CatalogueFilterSheet(selectedTypes: $filterTypes)
+            CatalogueFilterView()
         }
+        #endif
         .sheet(isPresented: $showTypePicker) {
             MediaTypePickerSheet { type in
                 selectedType = type
