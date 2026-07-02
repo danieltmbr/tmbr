@@ -33,8 +33,8 @@ struct AlbumsAPIController: RouteCollection {
             }
             let resolvedNotes = try await notesByPreviewID
             let baseURL = request.baseURL
-            return PageResult(from: albums, limit: input.limit) { album in
-                AlbumResponse(
+            return try PageResult(from: albums, limit: input.limit) { album in
+                try AlbumResponse(
                     album: album,
                     notes: resolvedNotes[album.$preview.id] ?? [],
                     trackPreviews: album.id.flatMap { tracksByAlbumID[$0] } ?? [],
@@ -86,7 +86,7 @@ struct AlbumsAPIController: RouteCollection {
                     )
                 }
                 let notes = try await notesInput.map(commands.notes.batchCreate)
-                return AlbumResponse(
+                return try AlbumResponse(
                     album: album,
                     notes: notes ?? [],
                     baseURL: request.baseURL
@@ -116,7 +116,7 @@ struct AlbumsAPIController: RouteCollection {
                 try await album.preview.$image.load(on: request.commandDB)
                 try await album.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: albumID, of: Album.previewType)
-                return AlbumResponse(album: album, notes: notes, baseURL: request.baseURL)
+                return try AlbumResponse(album: album, notes: notes, baseURL: request.baseURL)
             }
         }
 

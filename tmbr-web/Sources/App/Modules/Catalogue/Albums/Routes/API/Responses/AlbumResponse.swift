@@ -11,7 +11,7 @@ extension AlbumResponse {
         trackPreviews: [Preview] = [],
         baseURL: String,
         platform: Platform<AlbumMetadata> = .album
-    ) {
+    ) throws {
         self.init(
             id: album.id!,
             access: album.access,
@@ -21,7 +21,7 @@ extension AlbumResponse {
             notes: notes.map { NoteResponse(note: $0, baseURL: baseURL) },
             owner: UserResponse(user: album.owner),
             preview: PreviewResponse(preview: album.preview, baseURL: baseURL),
-            post: album.post.map { PostResponse(post: $0, baseURL: baseURL) },
+            post: try album.post.map { try PostResponse(post: $0, baseURL: baseURL) },
             releaseDate: album.releaseDate,
             resources: album.resourceURLs.compactMap(platform.hyperlink),
             title: album.title,

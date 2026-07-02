@@ -10,7 +10,7 @@ extension MovieResponse {
         baseURL: String,
         notes: [Note],
         platform: Platform<MovieMetadata> = .movie
-    ) {
+    ) throws {
         self.init(
             id: movie.id!,
             access: movie.access,
@@ -20,7 +20,7 @@ extension MovieResponse {
             notes: notes.map { NoteResponse(note: $0, baseURL: baseURL) },
             owner: UserResponse(user: movie.owner),
             preview: PreviewResponse(preview: movie.preview, baseURL: baseURL),
-            post: movie.post.map { PostResponse(post: $0, baseURL: baseURL) },
+            post: try movie.post.map { try PostResponse(post: $0, baseURL: baseURL) },
             releaseDate: movie.releaseDate,
             resources: movie.resourceURLs.compactMap(platform.hyperlink),
             title: movie.title

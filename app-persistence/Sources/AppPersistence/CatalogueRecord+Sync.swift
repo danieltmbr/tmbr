@@ -122,6 +122,30 @@ public extension PlaylistRecord {
     }
 }
 
+public extension QuoteRecord {
+    /// Overwrites this record from a server `QuoteResponse` (a synced pull).
+    func update(from response: QuoteResponse) {
+        serverID = response.id
+        body = response.body
+        createdAt = response.createdAt
+        switch response.source.kind {
+        case .note:
+            if let noteID = response.source.noteID {
+                source = .note(noteID)
+            }
+        case .post:
+            if let postID = response.source.postID {
+                source = .post(postID)
+            }
+        }
+        sourceTitle = response.source.title
+        sourceSubtitle = response.source.subtitle
+        sourceType = response.source.type
+        sourcePreviewID = response.source.preview?.id
+        syncState = .synced
+    }
+}
+
 public extension ContainerEntryRecord {
     /// Overwrites this entry's fields from a `TrackItem`. Denormalises the title and URLs so
     /// the track list renders standalone without requiring the member's `PreviewRecord` to be cached.

@@ -25,8 +25,8 @@ struct BooksAPIController: RouteCollection {
             let previewIDs = books.map { $0.$preview.id }
             let notesByPreviewID = try await request.commands.notes.grouped(previewIDs)
             let baseURL = request.baseURL
-            return PageResult(from: books, limit: input.limit) { book in
-                BookResponse(book: book, baseURL: baseURL, notes: notesByPreviewID[book.$preview.id] ?? [])
+            return try PageResult(from: books, limit: input.limit) { book in
+                try BookResponse(book: book, baseURL: baseURL, notes: notesByPreviewID[book.$preview.id] ?? [])
             }
         }
 
@@ -48,7 +48,7 @@ struct BooksAPIController: RouteCollection {
             }
             async let book = request.commands.books.fetch(bookID, for: .read)
             async let notes = request.commands.notes.query(id: bookID, of: Book.previewType)
-            return BookResponse(
+            return try BookResponse(
                 book: try await book,
                 baseURL: request.baseURL,
                 notes: try await notes
@@ -71,7 +71,7 @@ struct BooksAPIController: RouteCollection {
                     )
                 }
                 let notes = try await notesInput.map(commands.notes.batchCreate)
-                return BookResponse(
+                return try BookResponse(
                     book: book,
                     baseURL: request.baseURL,
                     notes: notes ?? []
@@ -101,7 +101,7 @@ struct BooksAPIController: RouteCollection {
                 try await book.preview.$image.load(on: request.commandDB)
                 try await book.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: bookID, of: Book.previewType)
-                return BookResponse(book: book, baseURL: request.baseURL, notes: notes)
+                return try BookResponse(book: book, baseURL: request.baseURL, notes: notes)
             }
         }
 

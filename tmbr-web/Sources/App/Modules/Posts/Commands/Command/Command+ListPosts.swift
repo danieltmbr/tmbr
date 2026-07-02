@@ -24,6 +24,7 @@ extension Command where Self == PlainCommand<ListPostsInput, [Post]> {
                     .sort(\.$createdAt, .descending)
                     .with(\.$author)
                     .with(\.$attachment) { attachment in attachment.with(\.$image) }
+                    .with(\.$quotes)
                 query.page(page)
                 return try await query.all()
             }

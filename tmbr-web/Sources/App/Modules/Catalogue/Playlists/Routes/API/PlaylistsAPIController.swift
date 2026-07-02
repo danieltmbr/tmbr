@@ -26,8 +26,8 @@ struct PlaylistsAPIController: RouteCollection {
             }
             let resolvedNotes = try await notesByPreviewID
             let baseURL = request.baseURL
-            return PageResult(from: playlists, limit: input.limit) { playlist in
-                PlaylistResponse(
+            return try PageResult(from: playlists, limit: input.limit) { playlist in
+                try PlaylistResponse(
                     playlist: playlist,
                     notes: resolvedNotes[playlist.$preview.id] ?? [],
                     trackPreviews: playlist.id.flatMap { tracksByPlaylistID[$0] } ?? [],
@@ -68,7 +68,7 @@ struct PlaylistsAPIController: RouteCollection {
                     )
                 }
                 let notes = try await notesInput.map(commands.notes.batchCreate)
-                return PlaylistResponse(
+                return try PlaylistResponse(
                     playlist: playlist,
                     notes: notes ?? [],
                     baseURL: request.baseURL
@@ -98,7 +98,7 @@ struct PlaylistsAPIController: RouteCollection {
                 try await playlist.preview.$image.load(on: request.commandDB)
                 try await playlist.preview.$catalogueCategory.load(on: request.commandDB)
                 let notes = try await commands.notes.query(id: playlistID, of: Playlist.previewType)
-                return PlaylistResponse(playlist: playlist, notes: notes, baseURL: request.baseURL)
+                return try PlaylistResponse(playlist: playlist, notes: notes, baseURL: request.baseURL)
             }
         }
 
