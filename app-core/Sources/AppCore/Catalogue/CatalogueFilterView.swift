@@ -43,7 +43,6 @@ public struct CatalogueFilterView: View {
         }
         #if os(iOS)
         .presentationDetents([.medium, .large])
-        .presentationBackground(.clear)
         #else
         .frame(minWidth: 200, maxHeight: 400)
         #endif
