@@ -5,5 +5,6 @@ public extension View {
     func catalogue(_ model: CatalogueModel) -> some View {
         environment(model)
             .environment(\.refreshCatalogue, CatalogueRefreshAction(model: model))
+            .environment(\.selectCategories, SelectCategoriesAction(model: model))
     }
 }

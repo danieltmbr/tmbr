@@ -18,6 +18,9 @@ public final class CatalogueModel {
     /// When the last successful refresh completed.
     public private(set) var lastFetched: Date?
 
+    /// Slugs of the categories currently active in the filter. Empty = no filter (show all).
+    public var selectedCategorySlugs: Set<String> = []
+
     // MARK: - Dependencies
 
     private let _refresh: @Sendable () async throws -> Void
