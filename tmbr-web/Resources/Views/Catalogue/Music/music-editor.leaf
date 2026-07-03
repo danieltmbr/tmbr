@@ -138,7 +138,7 @@
     #export("editor-image-picker"):
     <figure id="artwork-placeholder" class="image-picker empty">
         <img id="artwork-image" src="" alt="Artwork" />
-        <span>#extend("Icons/gallery")</span>
+        <span>#extend("Icons/photo-on-rectangle-angled")</span>
         <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
     </figure>
     #endexport

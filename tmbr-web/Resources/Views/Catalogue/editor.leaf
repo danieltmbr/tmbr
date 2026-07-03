@@ -54,7 +54,7 @@
     <aside id="gallery" hidden>
         <div id="gallery-header">
             <button class="icon small" type="button" id="gallery-close" aria-label="Close">
-                #extend("Icons/close")
+                #extend("Icons/xmark")
             </button>
             <h4 id="gallery-title">Gallery</h4>
             <span id="gallery-status" class="system-info"></span>

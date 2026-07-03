@@ -3,11 +3,11 @@
         #if(compose):
             #if(compose.directURL):
                 <a id="compose" class="icon" href="#(compose.directURL)" aria-label="Compose">
-                    #extend("Icons/pencil")
+                    #extend("Icons/square-and-pencil")
                 </a>
             #else:
                 <button id="compose" class="icon" type="button" aria-label="Compose">
-                    #extend("Icons/pencil")
+                    #extend("Icons/square-and-pencil")
                 </button>
             #endif
         #endif

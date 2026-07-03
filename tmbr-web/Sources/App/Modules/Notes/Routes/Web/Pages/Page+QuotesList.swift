@@ -7,11 +7,13 @@ struct QuotesListViewModel: Encodable, Sendable {
     private let quotes: [QuoteItemViewModel]
     private let panels: [FilterPanelViewModel]
     private let term: String?
+    private let isFiltered: Bool
 
-    init(quotes: [QuoteResponse], panels: [FilterPanelViewModel], term: String?) {
+    init(quotes: [QuoteResponse], panels: [FilterPanelViewModel], term: String?, isFiltered: Bool) {
         self.quotes = quotes.map(QuoteItemViewModel.init)
         self.panels = panels
         self.term = term
+        self.isFiltered = isFiltered
     }
 }
 
@@ -40,10 +42,12 @@ extension Page {
                         value: cat.slug
                     ).check(payload.types?.contains(cat.slug) ?? true)
                 }
+            let isFiltered = payload.term != nil || payload.types != nil || payload.languages != nil
             return QuotesListViewModel(
                 quotes: responses,
                 panels: [.types(typeItems)],
-                term: payload.term
+                term: payload.term,
+                isFiltered: isFiltered
             )
         }
     }

@@ -3,7 +3,7 @@
     #export("toolbar"):
         #if(compose):
             <button id="compose" class="icon" type="button" aria-label="Compose">
-                #extend("Icons/pencil")
+                #extend("Icons/square-and-pencil")
             </button>
         #endif
     #endexport

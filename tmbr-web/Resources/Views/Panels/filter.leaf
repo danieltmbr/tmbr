@@ -1,6 +1,6 @@
 #for(panel in panels):
 <button id="#(panel.openButtonId)" class="icon" type="button" aria-label="#(panel.ariaLabel)">
-    #if(panel.icon == "filter"):#extend("Icons/filter")#endif
+    #if(panel.icon == "line.3.horizontal.decrease"):#extend("Icons/line-3-horizontal-decrease")#endif
     #if(panel.icon == "globe"):#extend("Icons/globe")#endif
 </button>
 

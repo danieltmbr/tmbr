@@ -1,5 +1,5 @@
 <button id="search-open" class="icon" type="button" aria-label="Search">
-    #extend("Icons/search")
+    #extend("Icons/magnifyingglass")
 </button>
 <form id="search-form" method="get">
     <input type="search" name="term" id="search-input" value="#(term)" autocomplete="off" placeholder="Search…">

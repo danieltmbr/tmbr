@@ -17,7 +17,7 @@
                         #unsafeHTML(quote.body)
                         #if(isShareable):
                             <button class="quote-share icon" type="button" aria-label="Share quote">
-                                #extend("Icons/share")
+                                #extend("Icons/square-and-arrow-up")
                             </button>
                         #endif
                     </figure>

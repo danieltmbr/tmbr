@@ -29,6 +29,7 @@ struct Previews: Module {
         app.migrations.add(MigrateCategoryIDToInteger())
         app.migrations.add(AddCollectionKindAndParentSlug())
         app.migrations.add(RenameCatalogueKinds())
+        app.migrations.add(RenameIconsToSFSymbols())
         app.databases.middleware.use(DeletionMiddleware<Preview>(
             deletionType: .catalogueItem,
             itemID: { $0.id?.uuidString },

@@ -3,8 +3,8 @@
         <input type="checkbox" id="notification-subscribed">
         <label for="notification-subscribed">
             Enable notifications
-            #extend("Icons/notification")
-            #extend("Icons/notification-off")
+            #extend("Icons/bell")
+            #extend("Icons/bell-slash")
         </label>
     </li>
     <li role="separator" class="notification-separator"></li>

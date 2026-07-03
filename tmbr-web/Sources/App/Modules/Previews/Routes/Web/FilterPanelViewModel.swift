@@ -14,7 +14,7 @@ extension FilterPanelViewModel {
     static func types(_ items: [FilterItemViewModel]) -> Self {
         Self(
             ariaLabel: "Filter",
-            icon: "filter",
+            icon: "line.3.horizontal.decrease",
             items: items,
             openButtonId: "filter-open",
             panelId: "filter-panel",

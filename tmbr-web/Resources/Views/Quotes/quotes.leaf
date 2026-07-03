@@ -14,8 +14,8 @@
             <nav>
                 #extend("Shared/search")
                 #if(panels):#extend("Panels/filter")#endif
-                <button id="layout-toggle" class="icon" type="button" aria-label="Toggle layout" hidden>
-                    #extend("Icons/layout")
+                <button id="layout-toggle" class="icon" type="button" aria-label="Toggle layout">
+                    #extend("Icons/rectangle-stack")
                 </button>
                 <a href="/quotes/random" class="icon" aria-label="Random quote">
                     #extend("Icons/shuffle")
@@ -29,7 +29,7 @@
                             <figure>
                                 #unsafeHTML(quote.body)
                                 <button class="quote-share icon" type="button" aria-label="Share quote">
-                                    #extend("Icons/share")
+                                    #extend("Icons/square-and-arrow-up")
                                 </button>
                             </figure>
                             <footer>
@@ -40,14 +40,12 @@
                 #endfor
                 </ul>
             #else:
-                <p>No quotes yet.</p>
+                <p>#if(isFiltered):No quotes match your filters.#else:No quotes yet.#endif</p>
             #endif
             <script>(function(){
                 var section=document.currentScript.closest('section');
                 var first=section&&section.querySelector(':scope>ul>li');
                 if(!first)return;
-                var toggle=document.getElementById('layout-toggle');
-                if(toggle)toggle.removeAttribute('hidden');
                 var hasSearch=new URLSearchParams(location.search).has('term');
                 if(hasSearch||localStorage.getItem('quotes-layout')==='list')return;
                 section.classList.add('focused');

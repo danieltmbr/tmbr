@@ -1,7 +1,7 @@
 <footer id="footer" class="invisible">
     <nav>
     <a href="#" role="button" id="notification-toggle" title="Notification preferences">
-        #extend("Icons/notification")
+        #extend("Icons/bell")
     </a>
     <!--
     <a href="https://www.threads.net/@danieltmbr" target="_blank" title="danieltmbr on Threads">
@@ -15,7 +15,7 @@
         #extend("Icons/github")
     </a>
     <a href="mailto:daniel@tmbr.me" title="Email me">
-        #extend("Icons/email")
+        #extend("Icons/envelope")
     </a>
     </nav>
 </footer>
