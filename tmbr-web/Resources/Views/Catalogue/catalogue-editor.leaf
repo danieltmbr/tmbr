@@ -69,7 +69,7 @@
 
                 <figure id="artwork-placeholder" class="image-picker #if(!artworkURL):empty#endif">
                     <img id="artwork-image" src="#(artworkURL)" alt="Artwork" />
-                    <span>#extend("Icons/photo.on.rectangle.angled")</span>
+                    <span>#extend("Icons/photo-on-rectangle-angled")</span>
                     <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
                 </figure>
             </div>

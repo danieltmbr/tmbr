@@ -6,7 +6,7 @@
 
     #export("main"):
     <button id="gallery-open" class="icon" type="button">
-        #extend("Icons/photo.on.rectangle.angled")
+        #extend("Icons/photo-on-rectangle-angled")
     </button>
 
     <form id="post-form" method="#(submit.method)" action="#(submit.action)">

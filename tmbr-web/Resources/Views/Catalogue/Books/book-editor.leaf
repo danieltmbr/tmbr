@@ -57,7 +57,7 @@
     #export("editor-image-picker"):
     <figure id="cover-placeholder" class="image-picker portrait #if(!coverThumbnailURL):empty#endif">
         <img id="cover-image" src="#(coverThumbnailURL)" alt="Cover" />
-        <span>#extend("Icons/photo.on.rectangle.angled")</span>
+        <span>#extend("Icons/photo-on-rectangle-angled")</span>
         <button id="cover-clear" type="button" class="icon">#extend("Icons/trash")</button>
     </figure>
     #endexport

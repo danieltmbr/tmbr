@@ -4,7 +4,7 @@
         <label for="notification-subscribed">
             Enable notifications
             #extend("Icons/bell")
-            #extend("Icons/bell.slash")
+            #extend("Icons/bell-slash")
         </label>
     </li>
     <li role="separator" class="notification-separator"></li>

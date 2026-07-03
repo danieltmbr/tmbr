@@ -23,6 +23,6 @@
             </label>
         </div>
     </div>
-    <button type="button" class="icon" aria-label="Edit note">#extend("Icons/square.and.pencil")</button>
+    <button type="button" class="icon" aria-label="Edit note">#extend("Icons/square-and-pencil")</button>
     #endif
 </article>

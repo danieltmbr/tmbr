@@ -2,7 +2,7 @@
     <header>
         <h3>Notes</h3>
         <button id="notes-gallery-open" class="icon" type="button" data-gallery-mode="notes">
-            #extend("Icons/photo.on.rectangle.angled")
+            #extend("Icons/photo-on-rectangle-angled")
         </button>
     </header>
     #for(note in notes):
@@ -31,7 +31,7 @@
                 </label>
                 <button type="button" class="note-toggle icon" aria-label="Delete note">
                     #extend("Icons/trash")
-                    #extend("Icons/arrow.3.trianglepath")
+                    #extend("Icons/arrow-3-trianglepath")
                 </button>
             </div>
         </div>

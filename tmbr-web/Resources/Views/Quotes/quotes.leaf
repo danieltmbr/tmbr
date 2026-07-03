@@ -15,7 +15,7 @@
                 #extend("Shared/search")
                 #if(panels):#extend("Panels/filter")#endif
                 <button id="layout-toggle" class="icon" type="button" aria-label="Toggle layout">
-                    #extend("Icons/rectangle.stack")
+                    #extend("Icons/rectangle-stack")
                 </button>
                 <a href="/quotes/random" class="icon" aria-label="Random quote">
                     #extend("Icons/shuffle")
@@ -29,7 +29,7 @@
                             <figure>
                                 #unsafeHTML(quote.body)
                                 <button class="quote-share icon" type="button" aria-label="Share quote">
-                                    #extend("Icons/square.and.arrow.up")
+                                    #extend("Icons/square-and-arrow-up")
                                 </button>
                             </figure>
                             <footer>
