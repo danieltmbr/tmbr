@@ -15,6 +15,7 @@ struct PersonalApp: App {
     // No-op refresh — Personal's data is CloudKit-mirrored (no fetch). Empty until the write path lands.
     let blog = BlogModel()
     let catalogue = CatalogueModel()
+    let quotes = QuotesModel()
     let preferences = PreferencesModel()
 
     init() {
@@ -30,6 +31,7 @@ struct PersonalApp: App {
             ContentView()
                 .blog(blog)
                 .catalogue(catalogue)
+                .quotes(quotes)
                 .preferences(preferences)
         }
         .modelContainer(container)

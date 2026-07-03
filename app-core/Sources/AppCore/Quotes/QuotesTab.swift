@@ -10,8 +10,8 @@ struct QuotesTab: View {
     @Environment(\.refreshBlog)
     private var refreshBlog
 
-    @Catalogue(\.selectedCategorySlugs)
-    private var selectedCategorySlugs
+    @Quotes(\.selectedSources)
+    private var selectedSources
 
     @Preferences(\.selectedLanguages)
     private var selectedLanguages
@@ -22,7 +22,7 @@ struct QuotesTab: View {
     var body: some View {
         NavigationStack {
             QuotesList(
-                selectedCategorySlugs: selectedCategorySlugs,
+                selectedSources: selectedSources,
                 selectedLanguages: selectedLanguages,
                 showRandom: $showRandom
             )
@@ -45,7 +45,7 @@ struct QuotesTab: View {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
                     .popover(isPresented: $showFilter) {
-                        CatalogueFilterView()
+                        QuotesFilterView()
                     }
                 }
                 ToolbarItem(placement: .automatic) {
@@ -65,7 +65,7 @@ struct QuotesTab: View {
         }
 #if os(iOS)
         .sheet(isPresented: $showFilter) {
-            CatalogueFilterView()
+            QuotesFilterView()
         }
 #endif
     }
@@ -83,9 +83,9 @@ private struct QuotesList: View {
 
     @Binding private var showRandom: Bool
 
-    init(selectedCategorySlugs: Set<String>, selectedLanguages: Set<Language>, showRandom: Binding<Bool>) {
+    init(selectedSources: Set<String>, selectedLanguages: Set<Language>, showRandom: Binding<Bool>) {
         _quotes = Query(
-            filter: QuoteRecord.list(categorySlugs: selectedCategorySlugs, languages: selectedLanguages),
+            filter: QuoteRecord.list(sources: selectedSources, languages: selectedLanguages),
             sort: \QuoteRecord.createdAt,
             order: .reverse
         )

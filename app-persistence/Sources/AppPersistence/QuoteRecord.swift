@@ -87,11 +87,16 @@ public extension QuoteRecord {
         set { languageRaw = newValue?.rawValue ?? "" }
     }
 
-    static func list(categorySlugs: Set<String>, languages: Set<Language>) -> Predicate<QuoteRecord> {
-        let slugs = Array(categorySlugs)
+    /// Sentinel source bucket for quotes originating from a blog post (nil `sourceType`).
+    /// Guaranteed not to collide with real category slugs because slugs are short plain words.
+    static let blogPostsSource = "__blog_posts__"
+
+    static func list(sources: Set<String>, languages: Set<Language>) -> Predicate<QuoteRecord> {
+        let sourcesArray = Array(sources)
         let codes = languages.map(\.rawValue)
+        let blogSentinel = blogPostsSource
         return #Predicate<QuoteRecord> { quote in
-            (slugs.isEmpty || slugs.contains(quote.sourceType ?? "")) &&
+            (sourcesArray.isEmpty || sourcesArray.contains(quote.sourceType ?? blogSentinel)) &&
             (codes.isEmpty || quote.languageRaw.isEmpty || codes.contains(quote.languageRaw))
         }
     }

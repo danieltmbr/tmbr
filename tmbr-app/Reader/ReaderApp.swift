@@ -13,9 +13,8 @@ struct ReaderApp: App {
     private let container: ModelContainer
 
     private let blog: BlogModel
-    
     private let catalogue: CatalogueModel
-    
+    private let quotes = QuotesModel()
     private let preferences = PreferencesModel()
 
     init() {
@@ -50,6 +49,7 @@ struct ReaderApp: App {
             ContentView()
                 .blog(blog)
                 .catalogue(catalogue)
+                .quotes(quotes)
                 .preferences(preferences)
                 .environment(\.apiBaseURL, Self.apiBaseURL)
         }
