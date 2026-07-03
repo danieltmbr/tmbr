@@ -47,7 +47,7 @@ public final class QuoteRecord {
 
     /// Language of the source note or post, populated at sync time.
     /// Empty string until the first sync (empty = unknown = always visible in language filter).
-    var languageRaw: String = ""
+    public var languageRaw: String = ""
 
     var syncStateRaw: String = SyncState.synced.rawValue
 

@@ -20,7 +20,7 @@ public final class PostRecord {
 
     var stateRaw: String = ""
 
-    var languageRaw: String = ""
+    public var languageRaw: String = ""
 
     public var createdAt: Date = Date.now
 

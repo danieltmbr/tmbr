@@ -3,8 +3,6 @@ import SwiftData
 import AppPersistence
 
 struct CatalogueTab: View {
-    @Query(sort: \PreviewRecord.primaryInfo)
-    private var allItems: [PreviewRecord]
 
     @Environment(\.refreshCatalogue)
     private var refreshCatalogue
@@ -23,43 +21,12 @@ struct CatalogueTab: View {
     @State private var selectedType: CatalogueItemType?
     @State private var showEditor = false
 
-    private var items: [PreviewRecord] {
-        var result = allItems
-        if !selectedCategorySlugs.isEmpty {
-            result = result.filter { selectedCategorySlugs.contains($0.categoryType) }
-        }
-        if !selectedLanguages.isEmpty {
-            result = result.filter { $0.languages.isEmpty || !$0.languages.isDisjoint(with: selectedLanguages) }
-        }
-        return result
-    }
-
     var body: some View {
         NavigationStack {
-            List {
-                if !items.isEmpty {
-                    CatalogueStatusLine()
-                }
-                ForEach(items) { item in
-                    NavigationLink {
-                        CatalogueItemDetailView(item: item)
-                    } label: {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(item.primaryInfo)
-                            if let subtitle = item.secondaryInfo {
-                                Text(subtitle)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                }
-            }
-            .overlay {
-                if items.isEmpty {
-                    CatalogueEmptyView()
-                }
-            }
+            CatalogueItemsList(
+                selectedCategorySlugs: selectedCategorySlugs,
+                selectedLanguages: selectedLanguages
+            )
             .navigationTitle("Catalogue")
             .toolbar {
 #if os(iOS)
@@ -88,15 +55,13 @@ struct CatalogueTab: View {
                     AccountButton()
                 }
             }
-            .navigationDestination(for: CatalogueItemNavigation.self) { CatalogueItemNavigation.destination($0) }
-            .refreshable { await refreshCatalogue() }
         }
         .task { await refreshCatalogue() }
-        #if os(iOS)
+#if os(iOS)
         .sheet(isPresented: $showFilter) {
             CatalogueFilterView()
         }
-        #endif
+#endif
         .sheet(isPresented: $showTypePicker) {
             MediaTypePickerSheet { type in
                 selectedType = type
@@ -110,5 +75,59 @@ struct CatalogueTab: View {
         .onChange(of: selectedType) { _, type in
             if type != nil { showEditor = true }
         }
+    }
+}
+
+private struct CatalogueItemsList: View {
+
+    @Query private var items: [PreviewRecord]
+
+    @Environment(\.refreshCatalogue)
+    private var refreshCatalogue
+
+    init(selectedCategorySlugs: Set<String>, selectedLanguages: Set<Language>) {
+        let slugs = Array(selectedCategorySlugs)
+        let hasLanguageFilter = !selectedLanguages.isEmpty
+        let wantsEn = selectedLanguages.contains(.en)
+        let wantsHu = selectedLanguages.contains(.hu)
+        _items = Query(
+            filter: #Predicate { item in
+                (slugs.isEmpty || slugs.contains(item.categoryType)) &&
+                (!hasLanguageFilter ||
+                 item.languagesJoined.isEmpty ||
+                 (wantsEn && item.languagesJoined.contains("en")) ||
+                 (wantsHu && item.languagesJoined.contains("hu")))
+            },
+            sort: \PreviewRecord.primaryInfo
+        )
+    }
+
+    var body: some View {
+        List {
+            if !items.isEmpty {
+                CatalogueStatusLine()
+            }
+            ForEach(items) { item in
+                NavigationLink {
+                    CatalogueItemDetailView(item: item)
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(item.primaryInfo)
+                        if let subtitle = item.secondaryInfo {
+                            Text(subtitle)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+        .overlay {
+            if items.isEmpty {
+                CatalogueEmptyView()
+            }
+        }
+        .navigationDestination(for: CatalogueItemNavigation.self) { CatalogueItemNavigation.destination($0) }
+        .refreshable { await refreshCatalogue() }
     }
 }

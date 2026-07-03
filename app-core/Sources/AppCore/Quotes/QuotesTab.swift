@@ -4,9 +4,6 @@ import AppPersistence
 
 struct QuotesTab: View {
 
-    @Query(sort: \QuoteRecord.createdAt, order: .reverse)
-    private var allQuotes: [QuoteRecord]
-
     @Environment(\.refreshCatalogue)
     private var refreshCatalogue
 
@@ -22,33 +19,13 @@ struct QuotesTab: View {
     @State private var showFilter = false
     @State private var showRandom = false
 
-    private var quotes: [QuoteRecord] {
-        var result = allQuotes
-        if !selectedCategorySlugs.isEmpty {
-            result = result.filter { $0.sourceType.map(selectedCategorySlugs.contains) ?? false }
-        }
-        if !selectedLanguages.isEmpty {
-            result = result.filter { quote in
-                guard let lang = quote.language else { return true }
-                return selectedLanguages.contains(lang)
-            }
-        }
-        return result
-    }
-
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(quotes) { quote in
-                    QuoteCell(quote: quote)
-                }
-            }
-            .listStyle(.plain)
-            .overlay {
-                if quotes.isEmpty {
-                    QuotesEmptyView()
-                }
-            }
+            QuotesList(
+                selectedCategorySlugs: selectedCategorySlugs,
+                selectedLanguages: selectedLanguages,
+                showRandom: $showRandom
+            )
             .navigationTitle("Quotes")
             .toolbar {
 #if os(iOS)
@@ -81,10 +58,6 @@ struct QuotesTab: View {
                     AccountButton()
                 }
             }
-            .refreshable {
-                await refreshCatalogue()
-                await refreshBlog()
-            }
         }
         .task {
             await refreshCatalogue()
@@ -95,8 +68,53 @@ struct QuotesTab: View {
             CatalogueFilterView()
         }
 #endif
+    }
+}
+
+private struct QuotesList: View {
+
+    @Query private var quotes: [QuoteRecord]
+
+    @Environment(\.refreshCatalogue)
+    private var refreshCatalogue
+
+    @Environment(\.refreshBlog)
+    private var refreshBlog
+
+    @Binding private var showRandom: Bool
+
+    init(selectedCategorySlugs: Set<String>, selectedLanguages: Set<Language>, showRandom: Binding<Bool>) {
+        let slugs = Array(selectedCategorySlugs)
+        let codes = selectedLanguages.map(\.rawValue)
+        _quotes = Query(
+            filter: #Predicate { quote in
+                (slugs.isEmpty || slugs.contains(quote.sourceType ?? "")) &&
+                (codes.isEmpty || quote.languageRaw.isEmpty || codes.contains(quote.languageRaw))
+            },
+            sort: \QuoteRecord.createdAt,
+            order: .reverse
+        )
+        _showRandom = showRandom
+    }
+
+    var body: some View {
+        List {
+            ForEach(quotes) { quote in
+                QuoteCell(quote: quote)
+            }
+        }
+        .listStyle(.plain)
+        .overlay {
+            if quotes.isEmpty {
+                QuotesEmptyView()
+            }
+        }
+        .refreshable {
+            await refreshCatalogue()
+            await refreshBlog()
+        }
         .sheet(isPresented: $showRandom) {
-            RandomQuoteSheet(quotes: allQuotes)
+            RandomQuoteSheet(quotes: quotes)
         }
     }
 }

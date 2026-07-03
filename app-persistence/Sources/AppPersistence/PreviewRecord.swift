@@ -39,10 +39,10 @@ public final class PreviewRecord {
     /// External resource URLs. Mirrors `PreviewResponse.resources` / `Preview.externalLinks`.
     public var externalLinks: [String] = []
 
-    /// Raw language codes of the notes attached to this item, populated at sync time.
+    /// Pipe-joined language codes of the notes attached to this item (e.g. `"en"`, `"en|hu"`).
     /// Empty until the first sync that includes embedded notes (e.g. `?notes=true`).
-    /// Items with an empty set are always visible regardless of the active language filter.
-    var languagesRaw: [String] = []
+    /// Empty = unknown = always visible regardless of the active language filter.
+    public var languagesJoined: String = ""
 
     var accessRaw: String = ""
 
@@ -93,12 +93,12 @@ public extension PreviewRecord {
     /// An orphan has no backing per-type record.
     var isOrphan: Bool { sourceID == nil }
 
-    /// The set of languages carried by this item's notes, derived from `languagesRaw`.
+    /// The set of languages carried by this item's notes, derived from `languagesJoined`.
     ///
     /// Empty until the first sync that embeds notes. Use `.isEmpty` to detect "unknown" — items
     /// with an unknown language set are always shown regardless of the active language filter.
     public var languages: Set<Language> {
-        get { Set(languagesRaw.compactMap(Language.init(rawValue:))) }
-        set { languagesRaw = Array(newValue.map(\.rawValue)) }
+        get { Set(languagesJoined.split(separator: "|").compactMap { Language(rawValue: String($0)) }) }
+        set { languagesJoined = newValue.map(\.rawValue).sorted().joined(separator: "|") }
     }
 }
