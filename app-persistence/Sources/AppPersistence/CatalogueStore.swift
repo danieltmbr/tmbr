@@ -178,8 +178,10 @@ public struct CatalogueStore {
         var notes = try notesByPreview()
         var quotes = try quotesByNoteServerID()
         for r in responses {
-            guard upsertPreview(r, access: .public, into: &previews) != nil else { continue }
-            reconcileNotes(r.notes ?? [], for: r, into: &notes, quotes: &quotes)
+            guard let pid = upsertPreview(r, access: .public, into: &previews) else { continue }
+            let embedded = r.notes ?? []
+            reconcileNotes(embedded, for: r, into: &notes, quotes: &quotes)
+            previews[pid]?.languages = Set(embedded.map(\.language))
         }
         try context.save()
     }
@@ -272,7 +274,7 @@ public struct CatalogueStore {
                 return new
             }()
             record.update(from: note, preview: preview)
-            reconcileQuotes(note.quotes, forNoteServerID: note.id, into: &byNote)
+            reconcileQuotes(note.quotes, forNoteServerID: note.id, language: note.language, into: &byNote)
         }
 
         byPreview[previewID] = current
@@ -283,6 +285,7 @@ public struct CatalogueStore {
     private func reconcileQuotes(
         _ quotes: [QuoteResponse],
         forNoteServerID noteID: NoteID,
+        language: Language,
         into byNote: inout [UUID: [QuoteRecord]]
     ) {
         let incomingIDs = Set(quotes.map(\.id))
@@ -304,6 +307,7 @@ public struct CatalogueStore {
                 return new
             }()
             record.update(from: quote)
+            record.language = language
         }
 
         byNote[noteID] = current
@@ -352,6 +356,7 @@ public struct CatalogueStore {
     ) -> UUID? {
         guard let pid = upsertPreview(response.preview, access: response.access, into: &previews) else { return nil }
         reconcileNotes(response.notes, for: response.preview, into: &notes, quotes: &quotes)
+        previews[pid]?.languages = Set(response.notes.map(\.language))
         return pid
     }
 }

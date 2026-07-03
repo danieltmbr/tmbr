@@ -13,15 +13,27 @@ struct QuotesTab: View {
     @Environment(\.refreshBlog)
     private var refreshBlog
 
-    @Catalogue(\.selectedCategorySlugs)
-    private var selectedCategorySlugs
+    @Quotes(\.selectedSources)
+    private var selectedSources
+
+    @Preferences(\.selectedLanguages)
+    private var selectedLanguages
 
     @State private var showFilter = false
     @State private var showRandom = false
 
     private var quotes: [QuoteRecord] {
-        guard !selectedCategorySlugs.isEmpty else { return allQuotes }
-        return allQuotes.filter { $0.sourceType.map(selectedCategorySlugs.contains) ?? false }
+        var result = allQuotes
+        if !selectedSources.isEmpty {
+            result = result.filter { selectedSources.contains($0.sourceType ?? QuotesModel.blogPosts) }
+        }
+        if !selectedLanguages.isEmpty {
+            result = result.filter { quote in
+                guard let lang = quote.language else { return true }
+                return selectedLanguages.contains(lang)
+            }
+        }
+        return result
     }
 
     var body: some View {
@@ -56,7 +68,7 @@ struct QuotesTab: View {
                         Image(systemName: "line.3.horizontal.decrease")
                     }
                     .popover(isPresented: $showFilter) {
-                        CatalogueFilterView()
+                        QuotesFilterView()
                     }
                 }
                 ToolbarItem(placement: .automatic) {
@@ -80,7 +92,7 @@ struct QuotesTab: View {
         }
 #if os(iOS)
         .sheet(isPresented: $showFilter) {
-            CatalogueFilterView()
+            QuotesFilterView()
         }
 #endif
         .sheet(isPresented: $showRandom) {

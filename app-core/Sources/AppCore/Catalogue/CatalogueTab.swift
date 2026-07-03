@@ -15,14 +15,23 @@ struct CatalogueTab: View {
     @Catalogue(\.selectedCategorySlugs)
     private var selectedCategorySlugs
 
+    @Preferences(\.selectedLanguages)
+    private var selectedLanguages
+
     @State private var showFilter = false
     @State private var showTypePicker = false
     @State private var selectedType: CatalogueItemType?
     @State private var showEditor = false
 
     private var items: [PreviewRecord] {
-        guard !selectedCategorySlugs.isEmpty else { return allItems }
-        return allItems.filter { selectedCategorySlugs.contains($0.categoryType) }
+        var result = allItems
+        if !selectedCategorySlugs.isEmpty {
+            result = result.filter { selectedCategorySlugs.contains($0.categoryType) }
+        }
+        if !selectedLanguages.isEmpty {
+            result = result.filter { $0.languages.isEmpty || !$0.languages.isDisjoint(with: selectedLanguages) }
+        }
+        return result
     }
 
     var body: some View {

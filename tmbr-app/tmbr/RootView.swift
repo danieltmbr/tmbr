@@ -8,11 +8,13 @@ struct RootView: View {
     // No-op refresh for now — Author's blog/catalogue data-in is its SyncEngine (later stage).
     @State private var blog = BlogModel()
     @State private var catalogue = CatalogueModel()
+    @State private var quotes = QuotesModel()
 
     var body: some View {
         ContentView()
             .blog(blog)
             .catalogue(catalogue)
+            .quotes(quotes)
             .environment(\.canAuthor, authState.isSignedIn)
             .environment(\.accountToolbar, AccountToolbar { AccountButton() })
     }

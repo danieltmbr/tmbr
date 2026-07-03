@@ -15,6 +15,10 @@ struct PersonalApp: App {
     // No-op refresh — Personal's data is CloudKit-mirrored (no fetch). Empty until the write path lands.
     let blog = BlogModel()
     let catalogue = CatalogueModel()
+    let quotes = QuotesModel()
+    let preferences = PreferencesModel()
+
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         do {
@@ -29,7 +33,21 @@ struct PersonalApp: App {
             ContentView()
                 .blog(blog)
                 .catalogue(catalogue)
+                .quotes(quotes)
+                .preferences(preferences)
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active {
+                        preferences.refreshFromDefaults()
+                    }
+                }
         }
         .modelContainer(container)
+
+        #if os(macOS)
+        Settings {
+            PreferencesView()
+                .preferences(preferences)
+        }
+        #endif
     }
 }
