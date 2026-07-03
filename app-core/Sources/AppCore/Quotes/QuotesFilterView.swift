@@ -45,8 +45,6 @@ public struct QuotesFilterView: View {
                 QuoteSourcesSection()
                 LanguageFilterSection()
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
         }
         .frame(minWidth: 200, maxHeight: 400)
         #endif

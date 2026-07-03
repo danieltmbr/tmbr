@@ -41,8 +41,6 @@ public struct CatalogueFilterView: View {
                 CatalogueCategoriesList()
                 LanguageFilterSection()
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
         }
         .frame(minWidth: 200, maxHeight: 400)
         #endif
