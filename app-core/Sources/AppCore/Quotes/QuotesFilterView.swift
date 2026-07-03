@@ -45,8 +45,9 @@ public struct QuotesFilterView: View {
                 QuoteSourcesSection()
                 LanguageFilterSection()
             }
+            .frame(maxHeight: .infinity)
         }
-        .frame(minWidth: 200, maxHeight: 400)
+        .frame(width: 280, height: 360)
         #endif
     }
 }
