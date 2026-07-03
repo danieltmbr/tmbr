@@ -6,7 +6,7 @@
 
     #export("main"):
     <button id="gallery-open" class="icon" type="button">
-        #extend("Icons/gallery")
+        #extend("Icons/photo.on.rectangle.angled")
     </button>
 
     <form id="post-form" method="#(submit.method)" action="#(submit.action)">
@@ -84,7 +84,7 @@
     <aside id="gallery" hidden>
         <div id="gallery-header" alt="Gallery Header">
             <button class="icon small" type="button" id="gallery-close" aria-label="Close">
-                #extend("Icons/close")
+                #extend("Icons/xmark")
             </button>
             <h4>Gallery</h4>
             <span id="gallery-status" class="system-info"></span>

@@ -66,7 +66,7 @@
     #export("editor-image-picker"):
     <figure id="artwork-placeholder" class="image-picker #if(!artworkThumbnailURL):empty#endif">
         <img id="artwork-image" src="#(artworkThumbnailURL)" alt="Artwork" />
-        <span>#extend("Icons/gallery")</span>
+        <span>#extend("Icons/photo.on.rectangle.angled")</span>
         <button id="artwork-clear" type="button" class="icon">#extend("Icons/trash")</button>
     </figure>
     #endexport

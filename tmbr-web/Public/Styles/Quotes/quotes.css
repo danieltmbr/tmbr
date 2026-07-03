@@ -223,17 +223,6 @@ section.quote-page.focused > ul > li.is-entering-backward figure { animation: qu
     }
 }
 
-/*
- ------------------------------------------------
- Focused mode: hide the page toolbar (language picker) to maximise
- reading space. The section nav (search + layout toggle) stays visible.
- ------------------------------------------------
- */
-
-body.quotes-focused #toolbar {
-    display: none;
-}
-
 nav button#layout-toggle {
     margin: 0 8px;
 }
@@ -265,6 +254,7 @@ nav.site-navigation,
 section.quote-page > h1,
 section.quote-page > nav,
 section.quote-page article .quote-share,
+#toolbar,
 #footer {
     transition: opacity 0.6s ease;
 }
@@ -273,6 +263,7 @@ body.quotes-immersive nav.site-navigation,
 body.quotes-immersive section.quote-page > h1,
 body.quotes-immersive section.quote-page > nav,
 body.quotes-immersive section.quote-page article .quote-share,
+body.quotes-immersive #toolbar,
 body.quotes-immersive #footer {
     opacity: 0;
     pointer-events: none;
@@ -283,6 +274,7 @@ body.quotes-immersive #footer {
     section.quote-page > h1,
     section.quote-page > nav,
     section.quote-page article .quote-share,
+    #toolbar,
     #footer {
         transition: none;
     }
