@@ -54,9 +54,7 @@ struct BatchCreateNoteCommand: Command {
             )
         }
         try await attachPermission(notes, to: input.attachment)
-        for note in notes {
-            try await note.create(on: database)
-        }
+        try await notes.create(on: database)
         return notes
     }
 }
