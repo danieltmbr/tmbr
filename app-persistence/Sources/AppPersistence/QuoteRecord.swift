@@ -45,6 +45,10 @@ public final class QuoteRecord {
     /// PreviewID of the source catalogue item. nil for post-sourced quotes.
     public var sourcePreviewID: UUID?
 
+    /// Language of the source note or post, populated at sync time.
+    /// Empty string until the first sync (empty = unknown = always visible in language filter).
+    var languageRaw: String = ""
+
     var syncStateRaw: String = SyncState.synced.rawValue
 
     public init() {}
@@ -68,6 +72,19 @@ public extension QuoteRecord {
             return noteServerID.map { .note($0) }
         }
         set { newValue.map { setSource($0) } }
+    }
+}
+
+// MARK: - Language
+
+public extension QuoteRecord {
+    /// The language of the source note or post.
+    ///
+    /// `nil` until the first sync that populates this field, or for quotes whose source
+    /// was added before language tracking was introduced. `nil` = unknown = always visible.
+    var language: Language? {
+        get { Language(rawValue: languageRaw) }
+        set { languageRaw = newValue?.rawValue ?? "" }
     }
 }
 

@@ -39,7 +39,7 @@ public struct PostStore {
                 context.insert(record)
                 bySID[response.id] = record
             }
-            reconcilePostQuotes(response.quotes, forPostServerID: response.id, into: &quotesByPost)
+            reconcilePostQuotes(response.quotes, forPostServerID: response.id, language: response.language, into: &quotesByPost)
         }
         try context.save()
     }
@@ -51,6 +51,7 @@ public struct PostStore {
     private func reconcilePostQuotes(
         _ quotes: [QuoteResponse],
         forPostServerID postID: PostID,
+        language: Language,
         into byPost: inout [Int: [QuoteRecord]]
     ) {
         let incomingIDs = Set(quotes.map(\.id))
@@ -72,6 +73,7 @@ public struct PostStore {
                 return new
             }()
             record.update(from: quote)
+            record.language = language
         }
 
         byPost[postID] = current

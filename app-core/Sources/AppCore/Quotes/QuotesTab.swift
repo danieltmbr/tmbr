@@ -16,12 +16,24 @@ struct QuotesTab: View {
     @Catalogue(\.selectedCategorySlugs)
     private var selectedCategorySlugs
 
+    @Preferences(\.selectedLanguages)
+    private var selectedLanguages
+
     @State private var showFilter = false
     @State private var showRandom = false
 
     private var quotes: [QuoteRecord] {
-        guard !selectedCategorySlugs.isEmpty else { return allQuotes }
-        return allQuotes.filter { $0.sourceType.map(selectedCategorySlugs.contains) ?? false }
+        var result = allQuotes
+        if !selectedCategorySlugs.isEmpty {
+            result = result.filter { $0.sourceType.map(selectedCategorySlugs.contains) ?? false }
+        }
+        if !selectedLanguages.isEmpty {
+            result = result.filter { quote in
+                guard let lang = quote.language else { return true }
+                return selectedLanguages.contains(lang)
+            }
+        }
+        return result
     }
 
     var body: some View {

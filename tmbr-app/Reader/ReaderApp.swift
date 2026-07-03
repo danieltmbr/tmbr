@@ -14,6 +14,9 @@ struct ReaderApp: App {
 
     let blog: BlogModel
     let catalogue: CatalogueModel
+    let preferences = PreferencesModel()
+
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         do {
@@ -47,9 +50,22 @@ struct ReaderApp: App {
             ContentView()
                 .blog(blog)
                 .catalogue(catalogue)
+                .preferences(preferences)
                 .environment(\.apiBaseURL, Self.apiBaseURL)
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active {
+                        preferences.refreshFromDefaults()
+                    }
+                }
         }
         .modelContainer(container)
+
+        #if os(macOS)
+        Settings {
+            PreferencesView()
+                .preferences(preferences)
+        }
+        #endif
     }
 
     private static var apiBaseURL: URL {
