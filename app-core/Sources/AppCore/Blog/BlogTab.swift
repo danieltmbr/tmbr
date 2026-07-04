@@ -68,11 +68,8 @@ private struct PostsList: View {
     private var refreshBlog
 
     init(selectedLanguages: Set<Language>) {
-        let codes = selectedLanguages.map(\.rawValue)
         _posts = Query(
-            filter: #Predicate { post in
-                codes.isEmpty || post.languageRaw.isEmpty || codes.contains(post.languageRaw)
-            },
+            filter: PostRecord.predicate(languages: selectedLanguages),
             sort: \PostRecord.createdAt,
             order: .reverse
         )

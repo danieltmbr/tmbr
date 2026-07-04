@@ -47,7 +47,7 @@ public final class QuoteRecord {
 
     /// Language of the source note or post, populated at sync time.
     /// Empty string until the first sync (empty = unknown = always visible in language filter).
-    public var languageRaw: String = ""
+    var languageRaw: String = ""
 
     var syncStateRaw: String = SyncState.synced.rawValue
 
@@ -85,6 +85,15 @@ public extension QuoteRecord {
     var language: Language? {
         get { Language(rawValue: languageRaw) }
         set { languageRaw = newValue?.rawValue ?? "" }
+    }
+
+    static func predicate(categorySlugs: Set<String>, languages: Set<Language>) -> Predicate<QuoteRecord> {
+        let slugs = Array(categorySlugs)
+        let codes = languages.map(\.rawValue)
+        return #Predicate<QuoteRecord> { quote in
+            (slugs.isEmpty || slugs.contains(quote.sourceType ?? "")) &&
+            (codes.isEmpty || quote.languageRaw.isEmpty || codes.contains(quote.languageRaw))
+        }
     }
 }
 

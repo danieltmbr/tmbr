@@ -42,7 +42,7 @@ public final class PreviewRecord {
     /// Pipe-joined language codes of the notes attached to this item (e.g. `"en"`, `"en|hu"`).
     /// Empty until the first sync that includes embedded notes (e.g. `?notes=true`).
     /// Empty = unknown = always visible regardless of the active language filter.
-    public var languagesJoined: String = ""
+    var languagesJoined: String = ""
 
     var accessRaw: String = ""
 
@@ -100,5 +100,19 @@ public extension PreviewRecord {
     public var languages: Set<Language> {
         get { Set(languagesJoined.split(separator: "|").compactMap { Language(rawValue: String($0)) }) }
         set { languagesJoined = newValue.map(\.rawValue).sorted().joined(separator: "|") }
+    }
+
+    static func predicate(categories: Set<String>, languages: Set<Language>) -> Predicate<PreviewRecord> {
+        let slugs = Array(categories)
+        let hasLanguageFilter = !languages.isEmpty
+        let wantsEn = languages.contains(.en)
+        let wantsHu = languages.contains(.hu)
+        return #Predicate<PreviewRecord> { item in
+            (slugs.isEmpty || slugs.contains(item.categoryType)) &&
+            (!hasLanguageFilter ||
+             item.languagesJoined.isEmpty ||
+             (wantsEn && item.languagesJoined.contains("en")) ||
+             (wantsHu && item.languagesJoined.contains("hu")))
+        }
     }
 }

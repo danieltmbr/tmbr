@@ -84,13 +84,8 @@ private struct QuotesList: View {
     @Binding private var showRandom: Bool
 
     init(selectedCategorySlugs: Set<String>, selectedLanguages: Set<Language>, showRandom: Binding<Bool>) {
-        let slugs = Array(selectedCategorySlugs)
-        let codes = selectedLanguages.map(\.rawValue)
         _quotes = Query(
-            filter: #Predicate { quote in
-                (slugs.isEmpty || slugs.contains(quote.sourceType ?? "")) &&
-                (codes.isEmpty || quote.languageRaw.isEmpty || codes.contains(quote.languageRaw))
-            },
+            filter: QuoteRecord.predicate(categorySlugs: selectedCategorySlugs, languages: selectedLanguages),
             sort: \QuoteRecord.createdAt,
             order: .reverse
         )

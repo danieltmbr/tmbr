@@ -20,7 +20,7 @@ public final class PostRecord {
 
     var stateRaw: String = ""
 
-    public var languageRaw: String = ""
+    var languageRaw: String = ""
 
     public var createdAt: Date = Date.now
 
@@ -70,9 +70,16 @@ public extension PostRecord {
         get { Language(rawValue: languageRaw) }
         set { languageRaw = newValue?.rawValue ?? "" }
     }
-    
+
     var syncState: SyncState {
         get { SyncState(rawValue: syncStateRaw) ?? .synced }
         set { syncStateRaw = newValue.rawValue }
+    }
+
+    static func predicate(languages: Set<Language>) -> Predicate<PostRecord> {
+        let codes = languages.map(\.rawValue)
+        return #Predicate<PostRecord> { post in
+            codes.isEmpty || post.languageRaw.isEmpty || codes.contains(post.languageRaw)
+        }
     }
 }

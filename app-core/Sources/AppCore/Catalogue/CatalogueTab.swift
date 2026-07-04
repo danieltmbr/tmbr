@@ -86,18 +86,8 @@ private struct CatalogueItemsList: View {
     private var refreshCatalogue
 
     init(selectedCategorySlugs: Set<String>, selectedLanguages: Set<Language>) {
-        let slugs = Array(selectedCategorySlugs)
-        let hasLanguageFilter = !selectedLanguages.isEmpty
-        let wantsEn = selectedLanguages.contains(.en)
-        let wantsHu = selectedLanguages.contains(.hu)
         _items = Query(
-            filter: #Predicate { item in
-                (slugs.isEmpty || slugs.contains(item.categoryType)) &&
-                (!hasLanguageFilter ||
-                 item.languagesJoined.isEmpty ||
-                 (wantsEn && item.languagesJoined.contains("en")) ||
-                 (wantsHu && item.languagesJoined.contains("hu")))
-            },
+            filter: PreviewRecord.predicate(categories: selectedCategorySlugs, languages: selectedLanguages),
             sort: \PreviewRecord.primaryInfo
         )
     }
