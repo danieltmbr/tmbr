@@ -15,9 +15,20 @@ import TmbrCore
 public final class PreferencesModel {
 
     // MARK: - UserDefaults keys (must match Settings.bundle Root.plist)
-
-    static let languageEnKey = "language_en_enabled"
-    static let languageHuKey = "language_hu_enabled"
+    
+    public struct Keys {
+        let languageEn: String
+        
+        let languageHu: String
+        
+        public init(
+            languageEn: String = "language_en_enabled",
+            languageHu: String = "language_hu_enabled"
+        ) {
+            self.languageEn = languageEn
+            self.languageHu = languageHu
+        }
+    }
 
     // MARK: - State
 
@@ -30,16 +41,24 @@ public final class PreferencesModel {
         didSet { persist() }
     }
 
+    private let defaults: UserDefaults
+    
+    private let keys: Keys
+
     // MARK: - Init
 
-    public init() {
-        let defaults = UserDefaults.standard
+    public init(
+        defaults: UserDefaults = .standard,
+        keys: Keys = Keys()
+    ) {
+        self.defaults = defaults
+        self.keys = keys
         defaults.register(defaults: [
-            Self.languageEnKey: true,
-            Self.languageHuKey: true,
+            keys.languageEn: true,
+            keys.languageHu: true,
         ])
         // Init doesn't trigger didSet, so we read directly.
-        selectedLanguages = Self.read(from: defaults)
+        selectedLanguages = Self.read(from: defaults, with: keys)
     }
 
     // MARK: - Public API
@@ -48,22 +67,24 @@ public final class PreferencesModel {
     ///
     /// Call this when the app transitions to `.active` scene phase so that edits made in iOS
     /// Settings.app or the macOS Settings scene are reflected without a full app relaunch.
-    public func refreshFromDefaults() {
-        selectedLanguages = Self.read(from: .standard)
+    public func sync() {
+        selectedLanguages = Self.read(from: defaults, with: keys)
     }
 
     // MARK: - Private
 
     private func persist() {
-        let defaults = UserDefaults.standard
-        defaults.set(selectedLanguages.contains(.en), forKey: Self.languageEnKey)
-        defaults.set(selectedLanguages.contains(.hu), forKey: Self.languageHuKey)
+        defaults.set(selectedLanguages.contains(.en), forKey: keys.languageEn)
+        defaults.set(selectedLanguages.contains(.hu), forKey: keys.languageHu)
     }
 
-    private static func read(from defaults: UserDefaults) -> Set<Language> {
+    private static func read(
+        from defaults: UserDefaults,
+        with keys: Keys
+    ) -> Set<Language> {
         var result = Set<Language>()
-        if defaults.bool(forKey: languageEnKey) { result.insert(.en) }
-        if defaults.bool(forKey: languageHuKey) { result.insert(.hu) }
+        if defaults.bool(forKey: keys.languageEn) { result.insert(.en) }
+        if defaults.bool(forKey: keys.languageHu) { result.insert(.hu) }
         return result
     }
 }

@@ -17,8 +17,6 @@ struct PersonalApp: App {
     let catalogue = CatalogueModel()
     let preferences = PreferencesModel()
 
-    @Environment(\.scenePhase) private var scenePhase
-
     init() {
         do {
             container = try ModelContainer(for: AppSchema.schema)
@@ -33,11 +31,6 @@ struct PersonalApp: App {
                 .blog(blog)
                 .catalogue(catalogue)
                 .preferences(preferences)
-                .onChange(of: scenePhase) { _, phase in
-                    if phase == .active {
-                        preferences.refreshFromDefaults()
-                    }
-                }
         }
         .modelContainer(container)
 

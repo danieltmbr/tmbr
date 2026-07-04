@@ -13,5 +13,6 @@ public extension View {
     func preferences(_ model: PreferencesModel) -> some View {
         environment(model)
             .environment(\.selectLanguages, SelectLanguagesAction(model: model))
+            .environment(\.syncPreferences, SyncPreferencesAction(model: model))
     }
 }

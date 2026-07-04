@@ -2,6 +2,12 @@ import SwiftUI
 
 public struct ContentView: View {
 
+    @Environment(\.syncPreferences)
+    private var syncPreferences
+
+    @Environment(\.scenePhase)
+    private var scenePhase
+
     public init() {}
 
     public var body: some View {
@@ -27,5 +33,8 @@ public struct ContentView: View {
 #endif
         }
         .tabViewStyle(.sidebarAdaptable)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { syncPreferences() }
+        }
     }
 }

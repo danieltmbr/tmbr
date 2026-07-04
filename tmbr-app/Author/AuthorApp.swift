@@ -5,9 +5,8 @@ import AppCore
 struct AuthorApp: App {
 
     private let account: AccountModel
+    
     let preferences = PreferencesModel()
-
-    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         let config = APIConfig.fromInfoPlist()
@@ -23,11 +22,6 @@ struct AuthorApp: App {
             RootView()
                 .account(account)
                 .preferences(preferences)
-                .onChange(of: scenePhase) { _, phase in
-                    if phase == .active {
-                        preferences.refreshFromDefaults()
-                    }
-                }
         }
 
         #if os(macOS)

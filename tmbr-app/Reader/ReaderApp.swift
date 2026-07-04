@@ -10,13 +10,13 @@ import AppPersistence
 @main
 struct ReaderApp: App {
 
-    let container: ModelContainer
+    private let container: ModelContainer
 
-    let blog: BlogModel
-    let catalogue: CatalogueModel
-    let preferences = PreferencesModel()
-
-    @Environment(\.scenePhase) private var scenePhase
+    private let blog: BlogModel
+    
+    private let catalogue: CatalogueModel
+    
+    private let preferences = PreferencesModel()
 
     init() {
         do {
@@ -52,11 +52,6 @@ struct ReaderApp: App {
                 .catalogue(catalogue)
                 .preferences(preferences)
                 .environment(\.apiBaseURL, Self.apiBaseURL)
-                .onChange(of: scenePhase) { _, phase in
-                    if phase == .active {
-                        preferences.refreshFromDefaults()
-                    }
-                }
         }
         .modelContainer(container)
 
