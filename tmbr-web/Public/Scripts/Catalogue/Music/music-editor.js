@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const metadata    = new MetadataController({ endpoint: '/music/metadata' });
 
     const storageKey = 'editor:music:new';
+    const draftKeyInput = document.getElementById('editor-draft-key');
+    if (draftKeyInput) draftKeyInput.value = storageKey;
 
     const typeActions = {
         song:     '/songs/new',
@@ -313,6 +315,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('editor-preview')?.addEventListener('click', () => fillPreview());
 
+    function clearTracklist(f) {
+        if (f.tracklistEl) f.tracklistEl.replaceChildren();
+        if (f.tracklistJson) f.tracklistJson.value = '';
+        if (f.tracklistSection) f.tracklistSection.hidden = true;
+    }
+
+    function clearForm() {
+        if (!confirm('Clear all form data?')) return;
+        titleInput.value = '';
+        artwork.clear();
+        resourceInputs.clear();
+        notes.clear();
+
+        fields.song.artist.value = '';
+        fields.song.album.value = '';
+        fields.song.releaseDate.value = '';
+        fields.song.genre.value = '';
+
+        fields.album.artist.value = '';
+        fields.album.releaseDate.value = '';
+        fields.album.genre.value = '';
+        clearTracklist(fields.album);
+
+        fields.playlist.description.value = '';
+        clearTracklist(fields.playlist);
+
+        selectType('song');
+        persistence.clear(storageKey);
+    }
+    document.getElementById('editor-clear')?.addEventListener('click', clearForm);
+
     form.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
         e.preventDefault();
@@ -330,6 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (date) f.releaseDateISO.value = date.toISOString();
             else f.releaseDateISO.disabled = true;
         }
+        notes.reindex();
         persistence.markPendingClear(storageKey);
         form.submit();
     });

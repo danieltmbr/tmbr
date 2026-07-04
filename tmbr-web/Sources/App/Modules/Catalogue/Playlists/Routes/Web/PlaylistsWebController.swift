@@ -106,7 +106,7 @@ struct PlaylistsWebController: RouteCollection {
             }
 
             req.session.data["csrf.editor"] = nil
-            return req.redirect(to: "/playlists/\(playlist.id!)")
+            return req.redirect(to: "/playlists/\(playlist.id!)".addingClearDraft(payload.draftKey))
         } catch {
             return try await renderEditorWithError(req, mode: mode, error: error)
         }

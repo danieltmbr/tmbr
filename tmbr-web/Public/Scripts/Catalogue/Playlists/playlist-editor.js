@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const itemID     = idInput?.value || '';
     const storageKey = itemID ? `editor:playlist:${itemID}` : 'editor:playlist:new';
+    const draftKeyInput = document.getElementById('editor-draft-key');
+    if (draftKeyInput) draftKeyInput.value = storageKey;
 
     const artwork = new ArtworkController({
         hiddenInput:      document.getElementById('editor-artwork-id'),
@@ -213,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tracklistJsonInput) tracklistJsonInput.value = '';
         if (tracklistSection) tracklistSection.hidden = true;
         resourceInputs.clear();
-        notes.setNotes([], true);
+        notes.clear();
         persistence.clear(storageKey);
     }
     document.getElementById('editor-clear')?.addEventListener('click', clearForm);
@@ -228,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
+        notes.reindex();
         persistence.markPendingClear(storageKey);
         form.submit();
     });

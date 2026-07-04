@@ -125,7 +125,7 @@ struct AlbumsWebController: RouteCollection {
             }
 
             req.session.data["csrf.editor"] = nil
-            return req.redirect(to: "/albums/\(album.id!)")
+            return req.redirect(to: "/albums/\(album.id!)".addingClearDraft(payload.draftKey))
         } catch {
             return try await renderEditorWithError(req, mode: mode, error: error)
         }

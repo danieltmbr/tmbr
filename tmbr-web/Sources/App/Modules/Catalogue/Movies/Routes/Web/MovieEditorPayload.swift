@@ -15,6 +15,8 @@ struct MovieEditorPayload: Decodable, Sendable {
 
     let director: String?
 
+    let draftKey: String?
+
     let genre: String?
 
     let notes: [NotePayload]
@@ -45,6 +47,7 @@ struct MovieEditorPayload: Decodable, Sendable {
         case coverIdRaw = "cover-id"
         case coverSourceURLRaw = "cover-source-url"
         case director
+        case draftKey
         case genre
         case notes
         case releaseDate = "release-date"
@@ -58,6 +61,7 @@ struct MovieEditorPayload: Decodable, Sendable {
         coverIdRaw: String? = nil,
         coverSourceURLRaw: String? = nil,
         director: String? = nil,
+        draftKey: String? = nil,
         genre: String? = nil,
         notes: [NotePayload] = [],
         releaseDate: Date? = nil,
@@ -69,6 +73,7 @@ struct MovieEditorPayload: Decodable, Sendable {
         self.coverIdRaw = coverIdRaw
         self.coverSourceURLRaw = coverSourceURLRaw
         self.director = director
+        self.draftKey = draftKey
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate

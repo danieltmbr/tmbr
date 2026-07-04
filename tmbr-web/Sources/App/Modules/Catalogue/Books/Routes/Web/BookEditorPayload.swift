@@ -15,6 +15,8 @@ struct BookEditorPayload: Decodable, Sendable {
 
     private let coverSourceURLRaw: String?
 
+    let draftKey: String?
+
     let genre: String?
 
     let notes: [NotePayload]
@@ -45,6 +47,7 @@ struct BookEditorPayload: Decodable, Sendable {
         case author
         case coverIdRaw = "cover-id"
         case coverSourceURLRaw = "cover-source-url"
+        case draftKey
         case genre
         case notes
         case releaseDate = "release-date"
@@ -58,6 +61,7 @@ struct BookEditorPayload: Decodable, Sendable {
         author: String = "",
         coverIdRaw: String? = nil,
         coverSourceURLRaw: String? = nil,
+        draftKey: String? = nil,
         genre: String? = nil,
         notes: [NotePayload] = [],
         releaseDate: Date? = nil,
@@ -69,6 +73,7 @@ struct BookEditorPayload: Decodable, Sendable {
         self.author = author
         self.coverIdRaw = coverIdRaw
         self.coverSourceURLRaw = coverSourceURLRaw
+        self.draftKey = draftKey
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate

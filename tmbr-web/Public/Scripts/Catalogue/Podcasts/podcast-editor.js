@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const itemID     = idInput?.value || '';
     const storageKey = itemID ? `editor:podcast:${itemID}` : 'editor:podcast:new';
+    const draftKeyInput = document.getElementById('editor-draft-key');
+    if (draftKeyInput) draftKeyInput.value = storageKey;
 
     const artwork = new ArtworkController({
         hiddenInput:      document.getElementById('editor-artwork-id'),
@@ -163,6 +165,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('editor-preview')?.addEventListener('click', () => fillPreview());
 
+    function clearForm() {
+        if (!confirm('Clear all form data?')) return;
+        episodeTitleInput.value = '';
+        showTitleInput.value = '';
+        genreInput.value = '';
+        releaseDateInput.value = '';
+        seasonNumberInput.value = '';
+        episodeNumberInput.value = '';
+        artwork.clear();
+        resourceInputs.clear();
+        notes.clear();
+        persistence.clear(storageKey);
+    }
+    document.getElementById('editor-clear')?.addEventListener('click', clearForm);
+
     form.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
         e.preventDefault();
@@ -176,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const date = parseReleaseDate(releaseDateInput.value.trim());
         if (date) releaseDateISOInput.value = date.toISOString();
         else releaseDateISOInput.disabled = true;
+        notes.reindex();
         persistence.markPendingClear(storageKey);
         form.submit();
     });

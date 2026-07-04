@@ -115,7 +115,7 @@ struct BooksWebController: RouteCollection {
             }
 
             req.session.data["csrf.editor"] = nil
-            return req.redirect(to: "/books/\(book.id!)")
+            return req.redirect(to: "/books/\(book.id!)".addingClearDraft(payload.draftKey))
         } catch {
             return try await renderEditorWithError(req, mode: mode, error: error)
         }
