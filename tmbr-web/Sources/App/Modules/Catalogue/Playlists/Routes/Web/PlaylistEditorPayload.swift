@@ -19,6 +19,8 @@ struct PlaylistEditorPayload: Decodable, Sendable {
 
     let description: String?
 
+    let draftKey: String?
+
     let notes: [NotePayload]
 
     private let tracklistJSONRaw: String?
@@ -65,6 +67,7 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         case artworkFallbackURLRaw = "artwork-fallback-url"
         case platformCreatedAtRaw = "platform-created-at"
         case description
+        case draftKey
         case notes
         case tracklistJSONRaw = "tracklist-json"
         case resourceURLs
@@ -79,6 +82,7 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         artworkFallbackURLRaw: String? = nil,
         platformCreatedAtRaw: String? = nil,
         description: String? = nil,
+        draftKey: String? = nil,
         notes: [NotePayload] = [],
         tracklistJSONRaw: String? = nil,
         resourceURLs: [String] = [],
@@ -91,6 +95,7 @@ struct PlaylistEditorPayload: Decodable, Sendable {
         self.artworkFallbackURLRaw = artworkFallbackURLRaw
         self.platformCreatedAtRaw = platformCreatedAtRaw
         self.description = description
+        self.draftKey = draftKey
         self.notes = notes
         self.tracklistJSONRaw = tracklistJSONRaw
         self.resourceURLs = resourceURLs

@@ -117,7 +117,7 @@ struct SongsWebController: RouteCollection {
             }
 
             req.session.data["csrf.editor"] = nil
-            return req.redirect(to: "/songs/\(song.id!)")
+            return req.redirect(to: "/songs/\(song.id!)".addingClearDraft(payload.draftKey))
         } catch {
             return try await renderEditorWithError(req, mode: mode, error: error)
         }

@@ -38,6 +38,7 @@ struct Notes: Module {
         app.migrations.add(RepairQuoteLineBreaks())
         app.migrations.add(FixQuoteBodyToBlockquoteFormat())
         app.migrations.add(FixQuoteCitationClass())
+        app.migrations.add(DeferQuoteNoteForeignKey())
         app.databases.middleware.use(NoteModelMiddleware())
         app.databases.middleware.use(DeletionMiddleware<Note>(
             deletionType: .note,

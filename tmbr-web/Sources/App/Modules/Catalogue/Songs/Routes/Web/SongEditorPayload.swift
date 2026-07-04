@@ -16,7 +16,9 @@ struct SongEditorPayload: Decodable, Sendable {
     private let artworkIdRaw: String?
     
     private let artworkSourceURLRaw: String?
-    
+
+    let draftKey: String?
+
     let genre: String?
     
     let notes: [NotePayload]
@@ -48,6 +50,7 @@ struct SongEditorPayload: Decodable, Sendable {
         case artist
         case artworkIdRaw = "artwork-id"
         case artworkSourceURLRaw = "artwork-source-url"
+        case draftKey
         case genre
         case notes
         case releaseDate = "release-date"
@@ -62,6 +65,7 @@ struct SongEditorPayload: Decodable, Sendable {
         artist: String = "",
         artworkIdRaw: String? = nil,
         artworkSourceURLRaw: String? = nil,
+        draftKey: String? = nil,
         genre: String? = nil,
         notes: [NotePayload] = [],
         releaseDate: Date? = nil,
@@ -74,6 +78,7 @@ struct SongEditorPayload: Decodable, Sendable {
         self.artist = artist
         self.artworkIdRaw = artworkIdRaw
         self.artworkSourceURLRaw = artworkSourceURLRaw
+        self.draftKey = draftKey
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate

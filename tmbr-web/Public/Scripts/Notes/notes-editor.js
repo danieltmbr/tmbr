@@ -279,7 +279,36 @@ class NotesController {
         } else if (!textarea.value.trim() && emptyWrappers.length > 1 && wrapper && wrapper.parentNode) {
             this.detachListener(wrapper);
             wrapper.remove();
+            this.reindex();
         }
+    }
+
+    // Removing an interior wrapper can leave a gap in the notes[N] indices
+    // (e.g. notes[0], notes[2]). Vapor's form decoder requires a contiguous
+    // 0-based sequence to recognize notes[] as an array, so renumber by
+    // current DOM position whenever wrappers are removed or before submit.
+    reindex() {
+        this.getWrappers().forEach((wrapper, i) => {
+            const oldIndex = wrapper.dataset.index;
+            if (oldIndex === String(i)) return;
+            wrapper.querySelectorAll('[name]').forEach(el => {
+                el.name = el.name.replace(`notes[${oldIndex}]`, `notes[${i}]`);
+            });
+            wrapper.dataset.index = i;
+        });
+        this.nextIndex = this.getWrappers().length;
+    }
+
+    clear() {
+        this.getWrappers().forEach(wrapper => {
+            this.detachListener(wrapper);
+            wrapper.remove();
+        });
+        this.nextIndex = 0;
+        const empty = this.createWrapper(true);
+        this.section.appendChild(empty);
+        this.attachListener(empty);
+        this.autosizeAll();
     }
 
     insertMarkdown(markdown) {

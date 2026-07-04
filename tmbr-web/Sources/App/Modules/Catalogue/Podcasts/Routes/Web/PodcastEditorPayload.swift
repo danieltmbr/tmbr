@@ -17,6 +17,8 @@ struct PodcastEditorPayload: Decodable, Sendable {
 
     private let episodeNumberRaw: String?
 
+    let draftKey: String?
+
     let genre: String?
 
     let notes: [NotePayload]
@@ -54,6 +56,7 @@ struct PodcastEditorPayload: Decodable, Sendable {
         case artworkSourceURLRaw = "artwork-source-url"
         case episodeNumberRaw = "episode-number"
         case episodeTitle
+        case draftKey
         case genre
         case notes
         case releaseDate = "release-date"
@@ -69,6 +72,7 @@ struct PodcastEditorPayload: Decodable, Sendable {
         artworkSourceURLRaw: String? = nil,
         episodeNumber: Int? = nil,
         episodeTitle: String = "",
+        draftKey: String? = nil,
         genre: String? = nil,
         notes: [NotePayload] = [],
         releaseDate: Date? = nil,
@@ -82,6 +86,7 @@ struct PodcastEditorPayload: Decodable, Sendable {
         self.artworkSourceURLRaw = artworkSourceURLRaw
         self.episodeNumberRaw = episodeNumber.map(String.init)
         self.episodeTitle = episodeTitle
+        self.draftKey = draftKey
         self.genre = genre
         self.notes = notes
         self.releaseDate = releaseDate
