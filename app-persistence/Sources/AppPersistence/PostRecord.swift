@@ -76,7 +76,7 @@ public extension PostRecord {
         set { syncStateRaw = newValue.rawValue }
     }
 
-    static func predicate(languages: Set<Language>) -> Predicate<PostRecord> {
+    static func list(languages: Set<Language>) -> Predicate<PostRecord> {
         let codes = languages.map(\.rawValue)
         return #Predicate<PostRecord> { post in
             codes.isEmpty || post.languageRaw.isEmpty || codes.contains(post.languageRaw)

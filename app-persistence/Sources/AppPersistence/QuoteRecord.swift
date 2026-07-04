@@ -87,7 +87,7 @@ public extension QuoteRecord {
         set { languageRaw = newValue?.rawValue ?? "" }
     }
 
-    static func predicate(categorySlugs: Set<String>, languages: Set<Language>) -> Predicate<QuoteRecord> {
+    static func list(categorySlugs: Set<String>, languages: Set<Language>) -> Predicate<QuoteRecord> {
         let slugs = Array(categorySlugs)
         let codes = languages.map(\.rawValue)
         return #Predicate<QuoteRecord> { quote in

@@ -85,7 +85,7 @@ private struct QuotesList: View {
 
     init(selectedCategorySlugs: Set<String>, selectedLanguages: Set<Language>, showRandom: Binding<Bool>) {
         _quotes = Query(
-            filter: QuoteRecord.predicate(categorySlugs: selectedCategorySlugs, languages: selectedLanguages),
+            filter: QuoteRecord.list(categorySlugs: selectedCategorySlugs, languages: selectedLanguages),
             sort: \QuoteRecord.createdAt,
             order: .reverse
         )

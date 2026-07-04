@@ -69,7 +69,7 @@ private struct PostsList: View {
 
     init(selectedLanguages: Set<Language>) {
         _posts = Query(
-            filter: PostRecord.predicate(languages: selectedLanguages),
+            filter: PostRecord.list(languages: selectedLanguages),
             sort: \PostRecord.createdAt,
             order: .reverse
         )
