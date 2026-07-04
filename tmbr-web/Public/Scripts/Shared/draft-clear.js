@@ -3,7 +3,7 @@ class DraftClearController {
         this.paramName = paramName;
     }
 
-    clearIfRequested() {
+    init() {
         const params = new URLSearchParams(window.location.search);
         const key = params.get(this.paramName);
         if (!key) return;
@@ -17,8 +17,10 @@ class DraftClearController {
         const newUrl = window.location.pathname + (query ? `?${query}` : '') + window.location.hash;
         history.replaceState(null, '', newUrl);
     }
+
+    destroy() {}
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    new DraftClearController().clearIfRequested();
+    new DraftClearController().init();
 });
