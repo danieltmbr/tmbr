@@ -1,9 +1,12 @@
 import SwiftUI
+import AppCore
 
 @main
 struct AuthorApp: App {
 
     private let account: AccountModel
+    
+    let preferences = PreferencesModel()
 
     init() {
         let config = APIConfig.fromInfoPlist()
@@ -18,6 +21,14 @@ struct AuthorApp: App {
         WindowGroup {
             RootView()
                 .account(account)
+                .preferences(preferences)
         }
+
+        #if os(macOS)
+        Settings {
+            PreferencesView()
+                .preferences(preferences)
+        }
+        #endif
     }
 }

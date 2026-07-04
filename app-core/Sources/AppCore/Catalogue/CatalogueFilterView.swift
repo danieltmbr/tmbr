@@ -10,24 +10,25 @@ public struct CatalogueFilterView: View {
     public var body: some View {
         #if os(iOS)
         NavigationStack {
-            CatalogueCategoriesList()
-                .navigationTitle("Filter")
-                .toolbarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        CatalogueSelectAllButton()
-                    }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") { dismiss() }
-                    }
+            List {
+                CatalogueCategoriesList()
+                LanguageFilterSection()
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .contentMargins(.top, 0, for: .scrollContent)
+            .navigationTitle("Filter")
+            .toolbarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
                 }
+            }
         }
         .presentationDetents([.medium, .large])
         #else
         VStack(spacing: 0) {
             HStack {
-                CatalogueSelectAllButton()
-                Spacer()
                 Text("Filter")
                     .font(.headline)
                 Spacer()
@@ -36,9 +37,13 @@ public struct CatalogueFilterView: View {
             .padding(.horizontal)
             .padding(.vertical, 12)
 
-            CatalogueCategoriesList()
+            List {
+                CatalogueCategoriesList()
+                LanguageFilterSection()
+            }
+            .frame(maxHeight: .infinity)
         }
-        .frame(minWidth: 200, maxHeight: 400)
+        .frame(width: 280, height: 360)
         #endif
     }
 }

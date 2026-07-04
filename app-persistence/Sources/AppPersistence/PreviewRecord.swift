@@ -39,6 +39,11 @@ public final class PreviewRecord {
     /// External resource URLs. Mirrors `PreviewResponse.resources` / `Preview.externalLinks`.
     public var externalLinks: [String] = []
 
+    /// Pipe-joined language codes of the notes attached to this item (e.g. `"en"`, `"en|hu"`).
+    /// Empty until the first sync that includes embedded notes (e.g. `?notes=true`).
+    /// Empty = unknown = always visible regardless of the active language filter.
+    var languagesJoined: String = ""
+
     var accessRaw: String = ""
 
     public var createdAt: Date = Date.now
@@ -88,4 +93,26 @@ public extension PreviewRecord {
     /// An orphan has no backing per-type record.
     var isOrphan: Bool { sourceID == nil }
 
+    /// The set of languages carried by this item's notes, derived from `languagesJoined`.
+    ///
+    /// Empty until the first sync that embeds notes. Use `.isEmpty` to detect "unknown" — items
+    /// with an unknown language set are always shown regardless of the active language filter.
+    public var languages: Set<Language> {
+        get { Set(languagesJoined.split(separator: "|").compactMap { Language(rawValue: String($0)) }) }
+        set { languagesJoined = newValue.map(\.rawValue).sorted().joined(separator: "|") }
+    }
+
+    static func catalogue(categories: Set<String>, languages: Set<Language>) -> Predicate<PreviewRecord> {
+        let slugs = Array(categories)
+        let hasLanguageFilter = !languages.isEmpty
+        let wantsEn = languages.contains(.en)
+        let wantsHu = languages.contains(.hu)
+        return #Predicate<PreviewRecord> { item in
+            (slugs.isEmpty || slugs.contains(item.categoryType)) &&
+            (!hasLanguageFilter ||
+             item.languagesJoined.isEmpty ||
+             (wantsEn && item.languagesJoined.contains("en")) ||
+             (wantsHu && item.languagesJoined.contains("hu")))
+        }
+    }
 }

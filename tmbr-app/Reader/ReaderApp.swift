@@ -10,10 +10,13 @@ import AppPersistence
 @main
 struct ReaderApp: App {
 
-    let container: ModelContainer
+    private let container: ModelContainer
 
-    let blog: BlogModel
-    let catalogue: CatalogueModel
+    private let blog: BlogModel
+    
+    private let catalogue: CatalogueModel
+    
+    private let preferences = PreferencesModel()
 
     init() {
         do {
@@ -47,9 +50,17 @@ struct ReaderApp: App {
             ContentView()
                 .blog(blog)
                 .catalogue(catalogue)
+                .preferences(preferences)
                 .environment(\.apiBaseURL, Self.apiBaseURL)
         }
         .modelContainer(container)
+
+        #if os(macOS)
+        Settings {
+            PreferencesView()
+                .preferences(preferences)
+        }
+        #endif
     }
 
     private static var apiBaseURL: URL {
