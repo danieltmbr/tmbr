@@ -1,16 +1,20 @@
-function clearDraftIfRequested() {
-    const params = new URLSearchParams(window.location.search);
-    const key = params.get('clearDraft');
-    if (!key) return;
+class DraftClearController {
+    constructor() {
+        const params = new URLSearchParams(window.location.search);
+        const key = params.get('clearDraft');
+        if (!key) return;
 
-    try { localStorage.removeItem(key); } catch (_) {
-        // ignore
+        try { localStorage.removeItem(key); } catch (_) {
+            // ignore
+        }
+
+        params.delete('clearDraft');
+        const query = params.toString();
+        const newUrl = window.location.pathname + (query ? `?${query}` : '') + window.location.hash;
+        history.replaceState(null, '', newUrl);
     }
-
-    params.delete('clearDraft');
-    const query = params.toString();
-    const newUrl = window.location.pathname + (query ? `?${query}` : '') + window.location.hash;
-    history.replaceState(null, '', newUrl);
 }
 
-document.addEventListener('DOMContentLoaded', clearDraftIfRequested);
+document.addEventListener('DOMContentLoaded', () => {
+    new DraftClearController();
+});
