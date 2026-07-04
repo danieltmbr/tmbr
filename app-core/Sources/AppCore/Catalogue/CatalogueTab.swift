@@ -87,7 +87,7 @@ private struct CatalogueItemsList: View {
 
     init(selectedCategorySlugs: Set<String>, selectedLanguages: Set<Language>) {
         _items = Query(
-            filter: PreviewRecord.list(categories: selectedCategorySlugs, languages: selectedLanguages),
+            filter: PreviewRecord.catalogue(categories: selectedCategorySlugs, languages: selectedLanguages),
             sort: \PreviewRecord.primaryInfo
         )
     }
