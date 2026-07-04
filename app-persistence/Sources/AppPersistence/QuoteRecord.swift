@@ -87,12 +87,17 @@ public extension QuoteRecord {
         set { languageRaw = newValue?.rawValue ?? "" }
     }
 
-    /// Sentinel source bucket for quotes originating from a blog post (nil `sourceType`).
-    /// Guaranteed not to collide with real category slugs because slugs are short plain words.
-    static let blogPostsSource = "__blog_posts__"
+    /// Sentinel string for blog-post-sourced quotes (nil `sourceType`).
+    /// Private — callers use `QuoteSourceFilter.blogPosts` instead.
+    private static let blogPostsSource = "__blog_posts__"
 
-    static func list(sources: Set<String>, languages: Set<Language>) -> Predicate<QuoteRecord> {
-        let sourcesArray = Array(sources)
+    static func list(sources: Set<QuoteSourceFilter>, languages: Set<Language>) -> Predicate<QuoteRecord> {
+        let sourcesArray = Array(sources.map { filter -> String in
+            switch filter {
+            case .category(let slug): return slug.rawValue
+            case .blogPosts: return blogPostsSource
+            }
+        })
         let codes = languages.map(\.rawValue)
         let blogSentinel = blogPostsSource
         return #Predicate<QuoteRecord> { quote in

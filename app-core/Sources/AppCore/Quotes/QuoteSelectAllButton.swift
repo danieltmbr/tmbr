@@ -20,9 +20,9 @@ struct QuoteSelectAllButton: View {
     @Environment(\.selectQuoteSources)
     private var selectQuoteSources
 
-    /// The full universe of selectable buckets: every category slug + the blog-posts sentinel.
-    private var allBuckets: Set<String> {
-        Set(categories.map(\.slug)).union([QuotesModel.blogPosts])
+    /// The full universe of selectable buckets: every category + the blog-posts bucket.
+    private var allBuckets: Set<QuoteSourceFilter> {
+        Set(categories.map { .category($0.categorySlug) }).union([.blogPosts])
     }
 
     private var allSelected: Bool {

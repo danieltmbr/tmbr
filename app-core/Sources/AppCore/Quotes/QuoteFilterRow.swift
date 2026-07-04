@@ -1,13 +1,13 @@
 import SwiftUI
+import AppPersistence
 
-/// A generic selectable row for one source bucket inside the Quotes filter list.
+/// A selectable row for one source bucket inside the Quotes filter list.
 ///
 /// Both catalogue-category rows and the "Blog posts" row share this implementation;
-/// the only variation is the `id` (category slug vs. `QuotesModel.blogPosts`), `name`,
-/// and `systemImage`.
+/// the only variation is the `source` filter value, `name`, and `systemImage`.
 struct QuoteFilterRow: View {
 
-    let id: String
+    let source: QuoteSourceFilter
     let name: String
     let systemImage: String
 
@@ -19,13 +19,13 @@ struct QuoteFilterRow: View {
 
     var body: some View {
         Button {
-            selectQuoteSources([id], strategy: .toggle)
+            selectQuoteSources([source], strategy: .toggle)
         } label: {
             HStack {
                 Label(name, systemImage: systemImage)
                     .foregroundStyle(.primary)
                 Spacer()
-                if selectedSources.contains(id) {
+                if selectedSources.contains(source) {
                     Image(systemName: "checkmark")
                         .foregroundStyle(.tint)
                 }

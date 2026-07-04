@@ -85,7 +85,7 @@ private struct CatalogueItemsList: View {
     @Environment(\.refreshCatalogue)
     private var refreshCatalogue
 
-    init(selectedCategorySlugs: Set<String>, selectedLanguages: Set<Language>) {
+    init(selectedCategorySlugs: Set<CategorySlug>, selectedLanguages: Set<Language>) {
         _items = Query(
             filter: PreviewRecord.catalogue(categories: selectedCategorySlugs, languages: selectedLanguages),
             sort: \PreviewRecord.primaryInfo

@@ -1,13 +1,14 @@
 import Foundation
+import AppPersistence
 
-/// Merges a set of source bucket IDs into `QuotesModel.selectedSources` using a
+/// Merges a set of source filters into `QuotesModel.selectedSources` using a
 /// `SelectionStrategy` (`.toggle` for row taps, `.override` for select-all).
 @MainActor
 public struct SelectQuoteSourcesAction: Sendable {
 
-    private let body: @MainActor (Set<String>, SelectionStrategy) -> Void
+    private let body: @MainActor (Set<QuoteSourceFilter>, SelectionStrategy<QuoteSourceFilter>) -> Void
 
-    nonisolated public init(_ body: @escaping @MainActor (Set<String>, SelectionStrategy) -> Void = { _, _ in }) {
+    nonisolated public init(_ body: @escaping @MainActor (Set<QuoteSourceFilter>, SelectionStrategy<QuoteSourceFilter>) -> Void = { _, _ in }) {
         self.body = body
     }
 
@@ -18,7 +19,7 @@ public struct SelectQuoteSourcesAction: Sendable {
         }
     }
 
-    public func callAsFunction(_ sources: Set<String>, strategy: SelectionStrategy) {
+    public func callAsFunction(_ sources: Set<QuoteSourceFilter>, strategy: SelectionStrategy<QuoteSourceFilter>) {
         body(sources, strategy)
     }
 }

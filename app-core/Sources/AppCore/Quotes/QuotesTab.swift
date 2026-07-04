@@ -83,7 +83,7 @@ private struct QuotesList: View {
 
     @Binding private var showRandom: Bool
 
-    init(selectedSources: Set<String>, selectedLanguages: Set<Language>, showRandom: Binding<Bool>) {
+    init(selectedSources: Set<QuoteSourceFilter>, selectedLanguages: Set<Language>, showRandom: Binding<Bool>) {
         _quotes = Query(
             filter: QuoteRecord.list(sources: selectedSources, languages: selectedLanguages),
             sort: \QuoteRecord.createdAt,

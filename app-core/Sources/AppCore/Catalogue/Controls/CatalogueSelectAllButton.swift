@@ -21,12 +21,12 @@ struct CatalogueSelectAllButton: View {
     private var selectCategories
 
     private var allSelected: Bool {
-        !categories.isEmpty && categories.allSatisfy { selectedSlugs.contains($0.slug) }
+        !categories.isEmpty && categories.allSatisfy { selectedSlugs.contains($0.categorySlug) }
     }
 
     var body: some View {
         Button(allSelected ? "Deselect All" : "Select All") {
-            let slugs = allSelected ? [] : Set(categories.map(\.slug))
+            let slugs: Set<CategorySlug> = allSelected ? [] : Set(categories.map(\.categorySlug))
             selectCategories(slugs, strategy: .override)
         }
     }

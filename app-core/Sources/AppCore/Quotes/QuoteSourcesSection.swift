@@ -19,14 +19,14 @@ struct QuoteSourcesSection: View {
     var body: some View {
         Section {
             QuoteFilterRow(
-                id: QuotesModel.blogPosts,
+                source: .blogPosts,
                 name: "Blog posts",
                 systemImage: "text.page"
             )
             .listRowBackground(Color.clear)
             ForEach(categories) { category in
                 QuoteFilterRow(
-                    id: category.slug,
+                    source: .category(category.categorySlug),
                     name: category.name,
                     systemImage: category.icon ?? "link"
                 )

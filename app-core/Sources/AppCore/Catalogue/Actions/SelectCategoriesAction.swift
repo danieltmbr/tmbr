@@ -1,11 +1,12 @@
 import Foundation
+import AppPersistence
 
 @MainActor
 public struct SelectCategoriesAction: Sendable {
 
-    private let body: @MainActor (Set<String>, SelectionStrategy) -> Void
+    private let body: @MainActor (Set<CategorySlug>, SelectionStrategy<CategorySlug>) -> Void
 
-    nonisolated public init(_ body: @escaping @MainActor (Set<String>, SelectionStrategy) -> Void = { _, _ in }) {
+    nonisolated public init(_ body: @escaping @MainActor (Set<CategorySlug>, SelectionStrategy<CategorySlug>) -> Void = { _, _ in }) {
         self.body = body
     }
 
@@ -16,7 +17,7 @@ public struct SelectCategoriesAction: Sendable {
         }
     }
 
-    public func callAsFunction(_ slugs: Set<String>, strategy: SelectionStrategy) {
+    public func callAsFunction(_ slugs: Set<CategorySlug>, strategy: SelectionStrategy<CategorySlug>) {
         body(slugs, strategy)
     }
 }
