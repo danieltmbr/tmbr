@@ -27,11 +27,31 @@ struct PushNotification: Encodable, Sendable {
         )
     }
 
+    init(preview: Preview) throws {
+        guard let id = preview.id else {
+            throw Abort(.internalServerError, reason: "Unidentified preview")
+        }
+        let urlString: String
+        if let route = preview.catalogueCategory?.route, let parentID = preview.parentID {
+            urlString = "\(Environment.webApp.startURL)/\(route)/\(parentID)"
+        } else {
+            urlString = "\(Environment.webApp.startURL)/catalogue/item/\(id)"
+        }
+        guard let url = URL(string: urlString) else {
+            throw Abort(.internalServerError, reason: "Invalid preview URL")
+        }
+        let categoryName = preview.catalogueCategory?.name ?? "catalogue item"
+        self.init(
+            title: "New \(categoryName.lowercased())",
+            body: preview.primaryInfo,
+            url: url
+        )
+    }
+
     init(note: Note, preview: Preview) throws {
         guard note.id != nil else {
             throw Abort(.internalServerError, reason: "Unidentified note")
         }
-        let categoryName = preview.catalogueCategory?.name ?? "catalogue item"
         let urlString: String
         if let route = preview.catalogueCategory?.route, let parentID = preview.parentID {
             urlString = "\(Environment.webApp.startURL)/\(route)/\(parentID)"
@@ -42,7 +62,7 @@ struct PushNotification: Encodable, Sendable {
             throw Abort(.internalServerError, reason: "Invalid note URL")
         }
         self.init(
-            title: "New \(categoryName) note",
+            title: "New note",
             body: preview.primaryInfo,
             url: url
         )

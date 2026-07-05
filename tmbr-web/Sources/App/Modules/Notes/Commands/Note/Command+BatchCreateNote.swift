@@ -14,11 +14,11 @@ struct BatchCreateNoteInput: Sendable {
 }
 
 struct BatchCreateNoteCommand: Command {
-    
+
     typealias Input = BatchCreateNoteInput
-    
+
     typealias Output = [Note]
-    
+
     private let attachPermission: AuthPermissionResolver<AttachNotePermissionInput>
 
     private let createPermission: AuthPermissionResolver<Void>

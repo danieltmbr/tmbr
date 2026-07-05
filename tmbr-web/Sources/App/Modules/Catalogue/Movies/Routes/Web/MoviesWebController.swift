@@ -84,9 +84,10 @@ struct MoviesWebController: RouteCollection {
 
             let coverId = try await resolveCover(payload: payload, on: req)
 
-            let movie = try await req.commands.transaction { commands in
+            let (movie, notifyInput): (Movie, NotifyPreviewInput?) = try await req.commands.transaction { commands in
                 let movieInput = MovieInput(payload: payload, coverId: coverId)
                 let movie: Movie
+                var notifyInput: NotifyPreviewInput?
 
                 switch mode {
                 case .create:
@@ -95,7 +96,10 @@ struct MoviesWebController: RouteCollection {
                     let noteInputs = payload.notes.map { entry in
                         NoteInput(body: entry.body, access: entry.access && payload.access)
                     }
-                    _ = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    let notes = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    if let firstNote = notes.first {
+                        notifyInput = NotifyPreviewInput(preview: preview, language: firstNote.language.rawValue)
+                    }
                 case .update(let movieID):
                     movie = try await commands.movies.edit(movieInput.edit(id: movieID))
                     let preview = try await commands.previews.fetch(movie.$preview.id, for: .write)
@@ -112,7 +116,16 @@ struct MoviesWebController: RouteCollection {
                     )
                 }
 
-                return movie
+                return (movie, notifyInput)
+            }
+
+            if let input = notifyInput {
+                let notify = req.commands.notifications.preview
+                let logger = req.logger
+                Task.detached {
+                    do { try await notify(input) }
+                    catch { logger.error("Preview notification failed: \(error)") }
+                }
             }
 
             req.session.data["csrf.editor"] = nil

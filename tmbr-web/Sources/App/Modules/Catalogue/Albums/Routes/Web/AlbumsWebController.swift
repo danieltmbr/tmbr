@@ -82,9 +82,10 @@ struct AlbumsWebController: RouteCollection {
 
             let artworkId = try await resolveArtwork(payload: payload, on: req)
 
-            let album = try await req.commands.transaction { commands in
+            let (album, notifyInput): (Album, NotifyPreviewInput?) = try await req.commands.transaction { commands in
                 let albumInput = AlbumInput(payload: payload, artworkId: artworkId)
                 let album: Album
+                var notifyInput: NotifyPreviewInput?
 
                 switch mode {
                 case .create:
@@ -93,7 +94,10 @@ struct AlbumsWebController: RouteCollection {
                     let noteInputs = payload.notes.map { entry in
                         NoteInput(body: entry.body, access: entry.access && payload.access)
                     }
-                    _ = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    let notes = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    if let firstNote = notes.first {
+                        notifyInput = NotifyPreviewInput(preview: preview, language: firstNote.language.rawValue)
+                    }
                     if let tracks = albumInput.tracks, !tracks.isEmpty {
                         try await commands.previews.importTracks(
                             ImportAlbumTracksInput(
@@ -121,7 +125,16 @@ struct AlbumsWebController: RouteCollection {
                     )
                 }
 
-                return album
+                return (album, notifyInput)
+            }
+
+            if let input = notifyInput {
+                let notify = req.commands.notifications.preview
+                let logger = req.logger
+                Task.detached {
+                    do { try await notify(input) }
+                    catch { logger.error("Preview notification failed: \(error)") }
+                }
             }
 
             req.session.data["csrf.editor"] = nil

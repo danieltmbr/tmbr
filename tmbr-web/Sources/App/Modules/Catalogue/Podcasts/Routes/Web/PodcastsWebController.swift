@@ -83,9 +83,10 @@ struct PodcastsWebController: RouteCollection {
 
             let artworkId = try await resolveArtwork(payload: payload, on: req)
 
-            let podcast = try await req.commands.transaction { commands in
+            let (podcast, notifyInput): (Podcast, NotifyPreviewInput?) = try await req.commands.transaction { commands in
                 let podcastInput = PodcastInput(payload: payload, artworkId: artworkId)
                 let podcast: Podcast
+                var notifyInput: NotifyPreviewInput?
 
                 switch mode {
                 case .create:
@@ -94,7 +95,10 @@ struct PodcastsWebController: RouteCollection {
                     let noteInputs = payload.notes.map { entry in
                         NoteInput(body: entry.body, access: entry.access && payload.access)
                     }
-                    _ = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    let notes = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    if let firstNote = notes.first {
+                        notifyInput = NotifyPreviewInput(preview: preview, language: firstNote.language.rawValue)
+                    }
                 case .update(let podcastID):
                     podcast = try await commands.podcasts.edit(podcastInput.edit(id: podcastID))
                     let preview = try await commands.previews.fetch(podcast.$preview.id, for: .write)
@@ -111,7 +115,16 @@ struct PodcastsWebController: RouteCollection {
                     )
                 }
 
-                return podcast
+                return (podcast, notifyInput)
+            }
+
+            if let input = notifyInput {
+                let notify = req.commands.notifications.preview
+                let logger = req.logger
+                Task.detached {
+                    do { try await notify(input) }
+                    catch { logger.error("Preview notification failed: \(error)") }
+                }
             }
 
             req.session.data["csrf.editor"] = nil
