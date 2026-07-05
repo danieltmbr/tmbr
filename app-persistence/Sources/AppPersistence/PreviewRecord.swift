@@ -97,13 +97,13 @@ public extension PreviewRecord {
     ///
     /// Empty until the first sync that embeds notes. Use `.isEmpty` to detect "unknown" — items
     /// with an unknown language set are always shown regardless of the active language filter.
-    public var languages: Set<Language> {
+    var languages: Set<Language> {
         get { Set(languagesJoined.split(separator: "|").compactMap { Language(rawValue: String($0)) }) }
         set { languagesJoined = newValue.map(\.rawValue).sorted().joined(separator: "|") }
     }
 
-    static func catalogue(categories: Set<String>, languages: Set<Language>) -> Predicate<PreviewRecord> {
-        let slugs = Array(categories)
+    static func catalogue(categories: Set<CatalogueCategory>, languages: Set<Language>) -> Predicate<PreviewRecord> {
+        let slugs = Array(categories.map(\.rawValue))
         let hasLanguageFilter = !languages.isEmpty
         let wantsEn = languages.contains(.en)
         let wantsHu = languages.contains(.hu)

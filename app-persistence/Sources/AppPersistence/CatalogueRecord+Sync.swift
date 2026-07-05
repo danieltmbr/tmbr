@@ -140,7 +140,7 @@ public extension QuoteRecord {
         }
         sourceTitle = response.source.title
         sourceSubtitle = response.source.subtitle
-        sourceType = response.source.type
+        sourceType = response.source.type ?? QuoteRecord.blogPostsSource
         sourcePreviewID = response.source.preview?.id
         syncState = .synced
     }

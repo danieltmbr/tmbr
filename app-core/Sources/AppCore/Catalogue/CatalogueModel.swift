@@ -1,5 +1,6 @@
 import Foundation
 import OSLog
+import AppPersistence
 
 /// Headless model for the Catalogue tab — tracks refresh activity and outcome; the list comes from `@Query`.
 /// The injected `refresh` closure is the per-app seam (Reader fetch+upsert / Author SyncEngine / no-op).
@@ -18,8 +19,8 @@ public final class CatalogueModel {
     /// When the last successful refresh completed.
     public private(set) var lastFetched: Date?
 
-    /// Slugs of the categories currently active in the filter. Empty = no filter (show all).
-    public var selectedCategorySlugs: Set<String> = []
+    /// Categories currently active in the filter. Empty = no filter (show all).
+    public var selectedCategories: Set<CatalogueCategory> = []
 
     // MARK: - Dependencies
 

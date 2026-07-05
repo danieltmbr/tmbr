@@ -14,20 +14,20 @@ struct CatalogueSelectAllButton: View {
         allCategories.filter { $0.kind != .virtual && $0.kind != .promotable }
     }
 
-    @Catalogue(\.selectedCategorySlugs)
-    private var selectedSlugs
+    @Catalogue(\.selectedCategories)
+    private var selectedCategories
 
     @Environment(\.selectCategories)
     private var selectCategories
 
     private var allSelected: Bool {
-        !categories.isEmpty && categories.allSatisfy { selectedSlugs.contains($0.slug) }
+        !categories.isEmpty && categories.allSatisfy { selectedCategories.contains(CatalogueCategory($0)) }
     }
 
     var body: some View {
         Button(allSelected ? "Deselect All" : "Select All") {
-            let slugs = allSelected ? [] : Set(categories.map(\.slug))
-            selectCategories(slugs, strategy: .override)
+            let selection: Set<CatalogueCategory> = allSelected ? [] : Set(categories.map(CatalogueCategory.init))
+            selectCategories(selection, strategy: .override)
         }
     }
 }

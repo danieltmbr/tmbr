@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import AppPersistence
+import TmbrCore
 
 struct CatalogueTab: View {
 
@@ -10,8 +11,8 @@ struct CatalogueTab: View {
     @Environment(\.canAuthor)
     private var canAuthor
 
-    @Catalogue(\.selectedCategorySlugs)
-    private var selectedCategorySlugs
+    @Catalogue(\.selectedCategories)
+    private var selectedCategories
 
     @Preferences(\.selectedLanguages)
     private var selectedLanguages
@@ -24,7 +25,7 @@ struct CatalogueTab: View {
     var body: some View {
         NavigationStack {
             CatalogueItemsList(
-                selectedCategorySlugs: selectedCategorySlugs,
+                selectedCategories: selectedCategories,
                 selectedLanguages: selectedLanguages
             )
             .navigationTitle("Catalogue")
@@ -85,9 +86,9 @@ private struct CatalogueItemsList: View {
     @Environment(\.refreshCatalogue)
     private var refreshCatalogue
 
-    init(selectedCategorySlugs: Set<String>, selectedLanguages: Set<Language>) {
+    init(selectedCategories: Set<CatalogueCategory>, selectedLanguages: Set<Language>) {
         _items = Query(
-            filter: PreviewRecord.catalogue(categories: selectedCategorySlugs, languages: selectedLanguages),
+            filter: PreviewRecord.catalogue(categories: selectedCategories, languages: selectedLanguages),
             sort: \PreviewRecord.primaryInfo
         )
     }

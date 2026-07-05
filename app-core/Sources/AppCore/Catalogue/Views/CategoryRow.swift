@@ -5,21 +5,21 @@ struct CategoryRow: View {
 
     let category: CatalogueCategoryRecord
 
-    @Catalogue(\.selectedCategorySlugs)
-    private var selectedSlugs
+    @Catalogue(\.selectedCategories)
+    private var selectedCategories
 
     @Environment(\.selectCategories)
     private var selectCategories
 
     var body: some View {
         Button {
-            selectCategories([category.slug], strategy: .toggle)
+            selectCategories([CatalogueCategory(category)], strategy: .toggle)
         } label: {
             HStack {
                 Label(category.name, systemImage: category.icon ?? "link")
                     .foregroundStyle(.primary)
                 Spacer()
-                if selectedSlugs.contains(category.slug) {
+                if selectedCategories.contains(CatalogueCategory(category)) {
                     Image(systemName: "checkmark")
                         .foregroundStyle(.tint)
                 }
