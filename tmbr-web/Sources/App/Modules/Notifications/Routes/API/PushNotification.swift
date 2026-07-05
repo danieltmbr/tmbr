@@ -40,9 +40,9 @@ struct PushNotification: Encodable, Sendable {
         guard let url = URL(string: urlString) else {
             throw Abort(.internalServerError, reason: "Invalid preview URL")
         }
-        let categoryName = preview.catalogueCategory?.name ?? "catalogue item"
+        let categoryName = preview.catalogueCategory?.name ?? "item"
         self.init(
-            title: "New \(categoryName.lowercased())",
+            title: "New \(categoryName.lowercased()) in the catalogue",
             body: preview.primaryInfo,
             url: url
         )
