@@ -102,7 +102,7 @@ public extension PreviewRecord {
         set { languagesJoined = newValue.map(\.rawValue).sorted().joined(separator: "|") }
     }
 
-    static func catalogue(categories: Set<CategorySlug>, languages: Set<Language>) -> Predicate<PreviewRecord> {
+    static func catalogue(categories: Set<CatalogueCategory>, languages: Set<Language>) -> Predicate<PreviewRecord> {
         let slugs = Array(categories.map(\.rawValue))
         let hasLanguageFilter = !languages.isEmpty
         let wantsEn = languages.contains(.en)

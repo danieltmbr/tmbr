@@ -26,7 +26,7 @@ struct QuoteSourcesSection: View {
             .listRowBackground(Color.clear)
             ForEach(categories) { category in
                 QuoteFilterRow(
-                    source: .category(category.categorySlug),
+                    source: .category(CatalogueCategory(category)),
                     name: category.name,
                     systemImage: category.icon ?? "link"
                 )

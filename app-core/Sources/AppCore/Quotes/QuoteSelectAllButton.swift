@@ -3,7 +3,7 @@ import SwiftData
 import AppPersistence
 
 /// Adaptively shows "Select All" or "Deselect All" based on whether every source bucket —
-/// catalogue categories plus the blog-posts sentinel — is currently selected.
+/// catalogue categories plus the blog-posts bucket — is currently selected.
 /// Uses `.override` strategy so it replaces the selection in one tap.
 struct QuoteSelectAllButton: View {
 
@@ -22,7 +22,7 @@ struct QuoteSelectAllButton: View {
 
     /// The full universe of selectable buckets: every category + the blog-posts bucket.
     private var allBuckets: Set<QuoteSourceFilter> {
-        Set(categories.map { .category($0.categorySlug) }).union([.blogPosts])
+        Set(categories.map { .category(CatalogueCategory($0)) }).union([.blogPosts])
     }
 
     private var allSelected: Bool {

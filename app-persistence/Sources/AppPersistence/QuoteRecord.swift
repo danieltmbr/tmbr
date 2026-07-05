@@ -94,7 +94,7 @@ public extension QuoteRecord {
     static func list(sources: Set<QuoteSourceFilter>, languages: Set<Language>) -> Predicate<QuoteRecord> {
         let sourcesArray = Array(sources.map { filter -> String in
             switch filter {
-            case .category(let slug): return slug.rawValue
+            case .category(let category): return category.rawValue
             case .blogPosts: return blogPostsSource
             }
         })

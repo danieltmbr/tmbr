@@ -20,7 +20,7 @@ public final class CatalogueModel {
     public private(set) var lastFetched: Date?
 
     /// Categories currently active in the filter. Empty = no filter (show all).
-    public var selectedCategorySlugs: Set<CategorySlug> = []
+    public var selectedCategories: Set<CatalogueCategory> = []
 
     // MARK: - Dependencies
 
