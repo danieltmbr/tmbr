@@ -39,8 +39,10 @@ public final class QuoteRecord {
 
     public var sourceSubtitle: String?
 
-    /// Category type slug ("song", "book", …). nil for post-sourced quotes.
-    public var sourceType: String?
+    /// Category type slug ("song", "book", …). Blog-post-sourced quotes store the
+    /// `blogPostsSource` sentinel so the field is always non-optional and queryable
+    /// without nil-coalescing in SwiftData predicates.
+    public var sourceType: String = QuoteRecord.blogPostsSource
 
     /// PreviewID of the source catalogue item. nil for post-sourced quotes.
     public var sourcePreviewID: UUID?
@@ -87,9 +89,9 @@ public extension QuoteRecord {
         set { languageRaw = newValue?.rawValue ?? "" }
     }
 
-    /// Sentinel string for blog-post-sourced quotes (nil `sourceType`).
-    /// Private — callers use `QuoteSourceFilter.blogPosts` instead.
-    private static let blogPostsSource = "__blog_posts__"
+    /// Sentinel for blog-post-sourced quotes. Internal so sync code (same module) can write it;
+    /// callers outside AppPersistence use `QuoteSourceFilter.blogPosts` instead.
+    static let blogPostsSource = "__blog_posts__"
 
     static func list(sources: Set<QuoteSourceFilter>, languages: Set<Language>) -> Predicate<QuoteRecord> {
         let sourcesArray = Array(sources.map { filter -> String in
@@ -99,9 +101,8 @@ public extension QuoteRecord {
             }
         })
         let codes = languages.map(\.rawValue)
-        let blogSentinel = blogPostsSource
         return #Predicate<QuoteRecord> { quote in
-            (sourcesArray.isEmpty || sourcesArray.contains(quote.sourceType ?? blogSentinel)) &&
+            (sourcesArray.isEmpty || sourcesArray.contains(quote.sourceType)) &&
             (codes.isEmpty || quote.languageRaw.isEmpty || codes.contains(quote.languageRaw))
         }
     }
