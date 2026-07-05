@@ -46,7 +46,7 @@ public struct LanguageFilterView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
         }
-        .frame(minWidth: 200, maxHeight: 200)
+        .frame(width: 280, height: 360)
         #endif
     }
 }
