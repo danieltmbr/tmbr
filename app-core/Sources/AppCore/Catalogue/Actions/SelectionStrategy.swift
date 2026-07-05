@@ -1,7 +1,7 @@
 import Foundation
 
 /// Determines how a new set of elements is merged into the current selection.
-public struct SelectionStrategy<Element: Hashable>: Sendable {
+public struct SelectionStrategy<Element: Hashable & Sendable>: Sendable {
 
     let apply: @Sendable (_ current: Set<Element>, _ incoming: Set<Element>) -> Set<Element>
 

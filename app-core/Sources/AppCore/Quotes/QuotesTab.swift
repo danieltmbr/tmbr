@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import AppPersistence
+import TmbrCore
 
 struct QuotesTab: View {
 

@@ -30,7 +30,7 @@ struct BlogStatusLine: View {
         } else if lastError != nil {
             if let date = lastFetched {
                 Label {
-                    Text("Couldn't update \u{00B7} ") + Text(date, format: .relative(presentation: .named))
+                    Text("Couldn't update \u{00B7} \(date, format: .relative(presentation: .named))")
                 } icon: {
                     Image(systemName: "exclamationmark.circle")
                 }
@@ -38,7 +38,7 @@ struct BlogStatusLine: View {
                 Label("Couldn't update", systemImage: "exclamationmark.circle")
             }
         } else if let date = lastFetched {
-            Text("Updated ") + Text(date, format: .relative(presentation: .named))
+            Text("Updated \(date, format: .relative(presentation: .named))")
         }
         // else: EmptyView — no status to show yet
     }
