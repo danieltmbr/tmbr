@@ -132,7 +132,7 @@ struct CatalogueWebController: RouteCollection {
 
             let artworkID = try await resolveArtwork(payload: payload, title: payload.title, on: request)
 
-            let preview = try await request.commands.transaction { commands in
+            let (preview, notifyInput): (Preview, NotifyPreviewInput?) = try await request.commands.transaction { commands in
                 let preview = try await commands.previews.create(
                     CreatePreviewItemInput(
                         title: payload.title.trimmingCharacters(in: .whitespaces),
@@ -151,8 +151,17 @@ struct CatalogueWebController: RouteCollection {
                     )
                 )
                 let noteInputs = payload.notes.map { NoteInput(body: $0.body, access: $0.access && payload.access) }
-                _ = try await commands.notes.batchCreate(noteInputs, for: preview)
-                return preview
+                let notes = try await commands.notes.batchCreate(noteInputs, for: preview)
+                let notifyInput = notes.first.map { NotifyPreviewInput(preview: preview, language: $0.language.rawValue) }
+                return (preview, notifyInput)
+            }
+            if let input = notifyInput {
+                let notify = request.commands.notifications.preview
+                let logger = request.logger
+                Task.detached {
+                    do { try await notify(input) }
+                    catch { logger.error("Preview notification failed: \(error)") }
+                }
             }
             return request.redirect(to: "/catalogue/item/\(preview.id!)")
         } catch {

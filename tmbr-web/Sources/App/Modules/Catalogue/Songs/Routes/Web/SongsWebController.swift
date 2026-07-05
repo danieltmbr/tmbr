@@ -85,9 +85,10 @@ struct SongsWebController: RouteCollection {
             // Resolve artwork: use existing ID, or lookup/upload from URL
             let artworkId = try await resolveArtwork(payload: payload, on: req)
 
-            let song = try await req.commands.transaction { commands in
+            let (song, notifyInput): (Song, NotifyPreviewInput?) = try await req.commands.transaction { commands in
                 let songInput = SongInput(payload: payload, artworkId: artworkId)
                 let song: Song
+                var notifyInput: NotifyPreviewInput?
 
                 switch mode {
                 case .create:
@@ -96,7 +97,10 @@ struct SongsWebController: RouteCollection {
                     let noteInputs = payload.notes.map { entry in
                         NoteInput(body: entry.body, access: entry.access && payload.access)
                     }
-                    _ = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    let notes = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    if let firstNote = notes.first {
+                        notifyInput = NotifyPreviewInput(preview: preview, language: firstNote.language.rawValue)
+                    }
                 case .update(let songID):
                     song = try await commands.songs.edit(songInput.edit(id: songID))
                     let preview = try await commands.previews.fetch(song.$preview.id, for: .write)
@@ -113,7 +117,16 @@ struct SongsWebController: RouteCollection {
                     )
                 }
 
-                return song
+                return (song, notifyInput)
+            }
+
+            if let input = notifyInput {
+                let notify = req.commands.notifications.preview
+                let logger = req.logger
+                Task.detached {
+                    do { try await notify(input) }
+                    catch { logger.error("Preview notification failed: \(error)") }
+                }
             }
 
             req.session.data["csrf.editor"] = nil

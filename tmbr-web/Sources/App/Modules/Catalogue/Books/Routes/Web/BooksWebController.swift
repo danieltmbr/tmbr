@@ -83,9 +83,10 @@ struct BooksWebController: RouteCollection {
 
             let coverId = try await resolveCover(payload: payload, on: req)
 
-            let book = try await req.commands.transaction { commands in
+            let (book, notifyInput): (Book, NotifyPreviewInput?) = try await req.commands.transaction { commands in
                 let bookInput = BookInput(payload: payload, coverId: coverId)
                 let book: Book
+                var notifyInput: NotifyPreviewInput?
 
                 switch mode {
                 case .create:
@@ -94,7 +95,10 @@ struct BooksWebController: RouteCollection {
                     let noteInputs = payload.notes.map { entry in
                         NoteInput(body: entry.body, access: entry.access && payload.access)
                     }
-                    _ = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    let notes = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    if let firstNote = notes.first {
+                        notifyInput = NotifyPreviewInput(preview: preview, language: firstNote.language.rawValue)
+                    }
                 case .update(let bookID):
                     book = try await commands.books.edit(bookInput.edit(id: bookID))
                     let preview = try await commands.previews.fetch(book.$preview.id, for: .write)
@@ -111,7 +115,16 @@ struct BooksWebController: RouteCollection {
                     )
                 }
 
-                return book
+                return (book, notifyInput)
+            }
+
+            if let input = notifyInput {
+                let notify = req.commands.notifications.preview
+                let logger = req.logger
+                Task.detached {
+                    do { try await notify(input) }
+                    catch { logger.error("Preview notification failed: \(error)") }
+                }
             }
 
             req.session.data["csrf.editor"] = nil

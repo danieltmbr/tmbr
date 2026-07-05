@@ -17,6 +17,8 @@ extension Commands {
 
         let postByID: CommandFactory<PostID, Void>
 
+        let preview: CommandFactory<NotifyPreviewInput, Void>
+
         let send: CommandFactory<PushNotification, Void>
 
         init(
@@ -24,12 +26,14 @@ extension Commands {
             note: CommandFactory<Note, Void> = .noteNotification,
             post: CommandFactory<Post, Void> = .postNotification,
             postByID: CommandFactory<PostID, Void> = .postNotificationByID,
+            preview: CommandFactory<NotifyPreviewInput, Void> = .previewNotification,
             send: CommandFactory<PushNotification, Void> = .send
         ) {
             self.content = content
             self.note = note
             self.post = post
             self.postByID = postByID
+            self.preview = preview
             self.send = send
         }
     }

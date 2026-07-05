@@ -234,7 +234,7 @@ class NotificationPreferencesController {
                     cb.checked = true;
                     cb.indeterminate = false;
                 });
-                this.panel.querySelectorAll('.notification-child').forEach(cb => { cb.checked = false; });
+                this.panel.querySelectorAll('.notification-child').forEach(cb => { cb.checked = true; });
             });
 
         this.panel.querySelector('[data-deselect-all]')

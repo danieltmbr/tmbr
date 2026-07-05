@@ -62,9 +62,10 @@ struct PlaylistsWebController: RouteCollection {
 
             let artworkId = try await resolveArtwork(payload: payload, on: req)
 
-            let playlist = try await req.commands.transaction { commands in
+            let (playlist, notifyInput): (Playlist, NotifyPreviewInput?) = try await req.commands.transaction { commands in
                 let playlistInput = PlaylistInput(payload: payload, artworkId: artworkId)
                 let playlist: Playlist
+                var notifyInput: NotifyPreviewInput?
 
                 switch mode {
                 case .create:
@@ -73,7 +74,10 @@ struct PlaylistsWebController: RouteCollection {
                     let noteInputs = payload.notes.map { entry in
                         NoteInput(body: entry.body, access: entry.access && payload.access)
                     }
-                    _ = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    let notes = try await commands.notes.batchCreate(noteInputs, for: preview)
+                    if let firstNote = notes.first {
+                        notifyInput = NotifyPreviewInput(preview: preview, language: firstNote.language.rawValue)
+                    }
                     if let tracks = playlistInput.tracks, !tracks.isEmpty {
                         try await commands.previews.importTracks(
                             ImportAlbumTracksInput(
@@ -102,7 +106,16 @@ struct PlaylistsWebController: RouteCollection {
                     )
                 }
 
-                return playlist
+                return (playlist, notifyInput)
+            }
+
+            if let input = notifyInput {
+                let notify = req.commands.notifications.preview
+                let logger = req.logger
+                Task.detached {
+                    do { try await notify(input) }
+                    catch { logger.error("Preview notification failed: \(error)") }
+                }
             }
 
             req.session.data["csrf.editor"] = nil

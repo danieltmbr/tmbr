@@ -29,6 +29,16 @@ extension AuthPermission<Post> {
     }
 }
 
+extension AuthPermission<Preview> {
+    static var previewNotification: AuthPermission<Preview> {
+        AuthPermission<Preview>(
+            "Only its owner can send push notification updates about a catalogue item."
+        ) { user, preview in
+            preview.ownerID == user.userID || user.role == .admin
+        }
+    }
+}
+
 extension AuthPermission<Note> {
     /// Permission to send notifications about a note to all subscribers.
     ///
