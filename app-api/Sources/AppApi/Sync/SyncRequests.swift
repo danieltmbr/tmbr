@@ -66,9 +66,9 @@ public extension Request where Self == DeletionsRequest {
 // Each uses `.query(baseURL:path:)` so the `Input` struct is URL-encoded into query parameters
 // via `QueryItemEncoder`.
 
-public typealias PostSearchRequest = BasicRequest<PostSearchQuery, [PostResponse]>
+public typealias PostSearchRequest = BasicRequest<PostSearchQuery, PageResult<PostResponse>>
 public extension Request where Self == PostSearchRequest {
-    static func postSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/posts/search") }
+    static func postSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/posts") }
 }
 
 public typealias CatalogueSearchRequest = BasicRequest<CatalogueSearchQuery, CatalogueSearchResponse>

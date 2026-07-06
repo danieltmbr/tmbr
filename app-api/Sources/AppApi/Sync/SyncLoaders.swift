@@ -141,7 +141,7 @@ public extension DeletionsLoader {
 // One-shot loaders: call `.load(from: query)` with the search query, get results back.
 // No pagination — search endpoints return an unpaginated array.
 
-public typealias PostSearchLoader     = RequestLoader<PostSearchQuery, [PostResponse]>
+public typealias PostSearchLoader     = RequestLoader<PostSearchQuery, PageResult<PostResponse>>
 public typealias CatalogueSearchLoader = RequestLoader<CatalogueSearchQuery, CatalogueSearchResponse>
 public typealias QuoteSearchLoader    = RequestLoader<QuoteSearchQuery, [QuoteResponse]>
 

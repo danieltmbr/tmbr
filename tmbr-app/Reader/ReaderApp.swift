@@ -40,7 +40,7 @@ struct ReaderApp: App {
             loadMore: { try await posts.loadMore() },
             search: { term in
                 let results = try await postSearchLoader.load(from: PostSearchQuery(term: term))
-                try await postStore.upsert(results)
+                try await postStore.upsert(results.items)
             },
             lastFetched: userDefaults.object(forKey: lastFetchedKey) as? Date
         )
