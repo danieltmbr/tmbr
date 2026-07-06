@@ -11,23 +11,38 @@ struct QuotesTab: View {
     @Environment(\.refreshBlog)
     private var refreshBlog
 
+    @Environment(\.searchQuotes)
+    private var searchQuotes
+
     @Quotes(\.selectedSources)
     private var selectedSources
 
     @Preferences(\.selectedLanguages)
     private var selectedLanguages
 
+    @State private var searchText = ""
     @State private var showFilter = false
     @State private var showRandom = false
 
     var body: some View {
         NavigationStack {
-            QuotesList(
-                selectedSources: selectedSources,
-                selectedLanguages: selectedLanguages,
-                showRandom: $showRandom
-            )
+            Group {
+                if searchText.isEmpty {
+                    QuotesList(
+                        selectedSources: selectedSources,
+                        selectedLanguages: selectedLanguages,
+                        showRandom: $showRandom
+                    )
+                } else {
+                    QuotesSearchList(
+                        term: searchText,
+                        selectedSources: selectedSources,
+                        selectedLanguages: selectedLanguages
+                    )
+                }
+            }
             .navigationTitle("Quotes")
+            .searchable(text: $searchText, prompt: "Search quotes…")
             .toolbar {
 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
@@ -64,6 +79,13 @@ struct QuotesTab: View {
             await refreshCatalogue()
             await refreshBlog()
         }
+        // Fire network search on term changes (debounced 300 ms).
+        .task(id: searchText) {
+            guard !searchText.isEmpty else { return }
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            await searchQuotes(term: searchText)
+        }
 #if os(iOS)
         .sheet(isPresented: $showFilter) {
             QuotesFilterView()
@@ -71,6 +93,8 @@ struct QuotesTab: View {
 #endif
     }
 }
+
+// MARK: - Browse list (no search term)
 
 private struct QuotesList: View {
 
@@ -111,6 +135,35 @@ private struct QuotesList: View {
         }
         .sheet(isPresented: $showRandom) {
             RandomQuoteSheet(quotes: quotes)
+        }
+    }
+}
+
+// MARK: - Search list (active search term)
+
+private struct QuotesSearchList: View {
+
+    @Query private var quotes: [QuoteRecord]
+
+    init(term: String, selectedSources: Set<QuoteSourceFilter>, selectedLanguages: Set<Language>) {
+        _quotes = Query(
+            filter: QuoteRecord.search(term: term, sources: selectedSources, languages: selectedLanguages),
+            sort: \QuoteRecord.createdAt,
+            order: .reverse
+        )
+    }
+
+    var body: some View {
+        List {
+            ForEach(quotes) { quote in
+                QuoteCell(quote: quote)
+            }
+        }
+        .listStyle(.plain)
+        .overlay {
+            if quotes.isEmpty {
+                ContentUnavailableView.search
+            }
         }
     }
 }

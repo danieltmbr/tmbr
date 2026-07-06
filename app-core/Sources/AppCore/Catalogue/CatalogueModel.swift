@@ -26,8 +26,16 @@ public final class CatalogueModel {
 
     private let _refresh: @Sendable () async throws -> Void
 
-    public init(refresh: @escaping @Sendable () async throws -> Void = {}) {
+    /// Per-app seam for catalogue search. Called with the current search term; should fetch
+    /// matching catalogue items and notes from the server and upsert them into the local store.
+    private let _search: @Sendable (String) async throws -> Void
+
+    public init(
+        refresh: @escaping @Sendable () async throws -> Void = {},
+        search: @escaping @Sendable (String) async throws -> Void = { _ in }
+    ) {
         self._refresh = refresh
+        self._search = search
     }
 
     // MARK: - Refresh
@@ -42,6 +50,21 @@ public final class CatalogueModel {
             lastError = nil
         } catch {
             Logger.catalogue.error("Catalogue refresh failed: \(error)")
+            lastError = LoadError(error)
+        }
+    }
+
+    // MARK: - Search
+
+    /// Fires the injected search closure with `term`. Sets `loading = .refresh` while in flight.
+    public func search(term: String) async {
+        guard loading == nil else { return }
+        loading = .refresh
+        defer { loading = nil }
+        do {
+            try await _search(term)
+        } catch {
+            Logger.catalogue.error("Catalogue search failed: \(error)")
             lastError = LoadError(error)
         }
     }
