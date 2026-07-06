@@ -26,31 +26,36 @@ private struct PodcastInfoLine: View {
 
 struct PodcastDetailSection: View {
 
-    let previewID: UUID
+    let item: PreviewRecord
 
     @Query private var records: [PodcastRecord]
 
     @Upserter(\.podcast) private var syncer
 
-    init(previewID: UUID) {
-        self.previewID = previewID
+    init(item: PreviewRecord) {
+        self.item = item
+        let previewID = item.id
         _records = Query(filter: #Predicate<PodcastRecord> { $0.previewID == previewID })
     }
 
     var body: some View {
-        if let podcast = records.first {
-            Section {
-                CatalogueItemHeader(
-                    title: podcast.title,
-                    artworkURL: podcast.artworkURL,
-                    credit: podcast.episodeTitle.isEmpty ? nil : podcast.episodeTitle,
-                    info: { PodcastInfoLine(podcast: podcast) },
-                    resourceURLs: podcast.resourceURLs
-                )
-            }
-            .catalogueItemRefresh(id: previewID) { [sourceID = podcast.sourceID] in
-                if let sourceID { try await syncer(sourceID) }
-            }
+        let podcast = records.first
+        let episodeTitle = podcast?.episodeTitle ?? item.secondaryInfo
+        Section {
+            CatalogueItemHeader(
+                title: podcast?.title ?? item.primaryInfo,
+                artworkURL: podcast?.artworkURL ?? item.imageURL,
+                credit: episodeTitle.isEmpty ? nil : episodeTitle,
+                info: { if let podcast { PodcastInfoLine(podcast: podcast) } },
+                resourceURLs: podcast?.resourceURLs ?? item.externalLinks
+            )
+        }
+        .catalogueItemRefresh(id: item.id) { [sourceID = item.sourceID] in
+            if let sourceID { try await syncer(sourceID) }
+        }
+        .task(id: item.id) {
+            guard records.isEmpty, let sourceID = item.sourceID else { return }
+            try? await syncer(sourceID)
         }
     }
 
