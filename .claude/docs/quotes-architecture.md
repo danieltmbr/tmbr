@@ -170,3 +170,36 @@ decorators stripped by `QuoteExtractor`). On mobile, wrap it in a blockquote
 markdown string (`"> \(body)"`) so `MarkdownView` renders it through the
 existing `QuoteBlock` view with the styled vertical bar. Attribution (title,
 type, artwork) comes from `QuoteSource`.
+
+---
+
+## Known gap: quote → source navigation (native app)
+
+`QuoteRecord` is fully denormalised for display — it stores `sourceTitle`,
+`sourceSubtitle`, `sourceType`, and `sourcePreviewID` directly, so `QuoteCell`
+renders without requiring any source `NoteRecord`, `PostRecord`, or
+`PreviewRecord` in the local DB. There is currently **no navigation** from a
+quote to its source, so no user-visible issue exists today.
+
+When "tap quote → navigate to source catalogue item" is implemented, the
+following gap will need to be closed:
+
+**The problem.** Quote search returns `[QuoteResponse]`. The native upsert
+stores `sourcePreviewID` on `QuoteRecord` but does not currently upsert the
+embedded `PreviewRecord`. If the user taps through to the source item and the
+`PreviewRecord` doesn't exist locally, navigation will break or show nothing.
+
+**The data is already there.** `QuoteSource.preview: PreviewResponse?` is
+embedded in every note-sourced `QuoteResponse` (see wire contract above). The
+fix at upsert time is cheap: when upserting quote search results, also call
+`catalogueStore.upsert([preview])` for each non-nil `source.preview`. No
+backend changes needed.
+
+**Fallback pattern (if upsert fix is deferred).** At navigation time, look up
+`PreviewRecord` by `sourcePreviewID`. If missing, fire a fetch to
+`GET /api/catalogue/item/:previewID` on appear — the same lazy-materialise
+pattern already used by `CatalogueItemDetailView` for half-materialised
+catalogue items (see `SongDetailSection`, `BookDetailSection`, etc. in
+`app-core/.../Catalogue/Detail/`). The half-materialised path already handles
+the follow-on case where the `PreviewRecord` exists but the typed record
+(`SongRecord` etc.) doesn't.

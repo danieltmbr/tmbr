@@ -29,7 +29,6 @@ struct CatalogueAPIController: RouteCollection {
 
         let quotes = catalogue.grouped("quotes")
         quotes.get(use: quoteList)
-        quotes.get("search", use: quoteSearch)
         quotes.get("random", use: randomQuote)
     }
 
@@ -144,43 +143,22 @@ struct CatalogueAPIController: RouteCollection {
     }
     
     @Sendable
-    private func search(request: Request) async throws -> [PreviewResponse] {
+    private func search(request: Request) async throws -> CatalogueSearchResponse {
         let payload = try request.content.decode(CatalogueQueryPayload.self)
-        let input = mapper.toNotesQuery(from: payload)
-        let notes = try await request.commands.notes.search(input)
+        let result = try await request.commands.catalogue.search(payload)
         let baseURL = request.baseURL
-        return notes.map {
-            PreviewResponse(
-                primaryInfo: $0.attachment.primaryInfo,
-                secondaryInfo: $0.body,
-                image: $0.attachment.image.map { image in
-                    ImageResponse(image: image, baseURL: baseURL)
-                },
-                resources: $0.attachment.externalLinks,
-                source: PreviewResponse.Source(
-                    id: $0.attachment.parentID,
-                    type: $0.attachment.catalogueCategory?.slug ?? "item"
-                )
-            )
-        }
+        return CatalogueSearchResponse(
+            items: result.previews.map { PreviewResponse(preview: $0, baseURL: baseURL) },
+            notes: result.noteMatches.map { NoteResponse(note: $0, baseURL: baseURL) }
+        )
     }
     
     @Sendable
     private func quoteList(request: Request) async throws -> [QuoteResponse] {
-        let payload = try request.content.decode(CatalogueQueryPayload.self)
+        let payload = try request.query.decode(CatalogueQueryPayload.self)
         let input = mapper.toQuoteQuery(from: payload)
         let quotes = try await request.commands.quotes.list(input)
-        let baseURL = request.baseURL
-        return try quotes.map { try QuoteResponse(quote: $0, baseURL: baseURL) }
-    }
-
-    @Sendable
-    private func quoteSearch(request: Request) async throws -> [QuoteResponse] {
-        let payload = try request.content.decode(CatalogueQueryPayload.self)
-        let input = mapper.toQuoteQuery(from: payload)
-        let quotes = try await request.commands.quotes.search(input)
-        let baseURL = request.baseURL
-        return try quotes.map { try QuoteResponse(quote: $0, baseURL: baseURL) }
+        return try quotes.map { try QuoteResponse(quote: $0, baseURL: request.baseURL) }
     }
 
     @Sendable

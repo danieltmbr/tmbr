@@ -11,17 +11,19 @@ struct PostsAPIController: RouteCollection {
         // Group all API routes under /api/posts
         let postsRoute = routes.grouped("api", "posts")
         let protectedRoutes = postsRoute
-        
-        // GET /api/posts — paginated, supports ?since=&cursor=&limit=
-        // Language filtering uses the request's Accept-Language preference.
+
+        // GET /api/posts — cursor-paginated list with optional ?term= text filter.
+        // Supports ?since=&cursor=&limit= for pagination and ?term= for full-text search.
+        // Both can be combined; language filtering uses the request's Accept-Language preference.
         postsRoute.get { req async throws -> PageResult<PostResponse> in
-            let pageQuery = try req.query.decode(PageQuery.self)
-            let page = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
-            let posts = try await req.commands.posts.list(ListPostsInput(query: PostQueryPayload(term: nil), page: page))
             let baseURL = req.baseURL
-            return try PageResult(from: posts, limit: page.limit) { post in
-                try PostResponse(post: post, baseURL: baseURL)
-            }
+            let pageQuery = try req.query.decode(PageQuery.self)
+            let term = try? req.query.get(String.self, at: "term")
+            let page = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
+            let posts = try await req.commands.posts.list(
+                ListPostsInput(query: PostQueryPayload(term: term), page: page)
+            )
+            return try PageResult(from: posts, limit: page.limit) { try PostResponse(post: $0, baseURL: baseURL) }
         }
         
         // GET /api/posts/:postID
