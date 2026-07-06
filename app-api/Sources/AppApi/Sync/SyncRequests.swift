@@ -78,7 +78,7 @@ public extension Request where Self == CatalogueSearchRequest {
 
 public typealias QuoteSearchRequest = BasicRequest<QuoteSearchQuery, [QuoteResponse]>
 public extension Request where Self == QuoteSearchRequest {
-    static func quoteSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/catalogue/quotes/search") }
+    static func quoteSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/catalogue/quotes") }
 }
 
 // MARK: - Single-item requests
