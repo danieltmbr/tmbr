@@ -76,11 +76,6 @@ public extension Request where Self == CatalogueSearchRequest {
     static func catalogueSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/catalogue/search") }
 }
 
-public typealias QuoteSearchRequest = BasicRequest<QuoteSearchQuery, [QuoteResponse]>
-public extension Request where Self == QuoteSearchRequest {
-    static func quoteSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/catalogue/quotes") }
-}
-
 // MARK: - Single-item requests
 //
 // The item id is the `Input` type (not baked into the URL), so one loader instance can serve
