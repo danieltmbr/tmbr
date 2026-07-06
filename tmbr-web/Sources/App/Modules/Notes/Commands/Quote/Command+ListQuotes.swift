@@ -27,6 +27,12 @@ extension Command where Self == PlainCommand<QuoteQueryPayload, [Quote]> {
                     }
                 }
                 .sort(\Quote.$createdAt, .descending)
+            if let term = input.term?.trimmed, !term.isEmpty {
+                let safe = term.replacingOccurrences(of: "'", with: "''")
+                query.group(.or) { group in
+                    group.filter(.sql(unsafeRaw: "quotes.body ILIKE '%\(safe)%'"))
+                }
+            }
             if let categoryIDs = input.categoryIDs {
                 // Inner-joining Note→Preview naturally excludes post-sourced quotes,
                 // which have no catalogue category. This is the desired behaviour.

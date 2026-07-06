@@ -29,7 +29,6 @@ struct CatalogueAPIController: RouteCollection {
 
         let quotes = catalogue.grouped("quotes")
         quotes.get(use: quoteList)
-        quotes.get("search", use: quoteSearch)
         quotes.get("random", use: randomQuote)
     }
 
@@ -156,19 +155,16 @@ struct CatalogueAPIController: RouteCollection {
     
     @Sendable
     private func quoteList(request: Request) async throws -> [QuoteResponse] {
+        let baseURL = request.baseURL
+        if let term = try? request.query.get(String.self, at: "term"),
+           !term.trimmingCharacters(in: .whitespaces).isEmpty {
+            let input = mapper.toQuoteQuery(from: CatalogueQueryPayload(term: term, types: nil, languages: nil))
+            let quotes = try await request.commands.quotes.list(input)
+            return try quotes.map { try QuoteResponse(quote: $0, baseURL: baseURL) }
+        }
         let payload = try request.content.decode(CatalogueQueryPayload.self)
         let input = mapper.toQuoteQuery(from: payload)
         let quotes = try await request.commands.quotes.list(input)
-        let baseURL = request.baseURL
-        return try quotes.map { try QuoteResponse(quote: $0, baseURL: baseURL) }
-    }
-
-    @Sendable
-    private func quoteSearch(request: Request) async throws -> [QuoteResponse] {
-        let payload = try request.content.decode(CatalogueQueryPayload.self)
-        let input = mapper.toQuoteQuery(from: payload)
-        let quotes = try await request.commands.quotes.search(input)
-        let baseURL = request.baseURL
         return try quotes.map { try QuoteResponse(quote: $0, baseURL: baseURL) }
     }
 
