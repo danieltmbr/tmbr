@@ -144,25 +144,14 @@ struct CatalogueAPIController: RouteCollection {
     }
     
     @Sendable
-    private func search(request: Request) async throws -> [PreviewResponse] {
+    private func search(request: Request) async throws -> CatalogueSearchResponse {
         let payload = try request.content.decode(CatalogueQueryPayload.self)
-        let input = mapper.toNotesQuery(from: payload)
-        let notes = try await request.commands.notes.search(input)
+        let result = try await request.commands.catalogue.search(payload)
         let baseURL = request.baseURL
-        return notes.map {
-            PreviewResponse(
-                primaryInfo: $0.attachment.primaryInfo,
-                secondaryInfo: $0.body,
-                image: $0.attachment.image.map { image in
-                    ImageResponse(image: image, baseURL: baseURL)
-                },
-                resources: $0.attachment.externalLinks,
-                source: PreviewResponse.Source(
-                    id: $0.attachment.parentID,
-                    type: $0.attachment.catalogueCategory?.slug ?? "item"
-                )
-            )
-        }
+        return CatalogueSearchResponse(
+            items: result.previews.map { PreviewResponse(preview: $0, baseURL: baseURL) },
+            notes: result.noteMatches.map { NoteResponse(note: $0, baseURL: baseURL) }
+        )
     }
     
     @Sendable

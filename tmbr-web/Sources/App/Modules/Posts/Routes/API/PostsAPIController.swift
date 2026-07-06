@@ -11,7 +11,16 @@ struct PostsAPIController: RouteCollection {
         // Group all API routes under /api/posts
         let postsRoute = routes.grouped("api", "posts")
         let protectedRoutes = postsRoute
-        
+
+        // GET /api/posts/search?term= — unpaginated, searches title and body content.
+        // Language filtering uses the request's Accept-Language preference (same as list).
+        postsRoute.get("search") { req async throws -> [PostResponse] in
+            let payload = try req.query.decode(PostQueryPayload.self)
+            let posts = try await req.commands.posts.list(ListPostsInput(query: payload, page: nil))
+            let baseURL = req.baseURL
+            return try posts.map { try PostResponse(post: $0, baseURL: baseURL) }
+        }
+
         // GET /api/posts — paginated, supports ?since=&cursor=&limit=
         // Language filtering uses the request's Accept-Language preference.
         postsRoute.get { req async throws -> PageResult<PostResponse> in

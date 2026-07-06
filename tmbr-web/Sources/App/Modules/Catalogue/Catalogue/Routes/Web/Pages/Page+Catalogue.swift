@@ -107,7 +107,7 @@ extension Page {
             return CatalogueViewModel(
                 panels: [.types(typeItems)],
                 previews: result.previews.map { PreviewViewModel(preview: $0, baseURL: baseURL) }
-                    + result.noteMatches.map { PreviewViewModel(preview: $0, baseURL: baseURL, isNoteMatch: true) },
+                    + result.noteMatches.map { PreviewViewModel(preview: $0.attachment, baseURL: baseURL, isNoteMatch: true) },
                 term: payload.term,
                 compose: compose
             )
