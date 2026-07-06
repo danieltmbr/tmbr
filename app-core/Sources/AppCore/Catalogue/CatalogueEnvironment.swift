@@ -4,6 +4,7 @@ import Foundation
 public extension EnvironmentValues {
     @Entry var refreshCatalogue: CatalogueRefreshAction = CatalogueRefreshAction()
     @Entry var selectCategories: SelectCategoriesAction = SelectCategoriesAction()
+    @Entry var searchCatalogue: CatalogueSearchAction = CatalogueSearchAction()
 
     // Networking config — `apiBaseURL == nil` is the on/off gate: Personal injects nothing
     // → @Loader returns nil, @Upserter returns a no-op syncer.
