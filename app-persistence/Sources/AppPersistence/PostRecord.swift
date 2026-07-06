@@ -82,4 +82,14 @@ public extension PostRecord {
             codes.isEmpty || post.languageRaw.isEmpty || codes.contains(post.languageRaw)
         }
     }
+
+    /// Predicate for in-tab text search. Matches posts whose title or content contains `term`
+    /// (case-insensitive, locale-aware), filtered by the active language selection.
+    static func search(term: String, languages: Set<Language>) -> Predicate<PostRecord> {
+        let codes = languages.map(\.rawValue)
+        return #Predicate<PostRecord> { post in
+            (post.title.localizedStandardContains(term) || post.content.localizedStandardContains(term)) &&
+            (codes.isEmpty || post.languageRaw.isEmpty || codes.contains(post.languageRaw))
+        }
+    }
 }

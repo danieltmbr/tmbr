@@ -60,6 +60,22 @@ public extension Request where Self == DeletionsRequest {
     static func deletionQuery(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/sync/deletions") }
 }
 
+// MARK: - Search requests
+//
+// Unpaginated one-shot requests — send the search query, get a complete result array back.
+// Each uses `.query(baseURL:path:)` so the `Input` struct is URL-encoded into query parameters
+// via `QueryItemEncoder`.
+
+public typealias PostSearchRequest = BasicRequest<PostSearchQuery, PageResult<PostResponse>>
+public extension Request where Self == PostSearchRequest {
+    static func postSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/posts") }
+}
+
+public typealias CatalogueSearchRequest = BasicRequest<CatalogueSearchQuery, CatalogueSearchResponse>
+public extension Request where Self == CatalogueSearchRequest {
+    static func catalogueSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/catalogue/search") }
+}
+
 // MARK: - Single-item requests
 //
 // The item id is the `Input` type (not baked into the URL), so one loader instance can serve

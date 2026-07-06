@@ -12,7 +12,7 @@ public extension PreviewRecord {
         categoryType = preview.category ?? preview.source.type
         sourceID = preview.source.id
         primaryInfo = preview.primaryInfo
-        secondaryInfo = preview.secondaryInfo
+        secondaryInfo = preview.secondaryInfo ?? ""
         imageURL = preview.image?.url
         externalLinks = preview.resources
         self.access = access
