@@ -106,6 +106,23 @@ public extension QuoteRecord {
             (codes.isEmpty || quote.languageRaw.isEmpty || codes.contains(quote.languageRaw))
         }
     }
+
+    /// Predicate for in-tab text search. Matches quotes whose body contains `term`
+    /// (case-insensitive, locale-aware), filtered by active source and language selections.
+    static func search(term: String, sources: Set<QuoteSourceFilter>, languages: Set<Language>) -> Predicate<QuoteRecord> {
+        let sourcesArray = Array(sources.map { filter -> String in
+            switch filter {
+            case .category(let category): return category.rawValue
+            case .blogPosts: return blogPostsSource
+            }
+        })
+        let codes = languages.map(\.rawValue)
+        return #Predicate<QuoteRecord> { quote in
+            quote.body.localizedStandardContains(term) &&
+            (sourcesArray.isEmpty || sourcesArray.contains(quote.sourceType)) &&
+            (codes.isEmpty || quote.languageRaw.isEmpty || codes.contains(quote.languageRaw))
+        }
+    }
 }
 
 // MARK: - SyncState

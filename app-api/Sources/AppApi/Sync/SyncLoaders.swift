@@ -136,6 +136,26 @@ public extension DeletionsLoader {
     }
 }
 
+// MARK: - Search loaders (unauthenticated — Reader app)
+//
+// One-shot loaders: call `.load(from: query)` with the search query, get results back.
+// No pagination — search endpoints return an unpaginated array.
+
+public typealias PostSearchLoader      = RequestLoader<PostSearchQuery, PageResult<PostResponse>>
+public typealias CatalogueSearchLoader = RequestLoader<CatalogueSearchQuery, CatalogueSearchResponse>
+
+public extension PostSearchLoader {
+    static func searchPosts(baseURL: URL, session: URLSession = .shared) -> Self {
+        PostSearchLoader(request: PostSearchRequest.postSearch(baseURL: baseURL), session: session)
+    }
+}
+
+public extension CatalogueSearchLoader {
+    static func searchCatalogue(baseURL: URL, session: URLSession = .shared) -> Self {
+        CatalogueSearchLoader(request: CatalogueSearchRequest.catalogueSearch(baseURL: baseURL), session: session)
+    }
+}
+
 // MARK: - Single-item loaders (unauthenticated — Reader app)
 
 // MARK: - Single-item loaders

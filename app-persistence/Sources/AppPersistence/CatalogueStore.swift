@@ -144,6 +144,118 @@ public struct CatalogueStore {
         try context.save()
     }
 
+    /// Upserts a `CatalogueSearchResponse` — the combined result of a server-side catalogue search.
+    ///
+    /// `items` (title/subtitle matches) are upserted as `PreviewRecord`s without touching their
+    /// notes. `notes` (body matches) are upserted along with their attachment preview, letting the
+    /// app find note-body matches in future offline searches. Existing quotes for those notes are
+    /// preserved — this path does not delete quotes absent from the search response.
+    public func upsertSearch(_ response: CatalogueSearchResponse) throws {
+        var previews = try previewsByID()
+        // Upsert item matches (preview metadata only, no embedded notes from this path).
+        for preview in response.items {
+            upsertPreview(preview, access: .public, into: &previews)
+        }
+        // Upsert note matches with their attachment previews.
+        var noteIndex: [UUID: NoteRecord] = [:]
+        for record in try context.fetch(FetchDescriptor<NoteRecord>()) {
+            if let sid = record.serverID { noteIndex[sid] = record }
+        }
+        for note in response.notes {
+            // Ensure the note's attachment preview is stored.
+            upsertPreview(note.attachment, access: .public, into: &previews)
+            // Upsert the note record itself without touching its existing quotes.
+            let record = noteIndex[note.id] ?? {
+                let new = NoteRecord(serverID: note.id)
+                context.insert(new)
+                noteIndex[note.id] = new
+                return new
+            }()
+            record.update(from: note, preview: note.attachment)
+        }
+        try context.save()
+    }
+
+    /// Upserts standalone `QuoteResponse`s (e.g. from a quotes search result) into `QuoteRecord`s.
+    ///
+    /// Language is set to unknown (empty string) for search results since the response carries no
+    /// language field. It will be corrected on the next full catalogue/blog sync.
+    /// Existing quote records are updated in place; new server IDs create fresh records.
+    public func upsert(_ responses: [QuoteResponse]) throws {
+        var byServerID: [UUID: QuoteRecord] = [:]
+        for record in try context.fetch(FetchDescriptor<QuoteRecord>()) {
+            byServerID[record.serverID] = record
+        }
+        for response in responses {
+            let record = byServerID[response.id] ?? {
+                let new = QuoteRecord()
+                context.insert(new)
+                byServerID[response.id] = new
+                return new
+            }()
+            record.update(from: response)
+            // Preserve existing language — `QuoteResponse` carries no language field.
+            // `languageRaw` already has the right value if the quote was previously synced.
+        }
+        try context.save()
+    }
+
+    /// Searches the local SwiftData store for catalogue items and notes matching `term`.
+    ///
+    /// All filtering and text matching is done in the DB:
+    /// - Previews: `PreviewRecord.search(term:categories:languages:)` — a composed predicate that
+    ///   applies the text match on `primaryInfo`/`secondaryInfo` plus category and language filters.
+    /// - Notes: `NoteRecord.search(term:languages:)` — body text + language filter.
+    /// - Note→preview join is resolved via a targeted predicate fetch of only the IDs needed.
+    ///
+    /// Returns an empty array when `term` is blank.
+    public func search(
+        term: String,
+        categories: Set<CatalogueCategory>,
+        languages: Set<Language>
+    ) throws -> [CatalogueSearchResult] {
+        let trimmed = term.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return [] }
+
+        // 1. Fetch preview matches — text + category + language all applied in DB.
+        let previewMatches = try context.fetch(FetchDescriptor<PreviewRecord>(
+            predicate: PreviewRecord.search(term: trimmed, categories: categories, languages: languages),
+            sortBy: [SortDescriptor(\.primaryInfo)]
+        ))
+
+        // 2. Fetch note-body matches — body text + language filter applied in DB.
+        let noteMatches = try context.fetch(FetchDescriptor<NoteRecord>(
+            predicate: NoteRecord.search(term: trimmed, languages: languages)
+        ))
+
+        // Seed results from preview matches.
+        var seen = Set(previewMatches.map(\.id))
+        var results = previewMatches.map { CatalogueSearchResult(preview: $0) }
+
+        // 3. Resolve note matches to their PreviewRecord via a targeted predicate fetch of needed IDs.
+        let neededPreviewIDs = Set(noteMatches.compactMap(\.attachmentPreviewID)).subtracting(seen)
+        guard !neededPreviewIDs.isEmpty else { return results }
+
+        let ids = Array(neededPreviewIDs)
+        let additionalPreviews = try context.fetch(FetchDescriptor<PreviewRecord>(
+            predicate: #Predicate { ids.contains($0.id) }
+        ))
+        let previewByID = Dictionary(uniqueKeysWithValues: additionalPreviews.map { ($0.id, $0) })
+
+        let slugs = Array(categories.map(\.rawValue))
+        for note in noteMatches {
+            guard let previewID = note.attachmentPreviewID,
+                  !seen.contains(previewID),
+                  let preview = previewByID[previewID] else { continue }
+            // Category filter applied here (cross-model join — not expressible in DB predicate).
+            guard slugs.isEmpty || slugs.contains(preview.categoryType) else { continue }
+            seen.insert(previewID)
+            results.append(CatalogueSearchResult(preview: preview, noteSnippet: note.body))
+        }
+
+        return results
+    }
+
     /// Full-replaces the catalogue category lookup table from the server's authoritative list.
     ///
     /// Upserts each incoming category by `slug` (the natural key); deletes any locally-stored
