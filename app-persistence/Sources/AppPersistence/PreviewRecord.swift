@@ -32,7 +32,11 @@ public final class PreviewRecord {
     public var primaryInfo: String = ""
 
     /// Display subtitle. Mirrors `PreviewResponse.secondaryInfo`.
-    public var secondaryInfo: String?
+    /// Stored as a non-optional `String` (empty = no subtitle) so SwiftData can generate SQL
+    /// `CONTAINS[cd]` predicates for catalogue text search — the DB cannot handle TERNARY/optional-
+    /// chain on the LHS of a CONTAINS expression. The DTO (`PreviewResponse.secondaryInfo: String?`)
+    /// is coalesced to `""` at the sync boundary in `CatalogueRecord+Sync.swift`.
+    public var secondaryInfo: String = ""
 
     public var imageURL: String?
 
@@ -57,7 +61,7 @@ public final class PreviewRecord {
         categoryType: String = "",
         sourceID: Int? = nil,
         primaryInfo: String = "",
-        secondaryInfo: String? = nil,
+        secondaryInfo: String = "",
         imageURL: String? = nil,
         externalLinks: [String] = [],
         access: Access = .private,
@@ -113,6 +117,23 @@ public extension PreviewRecord {
              item.languagesJoined.isEmpty ||
              (wantsEn && item.languagesJoined.contains("en")) ||
              (wantsHu && item.languagesJoined.contains("hu")))
+        }
+    }
+
+    /// Predicate for catalogue text search. Matches items whose `primaryInfo` or `secondaryInfo`
+    /// contains `term` (case-insensitive, locale-aware), filtered by active category and language.
+    ///
+    /// Decomposed into two sub-predicates composed via `evaluate` to avoid the `#Predicate` macro's
+    /// compile-time type-checker limit (~8 boolean sub-expressions in a flat body causes
+    /// "unable to type-check this expression in reasonable time").
+    static func search(term: String, categories: Set<CatalogueCategory>, languages: Set<Language>) -> Predicate<PreviewRecord> {
+        let textMatch = #Predicate<PreviewRecord> { item in
+            item.primaryInfo.localizedStandardContains(term) ||
+            item.secondaryInfo.localizedStandardContains(term)
+        }
+        let filterMatch = catalogue(categories: categories, languages: languages)
+        return #Predicate<PreviewRecord> { item in
+            textMatch.evaluate(item) && filterMatch.evaluate(item)
         }
     }
 }

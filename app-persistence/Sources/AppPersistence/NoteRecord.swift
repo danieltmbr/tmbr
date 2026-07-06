@@ -86,4 +86,15 @@ public extension NoteRecord {
         get { SyncState(rawValue: syncStateRaw) ?? .synced }
         set { syncStateRaw = newValue.rawValue }
     }
+
+    /// Predicate for note-body text search. Matches notes whose `body` contains `term`
+    /// (case-insensitive, locale-aware), filtered by the active language selection.
+    /// Notes with an unknown language (empty `languageRaw`) are always included.
+    static func search(term: String, languages: Set<Language>) -> Predicate<NoteRecord> {
+        let codes = Array(languages.map(\.rawValue))
+        return #Predicate<NoteRecord> { note in
+            note.body.localizedStandardContains(term) &&
+            (codes.isEmpty || note.languageRaw.isEmpty || codes.contains(note.languageRaw))
+        }
+    }
 }

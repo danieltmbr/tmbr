@@ -6,7 +6,7 @@ private struct OrphanInfoLine: View {
 
     var body: some View {
         let text = [item.secondaryInfo, item.categoryType.capitalized]
-            .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+            .filter { !$0.isEmpty }.joined(separator: " · ")
         if !text.isEmpty {
             Text(text).foregroundStyle(.secondary)
         }

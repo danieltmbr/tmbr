@@ -8,6 +8,12 @@ struct CatalogueTab: View {
     @Environment(\.refreshCatalogue)
     private var refreshCatalogue
 
+    @Environment(\.searchCatalogue)
+    private var searchCatalogue
+
+    @Environment(\.modelContext)
+    private var modelContext
+
     @Environment(\.canAuthor)
     private var canAuthor
 
@@ -17,6 +23,9 @@ struct CatalogueTab: View {
     @Preferences(\.selectedLanguages)
     private var selectedLanguages
 
+    @State private var searchText = ""
+    @State private var searchEngine = CatalogueSearchEngine()
+
     @State private var showFilter = false
     @State private var showTypePicker = false
     @State private var selectedType: CatalogueItemType?
@@ -24,11 +33,18 @@ struct CatalogueTab: View {
 
     var body: some View {
         NavigationStack {
-            CatalogueItemsList(
-                selectedCategories: selectedCategories,
-                selectedLanguages: selectedLanguages
-            )
+            Group {
+                if searchText.isEmpty {
+                    CatalogueItemsList(
+                        selectedCategories: selectedCategories,
+                        selectedLanguages: selectedLanguages
+                    )
+                } else {
+                    CatalogueSearchList(engine: searchEngine)
+                }
+            }
             .navigationTitle("Catalogue")
+            .searchable(text: $searchText, prompt: "Search catalogue…")
             .toolbar {
 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
@@ -58,6 +74,29 @@ struct CatalogueTab: View {
             }
         }
         .task { await refreshCatalogue() }
+        // Fire local search immediately, then network search, then re-run local (sees new upserts).
+        .task(id: searchText) {
+            guard !searchText.isEmpty else {
+                searchEngine.clear()
+                return
+            }
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            let term = searchText
+            searchEngine.search(term: term, in: modelContext, categories: selectedCategories, languages: selectedLanguages)
+            await searchCatalogue(term: term)
+            guard !Task.isCancelled else { return }
+            searchEngine.search(term: term, in: modelContext, categories: selectedCategories, languages: selectedLanguages)
+        }
+        // Re-run local search if filters change while search is active.
+        .onChange(of: selectedCategories) { _, categories in
+            guard !searchText.isEmpty else { return }
+            searchEngine.search(term: searchText, in: modelContext, categories: categories, languages: selectedLanguages)
+        }
+        .onChange(of: selectedLanguages) { _, languages in
+            guard !searchText.isEmpty else { return }
+            searchEngine.search(term: searchText, in: modelContext, categories: selectedCategories, languages: languages)
+        }
 #if os(iOS)
         .sheet(isPresented: $showFilter) {
             CatalogueFilterView()
@@ -78,6 +117,8 @@ struct CatalogueTab: View {
         }
     }
 }
+
+// MARK: - Browse list (no search term)
 
 private struct CatalogueItemsList: View {
 
@@ -104,8 +145,8 @@ private struct CatalogueItemsList: View {
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.primaryInfo)
-                        if let subtitle = item.secondaryInfo {
-                            Text(subtitle)
+                        if !item.secondaryInfo.isEmpty {
+                            Text(item.secondaryInfo)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -120,5 +161,43 @@ private struct CatalogueItemsList: View {
         }
         .navigationDestination(for: CatalogueItemNavigation.self) { CatalogueItemNavigation.destination($0) }
         .refreshable { await refreshCatalogue() }
+    }
+}
+
+// MARK: - Search list (active search term, driven by CatalogueSearchEngine)
+
+private struct CatalogueSearchList: View {
+
+    let engine: CatalogueSearchEngine
+
+    var body: some View {
+        List {
+            ForEach(engine.results) { result in
+                NavigationLink {
+                    CatalogueItemDetailView(item: result.preview)
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(result.preview.primaryInfo)
+                        if let snippet = result.noteSnippet {
+                            // Note-body match: show a snippet of the matched note.
+                            Text(snippet)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
+                        } else if !result.preview.secondaryInfo.isEmpty {
+                            Text(result.preview.secondaryInfo)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+        .overlay {
+            if engine.results.isEmpty {
+                ContentUnavailableView.search
+            }
+        }
+        .navigationDestination(for: CatalogueItemNavigation.self) { CatalogueItemNavigation.destination($0) }
     }
 }
