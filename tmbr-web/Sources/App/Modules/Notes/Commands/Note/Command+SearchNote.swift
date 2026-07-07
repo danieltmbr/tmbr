@@ -39,6 +39,8 @@ extension Command where Self == PlainCommand<NoteQueryPayload, [Note]> {
                     .join(CatalogueCategory.self, on: \CatalogueCategory.$id == \Preview.$catalogueCategory.$id)
                     .filter(CatalogueCategory.self, \.$slug == categorySlug)
             }
+            if let before = input.before { query.filter(\.$createdAt < before) }
+            if let limit = input.limit { query.limit(limit) }
             try await permission.grant(query)
             return try await query.all()
         }

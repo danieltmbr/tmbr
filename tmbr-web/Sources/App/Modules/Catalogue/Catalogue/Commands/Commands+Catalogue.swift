@@ -11,11 +11,11 @@ extension Commands {
 
         let metadata: CommandFactory<URL, Metadata>
 
-        let search: CommandFactory<CatalogueQueryPayload, CatalogueSearchResult>
+        let search: CommandFactory<CatalogueSearchInput, CatalogueSearchResult>
 
         init(
             metadata: CommandFactory<URL, Metadata> = .fetchMetadata,
-            search: CommandFactory<CatalogueQueryPayload, CatalogueSearchResult> = .searchCatalogue
+            search: CommandFactory<CatalogueSearchInput, CatalogueSearchResult> = .searchCatalogue
         ) {
             self.metadata = metadata
             self.search = search

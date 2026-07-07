@@ -85,12 +85,12 @@ extension Page {
 
             let allCategories = try await req.commands.catalogueCategories.list()
             let mapper = CatalogueQueryMapper(categories: allCategories)
-            let search: PlainCommand<CatalogueQueryPayload, CatalogueSearchResult> = .searchCatalogue(
+            let search: PlainCommand<CatalogueSearchInput, CatalogueSearchResult> = .searchCatalogue(
                 mapper: mapper,
                 noteSearch: req.commands.notes.search,
                 previewSearch: req.commands.previews.list
             )
-            let result = try await search(effectivePayload)
+            let result = try await search(CatalogueSearchInput(payload: effectivePayload, before: nil, limit: nil))
             let baseURL = req.baseURL
             let compose = ComposePopupViewModel(req.permissions.compose(.standard))
 
