@@ -27,10 +27,9 @@ extension Page {
             let payload = try req.query.decode(CatalogueQueryPayload.self)
             let allCategories = try await req.commands.catalogueCategories.list()
             let mapper = CatalogueQueryMapper(categories: allCategories)
-            let input = mapper.toQuoteQuery(from: payload)
-            let quotes: [Quote] = payload.term != nil
-                ? try await req.commands.quotes.search(input)
-                : try await req.commands.quotes.list(input)
+            let quotePayload = mapper.toQuoteQuery(from: payload)
+            let input = ListQuotesInput(term: quotePayload.term, categoryIDs: quotePayload.categoryIDs, page: nil)
+            let quotes: [Quote] = try await req.commands.quotes.list(input)
             let baseURL = req.baseURL
             let responses = try quotes.map { try QuoteResponse(quote: $0, baseURL: baseURL) }
             let typeItems = allCategories

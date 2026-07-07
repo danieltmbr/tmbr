@@ -145,18 +145,29 @@ struct CatalogueAPIController: RouteCollection {
     @Sendable
     private func search(request: Request) async throws -> CatalogueSearchResponse {
         let payload = try request.content.decode(CatalogueQueryPayload.self)
-        let result = try await request.commands.catalogue.search(payload)
+        let beforeDate = payload.cursor.flatMap { ISO8601DateFormatter().date(from: $0) }
+        let input = CatalogueSearchInput(
+            term: payload.term,
+            categoryIDs: mapper.toPreviewQuery(from: payload).categoryIDs,
+            languages: payload.languages,
+            before: beforeDate,
+            limit: payload.limit ?? 20
+        )
+        let result = try await request.commands.catalogue.search(input)
         let baseURL = request.baseURL
+        let nextCursor = result.nextCursor.map { ISO8601DateFormatter().string(from: $0) }
         return CatalogueSearchResponse(
             items: result.previews.map { PreviewResponse(preview: $0, baseURL: baseURL) },
-            notes: result.noteMatches.map { NoteResponse(note: $0, baseURL: baseURL) }
+            notes: result.noteMatches.map { NoteResponse(note: $0, baseURL: baseURL) },
+            nextCursor: nextCursor
         )
     }
     
     @Sendable
     private func quoteList(request: Request) async throws -> [QuoteResponse] {
         let payload = try request.query.decode(CatalogueQueryPayload.self)
-        let input = mapper.toQuoteQuery(from: payload)
+        let quotePayload = mapper.toQuoteQuery(from: payload)
+        let input = ListQuotesInput(term: quotePayload.term, categoryIDs: quotePayload.categoryIDs, page: nil)
         let quotes = try await request.commands.quotes.list(input)
         return try quotes.map { try QuoteResponse(quote: $0, baseURL: request.baseURL) }
     }
