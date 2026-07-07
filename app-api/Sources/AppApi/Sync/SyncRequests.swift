@@ -62,14 +62,13 @@ public extension Request where Self == DeletionsRequest {
 
 // MARK: - Search requests
 //
-// One-shot search requests for quote and catalogue search endpoints (quotes and catalogue use
-// dedicated search paths; blog search is served by the standard PostsRequest with a `term`).
-// Each uses `.query(baseURL:path:)` so the `Input` struct is URL-encoded into query parameters
-// via `QueryItemEncoder`.
+// Catalogue search uses a dedicated endpoint; quotes and blog reuse their paginated list endpoints
+// with an optional `term` field. Each uses `.query(baseURL:path:)` so the Input struct is
+// URL-encoded into query parameters via `QueryItemEncoder`.
 
-public typealias QuoteSearchRequest = BasicRequest<QuoteSearchQuery, PageResult<QuoteResponse>>
-public extension Request where Self == QuoteSearchRequest {
-    static func quoteSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/quotes") }
+public typealias QuotesRequest = BasicRequest<QuotesQuery, PageResult<QuoteResponse>>
+public extension Request where Self == QuotesRequest {
+    static func quotes(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/quotes") }
 }
 
 public typealias CatalogueSearchRequest = BasicRequest<CatalogueSearchQuery, CatalogueSearchResponse>

@@ -138,15 +138,15 @@ public extension DeletionsLoader {
 
 // MARK: - Search loaders (unauthenticated — Reader app)
 //
-// One-shot loaders for endpoints with dedicated search paths (quotes, catalogue).
-// Blog search uses the standard PostsLoader with a `term` in `PostsQuery`.
+// Catalogue uses a dedicated search endpoint. Quotes reuses its paginated list endpoint with
+// an optional `term` field — same pattern as PostsLoader.
 
-public typealias QuoteSearchLoader     = RequestLoader<QuoteSearchQuery, PageResult<QuoteResponse>>
+public typealias QuotesLoader          = RequestLoader<QuotesQuery, PageResult<QuoteResponse>>
 public typealias CatalogueSearchLoader = RequestLoader<CatalogueSearchQuery, CatalogueSearchResponse>
 
-public extension QuoteSearchLoader {
-    static func searchQuotes(baseURL: URL, session: URLSession = .shared) -> Self {
-        QuoteSearchLoader(request: QuoteSearchRequest.quoteSearch(baseURL: baseURL), session: session)
+public extension QuotesLoader {
+    static func quotes(baseURL: URL, session: URLSession = .shared) -> Self {
+        QuotesLoader(request: QuotesRequest.quotes(baseURL: baseURL), session: session)
     }
 }
 

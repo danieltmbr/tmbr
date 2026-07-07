@@ -51,8 +51,8 @@ struct ReaderApp: App {
             loadMore: { try await readerCatalogue.loadMore() }
         )
 
-        let quoteSearchLoader = QuoteSearchLoader.searchQuotes(baseURL: Self.apiBaseURL)
-        let readerQuotes = ReaderQuotes(loader: quoteSearchLoader, store: catalogueStore)
+        let quotesLoader = QuotesLoader.quotes(baseURL: Self.apiBaseURL)
+        let readerQuotes = ReaderQuotes(loader: quotesLoader, store: catalogueStore)
         quotes = QuotesModel(
             search: { term in try await readerQuotes.search(term: term) },
             loadMore: { try await readerQuotes.loadMore() }

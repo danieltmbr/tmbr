@@ -15,7 +15,7 @@ import AppPersistence
 @MainActor
 final class ReaderQuotes {
 
-    private let loader: QuoteSearchLoader
+    private let loader: QuotesLoader
 
     private let store: CatalogueStore
 
@@ -25,7 +25,7 @@ final class ReaderQuotes {
 
     private var nextCursor: String?
 
-    init(loader: QuoteSearchLoader, store: CatalogueStore) {
+    init(loader: QuotesLoader, store: CatalogueStore) {
         self.loader = loader
         self.store = store
     }
@@ -58,7 +58,7 @@ final class ReaderQuotes {
     // MARK: - Private
 
     private func fetch(term: String, cursor: String?) async throws -> PageResult<QuoteResponse> {
-        let query = QuoteSearchQuery(term: term, cursor: cursor, limit: 50)
+        let query = QuotesQuery(term: term, cursor: cursor, limit: 50)
         return try await loader.load(from: query)
     }
 }
