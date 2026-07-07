@@ -1,14 +1,13 @@
 import Foundation
 import WebCore
 
-/// Web-internal input for a catalogue search.
+/// Web-internal input for a catalogue search — decoupled from the API payload.
 struct CatalogueSearchInput: Sendable {
-
-    let payload: CatalogueQueryPayload
-
+    let term: String?
+    let categoryIDs: Set<Int>?
+    let languages: Set<String>?
     /// "Return only items created before this date" — the decoded form of the opaque `cursor` string.
     let before: Date?
-
     /// Maximum results per page. `nil` means no limit — used by web pages that display all results
     /// without pagination. Native API callers always supply a non-nil limit.
     let limit: Int?
@@ -57,7 +56,6 @@ extension Command where Self == PlainCommand<CatalogueSearchInput, CatalogueSear
     /// `createdAt desc`, takes `limit` items, and returns the oldest item's `createdAt` as the next
     /// cursor. When `limit` is nil (web page path): fetches with no cap and returns all results.
     static func searchCatalogue(
-        mapper: CatalogueQueryMapper = CatalogueQueryMapper(),
         noteSearch: CommandResolver<NoteQueryPayload, [Note]>,
         previewSearch: CommandResolver<PreviewQueryInput, [Preview]>
     ) -> Self {
@@ -65,20 +63,16 @@ extension Command where Self == PlainCommand<CatalogueSearchInput, CatalogueSear
             // fetchLimit is limit+1 (to detect hasMore) when paging; nil when no limit.
             let fetchLimit = input.limit.map { $0 + 1 }
 
-            // Build sub-queries, layering in the cursor bound and fetch limit.
-            let basePreviews = mapper.toPreviewQuery(from: input.payload)
-            let baseNotes = mapper.toNotesQuery(from: input.payload)
             let previewInput = PreviewQueryInput(
-                term: basePreviews.term,
-                categoryIDs: basePreviews.categoryIDs,
+                term: input.term,
+                categoryIDs: input.categoryIDs,
                 before: input.before,
                 limit: fetchLimit
             )
             let noteInput = NoteQueryPayload(
-                term: baseNotes.term,
-                categoryIDs: baseNotes.categoryIDs,
-                categorySlug: baseNotes.categorySlug,
-                languages: baseNotes.languages,
+                term: input.term,
+                categoryIDs: input.categoryIDs,
+                languages: input.languages,
                 before: input.before,
                 limit: fetchLimit
             )

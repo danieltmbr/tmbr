@@ -22,7 +22,7 @@ struct QuotesAPIController: RouteCollection {
         let payload = try request.query.decode(QuoteQueryPayload.self)
         let pageQuery = try request.query.decode(PageQuery.self)
         let page = PageInput(since: pageQuery.since, before: pageQuery.cursorDate, limit: pageQuery.limit)
-        let input = ListQuotesInput(payload: payload, page: page)
+        let input = ListQuotesInput(term: payload.term, categoryIDs: payload.categoryIDs, page: page)
         let quotes = try await request.commands.quotes.list(input)
         let trimmed = Array(quotes.prefix(page.limit))
         let formatter = ISO8601DateFormatter()

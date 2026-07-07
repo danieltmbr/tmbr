@@ -147,7 +147,9 @@ struct CatalogueAPIController: RouteCollection {
         let payload = try request.content.decode(CatalogueQueryPayload.self)
         let beforeDate = payload.cursor.flatMap { ISO8601DateFormatter().date(from: $0) }
         let input = CatalogueSearchInput(
-            payload: payload,
+            term: payload.term,
+            categoryIDs: mapper.toPreviewQuery(from: payload).categoryIDs,
+            languages: payload.languages,
             before: beforeDate,
             limit: payload.limit ?? 20
         )
@@ -165,7 +167,7 @@ struct CatalogueAPIController: RouteCollection {
     private func quoteList(request: Request) async throws -> [QuoteResponse] {
         let payload = try request.query.decode(CatalogueQueryPayload.self)
         let quotePayload = mapper.toQuoteQuery(from: payload)
-        let input = ListQuotesInput(payload: quotePayload, page: nil)
+        let input = ListQuotesInput(term: quotePayload.term, categoryIDs: quotePayload.categoryIDs, page: nil)
         let quotes = try await request.commands.quotes.list(input)
         return try quotes.map { try QuoteResponse(quote: $0, baseURL: request.baseURL) }
     }

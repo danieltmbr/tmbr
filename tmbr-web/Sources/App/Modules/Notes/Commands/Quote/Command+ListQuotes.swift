@@ -6,7 +6,8 @@ import Fluent
 import WebAuth
 
 struct ListQuotesInput: Sendable {
-    let payload: QuoteQueryPayload
+    let term: String?
+    let categoryIDs: Set<Int>?
     let page: PageInput?
 }
 
@@ -33,14 +34,14 @@ extension Command where Self == PlainCommand<ListQuotesInput, [Quote]> {
                 }
                 .sort(\Quote.$createdAt, .descending)
 
-            if let term = input.payload.term?.trimmed, !term.isEmpty {
+            if let term = input.term?.trimmed, !term.isEmpty {
                 let safe = term.replacingOccurrences(of: "'", with: "''")
                 query.group(.or) { group in
                     group.filter(.sql(unsafeRaw: "quotes.body ILIKE '%\(safe)%'"))
                 }
             }
 
-            if let categoryIDs = input.payload.categoryIDs {
+            if let categoryIDs = input.categoryIDs {
                 // Inner-joining Note→Preview naturally excludes post-sourced quotes,
                 // which have no catalogue category. This is the desired behaviour.
                 query
