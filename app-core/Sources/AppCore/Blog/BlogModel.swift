@@ -78,16 +78,20 @@ public final class BlogModel {
     // MARK: - Search
 
     /// Fires the injected search closure with `term`. Sets `loading = .refresh` while in flight
-    /// so the tab can show a spinner alongside the `@Query`-driven local results.
+    /// so the status line shows activity alongside the `@Query`-driven local results.
+    /// Resets `hasMore` optimistically so `BlogLoadMoreCell` can page through search results.
     public func search(term: String) async {
         guard loading == nil else { return }
         loading = .refresh
+        hasMore = true  // reset — load-more will settle it after the first search page
         defer { loading = nil }
         do {
             try await _search(term)
+            lastError = nil
         } catch {
             Logger.blog.error("Blog search failed: \(error)")
             lastError = LoadError(error)
+            hasMore = false
         }
     }
 

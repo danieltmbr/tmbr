@@ -13,5 +13,6 @@ public extension View {
         environment(model)
             .environment(\.selectQuoteSources, SelectQuoteSourcesAction(model: model))
             .environment(\.searchQuotes, QuotesSearchAction(model: model))
+            .environment(\.loadQuotes, QuotesPageLoadAction(model: model))
     }
 }

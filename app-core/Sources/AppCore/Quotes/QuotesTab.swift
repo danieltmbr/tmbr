@@ -26,21 +26,12 @@ struct QuotesTab: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if searchText.isEmpty {
-                    QuotesList(
-                        selectedSources: selectedSources,
-                        selectedLanguages: selectedLanguages,
-                        showRandom: $showRandom
-                    )
-                } else {
-                    QuotesSearchList(
-                        term: searchText,
-                        selectedSources: selectedSources,
-                        selectedLanguages: selectedLanguages
-                    )
-                }
-            }
+            QuotesList(
+                term: searchText.isEmpty ? nil : searchText,
+                selectedSources: selectedSources,
+                selectedLanguages: selectedLanguages,
+                showRandom: $showRandom
+            )
             .navigationTitle("Quotes")
             .searchable(text: $searchText, prompt: "Search quotes…")
             .toolbar {
@@ -79,7 +70,8 @@ struct QuotesTab: View {
             await refreshCatalogue()
             await refreshBlog()
         }
-        // Fire network search on term changes (debounced 300 ms).
+        // Debounce the network search 300 ms. No refresh on clear — quote browse is
+        // populated via catalogue/blog sync, not a standalone quotes refresh.
         .task(id: searchText) {
             guard !searchText.isEmpty else { return }
             try? await Task.sleep(for: .milliseconds(300))
@@ -94,7 +86,7 @@ struct QuotesTab: View {
     }
 }
 
-// MARK: - Browse list (no search term)
+// MARK: - Unified list (browse and search)
 
 private struct QuotesList: View {
 
@@ -108,9 +100,18 @@ private struct QuotesList: View {
 
     @Binding private var showRandom: Bool
 
-    init(selectedSources: Set<QuoteSourceFilter>, selectedLanguages: Set<Language>, showRandom: Binding<Bool>) {
+    let isSearching: Bool
+
+    init(
+        term: String?,
+        selectedSources: Set<QuoteSourceFilter>,
+        selectedLanguages: Set<Language>,
+        showRandom: Binding<Bool>
+    ) {
+        isSearching = term != nil
         _quotes = Query(
-            filter: QuoteRecord.list(sources: selectedSources, languages: selectedLanguages),
+            filter: term.map { QuoteRecord.search(term: $0, sources: selectedSources, languages: selectedLanguages) }
+                ?? QuoteRecord.list(sources: selectedSources, languages: selectedLanguages),
             sort: \QuoteRecord.createdAt,
             order: .reverse
         )
@@ -122,16 +123,25 @@ private struct QuotesList: View {
             ForEach(quotes) { quote in
                 QuoteCell(quote: quote)
             }
+            if isSearching && !quotes.isEmpty {
+                QuotesLoadMoreCell()
+            }
         }
         .listStyle(.plain)
         .overlay {
             if quotes.isEmpty {
-                QuotesEmptyView()
+                if isSearching {
+                    ContentUnavailableView.search
+                } else {
+                    QuotesEmptyView()
+                }
             }
         }
         .refreshable {
-            await refreshCatalogue()
-            await refreshBlog()
+            if !isSearching {
+                await refreshCatalogue()
+                await refreshBlog()
+            }
         }
         .sheet(isPresented: $showRandom) {
             RandomQuoteSheet(quotes: quotes)
@@ -139,31 +149,34 @@ private struct QuotesList: View {
     }
 }
 
-// MARK: - Search list (active search term)
+// MARK: - Load more (search pagination)
 
-private struct QuotesSearchList: View {
+private struct QuotesLoadMoreCell: View {
 
-    @Query private var quotes: [QuoteRecord]
+    @Quotes(\.isLoadingMore)
+    private var isLoadingMore
 
-    init(term: String, selectedSources: Set<QuoteSourceFilter>, selectedLanguages: Set<Language>) {
-        _quotes = Query(
-            filter: QuoteRecord.search(term: term, sources: selectedSources, languages: selectedLanguages),
-            sort: \QuoteRecord.createdAt,
-            order: .reverse
-        )
-    }
+    @Quotes(\.hasMore)
+    private var hasMore
+
+    @Environment(\.loadQuotes)
+    private var loadQuotes
 
     var body: some View {
-        List {
-            ForEach(quotes) { quote in
-                QuoteCell(quote: quote)
+        Group {
+            if isLoadingMore {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                }
+            } else {
+                Color.clear.frame(height: 0)
             }
         }
-        .listStyle(.plain)
-        .overlay {
-            if quotes.isEmpty {
-                ContentUnavailableView.search
-            }
+        .listRowSeparator(.hidden)
+        .onAppear {
+            Task { await loadQuotes() }
         }
     }
 }

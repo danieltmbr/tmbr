@@ -25,13 +25,10 @@ struct BlogTab: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if searchText.isEmpty {
-                    PostsList(selectedLanguages: selectedLanguages)
-                } else {
-                    PostsSearchList(term: searchText, selectedLanguages: selectedLanguages)
-                }
-            }
+            PostsList(
+                term: searchText.isEmpty ? nil : searchText,
+                selectedLanguages: selectedLanguages
+            )
             .navigationTitle("Blog")
             .searchable(text: $searchText, prompt: "Search posts…")
             .toolbar {
@@ -63,9 +60,13 @@ struct BlogTab: View {
             }
         }
         .task { await refreshBlog() }
-        // Fire the network search whenever the term changes (debounced 300 ms).
+        // Network search is debounced 300 ms. When the term is cleared, fire an immediate
+        // refresh so browse pagination resets cleanly (no stale search cursor).
         .task(id: searchText) {
-            guard !searchText.isEmpty else { return }
+            if searchText.isEmpty {
+                await refreshBlog()
+                return
+            }
             try? await Task.sleep(for: .milliseconds(300))
             guard !Task.isCancelled else { return }
             await searchBlog(term: searchText)
@@ -81,7 +82,7 @@ struct BlogTab: View {
     }
 }
 
-// MARK: - Browse list (no search term)
+// MARK: - Unified list (browse and search)
 
 private struct PostsList: View {
 
@@ -90,9 +91,13 @@ private struct PostsList: View {
     @Environment(\.refreshBlog)
     private var refreshBlog
 
-    init(selectedLanguages: Set<Language>) {
+    let isSearching: Bool
+
+    init(term: String?, selectedLanguages: Set<Language>) {
+        isSearching = term != nil
         _posts = Query(
-            filter: PostRecord.list(languages: selectedLanguages),
+            filter: term.map { PostRecord.search(term: $0, languages: selectedLanguages) }
+                ?? PostRecord.list(languages: selectedLanguages),
             sort: \PostRecord.createdAt,
             order: .reverse
         )
@@ -117,51 +122,13 @@ private struct PostsList: View {
         }
         .overlay {
             if posts.isEmpty {
-                BlogEmptyView()
-            }
-        }
-        .navigationDestination(for: PostRecord.self) { post in
-            PostReaderView(
-                title: post.title,
-                content: post.content,
-                created: post.createdAt,
-                published: post.publishedAt
-            )
-        }
-        .refreshable { await refreshBlog() }
-    }
-}
-
-// MARK: - Search list (active search term)
-
-private struct PostsSearchList: View {
-
-    @Query private var posts: [PostRecord]
-
-    init(term: String, selectedLanguages: Set<Language>) {
-        _posts = Query(
-            filter: PostRecord.search(term: term, languages: selectedLanguages),
-            sort: \PostRecord.createdAt,
-            order: .reverse
-        )
-    }
-
-    var body: some View {
-        List {
-            ForEach(posts) { post in
-                NavigationLink(value: post) {
-                    PostCell(
-                        title: post.title,
-                        date: post.publishedAt ?? post.createdAt
-                    )
+                if isSearching {
+                    ContentUnavailableView.search
+                } else {
+                    BlogEmptyView()
                 }
             }
         }
-        .overlay {
-            if posts.isEmpty {
-                ContentUnavailableView.search
-            }
-        }
         .navigationDestination(for: PostRecord.self) { post in
             PostReaderView(
                 title: post.title,
@@ -169,6 +136,11 @@ private struct PostsSearchList: View {
                 created: post.createdAt,
                 published: post.publishedAt
             )
+        }
+        .refreshable {
+            if !isSearching {
+                await refreshBlog()
+            }
         }
     }
 }
