@@ -10,7 +10,7 @@ public typealias BooksLoader     = RequestLoader<PageQuery, PageResult<BookRespo
 public typealias MoviesLoader    = RequestLoader<PageQuery, PageResult<MovieResponse>>
 public typealias PodcastsLoader  = RequestLoader<PageQuery, PageResult<PodcastResponse>>
 public typealias PlaylistsLoader = RequestLoader<PageQuery, PageResult<PlaylistResponse>>
-public typealias PostsLoader     = RequestLoader<PageQuery, PageResult<PostResponse>>
+public typealias PostsLoader     = RequestLoader<PostsQuery, PageResult<PostResponse>>
 public typealias OrphansLoader    = RequestLoader<OrphanPageQuery, PageResult<PreviewResponse>>
 public typealias CategoriesLoader = RequestLoader<Void, [CategoryResponse]>
 public typealias DeletionsLoader  = RequestLoader<SinceQuery, [DeletionRecord]>
@@ -138,15 +138,15 @@ public extension DeletionsLoader {
 
 // MARK: - Search loaders (unauthenticated — Reader app)
 //
-// One-shot loaders: call `.load(from: query)` with the search query, get results back.
-// No pagination — search endpoints return an unpaginated array.
+// One-shot loaders for endpoints with dedicated search paths (quotes, catalogue).
+// Blog search uses the standard PostsLoader with a `term` in `PostsQuery`.
 
-public typealias PostSearchLoader      = RequestLoader<PostSearchQuery, PageResult<PostResponse>>
+public typealias QuoteSearchLoader     = RequestLoader<QuoteSearchQuery, PageResult<QuoteResponse>>
 public typealias CatalogueSearchLoader = RequestLoader<CatalogueSearchQuery, CatalogueSearchResponse>
 
-public extension PostSearchLoader {
-    static func searchPosts(baseURL: URL, session: URLSession = .shared) -> Self {
-        PostSearchLoader(request: PostSearchRequest.postSearch(baseURL: baseURL), session: session)
+public extension QuoteSearchLoader {
+    static func searchQuotes(baseURL: URL, session: URLSession = .shared) -> Self {
+        QuoteSearchLoader(request: QuoteSearchRequest.quoteSearch(baseURL: baseURL), session: session)
     }
 }
 

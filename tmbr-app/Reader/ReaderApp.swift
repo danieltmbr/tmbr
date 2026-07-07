@@ -29,7 +29,6 @@ struct ReaderApp: App {
         let posts = ReaderPosts(loader: loader, store: postStore)
         let userDefaults = UserDefaults.standard
         let lastFetchedKey = "reader.blog.lastFetched"
-        let postSearchLoader = PostSearchLoader.searchPosts(baseURL: Self.apiBaseURL)
         blog = BlogModel(
             refresh: {
                 try await posts.refreshPosts()
@@ -38,29 +37,26 @@ struct ReaderApp: App {
                 return now
             },
             loadMore: { try await posts.loadMore() },
-            search: { term in
-                let results = try await postSearchLoader.load(from: PostSearchQuery(term: term))
-                try await postStore.upsert(results.items)
-            },
+            search: { term in try await posts.search(term: term) },
             lastFetched: userDefaults.object(forKey: lastFetchedKey) as? Date
         )
 
         let catalogueStore = CatalogueStore(context: container.mainContext)
         let catalogueSync = SyncGroup.catalogue(baseURL: Self.apiBaseURL, store: catalogueStore)
         let catalogueSearchLoader = CatalogueSearchLoader.searchCatalogue(baseURL: Self.apiBaseURL)
+        let readerCatalogue = ReaderCatalogue(loader: catalogueSearchLoader, store: catalogueStore)
         catalogue = CatalogueModel(
             refresh: { try await catalogueSync.run() },
-            search: { term in
-                let response = try await catalogueSearchLoader.load(from: CatalogueSearchQuery(term: term))
-                try await catalogueStore.upsertSearch(response)
-            }
+            search: { term in try await readerCatalogue.search(term: term) },
+            loadMore: { try await readerCatalogue.loadMore() }
         )
 
         let quoteSearchLoader = QuoteSearchLoader.searchQuotes(baseURL: Self.apiBaseURL)
-        quotes = QuotesModel(search: { term in
-            let results = try await quoteSearchLoader.load(from: QuoteSearchQuery(term: term))
-            try await catalogueStore.upsert(results)
-        })
+        let readerQuotes = ReaderQuotes(loader: quoteSearchLoader, store: catalogueStore)
+        quotes = QuotesModel(
+            search: { term in try await readerQuotes.search(term: term) },
+            loadMore: { try await readerQuotes.loadMore() }
+        )
     }
 
     var body: some Scene {

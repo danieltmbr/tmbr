@@ -37,7 +37,7 @@ public extension Request where Self == PlaylistsRequest {
     static func playlistQuery(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/playlists") }
 }
 
-public typealias PostsRequest = BasicRequest<PageQuery, PageResult<PostResponse>>
+public typealias PostsRequest = BasicRequest<PostsQuery, PageResult<PostResponse>>
 public extension Request where Self == PostsRequest {
     static func postQuery(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/posts") }
 }
@@ -62,13 +62,14 @@ public extension Request where Self == DeletionsRequest {
 
 // MARK: - Search requests
 //
-// Unpaginated one-shot requests — send the search query, get a complete result array back.
+// One-shot search requests for quote and catalogue search endpoints (quotes and catalogue use
+// dedicated search paths; blog search is served by the standard PostsRequest with a `term`).
 // Each uses `.query(baseURL:path:)` so the `Input` struct is URL-encoded into query parameters
 // via `QueryItemEncoder`.
 
-public typealias PostSearchRequest = BasicRequest<PostSearchQuery, PageResult<PostResponse>>
-public extension Request where Self == PostSearchRequest {
-    static func postSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/posts") }
+public typealias QuoteSearchRequest = BasicRequest<QuoteSearchQuery, PageResult<QuoteResponse>>
+public extension Request where Self == QuoteSearchRequest {
+    static func quoteSearch(baseURL: URL) -> Self { .query(baseURL: baseURL, path: "api/quotes") }
 }
 
 public typealias CatalogueSearchRequest = BasicRequest<CatalogueSearchQuery, CatalogueSearchResponse>

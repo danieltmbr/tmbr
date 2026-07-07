@@ -7,5 +7,6 @@ public extension View {
             .environment(\.refreshCatalogue, CatalogueRefreshAction(model: model))
             .environment(\.selectCategories, SelectCategoriesAction(model: model))
             .environment(\.searchCatalogue, CatalogueSearchAction(model: model))
+            .environment(\.loadCatalogue, CataloguePageLoadAction(model: model))
     }
 }

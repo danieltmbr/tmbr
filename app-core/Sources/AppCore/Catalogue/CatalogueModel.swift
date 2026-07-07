@@ -22,6 +22,16 @@ public final class CatalogueModel {
     /// Categories currently active in the filter. Empty = no filter (show all).
     public var selectedCategories: Set<CatalogueCategory> = []
 
+    /// Non-nil when a load-more network request is in flight.
+    public private(set) var isLoadingMore: Bool = false
+
+    /// Whether more pages are available for the current search.
+    public private(set) var hasMore: Bool = true
+
+    /// Increments after each successful network search or load-more, so the tab can re-run
+    /// local search to pick up upserted records.
+    public private(set) var loadMoreRevision: Int = 0
+
     // MARK: - Dependencies
 
     private let _refresh: @Sendable () async throws -> Void
@@ -30,12 +40,17 @@ public final class CatalogueModel {
     /// matching catalogue items and notes from the server and upsert them into the local store.
     private let _search: @Sendable (String) async throws -> Void
 
+    /// Per-app seam for load-more. Returns `true` if more pages remain.
+    private let _loadMore: @Sendable () async throws -> Bool
+
     public init(
         refresh: @escaping @Sendable () async throws -> Void = {},
-        search: @escaping @Sendable (String) async throws -> Void = { _ in }
+        search: @escaping @Sendable (String) async throws -> Void = { _ in },
+        loadMore: @escaping @Sendable () async throws -> Bool = { false }
     ) {
         self._refresh = refresh
         self._search = search
+        self._loadMore = loadMore
     }
 
     // MARK: - Refresh
@@ -60,11 +75,32 @@ public final class CatalogueModel {
     public func search(term: String) async {
         guard loading == nil else { return }
         loading = .refresh
+        hasMore = true
         defer { loading = nil }
         do {
             try await _search(term)
+            loadMoreRevision += 1
         } catch {
             Logger.catalogue.error("Catalogue search failed: \(error)")
+            lastError = LoadError(error)
+            hasMore = false
+        }
+    }
+
+    // MARK: - Load more
+
+    /// Fetches the next page of search results and upserts them. Increments `loadMoreRevision`
+    /// so the tab can re-run local search to pick up the newly upserted records.
+    public func loadMore() async {
+        guard !isLoadingMore, hasMore else { return }
+        isLoadingMore = true
+        defer { isLoadingMore = false }
+        do {
+            let more = try await _loadMore()
+            hasMore = more
+            loadMoreRevision += 1
+        } catch {
+            Logger.catalogue.error("Catalogue load-more failed: \(error)")
             lastError = LoadError(error)
         }
     }
