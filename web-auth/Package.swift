@@ -33,6 +33,14 @@ let package = Package(
             ],
             swiftSettings: swiftSettings
         ),
+        .testTarget(
+            name: "WebAuthTests",
+            dependencies: [
+                "WebAuth",
+                .product(name: "VaporTesting", package: "vapor"),
+            ],
+            swiftSettings: swiftSettings
+        ),
     ],
     swiftLanguageModes: [.v5]
 )
