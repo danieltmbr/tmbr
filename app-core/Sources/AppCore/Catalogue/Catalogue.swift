@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Scoped access to `CatalogueModel` (`@Catalogue(\.phase)`), mirroring `@Blog`.
+/// Scoped access to `CatalogueModel` (`@Catalogue(\.phase)`), mirroring `@Quotes`.
 @MainActor
 @propertyWrapper
 public struct Catalogue<Value>: DynamicProperty {

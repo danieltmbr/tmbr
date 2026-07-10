@@ -2,12 +2,13 @@ import SwiftUI
 import Foundation
 
 public extension EnvironmentValues {
-    @Entry var refreshCatalogue: CatalogueRefreshAction = CatalogueRefreshAction()
+    
     @Entry var selectCategories: SelectCategoriesAction = SelectCategoriesAction()
 
     // Networking config — `apiBaseURL == nil` is the on/off gate: Personal injects nothing
     // → @Loader returns nil, @Upserter returns a no-op syncer.
     @Entry var apiBaseURL: URL? = nil
+    
     @Entry var urlSession: URLSession = .shared
 
     // Network seam: factories keyed by item type. Tests/previews substitute a stub factory
