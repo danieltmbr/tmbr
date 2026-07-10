@@ -15,4 +15,8 @@ public struct CatalogueCategory: Hashable, Sendable {
     public init(_ record: CatalogueCategoryRecord) {
         self.init(record.slug)
     }
+
+    /// The category's server slug, for API query parameters. Read-only export — the opacity
+    /// guarantee is about *construction* (no smuggling arbitrary strings in), not reading.
+    public var slug: String { rawValue }
 }

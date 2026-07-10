@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// A non-disruptive one-liner row for a catalogue item detail screen.
-/// Parameterised twin of `CatalogueStatusLine` — same visuals, same states, but takes
-/// loading/lastError/lastFetched as direct inputs rather than reading from the catalogue model.
+/// Twin of `FeedStatusLine` — same visuals, same states, but takes loading/lastError/lastFetched
+/// as direct inputs rather than a `FeedModel` (item detail state isn't feed-backed).
 struct CatalogueItemStatusLine: View {
 
     let loading: LoadingState?

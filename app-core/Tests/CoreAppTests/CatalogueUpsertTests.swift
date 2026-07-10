@@ -2,6 +2,7 @@ import Testing
 import Foundation
 import SwiftData
 import TmbrCore
+import AppPersistence
 @testable import AppCore
 
 @MainActor

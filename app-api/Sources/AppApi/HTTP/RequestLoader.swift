@@ -31,14 +31,21 @@ public extension RequestLoader where Input == Void {
 public extension RequestLoader {
 
     /// Loads `request` without authentication.
-    init<R: Request>(request: R, session: URLSession = .shared) where R.Input == Input, R.Response == Response {
+    init<R: Request>(
+        request: R,
+        session: URLSession = .shared
+    ) where R.Input == Input, R.Response == Response {
         self.init { input in
             try await Self.send(request, input, token: nil, session: session)
         }
     }
 
     /// Loads `request` with a bearer token from `auth`, refreshing once on a 401 and retrying.
-    init<R: Request>(request: R, session: URLSession = .shared, auth: AuthProvider) where R.Input == Input, R.Response == Response {
+    init<R: Request>(
+        request: R,
+        session: URLSession = .shared,
+        auth: AuthProvider
+    ) where R.Input == Input, R.Response == Response {
         self.init { input in
             let token = await auth.value
             do {

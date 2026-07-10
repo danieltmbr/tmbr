@@ -13,9 +13,14 @@ import AppApi
 @MainActor @propertyWrapper
 public struct Loader<Input: Sendable, Response: Decodable & Sendable>: DynamicProperty {
 
-    @Environment(\.apiBaseURL) private var baseURL
-    @Environment(\.urlSession) private var session
-    @Environment(\.itemLoaders) private var loaders
+    @Environment(\.apiBaseURL)
+    private var baseURL
+    
+    @Environment(\.urlSession)
+    private var session
+    
+    @Environment(\.itemLoaders)
+    private var loaders
 
     private let path: KeyPath<CatalogueItemLoaders, @Sendable (URL, URLSession) -> RequestLoader<Input, Response>>
 

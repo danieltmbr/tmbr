@@ -6,13 +6,12 @@ import AppCore
 struct RootView: View {
     @Environment(AuthState.self) private var authState
     // No-op refresh for now — Author's blog/catalogue data-in is its SyncEngine (later stage).
-    @State private var blog = BlogModel()
+    // Feeds are no-ops automatically: no `apiBaseURL` in the environment → `@Feed` wires no fetch.
     @State private var catalogue = CatalogueModel()
     @State private var quotes = QuotesModel()
 
     var body: some View {
         ContentView()
-            .blog(blog)
             .catalogue(catalogue)
             .quotes(quotes)
             .environment(\.canAuthor, authState.isSignedIn)

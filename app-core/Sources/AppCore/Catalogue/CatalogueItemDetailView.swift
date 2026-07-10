@@ -55,17 +55,17 @@ struct CatalogueItemDetailView: View {
     private var typeSection: some View {
         switch item.category {
         case .song:
-            SongDetailSection(previewID: item.id)
+            SongDetailSection(item: item)
         case .album:
-            AlbumDetailSection(previewID: item.id)
+            AlbumDetailSection(item: item)
         case .playlist:
-            PlaylistDetailSection(previewID: item.id)
+            PlaylistDetailSection(item: item)
         case .book:
-            BookDetailSection(previewID: item.id)
+            BookDetailSection(item: item)
         case .podcast:
-            PodcastDetailSection(previewID: item.id)
+            PodcastDetailSection(item: item)
         case .movie:
-            MovieDetailSection(previewID: item.id)
+            MovieDetailSection(item: item)
         case nil:
             OrphanDetailSection(item: item)
         }

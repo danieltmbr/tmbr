@@ -104,8 +104,8 @@ private struct CatalogueItemsList: View {
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.primaryInfo)
-                        if let subtitle = item.secondaryInfo {
-                            Text(subtitle)
+                        if !item.secondaryInfo.isEmpty {
+                            Text(item.secondaryInfo)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
