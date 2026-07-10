@@ -86,10 +86,22 @@ public extension PostRecord {
     /// Predicate for in-tab text search. Matches posts whose title or content contains `term`
     /// (case-insensitive, locale-aware), filtered by the active language selection.
     static func search(term: String, languages: Set<Language>) -> Predicate<PostRecord> {
-        let codes = languages.map(\.rawValue)
+        let list = Self.list(languages: languages)
         return #Predicate<PostRecord> { post in
             (post.title.localizedStandardContains(term) || post.content.localizedStandardContains(term)) &&
-            (codes.isEmpty || post.languageRaw.isEmpty || codes.contains(post.languageRaw))
+            list.evaluate(post)
+        }
+    }
+
+    /// Predicate for the blog list — text search when `term` is non-empty, plain list
+    /// otherwise; the language filter always applies. Mirrors what the server returns for the
+    /// same term + languages, so one pair of inputs drives both the local `@Query` and the
+    /// network fetch.
+    static func blog(term: String, languages: Set<Language>) -> Predicate<PostRecord> {
+        if !term.isEmpty {
+            search(term: term, languages: languages)
+        } else {
+            list(languages: languages)
         }
     }
 }
