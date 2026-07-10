@@ -10,11 +10,11 @@
 		03297F0053BB73A1328B6378 /* AppCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8229BF76A2BB18E12999E69F /* AppCore */; };
 		109CB8C24233693E8E8EF54C /* TmbrCore in Frameworks */ = {isa = PBXBuildFile; productRef = F193199EDBC5D787AC73097C /* TmbrCore */; };
 		2549866CD08843ECFBA90108 /* TmbrCore in Frameworks */ = {isa = PBXBuildFile; productRef = D47E8BCA7C0DA4C5D5F9513D /* TmbrCore */; };
-		AA000004BB000004CC000004 /* AppPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = AA000002BB000002CC000002 /* AppPersistence */; };
-		AA000005BB000005CC000005 /* AppPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = AA000003BB000003CC000003 /* AppPersistence */; };
 		707239A243CF738549160865 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E173FBA3F6594B28E84BDB5C /* Cocoa.framework */; };
 		9692272AC826634604D10C7E /* AppCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4359256FA09B2AD131BFF498 /* AppCore */; };
 		A838BCBD3A5F97E873E1C206 /* AppApi in Frameworks */ = {isa = PBXBuildFile; productRef = CD234EC0DAF2EA0B8DE0C637 /* AppApi */; };
+		AA000004BB000004CC000004 /* AppPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = AA000002BB000002CC000002 /* AppPersistence */; };
+		AA000005BB000005CC000005 /* AppPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = AA000003BB000003CC000003 /* AppPersistence */; };
 		E2497B602FE1302F00D1B325 /* AppCore in Frameworks */ = {isa = PBXBuildFile; productRef = E2497B5F2FE1302F00D1B325 /* AppCore */; };
 		E27B48712FC58690006866D7 /* TmbrCore in Frameworks */ = {isa = PBXBuildFile; productRef = E27B48722FC58690006866D7 /* TmbrCore */; };
 		E27C0B542FC5FE480055C952 /* AppApi in Frameworks */ = {isa = PBXBuildFile; productRef = E27C0B532FC5FE480055C952 /* AppApi */; };
@@ -1074,6 +1074,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		AA000001BB000001CC000001 /* XCLocalSwiftPackageReference "../app-persistence" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../app-persistence";
+		};
 		E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../app-core" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../app-core";
@@ -1085,10 +1089,6 @@
 		E27C0B512FC5FE100055C952 /* XCLocalSwiftPackageReference "../app-api" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../app-api";
-		};
-		AA000001BB000001CC000001 /* XCLocalSwiftPackageReference "../app-persistence" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../app-persistence";
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -1102,6 +1102,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E2497BB72FE13F5400D1B325 /* XCLocalSwiftPackageReference "../app-core" */;
 			productName = AppCore;
+		};
+		AA000002BB000002CC000002 /* AppPersistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA000001BB000001CC000001 /* XCLocalSwiftPackageReference "../app-persistence" */;
+			productName = AppPersistence;
+		};
+		AA000003BB000003CC000003 /* AppPersistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA000001BB000001CC000001 /* XCLocalSwiftPackageReference "../app-persistence" */;
+			productName = AppPersistence;
 		};
 		CD234EC0DAF2EA0B8DE0C637 /* AppApi */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1132,16 +1142,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E27B48702FC58689006866D7 /* XCLocalSwiftPackageReference "../tmbr-core" */;
 			productName = TmbrCore;
-		};
-		AA000002BB000002CC000002 /* AppPersistence */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA000001BB000001CC000001 /* XCLocalSwiftPackageReference "../app-persistence" */;
-			productName = AppPersistence;
-		};
-		AA000003BB000003CC000003 /* AppPersistence */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA000001BB000001CC000001 /* XCLocalSwiftPackageReference "../app-persistence" */;
-			productName = AppPersistence;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

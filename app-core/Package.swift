@@ -27,7 +27,12 @@ let package = Package(
         ),
         .testTarget(
             name: "AppCoreTests",
-            dependencies: ["AppCore"]
+            dependencies: [
+                "AppCore",
+                .product(name: "TmbrCore", package: "tmbr-core"),
+                .product(name: "AppApi", package: "app-api"),
+                .product(name: "AppPersistence", package: "app-persistence"),
+            ]
         ),
     ]
 )

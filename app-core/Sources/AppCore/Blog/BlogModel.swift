@@ -1,11 +1,7 @@
 import Foundation
 import OSLog
 
-/// Which load operation is currently in flight, if any.
-public enum LoadingState: Equatable, Sendable {
-    case refresh
-    case page
-}
+// `LoadingState` now lives with `FeedState` (Feed/FeedState.swift); this model reuses it.
 
 /// Headless model for the Blog tab. Tracks refresh activity and outcome; the list itself comes
 /// from `@Query` in the view.

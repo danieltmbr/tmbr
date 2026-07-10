@@ -3,6 +3,7 @@ import Foundation
 import SwiftData
 import TmbrCore
 import AppApi
+import AppPersistence
 @testable import AppCore
 
 @MainActor
@@ -43,13 +44,13 @@ struct CatalogueItemSyncSeamTests {
         let pid = UUID()
         let stub = stubSong(previewID: pid, id: 42)
 
-        let recipe = CatalogueItemSyncs().song
+        let descriptor = CatalogueItemSyncDescriptor<Int, SongResponse>.song
         let loaders = CatalogueItemLoaders(song: { _, _ in SongItemLoader { _ in stub } })
         let upserters = CatalogueItemUpserters()
-        let loader = loaders[keyPath: recipe.loaderPath](URL(string: "https://test")!, .shared)
-        let upsert = upserters[keyPath: recipe.upserterPath]
+        let loader = loaders[keyPath: descriptor.loaderPath](URL(string: "https://test")!, .shared)
+        let upsert = upserters[keyPath: descriptor.upserterPath]
         let store = CatalogueStore(context: ctx)
-        let syncer = CatalogueItemSyncer<Int> { [label = recipe.label] id in
+        let syncer = CatalogueItemSyncer<Int> { [label = descriptor.label] id in
             try await Syncer(label, loader: loader, from: id) { try await upsert(store, $0) }.run()
         }
 
@@ -68,13 +69,13 @@ struct CatalogueItemSyncSeamTests {
         let stub = stubSong(previewID: pid, id: 7)
 
         var received: SongResponse?
-        let recipe = CatalogueItemSyncs().song
+        let descriptor = CatalogueItemSyncDescriptor<Int, SongResponse>.song
         let loaders = CatalogueItemLoaders(song: { _, _ in SongItemLoader { _ in stub } })
         let upserters = CatalogueItemUpserters(song: { _, response in received = response })
-        let loader = loaders[keyPath: recipe.loaderPath](URL(string: "https://test")!, .shared)
-        let upsert = upserters[keyPath: recipe.upserterPath]
+        let loader = loaders[keyPath: descriptor.loaderPath](URL(string: "https://test")!, .shared)
+        let upsert = upserters[keyPath: descriptor.upserterPath]
         let store = CatalogueStore(context: ctx)
-        let syncer = CatalogueItemSyncer<Int> { [label = recipe.label] id in
+        let syncer = CatalogueItemSyncer<Int> { [label = descriptor.label] id in
             try await Syncer(label, loader: loader, from: id) { try await upsert(store, $0) }.run()
         }
 

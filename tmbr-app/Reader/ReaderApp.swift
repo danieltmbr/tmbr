@@ -1,20 +1,21 @@
 import SwiftUI
 import SwiftData
-import AppApi
 import AppCore
 import AppPersistence
 
 /// Reader — public, read-only. Plain on-disk SwiftData cache; no auth, no account.
-/// Data enters lazily: the Blog tab's `refresh` fetches public posts + upserts (`ReaderPosts`).
+/// Data enters lazily: feeds (`@Feed`) fetch public posts/quotes/catalogue and upsert; they
+/// compose themselves from `\.apiBaseURL` + the feed descriptors' default pipelines.
 /// The shared UI's seam stays at its defaults: `canAuthor = false`, `accountToolbar = .none`.
 @main
 struct ReaderApp: App {
 
     private let container: ModelContainer
 
-    private let blog: BlogModel
-    private let catalogue: CatalogueModel
+    private let catalogue = CatalogueModel()
+
     private let quotes = QuotesModel()
+
     private let preferences = PreferencesModel()
 
     init() {
@@ -23,35 +24,15 @@ struct ReaderApp: App {
         } catch {
             fatalError("Failed to create Reader ModelContainer: \(error)")
         }
-        let loader = PostsLoader.posts(baseURL: Self.apiBaseURL)
-        let store = PostStore(context: container.mainContext)
-        let posts = ReaderPosts(loader: loader, store: store)
-        let userDefaults = UserDefaults.standard
-        let lastFetchedKey = "reader.blog.lastFetched"
-        blog = BlogModel(
-            refresh: {
-                try await posts.refreshPosts()
-                let now = Date.now
-                userDefaults.set(now, forKey: lastFetchedKey)
-                return now
-            },
-            loadMore: { try await posts.loadMore() },
-            lastFetched: userDefaults.object(forKey: lastFetchedKey) as? Date
-        )
-
-        let catalogueStore = CatalogueStore(context: container.mainContext)
-        let catalogueSync = SyncGroup.catalogue(baseURL: Self.apiBaseURL, store: catalogueStore)
-        catalogue = CatalogueModel(refresh: { try await catalogueSync.run() })
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .blog(blog)
                 .catalogue(catalogue)
                 .quotes(quotes)
                 .preferences(preferences)
-                .environment(\.apiBaseURL, Self.apiBaseURL)
+                .environment(\.apiBaseURL, Self.baseURL)
         }
         .modelContainer(container)
 
@@ -63,7 +44,7 @@ struct ReaderApp: App {
         #endif
     }
 
-    private static var apiBaseURL: URL {
+    private static var baseURL: URL {
         guard let raw = Bundle.main.object(forInfoDictionaryKey: "APIBaseURL") as? String,
               !raw.isEmpty, let url = URL(string: raw) else {
             fatalError("APIBaseURL missing or invalid in Info.plist")

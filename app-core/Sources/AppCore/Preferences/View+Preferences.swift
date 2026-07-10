@@ -3,11 +3,11 @@ import SwiftUI
 public extension View {
     /// Injects the Preferences model and its language-selection action into the view subtree.
     ///
-    /// Call this once at the composition root alongside `.blog(_:)` and `.catalogue(_:)`:
+    /// Call this once at the composition root alongside `.catalogue(_:)` and `.quotes(_:)`:
     /// ```swift
     /// ContentView()
-    ///     .blog(blog)
     ///     .catalogue(catalogue)
+    ///     .quotes(quotes)
     ///     .preferences(preferences)
     /// ```
     func preferences(_ model: PreferencesModel) -> some View {

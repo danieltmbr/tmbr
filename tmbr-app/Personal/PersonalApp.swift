@@ -13,7 +13,7 @@ import AppPersistence
 struct PersonalApp: App {
     let container: ModelContainer
     // No-op refresh — Personal's data is CloudKit-mirrored (no fetch). Empty until the write path lands.
-    let blog = BlogModel()
+    // Feeds are no-ops automatically: no `apiBaseURL` in the environment → `@Feed` wires no fetch.
     let catalogue = CatalogueModel()
     let quotes = QuotesModel()
     let preferences = PreferencesModel()
@@ -29,7 +29,6 @@ struct PersonalApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .blog(blog)
                 .catalogue(catalogue)
                 .quotes(quotes)
                 .preferences(preferences)
