@@ -9,7 +9,7 @@ import AppPersistence
 ///
 /// This is intentionally decoupled from `CatalogueModel` — the Quotes filter is a
 /// superset of catalogue categories (it also spans blog posts), so the two tabs maintain
-/// independent selections.
+/// independent selections. Search + paging live in the quotes `FeedModel` (`@Feed(.quotes)`).
 @MainActor
 @Observable
 public final class QuotesModel {
