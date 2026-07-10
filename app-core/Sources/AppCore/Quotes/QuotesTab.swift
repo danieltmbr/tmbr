@@ -5,29 +5,27 @@ import TmbrCore
 
 struct QuotesTab: View {
 
-    @Environment(\.refreshCatalogue)
-    private var refreshCatalogue
-
-    @Environment(\.refreshBlog)
-    private var refreshBlog
-
     @Quotes(\.selectedSources)
     private var selectedSources
 
     @Preferences(\.selectedLanguages)
     private var selectedLanguages
 
+    @State private var searchText = ""
     @State private var showFilter = false
     @State private var showRandom = false
 
     var body: some View {
         NavigationStack {
             QuotesList(
-                selectedSources: selectedSources,
-                selectedLanguages: selectedLanguages,
+                languages: selectedLanguages,
+                sources: selectedSources,
+                searchText: searchText,
                 showRandom: $showRandom
             )
+            .feed(.quotes)
             .navigationTitle("Quotes")
+            .searchable(text: $searchText, prompt: "Search quotes…")
             .toolbar {
 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
@@ -60,10 +58,6 @@ struct QuotesTab: View {
                 }
             }
         }
-        .task {
-            await refreshCatalogue()
-            await refreshBlog()
-        }
 #if os(iOS)
         .sheet(isPresented: $showFilter) {
             QuotesFilterView()
@@ -72,45 +66,104 @@ struct QuotesTab: View {
     }
 }
 
+// MARK: - Unified list (browse and search)
+
 private struct QuotesList: View {
 
-    @Query private var quotes: [QuoteRecord]
+    @Feed(QuotesQuery.self)
+    private var feed
 
-    @Environment(\.refreshCatalogue)
-    private var refreshCatalogue
+    /// The view's paging state — the source of truth for what to fetch next. Reset on every
+    /// new intent, updated from the receipt of each committed fetch.
+    @State
+    private var page: FeedPage?
 
-    @Environment(\.refreshBlog)
-    private var refreshBlog
+    @Query
+    private var quotes: [QuoteRecord]
 
-    @Binding private var showRandom: Bool
+    @Binding
+    private var showRandom: Bool
 
-    init(selectedSources: Set<QuoteSourceFilter>, selectedLanguages: Set<Language>, showRandom: Binding<Bool>) {
+    private let languages: Set<Language>
+
+    private let sources: Set<QuoteSourceFilter>
+
+    private let searchText: String
+
+    init(
+        languages: Set<Language>,
+        sources: Set<QuoteSourceFilter>,
+        searchText: String,
+        showRandom: Binding<Bool>
+    ) {
+        self.languages = languages
+        self.sources = sources
+        self.searchText = searchText
+        _showRandom = showRandom
         _quotes = Query(
-            filter: QuoteRecord.list(sources: selectedSources, languages: selectedLanguages),
+            filter: QuoteRecord.quotes(term: searchText, sources: sources, languages: languages),
             sort: \QuoteRecord.createdAt,
             order: .reverse
         )
-        _showRandom = showRandom
     }
 
     var body: some View {
         List {
             ForEach(quotes) { quote in
                 QuoteCell(quote: quote)
+                    .onAppear { [createdAt = quote.createdAt] in
+                        Task { await fetch(after: createdAt) }
+                    }
+            }
+            if !quotes.isEmpty {
+                FeedLoadMoreCell()
             }
         }
         .listStyle(.plain)
         .overlay {
             if quotes.isEmpty {
-                QuotesEmptyView()
+                FeedEmptyView {
+                    ContentUnavailableView("Nothing here yet", systemImage: "quote.bubble")
+                }
             }
         }
         .refreshable {
-            await refreshCatalogue()
-            await refreshBlog()
+            await fetch(page: nil)
+        }
+        // Runs on appear and restarts on any term or filter change (the id is the page-1
+        // query) — the model supersedes in-flight requests, so the last input wins.
+        .task(id: query()) {
+            await fetch(page: nil)
         }
         .sheet(isPresented: $showRandom) {
             RandomQuoteSheet(quotes: quotes)
         }
+    }
+
+    /// Fetches for the given paging state — `nil` is page 1 — and folds the receipt back in.
+    /// The `?? page` fallback is the failure policy: a failed page 1 falls back to `nil`
+    /// (no dead sessions), while a failed next page falls back to its own pre-call state,
+    /// so a later row appearance retries it.
+    private func fetch(page: FeedPage?) async {
+        self.page = await feed.fetch(query(page: page)) ?? page
+    }
+
+    /// Row-driven paging: a row at or past the fetched frontier is unverified local cache —
+    /// fetch the next page for it. The `nextCursor` check gates exhaustion: without it, an
+    /// exhausted page would build a cursor-less query and restart the session as page 1.
+    private func fetch(after createdAt: Date) async {
+        guard let page, page.nextCursor != nil,
+              let frontier = page.frontier,
+              createdAt <= frontier else { return }
+        await fetch(page: page)
+    }
+
+    private func query(page: FeedPage? = nil) -> QuotesQuery {
+        QuotesQuery(
+            cursor: page?.nextCursor,
+            languages: languages,
+            sources: sources.apiValues,
+            term: searchText
+        )
     }
 }

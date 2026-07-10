@@ -107,6 +107,18 @@ public extension QuoteRecord {
         }
     }
 
+    /// Predicate for the quotes list — text search when `term` is non-empty, plain list
+    /// otherwise; source and language filters always apply. Mirrors what the server returns
+    /// for the same inputs, so one set of inputs drives both the local `@Query` and the
+    /// network fetch.
+    static func quotes(term: String, sources: Set<QuoteSourceFilter>, languages: Set<Language>) -> Predicate<QuoteRecord> {
+        if !term.isEmpty {
+            search(term: term, sources: sources, languages: languages)
+        } else {
+            list(sources: sources, languages: languages)
+        }
+    }
+
     /// Predicate for in-tab text search. Matches quotes whose body contains `term`
     /// (case-insensitive, locale-aware), filtered by active source and language selections.
     static func search(term: String, sources: Set<QuoteSourceFilter>, languages: Set<Language>) -> Predicate<QuoteRecord> {
