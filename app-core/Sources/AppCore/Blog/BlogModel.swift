@@ -38,16 +38,22 @@ public final class BlogModel {
     // MARK: - Dependencies
 
     private let _refresh: @Sendable () async throws -> Date?
-    
+
     private let _loadMore: @Sendable () async throws -> Bool
+
+    /// Per-app seam for blog search. Called with the current search term; should fetch
+    /// matching posts from the server and upsert them into the local store.
+    private let _search: @Sendable (String) async throws -> Void
 
     public init(
         refresh: @escaping @Sendable () async throws -> Date? = { nil },
         loadMore: @escaping @Sendable () async throws -> Bool = { false },
+        search: @escaping @Sendable (String) async throws -> Void = { _ in },
         lastFetched: Date? = nil
     ) {
         self._refresh = refresh
         self._loadMore = loadMore
+        self._search = search
         self.lastFetched = lastFetched
     }
 
@@ -66,6 +72,26 @@ public final class BlogModel {
         } catch {
             Logger.blog.error("Blog refresh failed: \(error)")
             lastError = LoadError(error)
+        }
+    }
+
+    // MARK: - Search
+
+    /// Fires the injected search closure with `term`. Sets `loading = .refresh` while in flight
+    /// so the status line shows activity alongside the `@Query`-driven local results.
+    /// Resets `hasMore` optimistically so `BlogLoadMoreCell` can page through search results.
+    public func search(term: String) async {
+        guard loading == nil else { return }
+        loading = .refresh
+        hasMore = true  // reset — load-more will settle it after the first search page
+        defer { loading = nil }
+        do {
+            try await _search(term)
+            lastError = nil
+        } catch {
+            Logger.blog.error("Blog search failed: \(error)")
+            lastError = LoadError(error)
+            hasMore = false
         }
     }
 

@@ -11,23 +11,29 @@ struct QuotesTab: View {
     @Environment(\.refreshBlog)
     private var refreshBlog
 
+    @Environment(\.searchQuotes)
+    private var searchQuotes
+
     @Quotes(\.selectedSources)
     private var selectedSources
 
     @Preferences(\.selectedLanguages)
     private var selectedLanguages
 
+    @State private var searchText = ""
     @State private var showFilter = false
     @State private var showRandom = false
 
     var body: some View {
         NavigationStack {
             QuotesList(
+                term: searchText.isEmpty ? nil : searchText,
                 selectedSources: selectedSources,
                 selectedLanguages: selectedLanguages,
                 showRandom: $showRandom
             )
             .navigationTitle("Quotes")
+            .searchable(text: $searchText, prompt: "Search quotes…")
             .toolbar {
 #if os(iOS)
                 ToolbarItem(placement: .topBarLeading) {
@@ -64,6 +70,14 @@ struct QuotesTab: View {
             await refreshCatalogue()
             await refreshBlog()
         }
+        // Debounce the network search 300 ms. No refresh on clear — quote browse is
+        // populated via catalogue/blog sync, not a standalone quotes refresh.
+        .task(id: searchText) {
+            guard !searchText.isEmpty else { return }
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            await searchQuotes(term: searchText)
+        }
 #if os(iOS)
         .sheet(isPresented: $showFilter) {
             QuotesFilterView()
@@ -71,6 +85,8 @@ struct QuotesTab: View {
 #endif
     }
 }
+
+// MARK: - Unified list (browse and search)
 
 private struct QuotesList: View {
 
@@ -84,9 +100,18 @@ private struct QuotesList: View {
 
     @Binding private var showRandom: Bool
 
-    init(selectedSources: Set<QuoteSourceFilter>, selectedLanguages: Set<Language>, showRandom: Binding<Bool>) {
+    let isSearching: Bool
+
+    init(
+        term: String?,
+        selectedSources: Set<QuoteSourceFilter>,
+        selectedLanguages: Set<Language>,
+        showRandom: Binding<Bool>
+    ) {
+        isSearching = term != nil
         _quotes = Query(
-            filter: QuoteRecord.list(sources: selectedSources, languages: selectedLanguages),
+            filter: term.map { QuoteRecord.search(term: $0, sources: selectedSources, languages: selectedLanguages) }
+                ?? QuoteRecord.list(sources: selectedSources, languages: selectedLanguages),
             sort: \QuoteRecord.createdAt,
             order: .reverse
         )
@@ -98,19 +123,60 @@ private struct QuotesList: View {
             ForEach(quotes) { quote in
                 QuoteCell(quote: quote)
             }
+            if isSearching && !quotes.isEmpty {
+                QuotesLoadMoreCell()
+            }
         }
         .listStyle(.plain)
         .overlay {
             if quotes.isEmpty {
-                QuotesEmptyView()
+                if isSearching {
+                    ContentUnavailableView.search
+                } else {
+                    QuotesEmptyView()
+                }
             }
         }
         .refreshable {
-            await refreshCatalogue()
-            await refreshBlog()
+            if !isSearching {
+                await refreshCatalogue()
+                await refreshBlog()
+            }
         }
         .sheet(isPresented: $showRandom) {
             RandomQuoteSheet(quotes: quotes)
+        }
+    }
+}
+
+// MARK: - Load more (search pagination)
+
+private struct QuotesLoadMoreCell: View {
+
+    @Quotes(\.isLoadingMore)
+    private var isLoadingMore
+
+    @Quotes(\.hasMore)
+    private var hasMore
+
+    @Environment(\.loadQuotes)
+    private var loadQuotes
+
+    var body: some View {
+        Group {
+            if isLoadingMore {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                }
+            } else {
+                Color.clear.frame(height: 0)
+            }
+        }
+        .listRowSeparator(.hidden)
+        .onAppear {
+            Task { await loadQuotes() }
         }
     }
 }

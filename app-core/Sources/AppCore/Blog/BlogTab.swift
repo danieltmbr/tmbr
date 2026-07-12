@@ -8,8 +8,14 @@ struct BlogTab: View {
     @Environment(\.refreshBlog)
     private var refreshBlog
 
+    @Environment(\.searchBlog)
+    private var searchBlog
+
     @Preferences(\.selectedLanguages)
     private var selectedLanguages
+
+    @State
+    private var searchText = ""
 
     @State
     private var showEditor = false
@@ -19,37 +25,52 @@ struct BlogTab: View {
 
     var body: some View {
         NavigationStack {
-            PostsList(selectedLanguages: selectedLanguages)
-                .navigationTitle("Blog")
-                .toolbar {
+            PostsList(
+                term: searchText.isEmpty ? nil : searchText,
+                selectedLanguages: selectedLanguages
+            )
+            .navigationTitle("Blog")
+            .searchable(text: $searchText, prompt: "Search posts…")
+            .toolbar {
 #if os(iOS)
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button { showLanguageFilter = true } label: {
-                            Image(systemName: "line.3.horizontal.decrease")
-                        }
-                    }
-                    ToolbarItem(placement: .topBarLeading) {
-                        AuthoringButton(systemImage: "square.and.pencil") { showEditor = true }
-                    }
-#else
-                    ToolbarItem(placement: .automatic) {
-                        Button { showLanguageFilter = true } label: {
-                            Image(systemName: "line.3.horizontal.decrease")
-                        }
-                        .popover(isPresented: $showLanguageFilter) {
-                            LanguageFilterView()
-                        }
-                    }
-                    ToolbarItem(placement: .automatic) {
-                        AuthoringButton(systemImage: "square.and.pencil") { showEditor = true }
-                    }
-#endif
-                    ToolbarItem(placement: .primaryAction) {
-                        AccountButton()
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showLanguageFilter = true } label: {
+                        Image(systemName: "line.3.horizontal.decrease")
                     }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    AuthoringButton(systemImage: "square.and.pencil") { showEditor = true }
+                }
+#else
+                ToolbarItem(placement: .automatic) {
+                    Button { showLanguageFilter = true } label: {
+                        Image(systemName: "line.3.horizontal.decrease")
+                    }
+                    .popover(isPresented: $showLanguageFilter) {
+                        LanguageFilterView()
+                    }
+                }
+                ToolbarItem(placement: .automatic) {
+                    AuthoringButton(systemImage: "square.and.pencil") { showEditor = true }
+                }
+#endif
+                ToolbarItem(placement: .primaryAction) {
+                    AccountButton()
+                }
+            }
         }
         .task { await refreshBlog() }
+        // Network search is debounced 300 ms. When the term is cleared, fire an immediate
+        // refresh so browse pagination resets cleanly (no stale search cursor).
+        .task(id: searchText) {
+            if searchText.isEmpty {
+                await refreshBlog()
+                return
+            }
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            await searchBlog(term: searchText)
+        }
 #if os(iOS)
         .sheet(isPresented: $showLanguageFilter) {
             LanguageFilterView()
@@ -61,6 +82,8 @@ struct BlogTab: View {
     }
 }
 
+// MARK: - Unified list (browse and search)
+
 private struct PostsList: View {
 
     @Query private var posts: [PostRecord]
@@ -68,9 +91,13 @@ private struct PostsList: View {
     @Environment(\.refreshBlog)
     private var refreshBlog
 
-    init(selectedLanguages: Set<Language>) {
+    let isSearching: Bool
+
+    init(term: String?, selectedLanguages: Set<Language>) {
+        isSearching = term != nil
         _posts = Query(
-            filter: PostRecord.list(languages: selectedLanguages),
+            filter: term.map { PostRecord.search(term: $0, languages: selectedLanguages) }
+                ?? PostRecord.list(languages: selectedLanguages),
             sort: \PostRecord.createdAt,
             order: .reverse
         )
@@ -95,7 +122,11 @@ private struct PostsList: View {
         }
         .overlay {
             if posts.isEmpty {
-                BlogEmptyView()
+                if isSearching {
+                    ContentUnavailableView.search
+                } else {
+                    BlogEmptyView()
+                }
             }
         }
         .navigationDestination(for: PostRecord.self) { post in
@@ -106,6 +137,10 @@ private struct PostsList: View {
                 published: post.publishedAt
             )
         }
-        .refreshable { await refreshBlog() }
+        .refreshable {
+            if !isSearching {
+                await refreshBlog()
+            }
+        }
     }
 }

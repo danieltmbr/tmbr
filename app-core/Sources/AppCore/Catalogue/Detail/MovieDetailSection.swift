@@ -20,30 +20,34 @@ private struct MovieInfoLine: View {
 
 struct MovieDetailSection: View {
 
-    let previewID: UUID
+    let item: PreviewRecord
 
     @Query private var records: [MovieRecord]
 
     @Upserter(\.movie) private var syncer
 
-    init(previewID: UUID) {
-        self.previewID = previewID
+    init(item: PreviewRecord) {
+        self.item = item
+        let previewID = item.id
         _records = Query(filter: #Predicate<MovieRecord> { $0.previewID == previewID })
     }
 
     var body: some View {
-        if let movie = records.first {
-            Section {
-                CatalogueItemHeader(
-                    title: movie.title,
-                    artworkURL: movie.coverURL,
-                    info: { MovieInfoLine(movie: movie) },
-                    resourceURLs: movie.resourceURLs
-                )
-            }
-            .catalogueItemRefresh(id: previewID) { [sourceID = movie.sourceID] in
-                if let sourceID { try await syncer(sourceID) }
-            }
+        let movie = records.first
+        Section {
+            CatalogueItemHeader(
+                title: movie?.title ?? item.primaryInfo,
+                artworkURL: movie?.coverURL ?? item.imageURL,
+                info: { if let movie { MovieInfoLine(movie: movie) } },
+                resourceURLs: movie?.resourceURLs ?? item.externalLinks
+            )
+        }
+        .catalogueItemRefresh(id: item.id) { [sourceID = item.sourceID] in
+            if let sourceID { try await syncer(sourceID) }
+        }
+        .task(id: item.id) {
+            guard records.isEmpty, let sourceID = item.sourceID else { return }
+            try? await syncer(sourceID)
         }
     }
 
