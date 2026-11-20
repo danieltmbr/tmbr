@@ -154,6 +154,7 @@ main article h4 {
 
 main article p {
     margin: 0.5em 0;
+    white-space: pre-wrap;
 }
 
 main article sup {
