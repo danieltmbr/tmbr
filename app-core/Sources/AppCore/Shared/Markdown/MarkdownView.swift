@@ -201,6 +201,11 @@ private struct ParseResult {
     static func parse(_ raw: String, placement: CitationPlacement) -> ParseResult {
         guard !raw.isEmpty else { return ParseResult(blocks: [], references: []) }
 
+        // Keep authored indentation and single newlines inside paragraphs, as the web does.
+        // Foundation's `.full` syntax collapses a soft break to a space, so soft breaks are
+        // promoted to hard breaks here; the web relies on `white-space: pre-wrap` instead.
+        let raw = MarkdownWhitespace(preserving: [.indentation, .lineBreaks]).rewrite(raw)
+
         // Rewrite cite spans in the raw string before AttributedString parsing —
         // Foundation does not apply custom inline attributes inside blockquotes.
         let footnotes = MarkdownFootnotes.process(raw, placement: placement)

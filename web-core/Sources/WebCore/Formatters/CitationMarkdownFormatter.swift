@@ -24,11 +24,17 @@ public struct CitationMarkdownFormatter: Sendable {
 
     public let placement: CitationPlacement
 
+    /// Keeps authored indentation on paragraph lines (as no-break spaces) so poems and lyrics
+    /// render as written. Line breaks need no help here: `white-space: pre-wrap` in the
+    /// stylesheet already shows the newline that `HTMLFormatter` emits for a soft break.
+    private let whitespace = MarkdownWhitespace(preserving: .indentation)
+
     public init(placement: CitationPlacement = .endOfDocument) {
         self.placement = placement
     }
 
     public func format(_ markdown: String) -> String {
+        let markdown = whitespace.rewrite(markdown)
         let document = Document(parsing: markdown)
 
         // Phase 1: collect cite spans via AST walk (with source string for content extraction).
