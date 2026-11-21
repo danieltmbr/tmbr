@@ -9,5 +9,6 @@ let package = Package(
     ],
     targets: [
         .target(name: "TmbrCore"),
+        .testTarget(name: "TmbrCoreTests", dependencies: ["TmbrCore"]),
     ]
 )
